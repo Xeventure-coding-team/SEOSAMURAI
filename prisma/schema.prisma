@@ -1,0 +1,484 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "mongodb"
+  url      = env("DATABASE_URL")
+}
+
+model Version {
+  id          String   @id @default(auto()) @map("_id") @db.ObjectId
+  name        String
+  version     String   @unique
+  description String?
+  isActive    Boolean  @default(false)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@map("versions")
+}
+
+model locations {
+  id                String    @id @default(auto()) @map("_id") @db.ObjectId
+  user_id           String
+  location_id       String
+  location_name     String
+  website           String?
+  categories        String?
+  last_rank_updated DateTime?
+  created_at        DateTime  @default(now())
+  updated_at        DateTime  @updatedAt
+}
+
+model ScheduledPost {
+  id      String @id @default(auto()) @map("_id") @db.ObjectId
+  user_id String
+
+  // Post Content
+  summary      String
+  languageCode String @default("en-US")
+  topicType    String @default("STANDARD")
+
+  // Media
+  mediaFormat      String  @default("PHOTO")
+  imageUrl         String // ImageKit URL
+  originalImageUrl String? // Original image URL if provided
+
+  // Call to Action (optional)
+  actionType String? // BOOK, ORDER, SHOP, etc.
+  actionUrl  String? // URL or phone number
+
+  // GMB Location Details
+  accountId   String // Clean account ID (without 'accounts/' prefix)
+  locationId  String // Clean location ID (without 'locations/' prefix)
+  accessToken String // OAuth token for posting
+
+  // Scheduling
+  scheduledAt DateTime // When to publish
+  timezone    String?  @default("UTC") // Timezone for scheduling
+
+  // Status Tracking
+  status          ScheduledPostStatus @default(PENDING)
+  publishedAt     DateTime?
+  publishedPostId String? // GMB post ID after successful publishing
+
+  // Error Handling
+  errorMessage String?
+  retryCount   Int     @default(0)
+  maxRetries   Int     @default(3)
+
+  viewColor String
+
+  // Metadata
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  createdBy String? // User ID who created the post
+
+  // Indexing for queries
+  @@index([status, scheduledAt])
+  @@index([accountId, locationId])
+  @@index([createdBy])
+  @@map("scheduled_posts")
+}
+
+model GmbIntegration {
+  id      String @id @default(auto()) @map("_id") @db.ObjectId
+  userId  String @unique
+  user_id String
+
+  accessToken  String
+  refreshToken String?
+  tokenExpiry  DateTime
+  accountName  String?
+  accountId    String?
+  clientId     String?
+
+  isActive Boolean @default(true)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("gmb_integrations")
+}
+
+model CompetitorAnalysis {
+  id           String   @id @default(auto()) @map("_id") @db.ObjectId
+  userId       String
+  locationId   String
+  businessType String
+  lastUpdated  DateTime @default(now())
+  nextUpdate   DateTime
+  competitors  Json
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  @@unique([userId, locationId, businessType])
+  @@map("competitor_analyses")
+}
+
+model keywords {
+  id          String    @id @default(auto()) @map("_id") @db.ObjectId
+  user_id     String
+  location_id String
+  keyword     String?
+  created_at  DateTime  @default(now())
+  updated_at  DateTime?
+
+  @@map("keywords")
+}
+
+model KeywordRank {
+  id              String         @id @default(auto()) @map("_id") @db.ObjectId
+  keyword         String
+  location        String         @default("India")
+  locationId      String
+  userId          String         @default("default")
+  targetDomain    String?
+  rank            Int?
+  previousRank    Int?
+  rankChange      RankChangeType @default(NOT_FOUND)
+  rankChangeValue Int            @default(0)
+  url             String?
+  title           String?
+  snippet         String?
+  searchResults   String? // JSON string of top results
+  totalResults    BigInt         @default(0)
+  searchTime      Float          @default(0)
+  batchId         String? // Links to BatchUpdate for tracking
+  createdAt       DateTime       @default(now())
+  updatedAt       DateTime       @updatedAt
+
+  @@index([keyword, location, userId])
+  @@index([createdAt])
+  @@index([batchId])
+  @@map("keyword_ranks")
+}
+
+model KeywordTracking {
+  id              String    @id @default(auto()) @map("_id") @db.ObjectId
+  keyword         String
+  locationId      String    @default("default")
+  location        String    @default("India")
+  userId          String    @default("default")
+  targetDomain    String?
+  isActive        Boolean   @default(true)
+  refreshRate     Int       @default(48)
+  lastChecked     DateTime?
+  nextBatchUpdate DateTime?
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+
+  @@index([userId, isActive])
+  @@index([nextBatchUpdate, isActive])
+  @@map("keyword_tracking")
+}
+
+model BatchUpdate {
+  id                String            @id @default(auto()) @map("_id") @db.ObjectId
+  status            BatchUpdateStatus @default(PENDING)
+  totalKeywords     Int               @default(0)
+  processedKeywords Int               @default(0)
+  failedKeywords    Int               @default(0)
+  startedAt         DateTime?
+  completedAt       DateTime?
+  errorMessage      String?
+  createdAt         DateTime          @default(now())
+  updatedAt         DateTime          @updatedAt
+
+  @@index([status, createdAt])
+  @@map("batch_updates")
+}
+
+model UserSettings {
+  id               String   @id @default(auto()) @map("_id") @db.ObjectId
+  userId           String   @unique
+  defaultLocation  String   @default("India")
+  defaultDomain    String?
+  autoRefreshHours Int      @default(48) // Changed to 48 hours (2 days)
+  emailAlerts      Boolean  @default(false)
+  alertThreshold   Int      @default(5) // Alert if rank changes by more than this
+  batchUpdateTime  String   @default("02:00") // Time of day to run batch updates (HH:MM format)
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+
+  @@map("user_settings")
+}
+
+model RankAlert {
+  id           String        @id @default(auto()) @map("_id") @db.ObjectId
+  userId       String
+  keyword      String
+  location     String
+  alertType    RankAlertType
+  threshold    Int
+  currentRank  Int?
+  previousRank Int?
+  isRead       Boolean       @default(false)
+  batchId      String? // Reference to which batch update triggered this alert
+  createdAt    DateTime      @default(now())
+
+  @@index([userId, isRead])
+  @@index([batchId])
+  @@map("rank_alerts")
+}
+
+model Task {
+  id              String   @id @default(auto()) @map("_id") @db.ObjectId
+  userId          String
+  locationId      String
+  placeId         String?
+  title           String
+  description     String
+  category        String
+  type            String
+  priority        String
+  impact          String
+  points          Int      @default(0)
+  week            String
+  status          String   @default("pending")
+  repeatable      Boolean  @default(false)
+  estimatedTime   String
+  
+  // Additional fields from JSON
+  repeatFrequency  String?
+  businessType     String   @default("all")
+  actionType       String
+  editableViaAPI   Boolean  @default(true)
+  verificationType String   @default("auto")
+  caution          String?
+  
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@index([userId, locationId, week])
+  @@index([userId, status])
+  @@index([status, week])
+  @@index([actionType])
+}
+
+model CompletedTask {
+  id         String  @id @default(auto()) @map("_id") @db.ObjectId
+  userId     String
+  locationId String
+  placeId    String?
+
+  title         String
+  description   String?
+  category      String
+  type          String
+  priority      String
+  impact        String
+  points        Int
+  repeatable    Boolean
+  estimatedTime String
+  week          String
+  month         String
+
+  // Additional fields from Task
+  repeatFrequency  String?
+  businessType     String
+  actionType       String
+  editableViaAPI   Boolean
+  verificationType String
+  caution          String?
+
+  completedAt DateTime @default(now())
+
+  verificationConfidence String?
+  verificationReason     String?
+  pointsAwarded          Int?
+  pointsPenalty          Int?
+  verifiedAt             DateTime?
+
+  @@index([userId, locationId])
+  @@index([week])
+  @@index([completedAt])
+  @@index([verificationConfidence])
+  @@index([actionType])
+}
+
+model TaskExclusion {
+  id         String @id @default(auto()) @map("_id") @db.ObjectId
+  userId     String
+  locationId String
+  month      String
+
+  taskTitle String
+  taskType  String
+  category  String
+
+  reason String
+
+  taskId          String? @db.ObjectId
+  completedTaskId String? @db.ObjectId
+
+  excludedAt DateTime @default(now())
+  expiresAt  DateTime
+
+  @@unique([userId, locationId, month, taskTitle, taskType])
+  @@index([userId, locationId, month])
+  @@index([expiresAt])
+  @@index([userId, month])
+}
+
+// Global user stats (summary across all locations)
+model UserProgress {
+  id             String   @id @default(auto()) @map("_id") @db.ObjectId
+  userId         String   @unique
+  totalPoints    Int      @default(0)
+  currentLevel   Int      @default(1)
+  tasksCompleted Int      @default(0)
+  locationsCount Int      @default(0)
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  @@index([totalPoints])
+  @@index([currentLevel])
+}
+
+// Per-location progress with individual streaks and points
+model LocationProgress {
+  id         String  @id @default(auto()) @map("_id") @db.ObjectId
+  userId     String
+  locationId String
+  placeId    String?
+
+  // Points
+  totalPoints   Int @default(0)
+  weeklyPoints  Int @default(0)
+  monthlyPoints Int @default(0)
+
+  // Tasks
+  tasksCompleted Int @default(0)
+
+  // Scores
+  profileScore    Int @default(0)
+  engagementScore Int @default(0)
+  contentScore    Int @default(0)
+
+  // Streaks (per location)
+  currentStreak  Int      @default(0)
+  longestStreak  Int      @default(0)
+  lastActiveDate DateTime @default(now())
+
+  // Level (per location)
+  level Int @default(1)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([userId, locationId])
+  @@index([userId])
+  @@index([locationId])
+  @@index([totalPoints])
+  @@index([level])
+  @@index([currentStreak])
+}
+
+// Milestone templates (global)
+model Milestone {
+  id          String   @id @default(auto()) @map("_id") @db.ObjectId
+  name        String   @unique
+  description String
+  type        String // points, streak, tasks, level
+  threshold   Int
+  reward      String
+  icon        String?
+  points      Int      @default(0)
+  createdAt   DateTime @default(now())
+
+  @@index([type, threshold])
+  @@index([type])
+}
+
+// Per-location milestones (user achievements)
+model LocationMilestone {
+  id            String   @id @default(auto()) @map("_id") @db.ObjectId
+  userId        String
+  locationId    String
+  milestoneId   String   @db.ObjectId
+  milestoneName String
+  type          String
+  title         String
+  description   String
+  value         Int
+  achievedAt    DateTime @default(now())
+  notified      Boolean  @default(false)
+
+  @@unique([userId, locationId, milestoneId])
+  @@index([userId, locationId])
+  @@index([userId])
+  @@index([notified])
+}
+
+// Per-location achievements
+model LocationAchievement {
+  id          String   @id @default(auto()) @map("_id") @db.ObjectId
+  userId      String
+  locationId  String
+  type        String // task_master, streak_7, photo_pro, etc.
+  title       String
+  description String
+  points      Int      @default(0)
+  earnedAt    DateTime @default(now())
+
+  @@unique([userId, locationId, type])
+  @@index([userId, locationId])
+  @@index([userId])
+}
+
+model UserTaskRefresh {
+  id          String   @id @default(auto()) @map("_id") @db.ObjectId
+  userId      String
+  month       String // e.g., "2025-10"
+  refreshedAt DateTime @default(now())
+  nextRefresh DateTime // Usually set to the 1st of next month
+
+  // Optional: Track what triggered the refresh
+  triggeredBy String? // "system", "admin", or "user"
+  totalTasks  Int? // How many tasks were generated
+  locationIds String[] @default([])
+
+  @@unique([userId, month]) // Prevent multiple refreshes in the same month
+  @@index([month])
+  @@index([nextRefresh])
+  @@index([userId])
+}
+
+enum RankChangeType {
+  UP
+  DOWN
+  SAME
+  NEW
+  NOT_FOUND
+}
+
+enum RankAlertType {
+  RANK_DROP
+  RANK_IMPROVEMENT
+  OUT_OF_TOP_10
+  BACK_IN_TOP_10
+  NEW_KEYWORD_RANKING
+}
+
+enum BatchUpdateStatus {
+  PENDING
+  RUNNING
+  COMPLETED
+  FAILED
+  CANCELLED
+}
+
+enum ScheduledPostStatus {
+  PENDING
+  PROCESSING
+  PUBLISHED
+  FAILED
+  CANCELLED
+  EXPIRED
+}

@@ -1,0 +1,1870 @@
+[
+    {
+        "id": "task_001",
+        "title": "Add Logo",
+        "description": "Upload your business logo to make your profile recognizable.",
+        "type": "media",
+        "priority": "high",
+        "repeatable": false,
+        "estimatedTime": "5 minutes",
+        "impact": "high",
+        "category": "photos",
+        "points": 20,
+        "businessType": "all",
+        "actionType": "photo",
+        "editableViaAPI": true,
+        "verification": {
+            "type": "auto"
+        }
+    },
+    {
+        "id": "task_002",
+        "title": "Add Interior Photos",
+        "description": "Upload photos of your business interior to attract customers.",
+        "type": "media",
+        "priority": "medium",
+        "repeatable": false,
+        "estimatedTime": "10 minutes",
+        "impact": "medium",
+        "category": "photos",
+        "points": 15,
+        "businessType": "all",
+        "actionType": "photo",
+        "editableViaAPI": true,
+        "verification": {
+            "type": "auto"
+        }
+    },
+    {
+        "id": "task_003",
+        "title": "Add Team Photos",
+        "description": "Upload photos of your team to create trust and relatability.",
+        "type": "media",
+        "priority": "medium",
+        "repeatable": false,
+        "estimatedTime": "10 minutes",
+        "impact": "medium",
+        "category": "photos",
+        "points": 15,
+        "businessType": "all",
+        "actionType": "photo",
+        "editableViaAPI": true,
+        "verification": {
+            "type": "auto"
+        }
+    },
+    {
+        "id": "task_004",
+        "title": "Edit Business Description",
+        "description": "Update your business description to highlight your services and specialties.",
+        "type": "profile",
+        "priority": "high",
+        "repeatable": false,
+        "estimatedTime": "10 minutes",
+        "impact": "high",
+        "category": "basic_info",
+        "points": 25,
+        "businessType": "all",
+        "actionType": "description",
+        "editableViaAPI": true,
+        "verification": {
+            "type": "auto"
+        }
+    },
+    {
+        "id": "task_005",
+        "title": "Update Phone Number",
+        "description": "Ensure your primary phone number is correct for customers to reach you.",
+        "type": "profile",
+        "priority": "high",
+        "repeatable": false,
+        "estimatedTime": "5 minutes",
+        "impact": "high",
+        "category": "basic_info",
+        "points": 15,
+        "businessType": "all",
+        "actionType": "phone",
+        "editableViaAPI": true,
+        "verification": {
+            "type": "auto"
+        }
+    },
+    {
+        "id": "task_006",
+        "title": "Update Website URL",
+        "description": "Ensure your website URL is correct and points to a relevant landing page.",
+        "type": "profile",
+        "priority": "medium",
+        "repeatable": true,
+        "repeatFrequency": "quarterly",
+        "estimatedTime": "5 minutes",
+        "impact": "medium",
+        "category": "basic_info",
+        "points": 15,
+        "businessType": "all",
+        "actionType": "website",
+        "editableViaAPI": true,
+        "verification": {
+            "type": "auto"
+        }
+    },
+    {
+        "id": "task_007",
+        "title": "Add Services Offered",
+        "description": "List your services or products with descriptions and pricing where applicable.",
+        "type": "profile",
+        "priority": "high",
+        "repeatable": true,
+        "repeatFrequency": "monthly",
+        "estimatedTime": "15 minutes",
+        "impact": "high",
+        "category": "services",
+        "points": 25,
+        "businessType": "all",
+        "actionType": "services",
+        "editableViaAPI": true,
+        "verification": {
+            "type": "auto"
+        }
+    },
+    {
+        "id": "task_008",
+        "title": "Set Business Hours",
+        "description": "Ensure your business hours are accurate, including special hours for holidays.",
+        "type": "profile",
+        "priority": "high",
+        "repeatable": true,
+        "repeatFrequency": "quarterly",
+        "estimatedTime": "5 minutes",
+        "impact": "high",
+        "category": "basic_info",
+        "points": 20,
+        "businessType": "all",
+        "actionType": "hours",
+        "editableViaAPI": true,
+        "verification": {
+            "type": "auto"
+        }
+    },
+    {
+        "id": "task_009",
+        "title": "Verify Contact Details",
+        "description": "Check your email, phone, and other contact info to ensure customers can reach you.",
+        "type": "profile",
+        "priority": "high",
+        "repeatable": true,
+        "repeatFrequency": "monthly",
+        "estimatedTime": "5 minutes",
+        "impact": "high",
+        "category": "basic_info",
+        "points": 20,
+        "businessType": "all",
+        "actionType": "manual_verification",
+        "editableViaAPI": false,
+        "verification": {
+            "type": "manual"
+        },
+        "caution": "Completing this task ensures your customers can reach you without any issues."
+    },
+    {
+        "id": "task_010",
+        "title": "Request Reviews from Customers",
+        "description": "Send review request links to 3-5 satisfied customers.",
+        "type": "reviews",
+        "priority": "high",
+        "repeatable": true,
+        "repeatFrequency": "weekly",
+        "estimatedTime": "10 minutes",
+        "impact": "high",
+        "category": "growth",
+        "points": 20,
+        "businessType": "all",
+        "actionType": "manual_verification",
+        "editableViaAPI": false,
+        "verification": {
+            "type": "manual"
+        },
+        "caution": "Completing this task increases your business credibility and online visibility."
+    },
+    {
+        "id": "task_011",
+        "title": "Thank 5-Star Reviewers",
+        "description": "Send personalized messages to thank customers who left excellent reviews.",
+        "type": "reviews",
+        "priority": "medium",
+        "repeatable": true,
+        "repeatFrequency": "weekly",
+        "estimatedTime": "10 minutes",
+        "impact": "medium",
+        "category": "engagement",
+        "points": 15,
+        "businessType": "all",
+        "actionType": "manual_verification",
+        "editableViaAPI": false,
+        "verification": {
+            "type": "manual"
+        },
+        "caution": "Completing this task strengthens customer relationships and loyalty."
+    },
+    {
+        "id": "task_012",
+        "title": "Respond to Recent Reviews",
+        "description": "Reply to all reviews from the past 7 days to show customers you value their feedback.",
+        "type": "reviews",
+        "priority": "high",
+        "repeatable": true,
+        "repeatFrequency": "weekly",
+        "estimatedTime": "15 minutes",
+        "impact": "high",
+        "category": "engagement",
+        "points": 25,
+        "businessType": "all",
+        "actionType": "manual_verification",
+        "editableViaAPI": false,
+        "verification": {
+            "type": "manual"
+        }
+    },
+    {
+        "id": "task_013",
+        "title": "Add Cover Photo",
+        "description": "Upload a cover photo to showcase your business ambiance.",
+        "type": "media",
+        "priority": "medium",
+        "repeatable": false,
+        "estimatedTime": "10 minutes",
+        "impact": "medium",
+        "category": "photos",
+        "points": 15,
+        "businessType": "all",
+        "actionType": "photo",
+        "editableViaAPI": true,
+        "verification": {
+            "type": "auto"
+        }
+    },
+    {
+        "id": "task_014",
+        "title": "Add Exterior Photos",
+        "description": "Upload photos of your business exterior for better visibility on Google Maps.",
+        "type": "media",
+        "priority": "medium",
+        "repeatable": false,
+        "estimatedTime": "10 minutes",
+        "impact": "medium",
+        "category": "photos",
+        "points": 15,
+        "businessType": "all",
+        "actionType": "photo",
+        "editableViaAPI": true,
+        "verification": {
+            "type": "auto"
+        }
+    },
+    {
+        "id": "task_015",
+        "title": "Share Special Offers",
+        "description": "Post any current promotions or offers to attract customers.",
+        "type": "profile",
+        "priority": "medium",
+        "repeatable": true,
+        "repeatFrequency": "monthly",
+        "estimatedTime": "10 minutes",
+        "impact": "medium",
+        "category": "offers",
+        "points": 20,
+        "businessType": "all",
+        "actionType": "manual_verification",
+        "editableViaAPI": false,
+        "verification": {
+            "type": "manual"
+        },
+        "caution": "Posting offers helps attract more customers and increase engagement."
+    },
+    {
+        "id": "task_016",
+        "title": "Showcase Your Team",
+        "description": "Introduce your team members with photos or a post to help customers connect with the people behind your business.",
+        "type": "profile",
+        "priority": "medium",
+        "repeatable": true,
+        "repeatFrequency": "quarterly",
+        "estimatedTime": "10 minutes",
+        "impact": "medium",
+        "category": "engagement",
+        "points": 20,
+        "businessType": "all",
+        "actionType": "post",
+        "editableViaAPI": true,
+        "verification": {
+            "type": "manual"
+        }
+    },
+    {
+        "id": "task_017",
+        "title": "Add Product Photos",
+        "description": "Upload photos of your products or key services to attract customers.",
+        "type": "media",
+        "priority": "medium",
+        "repeatable": false,
+        "estimatedTime": "10 minutes",
+        "impact": "medium",
+        "category": "photos",
+        "points": 15,
+        "businessType": "all",
+        "actionType": "photo",
+        "editableViaAPI": true,
+        "verification": {
+            "type": "auto"
+        }
+    },
+    {
+        "id": "task_018",
+        "title": "Verify Location on Map",
+        "description": "Ensure your business location is correctly pinned on Google Maps.",
+        "type": "profile",
+        "priority": "high",
+        "repeatable": true,
+        "repeatFrequency": "quarterly",
+        "estimatedTime": "5 minutes",
+        "impact": "high",
+        "category": "basic_info",
+        "points": 20,
+        "businessType": "all",
+        "actionType": "manual_verification",
+        "editableViaAPI": false,
+        "verification": {
+            "type": "manual"
+        }
+    },
+    {
+        "id": "task_019",
+        "title": "Add Logo Variants",
+        "description": "Upload alternate versions of your logo for different placements or themes.",
+        "type": "media",
+        "priority": "medium",
+        "repeatable": false,
+        "estimatedTime": "5 minutes",
+        "impact": "medium",
+        "category": "photos",
+        "points": 10,
+        "businessType": "all",
+        "actionType": "photo",
+        "editableViaAPI": true,
+        "verification": {
+            "type": "auto"
+        }
+    },
+    {
+        "id": "task_020",
+        "title": "Add Staff Profiles",
+        "description": "Add short bios and photos for your team members to improve customer trust.",
+        "type": "profile",
+        "priority": "medium",
+        "repeatable": false,
+        "estimatedTime": "10 minutes",
+        "impact": "medium",
+        "category": "team",
+        "points": 15,
+        "businessType": "all",
+        "actionType": "manual_verification",
+        "editableViaAPI": false,
+        "verification": {
+            "type": "manual"
+        },
+        "caution": "Showcasing your team builds trust and encourages engagement."
+    },
+    {
+        "id": "task_021",
+        "title": "Add Service Photos",
+        "description": "Upload photos that showcase your key services or products.",
+        "type": "media",
+        "priority": "medium",
+        "repeatable": false,
+        "estimatedTime": "10 minutes",
+        "impact": "medium",
+        "category": "photos",
+        "points": 15,
+        "businessType": "all",
+        "actionType": "photo",
+        "editableViaAPI": true,
+        "verification": {
+            "type": "auto"
+        }
+    },
+    {
+        "id": "task_022",
+        "title": "Add Cover Photo",
+        "description": "Upload a high-quality cover photo that best represents your business. This image appears prominently in your profile and attracts customer attention.",
+        "type": "media",
+        "priority": "high",
+        "repeatable": false,
+        "estimatedTime": "5 minutes",
+        "impact": "high",
+        "category": "photos",
+        "points": 20,
+        "businessType": "all",
+        "actionType": "photo",
+        "editableViaAPI": true,
+        "verification": {
+            "type": "auto"
+        }
+    },
+    {
+        "id": "task_023",
+        "title": "Add Seasonal Offer Photos",
+        "description": "Upload photos of seasonal promotions or offers to attract customers.",
+        "type": "media",
+        "priority": "medium",
+        "repeatable": true,
+        "repeatFrequency": "seasonal",
+        "estimatedTime": "10 minutes",
+        "impact": "medium",
+        "category": "photos",
+        "points": 15,
+        "businessType": "all",
+        "actionType": "photo",
+        "editableViaAPI": true,
+        "verification": {
+            "type": "auto"
+        }
+    },
+    {
+        "id": "task_024",
+        "title": "Check Business Hours Accuracy",
+        "description": "Review and confirm your business hours are up-to-date, including holidays.",
+        "type": "profile",
+        "priority": "high",
+        "repeatable": true,
+        "repeatFrequency": "monthly",
+        "estimatedTime": "5 minutes",
+        "impact": "high",
+        "category": "basic_info",
+        "points": 20,
+        "businessType": "all",
+        "actionType": "manual_verification",
+        "editableViaAPI": false,
+        "verification": {
+            "type": "manual"
+        },
+        "caution": "Keeping hours accurate ensures customers can visit at the right time."
+    },
+    {
+        "id": "task_026",
+        "title": "Add Business Video",
+        "description": "Upload a short video (30–60 seconds) that showcases your services, team, or location to build trust and engagement with customers.",
+        "type": "media",
+        "priority": "medium",
+        "repeatable": false,
+        "estimatedTime": "10 minutes",
+        "impact": "high",
+        "category": "photos",
+        "points": 25,
+        "businessType": "all",
+        "actionType": "video",
+        "editableViaAPI": true,
+        "verification": {
+            "type": "auto"
+        }
+    },
+    {
+        "id": "task_027",
+        "title": "Request Customer Testimonials",
+        "description": "Reach out to customers for short testimonials to display on your profile.",
+        "type": "reviews",
+        "priority": "medium",
+        "repeatable": true,
+        "repeatFrequency": "monthly",
+        "estimatedTime": "10 minutes",
+        "impact": "medium",
+        "category": "growth",
+        "points": 15,
+        "businessType": "all",
+        "actionType": "manual_verification",
+        "editableViaAPI": false,
+        "verification": {
+            "type": "manual"
+        },
+        "caution": "Testimonials help build trust and attract new customers."
+    },
+    {
+        "id": "task_028",
+        "title": "Add Location Photos",
+        "description": "Upload clear photos of your business location for better map visibility.",
+        "type": "media",
+        "priority": "medium",
+        "repeatable": false,
+        "estimatedTime": "10 minutes",
+        "impact": "medium",
+        "category": "photos",
+        "points": 15,
+        "businessType": "all",
+        "actionType": "photo",
+        "editableViaAPI": true,
+        "verification": {
+            "type": "auto"
+        }
+    },
+    {
+        "id": "task_029",
+        "title": "Add Team Introduction Video",
+        "description": "Upload a short video introducing your team to make your business more relatable.",
+        "type": "media",
+        "priority": "medium",
+        "repeatable": false,
+        "estimatedTime": "15 minutes",
+        "impact": "medium",
+        "category": "media",
+        "points": 20,
+        "businessType": "all",
+        "actionType": "video",
+        "editableViaAPI": true,
+        "verification": {
+            "type": "auto"
+        }
+    },
+    {
+        "id": "task_030",
+        "title": "Add Customer Experience Photos",
+        "description": "Upload photos that showcase happy customers using your products or services.",
+        "type": "media",
+        "priority": "medium",
+        "repeatable": false,
+        "estimatedTime": "10 minutes",
+        "impact": "medium",
+        "category": "photos",
+        "points": 15,
+        "businessType": "all",
+        "actionType": "photo",
+        "editableViaAPI": true,
+        "verification": {
+            "type": "auto"
+        }
+    },
+    {
+        "id": "task_031",
+        "title": "Add Menu or Catalog Photos",
+        "description": "Upload images of your menu or product catalog for customers to browse.",
+        "type": "media",
+        "priority": "medium",
+        "repeatable": true,
+        "repeatFrequency": "monthly",
+        "estimatedTime": "10 minutes",
+        "impact": "medium",
+        "category": "photos",
+        "points": 15,
+        "businessType": "all",
+        "actionType": "photo",
+        "editableViaAPI": true,
+        "verification": {
+            "type": "auto"
+        }
+    },
+    {
+        "id": "task_032",
+        "title": "Add Customer FAQ Video",
+        "description": "Upload a video answering common questions from customers to reduce inquiries.",
+        "type": "media",
+        "priority": "medium",
+        "repeatable": false,
+        "estimatedTime": "15 minutes",
+        "impact": "medium",
+        "category": "media",
+        "points": 20,
+        "businessType": "all",
+        "actionType": "video",
+        "editableViaAPI": true,
+        "verification": {
+            "type": "auto"
+        }
+    },
+    {
+        "id": "task_033",
+        "title": "Ask Customers for Photos",
+        "description": "Request 3-5 customers to share photos of your products or services.",
+        "type": "reviews",
+        "priority": "medium",
+        "repeatable": true,
+        "repeatFrequency": "monthly",
+        "estimatedTime": "10 minutes",
+        "impact": "medium",
+        "category": "growth",
+        "points": 15,
+        "businessType": "all",
+        "actionType": "manual_verification",
+        "editableViaAPI": false,
+        "verification": {
+            "type": "manual"
+        },
+        "caution": "Encourage customers to share photos to increase trust and engagement."
+    },
+    {
+        "id": "task_035",
+        "title": "Add Business Opening Date",
+        "description": "Add your business’s opening date to help customers know how long you’ve been in operation.",
+        "type": "profile",
+        "priority": "low",
+        "repeatable": false,
+        "estimatedTime": "3 minutes",
+        "impact": "low",
+        "category": "basic_info",
+        "points": 10,
+        "businessType": "all",
+        "actionType": "opening_date",
+        "editableViaAPI": false,
+        "verification": {
+            "type": "auto"
+        }
+    },
+    {
+        "id": "task_036",
+        "title": "Verify Business Location Photos",
+        "description": "Check and confirm your location photos are clear and accurate on Google Maps.",
+        "type": "profile",
+        "priority": "high",
+        "repeatable": true,
+        "repeatFrequency": "quarterly",
+        "estimatedTime": "5 minutes",
+        "impact": "high",
+        "category": "basic_info",
+        "points": 20,
+        "businessType": "all",
+        "actionType": "manual_verification",
+        "editableViaAPI": false,
+        "verification": {
+            "type": "manual"
+        },
+        "caution": "Clear location photos help customers find your business easily."
+    },
+    {
+        "id": "task_037",
+        "title": "Post a Customer Success Story",
+        "description": "Share a short story or testimonial from a happy customer on your profile.",
+        "type": "reviews",
+        "priority": "medium",
+        "repeatable": true,
+        "repeatFrequency": "monthly",
+        "estimatedTime": "10 minutes",
+        "impact": "medium",
+        "category": "growth",
+        "points": 15,
+        "businessType": "all",
+        "actionType": "manual_verification",
+        "editableViaAPI": false,
+        "verification": {
+            "type": "manual"
+        },
+        "caution": "Sharing success stories builds trust and encourages new customers."
+    },
+    {
+        "id": "task_038",
+        "title": "Add Featured Service Photo",
+        "description": "Highlight your top service or product with a featured photo.",
+        "type": "media",
+        "priority": "medium",
+        "repeatable": false,
+        "estimatedTime": "10 minutes",
+        "impact": "medium",
+        "category": "photos",
+        "points": 15,
+        "businessType": "all",
+        "actionType": "photo",
+        "editableViaAPI": true,
+        "verification": {
+            "type": "auto"
+        }
+    },
+    {
+        "id": "task_039",
+        "title": "Add Celebration or Event Photo",
+        "description": "Upload a photo from a recent celebration, event, or achievement at your business. It helps show your active presence and builds trust with potential customers.",
+        "type": "media",
+        "priority": "medium",
+        "repeatable": true,
+        "repeatFrequency": "quarterly",
+        "estimatedTime": "5 minutes",
+        "impact": "high",
+        "category": "photos",
+        "points": 20,
+        "businessType": "all",
+        "actionType": "photo",
+        "editableViaAPI": true,
+        "verification": {
+            "type": "auto"
+        }
+    },
+    {
+        "id": "task_040",
+        "title": "Add Promotional Banner",
+        "description": "Upload a banner image for your current promotion or campaign.",
+        "type": "media",
+        "priority": "medium",
+        "repeatable": true,
+        "repeatFrequency": "monthly",
+        "estimatedTime": "10 minutes",
+        "impact": "medium",
+        "category": "photos",
+        "points": 15,
+        "businessType": "all",
+        "actionType": "photo",
+        "editableViaAPI": true,
+        "verification": {
+            "type": "auto"
+        }
+    },
+    {
+        "id": "task_041",
+        "title": "Add Service Video",
+        "description": "Upload a short video demonstrating one of your key services.",
+        "type": "media",
+        "priority": "medium",
+        "repeatable": false,
+        "estimatedTime": "15 minutes",
+        "impact": "medium",
+        "category": "media",
+        "points": 20,
+        "businessType": "all",
+        "actionType": "video",
+        "editableViaAPI": true,
+        "verification": {
+            "type": "auto"
+        }
+    },
+    {
+        "id": "task_042",
+        "title": "Highlight Customer Review",
+        "description": "Feature a positive customer review on your profile to attract more customers.",
+        "type": "reviews",
+        "priority": "medium",
+        "repeatable": true,
+        "repeatFrequency": "monthly",
+        "estimatedTime": "10 minutes",
+        "impact": "medium",
+        "category": "growth",
+        "points": 15,
+        "businessType": "all",
+        "actionType": "manual_verification",
+        "editableViaAPI": false,
+        "verification": {
+            "type": "manual"
+        },
+        "caution": "Highlighting reviews builds trust and encourages new customers."
+    },
+    {
+        "id": "task_044",
+        "title": "Add Product Demo Video",
+        "description": "Upload a video showing your product in action to attract customer interest.",
+        "type": "media",
+        "priority": "medium",
+        "repeatable": false,
+        "estimatedTime": "15 minutes",
+        "impact": "medium",
+        "category": "media",
+        "points": 20,
+        "businessType": "all",
+        "actionType": "video",
+        "editableViaAPI": true,
+        "verification": {
+            "type": "auto"
+        }
+    },
+    {
+        "id": "task_045",
+        "title": "Share Customer Stories",
+        "description": "Post customer success stories or testimonials to showcase positive experiences and attract new clients.",
+        "type": "post",
+        "priority": "medium",
+        "repeatable": true,
+        "repeatFrequency": "monthly",
+        "estimatedTime": "10 minutes",
+        "impact": "medium",
+        "category": "engagement",
+        "points": 15,
+        "businessType": "all",
+        "actionType": "post",
+        "editableViaAPI": true,
+        "verification": {
+            "type": "manual"
+        }
+    },
+    {
+        "id": "task_047",
+        "title": "Add Featured Product Photo",
+        "description": "Upload a photo of your most popular product or service.",
+        "type": "media",
+        "priority": "medium",
+        "repeatable": false,
+        "estimatedTime": "10 minutes",
+        "impact": "medium",
+        "category": "photos",
+        "points": 15,
+        "businessType": "all",
+        "actionType": "photo",
+        "editableViaAPI": true,
+        "verification": {
+            "type": "auto"
+        }
+    },
+    {
+        "id": "task_048",
+        "title": "Add Team Spotlight Post",
+        "description": "Feature one team member with a short post to showcase your team.",
+        "type": "profile",
+        "priority": "medium",
+        "repeatable": true,
+        "repeatFrequency": "monthly",
+        "estimatedTime": "10 minutes",
+        "impact": "medium",
+        "category": "team",
+        "points": 15,
+        "businessType": "all",
+        "actionType": "manual_verification",
+        "editableViaAPI": false,
+        "verification": {
+            "type": "manual"
+        },
+        "caution": "Spotlighting team members increases engagement and humanizes your business."
+    },
+    {
+        "id": "task_049",
+        "title": "Upload Before & After Photos",
+        "description": "Showcase your work by uploading before and after photos of your services.",
+        "type": "media",
+        "priority": "medium",
+        "repeatable": true,
+        "repeatFrequency": "monthly",
+        "estimatedTime": "15 minutes",
+        "impact": "medium",
+        "category": "photos",
+        "points": 20,
+        "businessType": "all",
+        "actionType": "photo",
+        "editableViaAPI": true,
+        "verification": {
+            "type": "auto"
+        }
+    },
+    {
+        "id": "task_050",
+        "title": "Add Customer Review Highlights",
+        "description": "Feature a few key customer reviews on your profile to attract attention.",
+        "type": "reviews",
+        "priority": "medium",
+        "repeatable": true,
+        "repeatFrequency": "monthly",
+        "estimatedTime": "10 minutes",
+        "impact": "medium",
+        "category": "growth",
+        "points": 15,
+        "businessType": "all",
+        "actionType": "manual_verification",
+        "editableViaAPI": false,
+        "verification": {
+            "type": "manual"
+        },
+        "caution": "Highlighting reviews improves credibility and customer trust."
+    },
+    {
+        "id": "task_051",
+        "title": "Update Business Name",
+        "description": "Ensure your business name is accurate and matches your signage. Consistent naming helps customers recognize your business across platforms.",
+        "type": "profile",
+        "priority": "high",
+        "repeatable": false,
+        "repeatFrequency": null,
+        "estimatedTime": "2 minutes",
+        "impact": "high",
+        "category": "profile_optimization",
+        "points": 10,
+        "businessType": "all",
+        "actionType": "name",
+        "editableViaAPI": true,
+        "verification": {
+            "type": "auto"
+        }
+    },
+    {
+        "id": "task_052",
+        "title": "Post About New Arrivals",
+        "description": "Create a post highlighting newly launched products or services to keep your audience updated.",
+        "type": "post",
+        "priority": "medium",
+        "repeatable": true,
+        "repeatFrequency": "monthly",
+        "estimatedTime": "10 minutes",
+        "impact": "medium",
+        "category": "engagement",
+        "points": 15,
+        "businessType": "all",
+        "actionType": "post",
+        "editableViaAPI": true,
+        "verification": {
+            "type": "manual"
+        }
+    },
+    {
+        "id": "task_053",
+        "title": "Post Behind-the-Scenes Content",
+        "description": "Share a post showing your business operations or how your products/services are created.",
+        "type": "post",
+        "priority": "medium",
+        "repeatable": true,
+        "repeatFrequency": "monthly",
+        "estimatedTime": "15 minutes",
+        "impact": "medium",
+        "category": "engagement",
+        "points": 20,
+        "businessType": "all",
+        "actionType": "post",
+        "editableViaAPI": true,
+        "verification": {
+            "type": "manual"
+        }
+    },
+    {
+        "id": "task_054",
+        "title": "Post About a Community Event",
+        "description": "Share updates or participation details from local events, festivals, or sponsorships to increase visibility.",
+        "type": "post",
+        "priority": "medium",
+        "repeatable": true,
+        "repeatFrequency": "quarterly",
+        "estimatedTime": "10 minutes",
+        "impact": "high",
+        "category": "community",
+        "points": 20,
+        "businessType": "all",
+        "actionType": "post",
+        "editableViaAPI": true,
+        "verification": {
+            "type": "manual"
+        }
+    },
+    {
+        "id": "task_055",
+        "title": "Post Tips or How-To Guide",
+        "description": "Share helpful tips, DIY guides, or insights related to your business to establish expertise.",
+        "type": "post",
+        "priority": "medium",
+        "repeatable": true,
+        "repeatFrequency": "monthly",
+        "estimatedTime": "15 minutes",
+        "impact": "high",
+        "category": "education",
+        "points": 20,
+        "businessType": "all",
+        "actionType": "post",
+        "editableViaAPI": true,
+        "verification": {
+            "type": "manual"
+        }
+    },
+    {
+        "id": "task_056",
+        "title": "Post Holiday Greetings or Festive Wishes",
+        "description": "Celebrate major holidays or festivals by posting greeting messages to engage customers and build goodwill.",
+        "type": "post",
+        "priority": "medium",
+        "repeatable": true,
+        "repeatFrequency": "seasonal",
+        "estimatedTime": "5 minutes",
+        "impact": "high",
+        "category": "engagement",
+        "points": 20,
+        "businessType": "all",
+        "actionType": "post",
+        "editableViaAPI": true,
+        "verification": {
+            "type": "manual"
+        }
+    },
+    {
+        "id": "task_057",
+        "title": "Post Customer Testimonials",
+        "description": "Share a recent customer review or testimonial to build trust and showcase positive experiences.",
+        "type": "post",
+        "priority": "high",
+        "repeatable": true,
+        "repeatFrequency": "monthly",
+        "estimatedTime": "10 minutes",
+        "impact": "high",
+        "category": "trust",
+        "points": 20,
+        "businessType": "all",
+        "actionType": "post",
+        "editableViaAPI": true,
+        "verification": {
+            "type": "manual"
+        }
+    },
+    {
+        "id": "task_058",
+        "title": "Post Limited-Time Offers",
+        "description": "Create a post announcing discounts, deals, or special offers to attract new and repeat customers.",
+        "type": "post",
+        "priority": "high",
+        "repeatable": true,
+        "repeatFrequency": "monthly",
+        "estimatedTime": "10 minutes",
+        "impact": "high",
+        "category": "sales",
+        "points": 25,
+        "businessType": "all",
+        "actionType": "post",
+        "editableViaAPI": true,
+        "verification": {
+            "type": "manual"
+        }
+    },
+    {
+        "id": "task_059",
+        "title": "Post Team Introduction",
+        "description": "Introduce your team members or staff to make your business feel more personal and relatable.",
+        "type": "post",
+        "priority": "medium",
+        "repeatable": true,
+        "repeatFrequency": "quarterly",
+        "estimatedTime": "15 minutes",
+        "impact": "medium",
+        "category": "engagement",
+        "points": 20,
+        "businessType": "all",
+        "actionType": "post",
+        "editableViaAPI": true,
+        "verification": {
+            "type": "manual"
+        }
+    },
+    {
+        "id": "task_060",
+        "title": "Post Customer Story",
+        "description": "Share a short story featuring how your product or service helped a customer achieve something great.",
+        "type": "post",
+        "priority": "medium",
+        "repeatable": true,
+        "repeatFrequency": "monthly",
+        "estimatedTime": "15 minutes",
+        "impact": "high",
+        "category": "trust",
+        "points": 25,
+        "businessType": "all",
+        "actionType": "post",
+        "editableViaAPI": true,
+        "verification": {
+            "type": "manual"
+        }
+    },
+    {
+        "id": "task_061",
+        "title": "Post Before-and-After Showcase",
+        "description": "Highlight transformation or improvement with before-and-after photos to demonstrate results.",
+        "type": "post",
+        "priority": "high",
+        "repeatable": true,
+        "repeatFrequency": "monthly",
+        "estimatedTime": "15 minutes",
+        "impact": "high",
+        "category": "visuals",
+        "points": 25,
+        "businessType": "services",
+        "actionType": "post",
+        "editableViaAPI": true,
+        "verification": {
+            "type": "manual"
+        }
+    },
+    {
+        "id": "task_062",
+        "title": "Verify Payment Methods",
+        "description": "Confirm all accepted payment methods are listed correctly and up-to-date.",
+        "type": "profile",
+        "priority": "high",
+        "repeatable": true,
+        "repeatFrequency": "quarterly",
+        "estimatedTime": "5 minutes",
+        "impact": "high",
+        "category": "basic_info",
+        "points": 15,
+        "businessType": "all",
+        "actionType": "manual_verification",
+        "editableViaAPI": false,
+        "verification": {
+            "type": "manual"
+        },
+        "caution": "Accurate payment information prevents customer confusion at checkout."
+    },
+    {
+        "id": "task_063",
+        "title": "Confirm Parking Information",
+        "description": "Verify parking availability and details for customer convenience.",
+        "type": "profile",
+        "priority": "medium",
+        "repeatable": true,
+        "repeatFrequency": "quarterly",
+        "estimatedTime": "5 minutes",
+        "impact": "medium",
+        "category": "basic_info",
+        "points": 10,
+        "businessType": "retail",
+        "actionType": "manual_verification",
+        "editableViaAPI": false,
+        "verification": {
+            "type": "manual"
+        }
+    },
+    {
+        "id": "task_064",
+        "title": "Validate Accessibility Features",
+        "description": "Confirm accessibility features like wheelchair ramps, elevators, and accessible restrooms are accurately listed.",
+        "type": "profile",
+        "priority": "medium",
+        "repeatable": true,
+        "repeatFrequency": "quarterly",
+        "estimatedTime": "5 minutes",
+        "impact": "medium",
+        "category": "basic_info",
+        "points": 15,
+        "businessType": "all",
+        "actionType": "manual_verification",
+        "editableViaAPI": false,
+        "verification": {
+            "type": "manual"
+        }
+    },
+    {
+        "id": "task_065",
+        "title": "Verify Health & Safety Measures",
+        "description": "Confirm current health protocols, sanitation practices, and safety measures are properly communicated.",
+        "type": "profile",
+        "priority": "high",
+        "repeatable": true,
+        "repeatFrequency": "monthly",
+        "estimatedTime": "10 minutes",
+        "impact": "high",
+        "category": "basic_info",
+        "points": 20,
+        "businessType": "all",
+        "actionType": "manual_verification",
+        "editableViaAPI": false,
+        "verification": {
+            "type": "manual"
+        }
+    },
+    {
+        "id": "task_066",
+        "title": "Check Appointment Booking System",
+        "description": "Test your online booking system to ensure it's working correctly and appointments are being received.",
+        "type": "profile",
+        "priority": "high",
+        "repeatable": true,
+        "repeatFrequency": "monthly",
+        "estimatedTime": "10 minutes",
+        "impact": "high",
+        "category": "operations",
+        "points": 20,
+        "businessType": "services",
+        "actionType": "manual_verification",
+        "editableViaAPI": false,
+        "verification": {
+            "type": "manual"
+        }
+    },
+    {
+        "id": "task_067",
+        "title": "Verify Delivery Areas",
+        "description": "Confirm your delivery service areas and restrictions are accurately listed.",
+        "type": "profile",
+        "priority": "medium",
+        "repeatable": true,
+        "repeatFrequency": "quarterly",
+        "estimatedTime": "10 minutes",
+        "impact": "medium",
+        "category": "services",
+        "points": 15,
+        "businessType": "retail",
+        "actionType": "manual_verification",
+        "editableViaAPI": false,
+        "verification": {
+            "type": "manual"
+        }
+    },
+    {
+        "id": "task_068",
+        "title": "Validate Certification Badges",
+        "description": "Confirm any professional certifications, awards, or recognition badges are current and properly displayed.",
+        "type": "profile",
+        "priority": "medium",
+        "repeatable": true,
+        "repeatFrequency": "quarterly",
+        "estimatedTime": "10 minutes",
+        "impact": "medium",
+        "category": "trust",
+        "points": 15,
+        "businessType": "all",
+        "actionType": "manual_verification",
+        "editableViaAPI": false,
+        "verification": {
+            "type": "manual"
+        }
+    },
+    {
+        "id": "task_069",
+        "title": "Check Email Response Time",
+        "description": "Monitor and ensure customer emails are responded to within 24 hours.",
+        "type": "engagement",
+        "priority": "high",
+        "repeatable": true,
+        "repeatFrequency": "weekly",
+        "estimatedTime": "15 minutes",
+        "impact": "high",
+        "category": "customer_service",
+        "points": 20,
+        "businessType": "all",
+        "actionType": "manual_verification",
+        "editableViaAPI": false,
+        "verification": {
+            "type": "manual"
+        }
+    },
+    {
+        "id": "task_070",
+        "title": "Verify Social Media Consistency",
+        "description": "Ensure your business information is consistent across all social media platforms.",
+        "type": "profile",
+        "priority": "medium",
+        "repeatable": true,
+        "repeatFrequency": "monthly",
+        "estimatedTime": "15 minutes",
+        "impact": "medium",
+        "category": "basic_info",
+        "points": 15,
+        "businessType": "all",
+        "actionType": "manual_verification",
+        "editableViaAPI": false,
+        "verification": {
+            "type": "manual"
+        }
+    },
+    {
+        "id": "task_071",
+        "title": "Confirm Return Policy Accuracy",
+        "description": "Verify your return and refund policies are clearly stated and up-to-date.",
+        "type": "profile",
+        "priority": "high",
+        "repeatable": true,
+        "repeatFrequency": "quarterly",
+        "estimatedTime": "10 minutes",
+        "impact": "high",
+        "category": "policies",
+        "points": 20,
+        "businessType": "retail",
+        "actionType": "manual_verification",
+        "editableViaAPI": false,
+        "verification": {
+            "type": "manual"
+        }
+    },
+    {
+        "id": "task_072",
+        "title": "Validate Staff Training Updates",
+        "description": "Confirm staff training and certification records are current.",
+        "type": "profile",
+        "priority": "medium",
+        "repeatable": true,
+        "repeatFrequency": "quarterly",
+        "estimatedTime": "10 minutes",
+        "impact": "medium",
+        "category": "team",
+        "points": 15,
+        "businessType": "all",
+        "actionType": "manual_verification",
+        "editableViaAPI": false,
+        "verification": {
+            "type": "manual"
+        }
+    },
+    {
+        "id": "task_073",
+        "title": "Check Inventory Accuracy",
+        "description": "Verify that online product listings match actual inventory availability.",
+        "type": "operations",
+        "priority": "high",
+        "repeatable": true,
+        "repeatFrequency": "weekly",
+        "estimatedTime": "20 minutes",
+        "impact": "high",
+        "category": "inventory",
+        "points": 25,
+        "businessType": "retail",
+        "actionType": "manual_verification",
+        "editableViaAPI": false,
+        "verification": {
+            "type": "manual"
+        }
+    },
+    {
+        "id": "task_074",
+        "title": "Verify Emergency Contact Information",
+        "description": "Confirm emergency contact details are current and accessible to staff.",
+        "type": "profile",
+        "priority": "high",
+        "repeatable": true,
+        "repeatFrequency": "quarterly",
+        "estimatedTime": "5 minutes",
+        "impact": "high",
+        "category": "operations",
+        "points": 15,
+        "businessType": "all",
+        "actionType": "manual_verification",
+        "editableViaAPI": false,
+        "verification": {
+            "type": "manual"
+        }
+    },
+    {
+        "id": "task_075",
+        "title": "Validate Customer Feedback System",
+        "description": "Test your customer feedback collection process to ensure it's working effectively.",
+        "type": "engagement",
+        "priority": "medium",
+        "repeatable": true,
+        "repeatFrequency": "monthly",
+        "estimatedTime": "15 minutes",
+        "impact": "medium",
+        "category": "customer_service",
+        "points": 15,
+        "businessType": "all",
+        "actionType": "manual_verification",
+        "editableViaAPI": false,
+        "verification": {
+            "type": "manual"
+        }
+    },
+    {
+        "id": "task_076",
+        "title": "Confirm Wi-Fi Availability",
+        "description": "Verify customer Wi-Fi is operational and access details are correct.",
+        "type": "profile",
+        "priority": "low",
+        "repeatable": true,
+        "repeatFrequency": "monthly",
+        "estimatedTime": "5 minutes",
+        "impact": "low",
+        "category": "amenities",
+        "points": 10,
+        "businessType": "retail",
+        "actionType": "manual_verification",
+        "editableViaAPI": false,
+        "verification": {
+            "type": "manual"
+        }
+    },
+    {
+        "id": "task_077",
+        "title": "Verify Supplier Information",
+        "description": "Confirm key supplier and vendor contact information is up-to-date.",
+        "type": "operations",
+        "priority": "medium",
+        "repeatable": true,
+        "repeatFrequency": "quarterly",
+        "estimatedTime": "10 minutes",
+        "impact": "medium",
+        "category": "operations",
+        "points": 15,
+        "businessType": "all",
+        "actionType": "manual_verification",
+        "editableViaAPI": false,
+        "verification": {
+            "type": "manual"
+        }
+    },
+    {
+        "id": "task_078",
+        "title": "Check Equipment Maintenance Logs",
+        "description": "Verify maintenance schedules and records for essential business equipment.",
+        "type": "operations",
+        "priority": "high",
+        "repeatable": true,
+        "repeatFrequency": "monthly",
+        "estimatedTime": "15 minutes",
+        "impact": "high",
+        "category": "operations",
+        "points": 20,
+        "businessType": "all",
+        "actionType": "manual_verification",
+        "editableViaAPI": false,
+        "verification": {
+            "type": "manual"
+        }
+    },
+    {
+        "id": "task_079",
+        "title": "Validate Insurance Documentation",
+        "description": "Confirm business insurance policies are current and properly documented.",
+        "type": "operations",
+        "priority": "high",
+        "repeatable": true,
+        "repeatFrequency": "quarterly",
+        "estimatedTime": "15 minutes",
+        "impact": "high",
+        "category": "compliance",
+        "points": 20,
+        "businessType": "all",
+        "actionType": "manual_verification",
+        "editableViaAPI": false,
+        "verification": {
+            "type": "manual"
+        }
+    },
+    {
+        "id": "task_080",
+        "title": "Verify Loyalty Program Details",
+        "description": "Confirm loyalty program terms, points system, and rewards are accurately communicated.",
+        "type": "profile",
+        "priority": "medium",
+        "repeatable": true,
+        "repeatFrequency": "monthly",
+        "estimatedTime": "10 minutes",
+        "impact": "medium",
+        "category": "engagement",
+        "points": 15,
+        "businessType": "retail",
+        "actionType": "manual_verification",
+        "editableViaAPI": false,
+        "verification": {
+            "type": "manual"
+        }
+    },
+    {
+        "id": "task_081",
+        "title": "Check Customer Privacy Compliance",
+        "description": "Verify compliance with privacy policies and data protection regulations.",
+        "type": "operations",
+        "priority": "high",
+        "repeatable": true,
+        "repeatFrequency": "quarterly",
+        "estimatedTime": "20 minutes",
+        "impact": "high",
+        "category": "compliance",
+        "points": 25,
+        "businessType": "all",
+        "actionType": "manual_verification",
+        "editableViaAPI": false,
+        "verification": {
+            "type": "manual"
+        }
+    },
+    {
+        "id": "task_082",
+        "title": "Take a Selfie at Your Business",
+        "description": "Share a quick selfie from your workplace to show you're active and present.",
+        "type": "post",
+        "priority": "medium",
+        "repeatable": true,
+        "repeatFrequency": "monthly",
+        "estimatedTime": "3 minutes",
+        "impact": "medium",
+        "category": "engagement",
+        "points": 15,
+        "businessType": "all",
+        "actionType": "post",
+        "editableViaAPI": true,
+        "verification": {
+            "type": "manual"
+        }
+    },
+    {
+        "id": "task_083",
+        "title": "Share Today's Special",
+        "description": "Post a photo of today's special offer or featured item.",
+        "type": "post",
+        "priority": "medium",
+        "repeatable": true,
+        "repeatFrequency": "weekly",
+        "estimatedTime": "5 minutes",
+        "impact": "medium",
+        "category": "offers",
+        "points": 15,
+        "businessType": "all",
+        "actionType": "post",
+        "editableViaAPI": true,
+        "verification": {
+            "type": "manual"
+        }
+    },
+    {
+        "id": "task_084",
+        "title": "Capture Your Workspace",
+        "description": "Take a photo of your clean, organized workspace or counter.",
+        "type": "media",
+        "priority": "low",
+        "repeatable": true,
+        "repeatFrequency": "monthly",
+        "estimatedTime": "2 minutes",
+        "impact": "low",
+        "category": "photos",
+        "points": 10,
+        "businessType": "all",
+        "actionType": "photo",
+        "editableViaAPI": true,
+        "verification": {
+            "type": "auto"
+        }
+    },
+    {
+        "id": "task_085",
+        "title": "Post a Quick Tip",
+        "description": "Share one helpful tip related to your industry or products.",
+        "type": "post",
+        "priority": "medium",
+        "repeatable": true,
+        "repeatFrequency": "monthly",
+        "estimatedTime": "5 minutes",
+        "impact": "medium",
+        "category": "education",
+        "points": 15,
+        "businessType": "all",
+        "actionType": "post",
+        "editableViaAPI": true,
+        "verification": {
+            "type": "manual"
+        }
+    },
+    {
+        "id": "task_086",
+        "title": "Snap Your Welcome Sign",
+        "description": "Take a photo of your business entrance or welcome sign.",
+        "type": "media",
+        "priority": "low",
+        "repeatable": false,
+        "estimatedTime": "2 minutes",
+        "impact": "low",
+        "category": "photos",
+        "points": 10,
+        "businessType": "all",
+        "actionType": "photo",
+        "editableViaAPI": true,
+        "verification": {
+            "type": "auto"
+        }
+    },
+    {
+        "id": "task_087",
+        "title": "Share What You're Working On",
+        "description": "Post about a current project or task you're handling today.",
+        "type": "post",
+        "priority": "low",
+        "repeatable": true,
+        "repeatFrequency": "weekly",
+        "estimatedTime": "3 minutes",
+        "impact": "low",
+        "category": "engagement",
+        "points": 10,
+        "businessType": "all",
+        "actionType": "post",
+        "editableViaAPI": true,
+        "verification": {
+            "type": "manual"
+        }
+    },
+    {
+        "id": "task_088",
+        "title": "Photo of Happy Customer Moment",
+        "description": "Capture a genuine moment of customer satisfaction (with permission).",
+        "type": "media",
+        "priority": "medium",
+        "repeatable": true,
+        "repeatFrequency": "monthly",
+        "estimatedTime": "5 minutes",
+        "impact": "medium",
+        "category": "photos",
+        "points": 15,
+        "businessType": "all",
+        "actionType": "photo",
+        "editableViaAPI": true,
+        "verification": {
+            "type": "auto"
+        }
+    },
+    {
+        "id": "task_089",
+        "title": "Post a Fun Fact",
+        "description": "Share an interesting fact about your business or industry.",
+        "type": "post",
+        "priority": "low",
+        "repeatable": true,
+        "repeatFrequency": "monthly",
+        "estimatedTime": "3 minutes",
+        "impact": "low",
+        "category": "education",
+        "points": 10,
+        "businessType": "all",
+        "actionType": "post",
+        "editableViaAPI": true,
+        "verification": {
+            "type": "manual"
+        }
+    },
+    {
+        "id": "task_090",
+        "title": "Capture Your Product Display",
+        "description": "Take a photo of how your products are displayed to customers.",
+        "type": "media",
+        "priority": "medium",
+        "repeatable": true,
+        "repeatFrequency": "quarterly",
+        "estimatedTime": "3 minutes",
+        "impact": "medium",
+        "category": "photos",
+        "points": 15,
+        "businessType": "retail",
+        "actionType": "photo",
+        "editableViaAPI": true,
+        "verification": {
+            "type": "auto"
+        }
+    },
+    {
+        "id": "task_091",
+        "title": "Share a Behind-the-Scenes Glimpse",
+        "description": "Post about something interesting that happens behind the counter.",
+        "type": "post",
+        "priority": "medium",
+        "repeatable": true,
+        "repeatFrequency": "monthly",
+        "estimatedTime": "4 minutes",
+        "impact": "medium",
+        "category": "engagement",
+        "points": 15,
+        "businessType": "all",
+        "actionType": "post",
+        "editableViaAPI": true,
+        "verification": {
+            "type": "manual"
+        }
+    },
+    {
+        "id": "task_092",
+        "title": "Photo of Your Tools or Equipment",
+        "description": "Snap a picture of the tools you use to provide your services.",
+        "type": "media",
+        "priority": "low",
+        "repeatable": false,
+        "estimatedTime": "2 minutes",
+        "impact": "low",
+        "category": "photos",
+        "points": 10,
+        "businessType": "services",
+        "actionType": "photo",
+        "editableViaAPI": true,
+        "verification": {
+            "type": "auto"
+        }
+    },
+    {
+        "id": "task_093",
+        "title": "Post a Thank You Message",
+        "description": "Share a simple thank you note to your customers for their support.",
+        "type": "post",
+        "priority": "low",
+        "repeatable": true,
+        "repeatFrequency": "monthly",
+        "estimatedTime": "2 minutes",
+        "impact": "medium",
+        "category": "engagement",
+        "points": 10,
+        "businessType": "all",
+        "actionType": "post",
+        "editableViaAPI": true,
+        "verification": {
+            "type": "manual"
+        }
+    },
+    {
+        "id": "task_094",
+        "title": "Capture Seasonal Decorations",
+        "description": "Take a photo of any seasonal decorations in your business.",
+        "type": "media",
+        "priority": "low",
+        "repeatable": true,
+        "repeatFrequency": "seasonal",
+        "estimatedTime": "3 minutes",
+        "impact": "low",
+        "category": "photos",
+        "points": 10,
+        "businessType": "all",
+        "actionType": "photo",
+        "editableViaAPI": true,
+        "verification": {
+            "type": "auto"
+        }
+    },
+    {
+        "id": "task_095",
+        "title": "Share a Customer Compliment",
+        "description": "Post about a nice thing a customer said recently.",
+        "type": "post",
+        "priority": "medium",
+        "repeatable": true,
+        "repeatFrequency": "monthly",
+        "estimatedTime": "3 minutes",
+        "impact": "medium",
+        "category": "engagement",
+        "points": 15,
+        "businessType": "all",
+        "actionType": "post",
+        "editableViaAPI": true,
+        "verification": {
+            "type": "manual"
+        }
+    },
+    {
+        "id": "task_096",
+        "title": "Photo of Your Most Popular Item",
+        "description": "Snap a picture of your best-selling product or service in action.",
+        "type": "media",
+        "priority": "medium",
+        "repeatable": false,
+        "estimatedTime": "3 minutes",
+        "impact": "medium",
+        "category": "photos",
+        "points": 15,
+        "businessType": "all",
+        "actionType": "photo",
+        "editableViaAPI": true,
+        "verification": {
+            "type": "auto"
+        }
+    },
+    {
+        "id": "task_097",
+        "title": "Post About Local Weather",
+        "description": "Share how the current weather affects your business or services.",
+        "type": "post",
+        "priority": "low",
+        "repeatable": true,
+        "repeatFrequency": "monthly",
+        "estimatedTime": "2 minutes",
+        "impact": "low",
+        "category": "engagement",
+        "points": 10,
+        "businessType": "all",
+        "actionType": "post",
+        "editableViaAPI": true,
+        "verification": {
+            "type": "manual"
+        }
+    },
+    {
+        "id": "task_098",
+        "title": "Capture Your Packaging",
+        "description": "Take a photo of how you package products for customers.",
+        "type": "media",
+        "priority": "low",
+        "repeatable": false,
+        "estimatedTime": "2 minutes",
+        "impact": "low",
+        "category": "photos",
+        "points": 10,
+        "businessType": "retail",
+        "actionType": "photo",
+        "editableViaAPI": true,
+        "verification": {
+            "type": "auto"
+        }
+    },
+    {
+        "id": "task_099",
+        "title": "Share a Weekend Greeting",
+        "description": "Post a simple Friday or Monday message to your customers.",
+        "type": "post",
+        "priority": "low",
+        "repeatable": true,
+        "repeatFrequency": "weekly",
+        "estimatedTime": "2 minutes",
+        "impact": "low",
+        "category": "engagement",
+        "points": 10,
+        "businessType": "all",
+        "actionType": "post",
+        "editableViaAPI": true,
+        "verification": {
+            "type": "manual"
+        }
+    },
+    {
+        "id": "task_100",
+        "title": "Photo of Your Business Card",
+        "description": "Take a clear picture of your business card for online visibility.",
+        "type": "media",
+        "priority": "low",
+        "repeatable": false,
+        "estimatedTime": "2 minutes",
+        "impact": "low",
+        "category": "photos",
+        "points": 10,
+        "businessType": "all",
+        "actionType": "photo",
+        "editableViaAPI": true,
+        "verification": {
+            "type": "auto"
+        }
+    },
+    {
+        "id": "task_101",
+        "title": "Share What Makes You Unique",
+        "description": "Post one thing that sets your business apart from competitors.",
+        "type": "post",
+        "priority": "medium",
+        "repeatable": false,
+        "estimatedTime": "4 minutes",
+        "impact": "medium",
+        "category": "engagement",
+        "points": 15,
+        "businessType": "all",
+        "actionType": "post",
+        "editableViaAPI": true,
+        "verification": {
+            "type": "manual"
+        }
+    },
+    {
+        "id": "task_102",
+        "title": "Add Appointment Link",
+        "description": "Add your online appointment or booking link so customers can easily schedule a visit or service.",
+        "type": "profile",
+        "priority": "high",
+        "repeatable": true,
+        "repeatFrequency": "quarterly",
+        "estimatedTime": "5 minutes",
+        "impact": "high",
+        "category": "basic_info",
+        "points": 20,
+        "businessType": "all",
+        "actionType": "appointment",
+        "editableViaAPI": true,
+        "verification": {
+            "type": "auto"
+        },
+        "caution": "Ensure the link directs to a valid and secure booking page for a smooth customer experience."
+    },
+    {
+        "id": "task_103",
+        "title": "Add Chat Option",
+        "description": "Enable customers to contact your business instantly through WhatsApp or SMS by adding a chat link.",
+        "type": "profile",
+        "priority": "medium",
+        "repeatable": false,
+        "estimatedTime": "3 minutes",
+        "impact": "high",
+        "category": "communication",
+        "points": 15,
+        "businessType": "all",
+        "actionType": "chat",
+        "editableViaAPI": true,
+        "verification": {
+            "type": "auto"
+        },
+        "caution": "Ensure the WhatsApp link or phone number is active and correctly formatted (include country code for SMS)."
+    }
+]
