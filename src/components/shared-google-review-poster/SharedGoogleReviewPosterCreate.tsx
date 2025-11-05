@@ -5,8 +5,26 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
 import { Card, CardHeader, CardContent, CardTitle } from "@/components/ui/card"
-import { QrCode } from "lucide-react"
+import { QrCode, Save, Loader2 } from "lucide-react"
 import ReviewPosterDisplay from "./ReviewPosterDisplay"
+import LocationSelector from "./LocationSelector"
+import toast from "react-hot-toast"
+import axios from "axios"
+
+interface Location {
+  name: string
+  title: string
+  location_id: string
+  formattedAddress: string
+  displayName?: string
+  businessWebsite?: string | null
+  metadata?: {
+    placeId?: string
+    mapsUri?: string
+    newReviewUri?: string
+    hasVoiceOfMerchant?: boolean
+  }
+}
 
 export default function GoogleReviewPosterCreate() {
   const [businessName, setBusinessName] = useState("")
@@ -14,13 +32,78 @@ export default function GoogleReviewPosterCreate() {
   const [bgColor, setBgColor] = useState("#10b981")
   const [keywords, setKeywords] = useState("")
   const [showPoster, setShowPoster] = useState(false)
+  const [selectedLocation, setSelectedLocation] = useState<string>("")
+  const [selectedLocationData, setSelectedLocationData] = useState<Location | null>(null)
+  const [saving, setSaving] = useState(false)
+
+  const handleLocationChange = (locationName: string, locationData: Location) => {
+    setSelectedLocation(locationName)
+    setSelectedLocationData(locationData)
+    
+    // Set business name
+    const displayName = locationData.displayName || locationData.title || locationName.split("/").pop() || "Unknown Location"
+    setBusinessName(displayName)
+    
+    // Set review URL from metadata.newReviewUri
+    if (locationData.metadata?.newReviewUri) {
+      setReviewUrl(locationData.metadata.newReviewUri)
+    } else if (locationData.metadata?.placeId) {
+      const constructedUrl = `https://search.google.com/local/writereview?placeid=${locationData.metadata.placeId}`
+      setReviewUrl(constructedUrl)
+    }
+  }
 
   const handleGenerate = () => {
     if (!businessName || !reviewUrl) {
-      alert("Please enter your business name and Google review link.")
+      toast.error("Please enter your business name and Google review link.", {
+        duration: 3000,
+        position: "top-right",
+      })
       return
     }
     setShowPoster(true)
+  }
+
+  const handleSave = async () => {
+    if (!businessName || !reviewUrl) {
+      toast.error("Please enter your business name and Google review link.", {
+        duration: 3000,
+        position: "top-right",
+      })
+      return
+    }
+
+    try {
+      setSaving(true)
+
+      const payload = {
+        businessName,
+        reviewUrl,
+        bgColor,
+        keywords: keywords || null,
+        placeId: selectedLocationData?.metadata?.placeId || null,
+      }
+
+      const response = await axios.post("/api/review-poster", payload)
+
+      if (response.data.success) {
+        toast.success("Review poster saved successfully!", {
+          duration: 3000,
+          position: "top-right",
+        })
+        
+        // Optional: Reset form or redirect
+        // resetForm()
+      }
+    } catch (error: any) {
+      const errorMessage = error.response?.data?.error || error.message || "Failed to save poster"
+      toast.error(errorMessage, {
+        duration: 4000,
+        position: "top-right",
+      })
+    } finally {
+      setSaving(false)
+    }
   }
 
   const colorOptions = [
@@ -55,6 +138,14 @@ export default function GoogleReviewPosterCreate() {
                 <CardTitle>Customize Poster</CardTitle>
               </CardHeader>
               <CardContent className="space-y-6">
+                {/* Business Location Selection Component */}
+                <LocationSelector
+                  value={selectedLocation}
+                  onLocationChange={handleLocationChange}
+                  placeholder="Choose a location"
+                  showLabel={true}
+                />
+
                 <div className="space-y-2">
                   <label className="text-sm font-medium">Business Name</label>
                   <Input
@@ -62,6 +153,9 @@ export default function GoogleReviewPosterCreate() {
                     onChange={(e) => setBusinessName(e.target.value)}
                     placeholder="e.g. GloPar Travels"
                   />
+                  <p className="text-xs text-muted-foreground">
+                    Auto-filled from location or enter manually
+                  </p>
                 </div>
 
                 <div className="space-y-2">
@@ -72,6 +166,9 @@ export default function GoogleReviewPosterCreate() {
                     onChange={(e) => setReviewUrl(e.target.value)}
                     placeholder="https://g.page/r/your-business/review"
                   />
+                  <p className="text-xs text-muted-foreground">
+                    Auto-filled from location or paste your review link
+                  </p>
                 </div>
 
                 <div className="space-y-2">
@@ -111,9 +208,26 @@ export default function GoogleReviewPosterCreate() {
                 </div>
 
                 <div className="flex gap-2 pt-2">
-                  <Button onClick={handleGenerate} className="flex-1">
+                  <Button onClick={handleGenerate} variant="outline" className="flex-1">
                     <QrCode className="h-4 w-4 mr-2" />
-                    Generate
+                    Preview
+                  </Button>
+                  <Button 
+                    onClick={handleSave} 
+                    disabled={saving || !businessName || !reviewUrl}
+                    className="flex-1"
+                  >
+                    {saving ? (
+                      <>
+                        <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                        Saving...
+                      </>
+                    ) : (
+                      <>
+                        <Save className="h-4 w-4 mr-2" />
+                        Save
+                      </>
+                    )}
                   </Button>
                 </div>
               </CardContent>
@@ -126,6 +240,7 @@ export default function GoogleReviewPosterCreate() {
               <CardHeader>
                 <CardTitle>Preview</CardTitle>
               </CardHeader>
+                  
               <CardContent>
                 {showPoster ? (
                   <div className="flex justify-center">
@@ -142,7 +257,7 @@ export default function GoogleReviewPosterCreate() {
                       <QrCode className="h-16 w-16 opacity-40" />
                     </div>
                     <p className="text-lg font-medium mb-1">Ready to create?</p>
-                    <p className="text-sm">Fill in the details and click Generate</p>
+                    <p className="text-sm">Fill in the details and click Preview</p>
                   </div>
                 )}
               </CardContent>

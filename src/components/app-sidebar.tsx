@@ -32,7 +32,8 @@ import {
   Zap,
   Timer,
   ExternalLink,
-  Megaphone
+  Megaphone,
+  Contact
 } from "lucide-react"
 import { useUser } from "@stackframe/stack";
 import { usePathname } from "next/navigation";
@@ -76,11 +77,11 @@ const data = {
       url: "/app/reviews",
       icon: Star,
     },
-    // {
-    //   title: "Review Poster",
-    //   url: "/app/shared-google-review-poster",
-    //   icon: Megaphone,
-    // },
+    {
+      title: "Review Poster",
+      url: "/app/shared-google-review-poster",
+      icon: Megaphone,
+    },
   ],
   navClouds: [
     {
@@ -117,6 +118,11 @@ const data = {
       title: "Back to Home",
       url: "/",
       icon: ExternalLink,
+    },
+    {
+      title: "Contact Support",
+      url: "/app/contact-support",
+      icon: Contact,
     },
     {
       title: "Settings",

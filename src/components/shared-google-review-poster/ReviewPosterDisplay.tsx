@@ -9,9 +9,11 @@ interface ReviewPosterDisplayProps {
   reviewUrl: string
   bgColor: string
   keywords: string
+  fullWidth?: boolean
+
 }
 
-export default function ReviewPosterDisplay({ businessName, reviewUrl, bgColor, keywords }: ReviewPosterDisplayProps) {
+export default function ReviewPosterDisplay({ businessName, reviewUrl, bgColor, keywords,fullWidth = false }: ReviewPosterDisplayProps) {
   const posterRef = useRef<HTMLDivElement>(null)
   const [qrCode, setQrCode] = useState<string>("")
 
@@ -59,11 +61,18 @@ export default function ReviewPosterDisplay({ businessName, reviewUrl, bgColor, 
   }
 
   return (
-    <div className="w-full flex flex-col items-center">
- 
-      <div ref={posterRef} className="w-full max-w-4xl shadow-2xl rounded-2xl overflow-hidden">
-        <div className="w-full h-full flex flex-col" style={{ backgroundColor: bgColor }}>
-          {/* Top section with improved spacing */}
+    <div
+    className={"w-full flex flex-col items-center"}
+    style={{
+      backgroundColor: fullWidth ? bgColor : "#f9fafb",
+    }}
+  >
+    <div ref={posterRef} className={`w-full max-w-4xl overflow-hidden ${
+        fullWidth
+          ? "shadow-none rounded-t-3xl"
+          : "max-w-4xl shadow-2xl rounded-2xl"
+      }`}>
+     <div className="w-full h-full flex flex-col" style={{ backgroundColor: bgColor }}>
           <div className="flex-1 px-8 md:px-12 pt-12 pb-8 text-white">
             {/* Title section with better typography */}
             <div className="text-center mb-10">
@@ -168,15 +177,17 @@ export default function ReviewPosterDisplay({ businessName, reviewUrl, bgColor, 
               </div>
             )}
           </div>
-
-          <div className="bg-gradient-to-r from-gray-900 via-gray-800 to-gray-900 text-white px-8 md:px-12 py-8">
-            <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+          <div
+            className={`bg-gradient-to-r from-gray-900 via-gray-800 to-gray-900 text-white px-8 md:px-12 py-8 ${
+            fullWidth ? "rounded-t-3xl": ""}` }
+          >
+            <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4 ">
               <div>
                 <p className="font-bold text-lg md:text-xl mb-1">What would you say about us?</p>
                 <p className="text-sm opacity-75">Your feedback helps us improve</p>
               </div>
-              <div className="flex items-center gap-2 bg-white/10 px-4 py-2.5 rounded-full backdrop-blur-sm whitespace-nowrap">
-                <div className="w-6 h-6 bg-blue-500 rounded-full flex items-center justify-center flex-shrink-0">
+              <div className="flex items-center gap-2 bg-white/10 px-4 py-2.5  backdrop-blur-sm whitespace-nowrap">
+                <div className="w-6 h-6 bg-blue-500  flex items-center justify-center flex-shrink-0">
                   <span className="text-white text-xs font-bold">S</span>
                 </div>
                 <span className="text-sm font-semibold">SEO Samurai</span>
