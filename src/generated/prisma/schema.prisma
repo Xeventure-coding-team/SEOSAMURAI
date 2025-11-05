@@ -482,3 +482,22 @@ enum ScheduledPostStatus {
   CANCELLED
   EXPIRED
 }
+
+// Google review poster
+
+model GoogleReviewPoster {
+  id     String @id @default(auto()) @map("_id") @db.ObjectId
+  userId String
+
+  // Poster Details
+  businessName String
+  reviewUrl    String
+  bgColor      String   @default("#10b981")
+  keywords     String[] @default([]) // Array of keywords
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([userId])
+  @@map("google_review_posters")
+}

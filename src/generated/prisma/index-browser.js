@@ -426,6 +426,17 @@ exports.Prisma.UserTaskRefreshScalarFieldEnum = {
   locationIds: 'locationIds'
 };
 
+exports.Prisma.GoogleReviewPosterScalarFieldEnum = {
+  id: 'id',
+  userId: 'userId',
+  businessName: 'businessName',
+  reviewUrl: 'reviewUrl',
+  bgColor: 'bgColor',
+  keywords: 'keywords',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+};
+
 exports.Prisma.SortOrder = {
   asc: 'asc',
   desc: 'desc'
@@ -488,7 +499,8 @@ exports.Prisma.ModelName = {
   Milestone: 'Milestone',
   LocationMilestone: 'LocationMilestone',
   LocationAchievement: 'LocationAchievement',
-  UserTaskRefresh: 'UserTaskRefresh'
+  UserTaskRefresh: 'UserTaskRefresh',
+  GoogleReviewPoster: 'GoogleReviewPoster'
 };
 
 /**

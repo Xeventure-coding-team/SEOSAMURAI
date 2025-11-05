@@ -113,6 +113,11 @@ export type LocationAchievement = $Result.DefaultSelection<Prisma.$LocationAchie
  * 
  */
 export type UserTaskRefresh = $Result.DefaultSelection<Prisma.$UserTaskRefreshPayload>
+/**
+ * Model GoogleReviewPoster
+ * 
+ */
+export type GoogleReviewPoster = $Result.DefaultSelection<Prisma.$GoogleReviewPosterPayload>
 
 /**
  * Enums
@@ -464,6 +469,16 @@ export class PrismaClient<
     * ```
     */
   get userTaskRefresh(): Prisma.UserTaskRefreshDelegate<ExtArgs, ClientOptions>;
+
+  /**
+   * `prisma.googleReviewPoster`: Exposes CRUD operations for the **GoogleReviewPoster** model.
+    * Example usage:
+    * ```ts
+    * // Fetch zero or more GoogleReviewPosters
+    * const googleReviewPosters = await prisma.googleReviewPoster.findMany()
+    * ```
+    */
+  get googleReviewPoster(): Prisma.GoogleReviewPosterDelegate<ExtArgs, ClientOptions>;
 }
 
 export namespace Prisma {
@@ -923,7 +938,8 @@ export namespace Prisma {
     Milestone: 'Milestone',
     LocationMilestone: 'LocationMilestone',
     LocationAchievement: 'LocationAchievement',
-    UserTaskRefresh: 'UserTaskRefresh'
+    UserTaskRefresh: 'UserTaskRefresh',
+    GoogleReviewPoster: 'GoogleReviewPoster'
   };
 
   export type ModelName = (typeof ModelName)[keyof typeof ModelName]
@@ -942,7 +958,7 @@ export namespace Prisma {
       omit: GlobalOmitOptions
     }
     meta: {
-      modelProps: "version" | "locations" | "scheduledPost" | "gmbIntegration" | "competitorAnalysis" | "keywords" | "keywordRank" | "keywordTracking" | "batchUpdate" | "userSettings" | "rankAlert" | "task" | "completedTask" | "taskExclusion" | "userProgress" | "locationProgress" | "milestone" | "locationMilestone" | "locationAchievement" | "userTaskRefresh"
+      modelProps: "version" | "locations" | "scheduledPost" | "gmbIntegration" | "competitorAnalysis" | "keywords" | "keywordRank" | "keywordTracking" | "batchUpdate" | "userSettings" | "rankAlert" | "task" | "completedTask" | "taskExclusion" | "userProgress" | "locationProgress" | "milestone" | "locationMilestone" | "locationAchievement" | "userTaskRefresh" | "googleReviewPoster"
       txIsolationLevel: never
     }
     model: {
@@ -2426,6 +2442,80 @@ export namespace Prisma {
           }
         }
       }
+      GoogleReviewPoster: {
+        payload: Prisma.$GoogleReviewPosterPayload<ExtArgs>
+        fields: Prisma.GoogleReviewPosterFieldRefs
+        operations: {
+          findUnique: {
+            args: Prisma.GoogleReviewPosterFindUniqueArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$GoogleReviewPosterPayload> | null
+          }
+          findUniqueOrThrow: {
+            args: Prisma.GoogleReviewPosterFindUniqueOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$GoogleReviewPosterPayload>
+          }
+          findFirst: {
+            args: Prisma.GoogleReviewPosterFindFirstArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$GoogleReviewPosterPayload> | null
+          }
+          findFirstOrThrow: {
+            args: Prisma.GoogleReviewPosterFindFirstOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$GoogleReviewPosterPayload>
+          }
+          findMany: {
+            args: Prisma.GoogleReviewPosterFindManyArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$GoogleReviewPosterPayload>[]
+          }
+          create: {
+            args: Prisma.GoogleReviewPosterCreateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$GoogleReviewPosterPayload>
+          }
+          createMany: {
+            args: Prisma.GoogleReviewPosterCreateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          delete: {
+            args: Prisma.GoogleReviewPosterDeleteArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$GoogleReviewPosterPayload>
+          }
+          update: {
+            args: Prisma.GoogleReviewPosterUpdateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$GoogleReviewPosterPayload>
+          }
+          deleteMany: {
+            args: Prisma.GoogleReviewPosterDeleteManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          updateMany: {
+            args: Prisma.GoogleReviewPosterUpdateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          upsert: {
+            args: Prisma.GoogleReviewPosterUpsertArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$GoogleReviewPosterPayload>
+          }
+          aggregate: {
+            args: Prisma.GoogleReviewPosterAggregateArgs<ExtArgs>
+            result: $Utils.Optional<AggregateGoogleReviewPoster>
+          }
+          groupBy: {
+            args: Prisma.GoogleReviewPosterGroupByArgs<ExtArgs>
+            result: $Utils.Optional<GoogleReviewPosterGroupByOutputType>[]
+          }
+          findRaw: {
+            args: Prisma.GoogleReviewPosterFindRawArgs<ExtArgs>
+            result: JsonObject
+          }
+          aggregateRaw: {
+            args: Prisma.GoogleReviewPosterAggregateRawArgs<ExtArgs>
+            result: JsonObject
+          }
+          count: {
+            args: Prisma.GoogleReviewPosterCountArgs<ExtArgs>
+            result: $Utils.Optional<GoogleReviewPosterCountAggregateOutputType> | number
+          }
+        }
+      }
     }
   } & {
     other: {
@@ -2525,6 +2615,7 @@ export namespace Prisma {
     locationMilestone?: LocationMilestoneOmit
     locationAchievement?: LocationAchievementOmit
     userTaskRefresh?: UserTaskRefreshOmit
+    googleReviewPoster?: GoogleReviewPosterOmit
   }
 
   /* Types for Logging */
@@ -23497,6 +23588,967 @@ export namespace Prisma {
 
 
   /**
+   * Model GoogleReviewPoster
+   */
+
+  export type AggregateGoogleReviewPoster = {
+    _count: GoogleReviewPosterCountAggregateOutputType | null
+    _min: GoogleReviewPosterMinAggregateOutputType | null
+    _max: GoogleReviewPosterMaxAggregateOutputType | null
+  }
+
+  export type GoogleReviewPosterMinAggregateOutputType = {
+    id: string | null
+    userId: string | null
+    businessName: string | null
+    reviewUrl: string | null
+    bgColor: string | null
+    createdAt: Date | null
+    updatedAt: Date | null
+  }
+
+  export type GoogleReviewPosterMaxAggregateOutputType = {
+    id: string | null
+    userId: string | null
+    businessName: string | null
+    reviewUrl: string | null
+    bgColor: string | null
+    createdAt: Date | null
+    updatedAt: Date | null
+  }
+
+  export type GoogleReviewPosterCountAggregateOutputType = {
+    id: number
+    userId: number
+    businessName: number
+    reviewUrl: number
+    bgColor: number
+    keywords: number
+    createdAt: number
+    updatedAt: number
+    _all: number
+  }
+
+
+  export type GoogleReviewPosterMinAggregateInputType = {
+    id?: true
+    userId?: true
+    businessName?: true
+    reviewUrl?: true
+    bgColor?: true
+    createdAt?: true
+    updatedAt?: true
+  }
+
+  export type GoogleReviewPosterMaxAggregateInputType = {
+    id?: true
+    userId?: true
+    businessName?: true
+    reviewUrl?: true
+    bgColor?: true
+    createdAt?: true
+    updatedAt?: true
+  }
+
+  export type GoogleReviewPosterCountAggregateInputType = {
+    id?: true
+    userId?: true
+    businessName?: true
+    reviewUrl?: true
+    bgColor?: true
+    keywords?: true
+    createdAt?: true
+    updatedAt?: true
+    _all?: true
+  }
+
+  export type GoogleReviewPosterAggregateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which GoogleReviewPoster to aggregate.
+     */
+    where?: GoogleReviewPosterWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of GoogleReviewPosters to fetch.
+     */
+    orderBy?: GoogleReviewPosterOrderByWithRelationInput | GoogleReviewPosterOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the start position
+     */
+    cursor?: GoogleReviewPosterWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` GoogleReviewPosters from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` GoogleReviewPosters.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Count returned GoogleReviewPosters
+    **/
+    _count?: true | GoogleReviewPosterCountAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the minimum value
+    **/
+    _min?: GoogleReviewPosterMinAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the maximum value
+    **/
+    _max?: GoogleReviewPosterMaxAggregateInputType
+  }
+
+  export type GetGoogleReviewPosterAggregateType<T extends GoogleReviewPosterAggregateArgs> = {
+        [P in keyof T & keyof AggregateGoogleReviewPoster]: P extends '_count' | 'count'
+      ? T[P] extends true
+        ? number
+        : GetScalarType<T[P], AggregateGoogleReviewPoster[P]>
+      : GetScalarType<T[P], AggregateGoogleReviewPoster[P]>
+  }
+
+
+
+
+  export type GoogleReviewPosterGroupByArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: GoogleReviewPosterWhereInput
+    orderBy?: GoogleReviewPosterOrderByWithAggregationInput | GoogleReviewPosterOrderByWithAggregationInput[]
+    by: GoogleReviewPosterScalarFieldEnum[] | GoogleReviewPosterScalarFieldEnum
+    having?: GoogleReviewPosterScalarWhereWithAggregatesInput
+    take?: number
+    skip?: number
+    _count?: GoogleReviewPosterCountAggregateInputType | true
+    _min?: GoogleReviewPosterMinAggregateInputType
+    _max?: GoogleReviewPosterMaxAggregateInputType
+  }
+
+  export type GoogleReviewPosterGroupByOutputType = {
+    id: string
+    userId: string
+    businessName: string
+    reviewUrl: string
+    bgColor: string
+    keywords: string[]
+    createdAt: Date
+    updatedAt: Date
+    _count: GoogleReviewPosterCountAggregateOutputType | null
+    _min: GoogleReviewPosterMinAggregateOutputType | null
+    _max: GoogleReviewPosterMaxAggregateOutputType | null
+  }
+
+  type GetGoogleReviewPosterGroupByPayload<T extends GoogleReviewPosterGroupByArgs> = Prisma.PrismaPromise<
+    Array<
+      PickEnumerable<GoogleReviewPosterGroupByOutputType, T['by']> &
+        {
+          [P in ((keyof T) & (keyof GoogleReviewPosterGroupByOutputType))]: P extends '_count'
+            ? T[P] extends boolean
+              ? number
+              : GetScalarType<T[P], GoogleReviewPosterGroupByOutputType[P]>
+            : GetScalarType<T[P], GoogleReviewPosterGroupByOutputType[P]>
+        }
+      >
+    >
+
+
+  export type GoogleReviewPosterSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    userId?: boolean
+    businessName?: boolean
+    reviewUrl?: boolean
+    bgColor?: boolean
+    keywords?: boolean
+    createdAt?: boolean
+    updatedAt?: boolean
+  }, ExtArgs["result"]["googleReviewPoster"]>
+
+
+
+  export type GoogleReviewPosterSelectScalar = {
+    id?: boolean
+    userId?: boolean
+    businessName?: boolean
+    reviewUrl?: boolean
+    bgColor?: boolean
+    keywords?: boolean
+    createdAt?: boolean
+    updatedAt?: boolean
+  }
+
+  export type GoogleReviewPosterOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "userId" | "businessName" | "reviewUrl" | "bgColor" | "keywords" | "createdAt" | "updatedAt", ExtArgs["result"]["googleReviewPoster"]>
+
+  export type $GoogleReviewPosterPayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    name: "GoogleReviewPoster"
+    objects: {}
+    scalars: $Extensions.GetPayloadResult<{
+      id: string
+      userId: string
+      businessName: string
+      reviewUrl: string
+      bgColor: string
+      keywords: string[]
+      createdAt: Date
+      updatedAt: Date
+    }, ExtArgs["result"]["googleReviewPoster"]>
+    composites: {}
+  }
+
+  type GoogleReviewPosterGetPayload<S extends boolean | null | undefined | GoogleReviewPosterDefaultArgs> = $Result.GetResult<Prisma.$GoogleReviewPosterPayload, S>
+
+  type GoogleReviewPosterCountArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> =
+    Omit<GoogleReviewPosterFindManyArgs, 'select' | 'include' | 'distinct' | 'omit'> & {
+      select?: GoogleReviewPosterCountAggregateInputType | true
+    }
+
+  export interface GoogleReviewPosterDelegate<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> {
+    [K: symbol]: { types: Prisma.TypeMap<ExtArgs>['model']['GoogleReviewPoster'], meta: { name: 'GoogleReviewPoster' } }
+    /**
+     * Find zero or one GoogleReviewPoster that matches the filter.
+     * @param {GoogleReviewPosterFindUniqueArgs} args - Arguments to find a GoogleReviewPoster
+     * @example
+     * // Get one GoogleReviewPoster
+     * const googleReviewPoster = await prisma.googleReviewPoster.findUnique({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUnique<T extends GoogleReviewPosterFindUniqueArgs>(args: SelectSubset<T, GoogleReviewPosterFindUniqueArgs<ExtArgs>>): Prisma__GoogleReviewPosterClient<$Result.GetResult<Prisma.$GoogleReviewPosterPayload<ExtArgs>, T, "findUnique", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find one GoogleReviewPoster that matches the filter or throw an error with `error.code='P2025'`
+     * if no matches were found.
+     * @param {GoogleReviewPosterFindUniqueOrThrowArgs} args - Arguments to find a GoogleReviewPoster
+     * @example
+     * // Get one GoogleReviewPoster
+     * const googleReviewPoster = await prisma.googleReviewPoster.findUniqueOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUniqueOrThrow<T extends GoogleReviewPosterFindUniqueOrThrowArgs>(args: SelectSubset<T, GoogleReviewPosterFindUniqueOrThrowArgs<ExtArgs>>): Prisma__GoogleReviewPosterClient<$Result.GetResult<Prisma.$GoogleReviewPosterPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find the first GoogleReviewPoster that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {GoogleReviewPosterFindFirstArgs} args - Arguments to find a GoogleReviewPoster
+     * @example
+     * // Get one GoogleReviewPoster
+     * const googleReviewPoster = await prisma.googleReviewPoster.findFirst({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirst<T extends GoogleReviewPosterFindFirstArgs>(args?: SelectSubset<T, GoogleReviewPosterFindFirstArgs<ExtArgs>>): Prisma__GoogleReviewPosterClient<$Result.GetResult<Prisma.$GoogleReviewPosterPayload<ExtArgs>, T, "findFirst", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find the first GoogleReviewPoster that matches the filter or
+     * throw `PrismaKnownClientError` with `P2025` code if no matches were found.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {GoogleReviewPosterFindFirstOrThrowArgs} args - Arguments to find a GoogleReviewPoster
+     * @example
+     * // Get one GoogleReviewPoster
+     * const googleReviewPoster = await prisma.googleReviewPoster.findFirstOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirstOrThrow<T extends GoogleReviewPosterFindFirstOrThrowArgs>(args?: SelectSubset<T, GoogleReviewPosterFindFirstOrThrowArgs<ExtArgs>>): Prisma__GoogleReviewPosterClient<$Result.GetResult<Prisma.$GoogleReviewPosterPayload<ExtArgs>, T, "findFirstOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find zero or more GoogleReviewPosters that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {GoogleReviewPosterFindManyArgs} args - Arguments to filter and select certain fields only.
+     * @example
+     * // Get all GoogleReviewPosters
+     * const googleReviewPosters = await prisma.googleReviewPoster.findMany()
+     * 
+     * // Get first 10 GoogleReviewPosters
+     * const googleReviewPosters = await prisma.googleReviewPoster.findMany({ take: 10 })
+     * 
+     * // Only select the `id`
+     * const googleReviewPosterWithIdOnly = await prisma.googleReviewPoster.findMany({ select: { id: true } })
+     * 
+     */
+    findMany<T extends GoogleReviewPosterFindManyArgs>(args?: SelectSubset<T, GoogleReviewPosterFindManyArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$GoogleReviewPosterPayload<ExtArgs>, T, "findMany", GlobalOmitOptions>>
+
+    /**
+     * Create a GoogleReviewPoster.
+     * @param {GoogleReviewPosterCreateArgs} args - Arguments to create a GoogleReviewPoster.
+     * @example
+     * // Create one GoogleReviewPoster
+     * const GoogleReviewPoster = await prisma.googleReviewPoster.create({
+     *   data: {
+     *     // ... data to create a GoogleReviewPoster
+     *   }
+     * })
+     * 
+     */
+    create<T extends GoogleReviewPosterCreateArgs>(args: SelectSubset<T, GoogleReviewPosterCreateArgs<ExtArgs>>): Prisma__GoogleReviewPosterClient<$Result.GetResult<Prisma.$GoogleReviewPosterPayload<ExtArgs>, T, "create", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Create many GoogleReviewPosters.
+     * @param {GoogleReviewPosterCreateManyArgs} args - Arguments to create many GoogleReviewPosters.
+     * @example
+     * // Create many GoogleReviewPosters
+     * const googleReviewPoster = await prisma.googleReviewPoster.createMany({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     *     
+     */
+    createMany<T extends GoogleReviewPosterCreateManyArgs>(args?: SelectSubset<T, GoogleReviewPosterCreateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Delete a GoogleReviewPoster.
+     * @param {GoogleReviewPosterDeleteArgs} args - Arguments to delete one GoogleReviewPoster.
+     * @example
+     * // Delete one GoogleReviewPoster
+     * const GoogleReviewPoster = await prisma.googleReviewPoster.delete({
+     *   where: {
+     *     // ... filter to delete one GoogleReviewPoster
+     *   }
+     * })
+     * 
+     */
+    delete<T extends GoogleReviewPosterDeleteArgs>(args: SelectSubset<T, GoogleReviewPosterDeleteArgs<ExtArgs>>): Prisma__GoogleReviewPosterClient<$Result.GetResult<Prisma.$GoogleReviewPosterPayload<ExtArgs>, T, "delete", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Update one GoogleReviewPoster.
+     * @param {GoogleReviewPosterUpdateArgs} args - Arguments to update one GoogleReviewPoster.
+     * @example
+     * // Update one GoogleReviewPoster
+     * const googleReviewPoster = await prisma.googleReviewPoster.update({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    update<T extends GoogleReviewPosterUpdateArgs>(args: SelectSubset<T, GoogleReviewPosterUpdateArgs<ExtArgs>>): Prisma__GoogleReviewPosterClient<$Result.GetResult<Prisma.$GoogleReviewPosterPayload<ExtArgs>, T, "update", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Delete zero or more GoogleReviewPosters.
+     * @param {GoogleReviewPosterDeleteManyArgs} args - Arguments to filter GoogleReviewPosters to delete.
+     * @example
+     * // Delete a few GoogleReviewPosters
+     * const { count } = await prisma.googleReviewPoster.deleteMany({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     * 
+     */
+    deleteMany<T extends GoogleReviewPosterDeleteManyArgs>(args?: SelectSubset<T, GoogleReviewPosterDeleteManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Update zero or more GoogleReviewPosters.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {GoogleReviewPosterUpdateManyArgs} args - Arguments to update one or more rows.
+     * @example
+     * // Update many GoogleReviewPosters
+     * const googleReviewPoster = await prisma.googleReviewPoster.updateMany({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    updateMany<T extends GoogleReviewPosterUpdateManyArgs>(args: SelectSubset<T, GoogleReviewPosterUpdateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Create or update one GoogleReviewPoster.
+     * @param {GoogleReviewPosterUpsertArgs} args - Arguments to update or create a GoogleReviewPoster.
+     * @example
+     * // Update or create a GoogleReviewPoster
+     * const googleReviewPoster = await prisma.googleReviewPoster.upsert({
+     *   create: {
+     *     // ... data to create a GoogleReviewPoster
+     *   },
+     *   update: {
+     *     // ... in case it already exists, update
+     *   },
+     *   where: {
+     *     // ... the filter for the GoogleReviewPoster we want to update
+     *   }
+     * })
+     */
+    upsert<T extends GoogleReviewPosterUpsertArgs>(args: SelectSubset<T, GoogleReviewPosterUpsertArgs<ExtArgs>>): Prisma__GoogleReviewPosterClient<$Result.GetResult<Prisma.$GoogleReviewPosterPayload<ExtArgs>, T, "upsert", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find zero or more GoogleReviewPosters that matches the filter.
+     * @param {GoogleReviewPosterFindRawArgs} args - Select which filters you would like to apply.
+     * @example
+     * const googleReviewPoster = await prisma.googleReviewPoster.findRaw({
+     *   filter: { age: { $gt: 25 } }
+     * })
+     */
+    findRaw(args?: GoogleReviewPosterFindRawArgs): Prisma.PrismaPromise<JsonObject>
+
+    /**
+     * Perform aggregation operations on a GoogleReviewPoster.
+     * @param {GoogleReviewPosterAggregateRawArgs} args - Select which aggregations you would like to apply.
+     * @example
+     * const googleReviewPoster = await prisma.googleReviewPoster.aggregateRaw({
+     *   pipeline: [
+     *     { $match: { status: "registered" } },
+     *     { $group: { _id: "$country", total: { $sum: 1 } } }
+     *   ]
+     * })
+     */
+    aggregateRaw(args?: GoogleReviewPosterAggregateRawArgs): Prisma.PrismaPromise<JsonObject>
+
+
+    /**
+     * Count the number of GoogleReviewPosters.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {GoogleReviewPosterCountArgs} args - Arguments to filter GoogleReviewPosters to count.
+     * @example
+     * // Count the number of GoogleReviewPosters
+     * const count = await prisma.googleReviewPoster.count({
+     *   where: {
+     *     // ... the filter for the GoogleReviewPosters we want to count
+     *   }
+     * })
+    **/
+    count<T extends GoogleReviewPosterCountArgs>(
+      args?: Subset<T, GoogleReviewPosterCountArgs>,
+    ): Prisma.PrismaPromise<
+      T extends $Utils.Record<'select', any>
+        ? T['select'] extends true
+          ? number
+          : GetScalarType<T['select'], GoogleReviewPosterCountAggregateOutputType>
+        : number
+    >
+
+    /**
+     * Allows you to perform aggregations operations on a GoogleReviewPoster.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {GoogleReviewPosterAggregateArgs} args - Select which aggregations you would like to apply and on what fields.
+     * @example
+     * // Ordered by age ascending
+     * // Where email contains prisma.io
+     * // Limited to the 10 users
+     * const aggregations = await prisma.user.aggregate({
+     *   _avg: {
+     *     age: true,
+     *   },
+     *   where: {
+     *     email: {
+     *       contains: "prisma.io",
+     *     },
+     *   },
+     *   orderBy: {
+     *     age: "asc",
+     *   },
+     *   take: 10,
+     * })
+    **/
+    aggregate<T extends GoogleReviewPosterAggregateArgs>(args: Subset<T, GoogleReviewPosterAggregateArgs>): Prisma.PrismaPromise<GetGoogleReviewPosterAggregateType<T>>
+
+    /**
+     * Group by GoogleReviewPoster.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {GoogleReviewPosterGroupByArgs} args - Group by arguments.
+     * @example
+     * // Group by city, order by createdAt, get count
+     * const result = await prisma.user.groupBy({
+     *   by: ['city', 'createdAt'],
+     *   orderBy: {
+     *     createdAt: true
+     *   },
+     *   _count: {
+     *     _all: true
+     *   },
+     * })
+     * 
+    **/
+    groupBy<
+      T extends GoogleReviewPosterGroupByArgs,
+      HasSelectOrTake extends Or<
+        Extends<'skip', Keys<T>>,
+        Extends<'take', Keys<T>>
+      >,
+      OrderByArg extends True extends HasSelectOrTake
+        ? { orderBy: GoogleReviewPosterGroupByArgs['orderBy'] }
+        : { orderBy?: GoogleReviewPosterGroupByArgs['orderBy'] },
+      OrderFields extends ExcludeUnderscoreKeys<Keys<MaybeTupleToUnion<T['orderBy']>>>,
+      ByFields extends MaybeTupleToUnion<T['by']>,
+      ByValid extends Has<ByFields, OrderFields>,
+      HavingFields extends GetHavingFields<T['having']>,
+      HavingValid extends Has<ByFields, HavingFields>,
+      ByEmpty extends T['by'] extends never[] ? True : False,
+      InputErrors extends ByEmpty extends True
+      ? `Error: "by" must not be empty.`
+      : HavingValid extends False
+      ? {
+          [P in HavingFields]: P extends ByFields
+            ? never
+            : P extends string
+            ? `Error: Field "${P}" used in "having" needs to be provided in "by".`
+            : [
+                Error,
+                'Field ',
+                P,
+                ` in "having" needs to be provided in "by"`,
+              ]
+        }[HavingFields]
+      : 'take' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "take", you also need to provide "orderBy"'
+      : 'skip' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "skip", you also need to provide "orderBy"'
+      : ByValid extends True
+      ? {}
+      : {
+          [P in OrderFields]: P extends ByFields
+            ? never
+            : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+        }[OrderFields]
+    >(args: SubsetIntersection<T, GoogleReviewPosterGroupByArgs, OrderByArg> & InputErrors): {} extends InputErrors ? GetGoogleReviewPosterGroupByPayload<T> : Prisma.PrismaPromise<InputErrors>
+  /**
+   * Fields of the GoogleReviewPoster model
+   */
+  readonly fields: GoogleReviewPosterFieldRefs;
+  }
+
+  /**
+   * The delegate class that acts as a "Promise-like" for GoogleReviewPoster.
+   * Why is this prefixed with `Prisma__`?
+   * Because we want to prevent naming conflicts as mentioned in
+   * https://github.com/prisma/prisma-client-js/issues/707
+   */
+  export interface Prisma__GoogleReviewPosterClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
+    readonly [Symbol.toStringTag]: "PrismaPromise"
+    /**
+     * Attaches callbacks for the resolution and/or rejection of the Promise.
+     * @param onfulfilled The callback to execute when the Promise is resolved.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of which ever callback is executed.
+     */
+    then<TResult1 = T, TResult2 = never>(onfulfilled?: ((value: T) => TResult1 | PromiseLike<TResult1>) | undefined | null, onrejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>) | undefined | null): $Utils.JsPromise<TResult1 | TResult2>
+    /**
+     * Attaches a callback for only the rejection of the Promise.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of the callback.
+     */
+    catch<TResult = never>(onrejected?: ((reason: any) => TResult | PromiseLike<TResult>) | undefined | null): $Utils.JsPromise<T | TResult>
+    /**
+     * Attaches a callback that is invoked when the Promise is settled (fulfilled or rejected). The
+     * resolved value cannot be modified from the callback.
+     * @param onfinally The callback to execute when the Promise is settled (fulfilled or rejected).
+     * @returns A Promise for the completion of the callback.
+     */
+    finally(onfinally?: (() => void) | undefined | null): $Utils.JsPromise<T>
+  }
+
+
+
+
+  /**
+   * Fields of the GoogleReviewPoster model
+   */
+  interface GoogleReviewPosterFieldRefs {
+    readonly id: FieldRef<"GoogleReviewPoster", 'String'>
+    readonly userId: FieldRef<"GoogleReviewPoster", 'String'>
+    readonly businessName: FieldRef<"GoogleReviewPoster", 'String'>
+    readonly reviewUrl: FieldRef<"GoogleReviewPoster", 'String'>
+    readonly bgColor: FieldRef<"GoogleReviewPoster", 'String'>
+    readonly keywords: FieldRef<"GoogleReviewPoster", 'String[]'>
+    readonly createdAt: FieldRef<"GoogleReviewPoster", 'DateTime'>
+    readonly updatedAt: FieldRef<"GoogleReviewPoster", 'DateTime'>
+  }
+    
+
+  // Custom InputTypes
+  /**
+   * GoogleReviewPoster findUnique
+   */
+  export type GoogleReviewPosterFindUniqueArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the GoogleReviewPoster
+     */
+    select?: GoogleReviewPosterSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the GoogleReviewPoster
+     */
+    omit?: GoogleReviewPosterOmit<ExtArgs> | null
+    /**
+     * Filter, which GoogleReviewPoster to fetch.
+     */
+    where: GoogleReviewPosterWhereUniqueInput
+  }
+
+  /**
+   * GoogleReviewPoster findUniqueOrThrow
+   */
+  export type GoogleReviewPosterFindUniqueOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the GoogleReviewPoster
+     */
+    select?: GoogleReviewPosterSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the GoogleReviewPoster
+     */
+    omit?: GoogleReviewPosterOmit<ExtArgs> | null
+    /**
+     * Filter, which GoogleReviewPoster to fetch.
+     */
+    where: GoogleReviewPosterWhereUniqueInput
+  }
+
+  /**
+   * GoogleReviewPoster findFirst
+   */
+  export type GoogleReviewPosterFindFirstArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the GoogleReviewPoster
+     */
+    select?: GoogleReviewPosterSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the GoogleReviewPoster
+     */
+    omit?: GoogleReviewPosterOmit<ExtArgs> | null
+    /**
+     * Filter, which GoogleReviewPoster to fetch.
+     */
+    where?: GoogleReviewPosterWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of GoogleReviewPosters to fetch.
+     */
+    orderBy?: GoogleReviewPosterOrderByWithRelationInput | GoogleReviewPosterOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for GoogleReviewPosters.
+     */
+    cursor?: GoogleReviewPosterWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` GoogleReviewPosters from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` GoogleReviewPosters.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of GoogleReviewPosters.
+     */
+    distinct?: GoogleReviewPosterScalarFieldEnum | GoogleReviewPosterScalarFieldEnum[]
+  }
+
+  /**
+   * GoogleReviewPoster findFirstOrThrow
+   */
+  export type GoogleReviewPosterFindFirstOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the GoogleReviewPoster
+     */
+    select?: GoogleReviewPosterSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the GoogleReviewPoster
+     */
+    omit?: GoogleReviewPosterOmit<ExtArgs> | null
+    /**
+     * Filter, which GoogleReviewPoster to fetch.
+     */
+    where?: GoogleReviewPosterWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of GoogleReviewPosters to fetch.
+     */
+    orderBy?: GoogleReviewPosterOrderByWithRelationInput | GoogleReviewPosterOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for GoogleReviewPosters.
+     */
+    cursor?: GoogleReviewPosterWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` GoogleReviewPosters from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` GoogleReviewPosters.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of GoogleReviewPosters.
+     */
+    distinct?: GoogleReviewPosterScalarFieldEnum | GoogleReviewPosterScalarFieldEnum[]
+  }
+
+  /**
+   * GoogleReviewPoster findMany
+   */
+  export type GoogleReviewPosterFindManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the GoogleReviewPoster
+     */
+    select?: GoogleReviewPosterSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the GoogleReviewPoster
+     */
+    omit?: GoogleReviewPosterOmit<ExtArgs> | null
+    /**
+     * Filter, which GoogleReviewPosters to fetch.
+     */
+    where?: GoogleReviewPosterWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of GoogleReviewPosters to fetch.
+     */
+    orderBy?: GoogleReviewPosterOrderByWithRelationInput | GoogleReviewPosterOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for listing GoogleReviewPosters.
+     */
+    cursor?: GoogleReviewPosterWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` GoogleReviewPosters from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` GoogleReviewPosters.
+     */
+    skip?: number
+    distinct?: GoogleReviewPosterScalarFieldEnum | GoogleReviewPosterScalarFieldEnum[]
+  }
+
+  /**
+   * GoogleReviewPoster create
+   */
+  export type GoogleReviewPosterCreateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the GoogleReviewPoster
+     */
+    select?: GoogleReviewPosterSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the GoogleReviewPoster
+     */
+    omit?: GoogleReviewPosterOmit<ExtArgs> | null
+    /**
+     * The data needed to create a GoogleReviewPoster.
+     */
+    data: XOR<GoogleReviewPosterCreateInput, GoogleReviewPosterUncheckedCreateInput>
+  }
+
+  /**
+   * GoogleReviewPoster createMany
+   */
+  export type GoogleReviewPosterCreateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to create many GoogleReviewPosters.
+     */
+    data: GoogleReviewPosterCreateManyInput | GoogleReviewPosterCreateManyInput[]
+  }
+
+  /**
+   * GoogleReviewPoster update
+   */
+  export type GoogleReviewPosterUpdateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the GoogleReviewPoster
+     */
+    select?: GoogleReviewPosterSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the GoogleReviewPoster
+     */
+    omit?: GoogleReviewPosterOmit<ExtArgs> | null
+    /**
+     * The data needed to update a GoogleReviewPoster.
+     */
+    data: XOR<GoogleReviewPosterUpdateInput, GoogleReviewPosterUncheckedUpdateInput>
+    /**
+     * Choose, which GoogleReviewPoster to update.
+     */
+    where: GoogleReviewPosterWhereUniqueInput
+  }
+
+  /**
+   * GoogleReviewPoster updateMany
+   */
+  export type GoogleReviewPosterUpdateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to update GoogleReviewPosters.
+     */
+    data: XOR<GoogleReviewPosterUpdateManyMutationInput, GoogleReviewPosterUncheckedUpdateManyInput>
+    /**
+     * Filter which GoogleReviewPosters to update
+     */
+    where?: GoogleReviewPosterWhereInput
+    /**
+     * Limit how many GoogleReviewPosters to update.
+     */
+    limit?: number
+  }
+
+  /**
+   * GoogleReviewPoster upsert
+   */
+  export type GoogleReviewPosterUpsertArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the GoogleReviewPoster
+     */
+    select?: GoogleReviewPosterSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the GoogleReviewPoster
+     */
+    omit?: GoogleReviewPosterOmit<ExtArgs> | null
+    /**
+     * The filter to search for the GoogleReviewPoster to update in case it exists.
+     */
+    where: GoogleReviewPosterWhereUniqueInput
+    /**
+     * In case the GoogleReviewPoster found by the `where` argument doesn't exist, create a new GoogleReviewPoster with this data.
+     */
+    create: XOR<GoogleReviewPosterCreateInput, GoogleReviewPosterUncheckedCreateInput>
+    /**
+     * In case the GoogleReviewPoster was found with the provided `where` argument, update it with this data.
+     */
+    update: XOR<GoogleReviewPosterUpdateInput, GoogleReviewPosterUncheckedUpdateInput>
+  }
+
+  /**
+   * GoogleReviewPoster delete
+   */
+  export type GoogleReviewPosterDeleteArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the GoogleReviewPoster
+     */
+    select?: GoogleReviewPosterSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the GoogleReviewPoster
+     */
+    omit?: GoogleReviewPosterOmit<ExtArgs> | null
+    /**
+     * Filter which GoogleReviewPoster to delete.
+     */
+    where: GoogleReviewPosterWhereUniqueInput
+  }
+
+  /**
+   * GoogleReviewPoster deleteMany
+   */
+  export type GoogleReviewPosterDeleteManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which GoogleReviewPosters to delete
+     */
+    where?: GoogleReviewPosterWhereInput
+    /**
+     * Limit how many GoogleReviewPosters to delete.
+     */
+    limit?: number
+  }
+
+  /**
+   * GoogleReviewPoster findRaw
+   */
+  export type GoogleReviewPosterFindRawArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The query predicate filter. If unspecified, then all documents in the collection will match the predicate. ${@link https://docs.mongodb.com/manual/reference/operator/query MongoDB Docs}.
+     */
+    filter?: InputJsonValue
+    /**
+     * Additional options to pass to the `find` command ${@link https://docs.mongodb.com/manual/reference/command/find/#command-fields MongoDB Docs}.
+     */
+    options?: InputJsonValue
+  }
+
+  /**
+   * GoogleReviewPoster aggregateRaw
+   */
+  export type GoogleReviewPosterAggregateRawArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * An array of aggregation stages to process and transform the document stream via the aggregation pipeline. ${@link https://docs.mongodb.com/manual/reference/operator/aggregation-pipeline MongoDB Docs}.
+     */
+    pipeline?: InputJsonValue[]
+    /**
+     * Additional options to pass to the `aggregate` command ${@link https://docs.mongodb.com/manual/reference/command/aggregate/#command-fields MongoDB Docs}.
+     */
+    options?: InputJsonValue
+  }
+
+  /**
+   * GoogleReviewPoster without action
+   */
+  export type GoogleReviewPosterDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the GoogleReviewPoster
+     */
+    select?: GoogleReviewPosterSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the GoogleReviewPoster
+     */
+    omit?: GoogleReviewPosterOmit<ExtArgs> | null
+  }
+
+
+  /**
    * Enums
    */
 
@@ -23871,6 +24923,20 @@ export namespace Prisma {
   };
 
   export type UserTaskRefreshScalarFieldEnum = (typeof UserTaskRefreshScalarFieldEnum)[keyof typeof UserTaskRefreshScalarFieldEnum]
+
+
+  export const GoogleReviewPosterScalarFieldEnum: {
+    id: 'id',
+    userId: 'userId',
+    businessName: 'businessName',
+    reviewUrl: 'reviewUrl',
+    bgColor: 'bgColor',
+    keywords: 'keywords',
+    createdAt: 'createdAt',
+    updatedAt: 'updatedAt'
+  };
+
+  export type GoogleReviewPosterScalarFieldEnum = (typeof GoogleReviewPosterScalarFieldEnum)[keyof typeof GoogleReviewPosterScalarFieldEnum]
 
 
   export const SortOrder: {
@@ -25874,6 +26940,73 @@ export namespace Prisma {
     triggeredBy?: StringNullableWithAggregatesFilter<"UserTaskRefresh"> | string | null
     totalTasks?: IntNullableWithAggregatesFilter<"UserTaskRefresh"> | number | null
     locationIds?: StringNullableListFilter<"UserTaskRefresh">
+  }
+
+  export type GoogleReviewPosterWhereInput = {
+    AND?: GoogleReviewPosterWhereInput | GoogleReviewPosterWhereInput[]
+    OR?: GoogleReviewPosterWhereInput[]
+    NOT?: GoogleReviewPosterWhereInput | GoogleReviewPosterWhereInput[]
+    id?: StringFilter<"GoogleReviewPoster"> | string
+    userId?: StringFilter<"GoogleReviewPoster"> | string
+    businessName?: StringFilter<"GoogleReviewPoster"> | string
+    reviewUrl?: StringFilter<"GoogleReviewPoster"> | string
+    bgColor?: StringFilter<"GoogleReviewPoster"> | string
+    keywords?: StringNullableListFilter<"GoogleReviewPoster">
+    createdAt?: DateTimeFilter<"GoogleReviewPoster"> | Date | string
+    updatedAt?: DateTimeFilter<"GoogleReviewPoster"> | Date | string
+  }
+
+  export type GoogleReviewPosterOrderByWithRelationInput = {
+    id?: SortOrder
+    userId?: SortOrder
+    businessName?: SortOrder
+    reviewUrl?: SortOrder
+    bgColor?: SortOrder
+    keywords?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+  }
+
+  export type GoogleReviewPosterWhereUniqueInput = Prisma.AtLeast<{
+    id?: string
+    AND?: GoogleReviewPosterWhereInput | GoogleReviewPosterWhereInput[]
+    OR?: GoogleReviewPosterWhereInput[]
+    NOT?: GoogleReviewPosterWhereInput | GoogleReviewPosterWhereInput[]
+    userId?: StringFilter<"GoogleReviewPoster"> | string
+    businessName?: StringFilter<"GoogleReviewPoster"> | string
+    reviewUrl?: StringFilter<"GoogleReviewPoster"> | string
+    bgColor?: StringFilter<"GoogleReviewPoster"> | string
+    keywords?: StringNullableListFilter<"GoogleReviewPoster">
+    createdAt?: DateTimeFilter<"GoogleReviewPoster"> | Date | string
+    updatedAt?: DateTimeFilter<"GoogleReviewPoster"> | Date | string
+  }, "id">
+
+  export type GoogleReviewPosterOrderByWithAggregationInput = {
+    id?: SortOrder
+    userId?: SortOrder
+    businessName?: SortOrder
+    reviewUrl?: SortOrder
+    bgColor?: SortOrder
+    keywords?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+    _count?: GoogleReviewPosterCountOrderByAggregateInput
+    _max?: GoogleReviewPosterMaxOrderByAggregateInput
+    _min?: GoogleReviewPosterMinOrderByAggregateInput
+  }
+
+  export type GoogleReviewPosterScalarWhereWithAggregatesInput = {
+    AND?: GoogleReviewPosterScalarWhereWithAggregatesInput | GoogleReviewPosterScalarWhereWithAggregatesInput[]
+    OR?: GoogleReviewPosterScalarWhereWithAggregatesInput[]
+    NOT?: GoogleReviewPosterScalarWhereWithAggregatesInput | GoogleReviewPosterScalarWhereWithAggregatesInput[]
+    id?: StringWithAggregatesFilter<"GoogleReviewPoster"> | string
+    userId?: StringWithAggregatesFilter<"GoogleReviewPoster"> | string
+    businessName?: StringWithAggregatesFilter<"GoogleReviewPoster"> | string
+    reviewUrl?: StringWithAggregatesFilter<"GoogleReviewPoster"> | string
+    bgColor?: StringWithAggregatesFilter<"GoogleReviewPoster"> | string
+    keywords?: StringNullableListFilter<"GoogleReviewPoster">
+    createdAt?: DateTimeWithAggregatesFilter<"GoogleReviewPoster"> | Date | string
+    updatedAt?: DateTimeWithAggregatesFilter<"GoogleReviewPoster"> | Date | string
   }
 
   export type VersionCreateInput = {
@@ -27987,6 +29120,79 @@ export namespace Prisma {
     locationIds?: UserTaskRefreshUpdatelocationIdsInput | string[]
   }
 
+  export type GoogleReviewPosterCreateInput = {
+    id?: string
+    userId: string
+    businessName: string
+    reviewUrl: string
+    bgColor?: string
+    keywords?: GoogleReviewPosterCreatekeywordsInput | string[]
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
+  export type GoogleReviewPosterUncheckedCreateInput = {
+    id?: string
+    userId: string
+    businessName: string
+    reviewUrl: string
+    bgColor?: string
+    keywords?: GoogleReviewPosterCreatekeywordsInput | string[]
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
+  export type GoogleReviewPosterUpdateInput = {
+    userId?: StringFieldUpdateOperationsInput | string
+    businessName?: StringFieldUpdateOperationsInput | string
+    reviewUrl?: StringFieldUpdateOperationsInput | string
+    bgColor?: StringFieldUpdateOperationsInput | string
+    keywords?: GoogleReviewPosterUpdatekeywordsInput | string[]
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type GoogleReviewPosterUncheckedUpdateInput = {
+    userId?: StringFieldUpdateOperationsInput | string
+    businessName?: StringFieldUpdateOperationsInput | string
+    reviewUrl?: StringFieldUpdateOperationsInput | string
+    bgColor?: StringFieldUpdateOperationsInput | string
+    keywords?: GoogleReviewPosterUpdatekeywordsInput | string[]
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type GoogleReviewPosterCreateManyInput = {
+    id?: string
+    userId: string
+    businessName: string
+    reviewUrl: string
+    bgColor?: string
+    keywords?: GoogleReviewPosterCreatekeywordsInput | string[]
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
+  export type GoogleReviewPosterUpdateManyMutationInput = {
+    userId?: StringFieldUpdateOperationsInput | string
+    businessName?: StringFieldUpdateOperationsInput | string
+    reviewUrl?: StringFieldUpdateOperationsInput | string
+    bgColor?: StringFieldUpdateOperationsInput | string
+    keywords?: GoogleReviewPosterUpdatekeywordsInput | string[]
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type GoogleReviewPosterUncheckedUpdateManyInput = {
+    userId?: StringFieldUpdateOperationsInput | string
+    businessName?: StringFieldUpdateOperationsInput | string
+    reviewUrl?: StringFieldUpdateOperationsInput | string
+    bgColor?: StringFieldUpdateOperationsInput | string
+    keywords?: GoogleReviewPosterUpdatekeywordsInput | string[]
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
   export type StringFilter<$PrismaModel = never> = {
     equals?: string | StringFieldRefInput<$PrismaModel>
     in?: string[] | ListStringFieldRefInput<$PrismaModel>
@@ -29464,6 +30670,37 @@ export namespace Prisma {
     totalTasks?: SortOrder
   }
 
+  export type GoogleReviewPosterCountOrderByAggregateInput = {
+    id?: SortOrder
+    userId?: SortOrder
+    businessName?: SortOrder
+    reviewUrl?: SortOrder
+    bgColor?: SortOrder
+    keywords?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+  }
+
+  export type GoogleReviewPosterMaxOrderByAggregateInput = {
+    id?: SortOrder
+    userId?: SortOrder
+    businessName?: SortOrder
+    reviewUrl?: SortOrder
+    bgColor?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+  }
+
+  export type GoogleReviewPosterMinOrderByAggregateInput = {
+    id?: SortOrder
+    userId?: SortOrder
+    businessName?: SortOrder
+    reviewUrl?: SortOrder
+    bgColor?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+  }
+
   export type StringFieldUpdateOperationsInput = {
     set?: string
   }
@@ -29540,6 +30777,15 @@ export namespace Prisma {
   }
 
   export type UserTaskRefreshUpdatelocationIdsInput = {
+    set?: string[]
+    push?: string | string[]
+  }
+
+  export type GoogleReviewPosterCreatekeywordsInput = {
+    set: string[]
+  }
+
+  export type GoogleReviewPosterUpdatekeywordsInput = {
     set?: string[]
     push?: string | string[]
   }
