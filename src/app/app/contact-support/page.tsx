@@ -25,7 +25,7 @@ const categories = [
   'Other requests'
 ]
 
-const Page = () => {
+function Page ()  {
   const [formData, setFormData] = useState({
     category: '',
     email: '',

@@ -33,7 +33,8 @@ import {
   Timer,
   ExternalLink,
   Megaphone,
-  Contact
+  Contact,
+  ScanSearch
 } from "lucide-react"
 import { useUser } from "@stackframe/stack";
 import { usePathname } from "next/navigation";
@@ -81,6 +82,11 @@ const data = {
       title: "Review Poster",
       url: "/app/shared-google-review-poster",
       icon: Megaphone,
+    },
+     {
+      title: "Tracked Reviews",
+      url: "/app/tracked-reviews",
+      icon: ScanSearch,
     },
   ],
   navClouds: [
