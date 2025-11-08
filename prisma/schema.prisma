@@ -501,3 +501,24 @@ model GoogleReviewPoster {
   @@index([userId])
   @@map("google_review_posters")
 }
+
+model gmb_reviews {
+  id            String    @id @default(auto()) @map("_id") @db.ObjectId
+  reviewId      String    @unique // Google's review ID
+  accountId     String
+  locationId    String
+  reviewerName  String?
+  rating        Int?
+  comment       String?  
+  reviewReply   Json?     // Store the reply object
+  createTime    DateTime?
+  updateTime    DateTime?
+  isDeleted     Boolean   @default(false)
+  deletedAt     DateTime?
+  rawData       Json      // Store complete review data
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  @@index([accountId, locationId])
+  @@index([isDeleted])
+}

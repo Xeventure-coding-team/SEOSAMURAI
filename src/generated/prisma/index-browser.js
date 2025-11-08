@@ -437,6 +437,24 @@ exports.Prisma.GoogleReviewPosterScalarFieldEnum = {
   updatedAt: 'updatedAt'
 };
 
+exports.Prisma.Gmb_reviewsScalarFieldEnum = {
+  id: 'id',
+  reviewId: 'reviewId',
+  accountId: 'accountId',
+  locationId: 'locationId',
+  reviewerName: 'reviewerName',
+  rating: 'rating',
+  comment: 'comment',
+  reviewReply: 'reviewReply',
+  createTime: 'createTime',
+  updateTime: 'updateTime',
+  isDeleted: 'isDeleted',
+  deletedAt: 'deletedAt',
+  rawData: 'rawData',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+};
+
 exports.Prisma.SortOrder = {
   asc: 'asc',
   desc: 'desc'
@@ -500,7 +518,8 @@ exports.Prisma.ModelName = {
   LocationMilestone: 'LocationMilestone',
   LocationAchievement: 'LocationAchievement',
   UserTaskRefresh: 'UserTaskRefresh',
-  GoogleReviewPoster: 'GoogleReviewPoster'
+  GoogleReviewPoster: 'GoogleReviewPoster',
+  gmb_reviews: 'gmb_reviews'
 };
 
 /**

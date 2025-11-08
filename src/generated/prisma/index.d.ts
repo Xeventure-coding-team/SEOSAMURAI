@@ -118,6 +118,11 @@ export type UserTaskRefresh = $Result.DefaultSelection<Prisma.$UserTaskRefreshPa
  * 
  */
 export type GoogleReviewPoster = $Result.DefaultSelection<Prisma.$GoogleReviewPosterPayload>
+/**
+ * Model gmb_reviews
+ * 
+ */
+export type gmb_reviews = $Result.DefaultSelection<Prisma.$gmb_reviewsPayload>
 
 /**
  * Enums
@@ -479,6 +484,16 @@ export class PrismaClient<
     * ```
     */
   get googleReviewPoster(): Prisma.GoogleReviewPosterDelegate<ExtArgs, ClientOptions>;
+
+  /**
+   * `prisma.gmb_reviews`: Exposes CRUD operations for the **gmb_reviews** model.
+    * Example usage:
+    * ```ts
+    * // Fetch zero or more Gmb_reviews
+    * const gmb_reviews = await prisma.gmb_reviews.findMany()
+    * ```
+    */
+  get gmb_reviews(): Prisma.gmb_reviewsDelegate<ExtArgs, ClientOptions>;
 }
 
 export namespace Prisma {
@@ -939,7 +954,8 @@ export namespace Prisma {
     LocationMilestone: 'LocationMilestone',
     LocationAchievement: 'LocationAchievement',
     UserTaskRefresh: 'UserTaskRefresh',
-    GoogleReviewPoster: 'GoogleReviewPoster'
+    GoogleReviewPoster: 'GoogleReviewPoster',
+    gmb_reviews: 'gmb_reviews'
   };
 
   export type ModelName = (typeof ModelName)[keyof typeof ModelName]
@@ -958,7 +974,7 @@ export namespace Prisma {
       omit: GlobalOmitOptions
     }
     meta: {
-      modelProps: "version" | "locations" | "scheduledPost" | "gmbIntegration" | "competitorAnalysis" | "keywords" | "keywordRank" | "keywordTracking" | "batchUpdate" | "userSettings" | "rankAlert" | "task" | "completedTask" | "taskExclusion" | "userProgress" | "locationProgress" | "milestone" | "locationMilestone" | "locationAchievement" | "userTaskRefresh" | "googleReviewPoster"
+      modelProps: "version" | "locations" | "scheduledPost" | "gmbIntegration" | "competitorAnalysis" | "keywords" | "keywordRank" | "keywordTracking" | "batchUpdate" | "userSettings" | "rankAlert" | "task" | "completedTask" | "taskExclusion" | "userProgress" | "locationProgress" | "milestone" | "locationMilestone" | "locationAchievement" | "userTaskRefresh" | "googleReviewPoster" | "gmb_reviews"
       txIsolationLevel: never
     }
     model: {
@@ -2516,6 +2532,80 @@ export namespace Prisma {
           }
         }
       }
+      gmb_reviews: {
+        payload: Prisma.$gmb_reviewsPayload<ExtArgs>
+        fields: Prisma.gmb_reviewsFieldRefs
+        operations: {
+          findUnique: {
+            args: Prisma.gmb_reviewsFindUniqueArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$gmb_reviewsPayload> | null
+          }
+          findUniqueOrThrow: {
+            args: Prisma.gmb_reviewsFindUniqueOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$gmb_reviewsPayload>
+          }
+          findFirst: {
+            args: Prisma.gmb_reviewsFindFirstArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$gmb_reviewsPayload> | null
+          }
+          findFirstOrThrow: {
+            args: Prisma.gmb_reviewsFindFirstOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$gmb_reviewsPayload>
+          }
+          findMany: {
+            args: Prisma.gmb_reviewsFindManyArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$gmb_reviewsPayload>[]
+          }
+          create: {
+            args: Prisma.gmb_reviewsCreateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$gmb_reviewsPayload>
+          }
+          createMany: {
+            args: Prisma.gmb_reviewsCreateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          delete: {
+            args: Prisma.gmb_reviewsDeleteArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$gmb_reviewsPayload>
+          }
+          update: {
+            args: Prisma.gmb_reviewsUpdateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$gmb_reviewsPayload>
+          }
+          deleteMany: {
+            args: Prisma.gmb_reviewsDeleteManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          updateMany: {
+            args: Prisma.gmb_reviewsUpdateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          upsert: {
+            args: Prisma.gmb_reviewsUpsertArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$gmb_reviewsPayload>
+          }
+          aggregate: {
+            args: Prisma.Gmb_reviewsAggregateArgs<ExtArgs>
+            result: $Utils.Optional<AggregateGmb_reviews>
+          }
+          groupBy: {
+            args: Prisma.gmb_reviewsGroupByArgs<ExtArgs>
+            result: $Utils.Optional<Gmb_reviewsGroupByOutputType>[]
+          }
+          findRaw: {
+            args: Prisma.gmb_reviewsFindRawArgs<ExtArgs>
+            result: JsonObject
+          }
+          aggregateRaw: {
+            args: Prisma.gmb_reviewsAggregateRawArgs<ExtArgs>
+            result: JsonObject
+          }
+          count: {
+            args: Prisma.gmb_reviewsCountArgs<ExtArgs>
+            result: $Utils.Optional<Gmb_reviewsCountAggregateOutputType> | number
+          }
+        }
+      }
     }
   } & {
     other: {
@@ -2616,6 +2706,7 @@ export namespace Prisma {
     locationAchievement?: LocationAchievementOmit
     userTaskRefresh?: UserTaskRefreshOmit
     googleReviewPoster?: GoogleReviewPosterOmit
+    gmb_reviews?: gmb_reviewsOmit
   }
 
   /* Types for Logging */
@@ -24549,6 +24640,1074 @@ export namespace Prisma {
 
 
   /**
+   * Model gmb_reviews
+   */
+
+  export type AggregateGmb_reviews = {
+    _count: Gmb_reviewsCountAggregateOutputType | null
+    _avg: Gmb_reviewsAvgAggregateOutputType | null
+    _sum: Gmb_reviewsSumAggregateOutputType | null
+    _min: Gmb_reviewsMinAggregateOutputType | null
+    _max: Gmb_reviewsMaxAggregateOutputType | null
+  }
+
+  export type Gmb_reviewsAvgAggregateOutputType = {
+    rating: number | null
+  }
+
+  export type Gmb_reviewsSumAggregateOutputType = {
+    rating: number | null
+  }
+
+  export type Gmb_reviewsMinAggregateOutputType = {
+    id: string | null
+    reviewId: string | null
+    accountId: string | null
+    locationId: string | null
+    reviewerName: string | null
+    rating: number | null
+    comment: string | null
+    createTime: Date | null
+    updateTime: Date | null
+    isDeleted: boolean | null
+    deletedAt: Date | null
+    createdAt: Date | null
+    updatedAt: Date | null
+  }
+
+  export type Gmb_reviewsMaxAggregateOutputType = {
+    id: string | null
+    reviewId: string | null
+    accountId: string | null
+    locationId: string | null
+    reviewerName: string | null
+    rating: number | null
+    comment: string | null
+    createTime: Date | null
+    updateTime: Date | null
+    isDeleted: boolean | null
+    deletedAt: Date | null
+    createdAt: Date | null
+    updatedAt: Date | null
+  }
+
+  export type Gmb_reviewsCountAggregateOutputType = {
+    id: number
+    reviewId: number
+    accountId: number
+    locationId: number
+    reviewerName: number
+    rating: number
+    comment: number
+    reviewReply: number
+    createTime: number
+    updateTime: number
+    isDeleted: number
+    deletedAt: number
+    rawData: number
+    createdAt: number
+    updatedAt: number
+    _all: number
+  }
+
+
+  export type Gmb_reviewsAvgAggregateInputType = {
+    rating?: true
+  }
+
+  export type Gmb_reviewsSumAggregateInputType = {
+    rating?: true
+  }
+
+  export type Gmb_reviewsMinAggregateInputType = {
+    id?: true
+    reviewId?: true
+    accountId?: true
+    locationId?: true
+    reviewerName?: true
+    rating?: true
+    comment?: true
+    createTime?: true
+    updateTime?: true
+    isDeleted?: true
+    deletedAt?: true
+    createdAt?: true
+    updatedAt?: true
+  }
+
+  export type Gmb_reviewsMaxAggregateInputType = {
+    id?: true
+    reviewId?: true
+    accountId?: true
+    locationId?: true
+    reviewerName?: true
+    rating?: true
+    comment?: true
+    createTime?: true
+    updateTime?: true
+    isDeleted?: true
+    deletedAt?: true
+    createdAt?: true
+    updatedAt?: true
+  }
+
+  export type Gmb_reviewsCountAggregateInputType = {
+    id?: true
+    reviewId?: true
+    accountId?: true
+    locationId?: true
+    reviewerName?: true
+    rating?: true
+    comment?: true
+    reviewReply?: true
+    createTime?: true
+    updateTime?: true
+    isDeleted?: true
+    deletedAt?: true
+    rawData?: true
+    createdAt?: true
+    updatedAt?: true
+    _all?: true
+  }
+
+  export type Gmb_reviewsAggregateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which gmb_reviews to aggregate.
+     */
+    where?: gmb_reviewsWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of gmb_reviews to fetch.
+     */
+    orderBy?: gmb_reviewsOrderByWithRelationInput | gmb_reviewsOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the start position
+     */
+    cursor?: gmb_reviewsWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` gmb_reviews from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` gmb_reviews.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Count returned gmb_reviews
+    **/
+    _count?: true | Gmb_reviewsCountAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to average
+    **/
+    _avg?: Gmb_reviewsAvgAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to sum
+    **/
+    _sum?: Gmb_reviewsSumAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the minimum value
+    **/
+    _min?: Gmb_reviewsMinAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the maximum value
+    **/
+    _max?: Gmb_reviewsMaxAggregateInputType
+  }
+
+  export type GetGmb_reviewsAggregateType<T extends Gmb_reviewsAggregateArgs> = {
+        [P in keyof T & keyof AggregateGmb_reviews]: P extends '_count' | 'count'
+      ? T[P] extends true
+        ? number
+        : GetScalarType<T[P], AggregateGmb_reviews[P]>
+      : GetScalarType<T[P], AggregateGmb_reviews[P]>
+  }
+
+
+
+
+  export type gmb_reviewsGroupByArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: gmb_reviewsWhereInput
+    orderBy?: gmb_reviewsOrderByWithAggregationInput | gmb_reviewsOrderByWithAggregationInput[]
+    by: Gmb_reviewsScalarFieldEnum[] | Gmb_reviewsScalarFieldEnum
+    having?: gmb_reviewsScalarWhereWithAggregatesInput
+    take?: number
+    skip?: number
+    _count?: Gmb_reviewsCountAggregateInputType | true
+    _avg?: Gmb_reviewsAvgAggregateInputType
+    _sum?: Gmb_reviewsSumAggregateInputType
+    _min?: Gmb_reviewsMinAggregateInputType
+    _max?: Gmb_reviewsMaxAggregateInputType
+  }
+
+  export type Gmb_reviewsGroupByOutputType = {
+    id: string
+    reviewId: string
+    accountId: string
+    locationId: string
+    reviewerName: string | null
+    rating: number | null
+    comment: string | null
+    reviewReply: JsonValue | null
+    createTime: Date | null
+    updateTime: Date | null
+    isDeleted: boolean
+    deletedAt: Date | null
+    rawData: JsonValue
+    createdAt: Date
+    updatedAt: Date
+    _count: Gmb_reviewsCountAggregateOutputType | null
+    _avg: Gmb_reviewsAvgAggregateOutputType | null
+    _sum: Gmb_reviewsSumAggregateOutputType | null
+    _min: Gmb_reviewsMinAggregateOutputType | null
+    _max: Gmb_reviewsMaxAggregateOutputType | null
+  }
+
+  type GetGmb_reviewsGroupByPayload<T extends gmb_reviewsGroupByArgs> = Prisma.PrismaPromise<
+    Array<
+      PickEnumerable<Gmb_reviewsGroupByOutputType, T['by']> &
+        {
+          [P in ((keyof T) & (keyof Gmb_reviewsGroupByOutputType))]: P extends '_count'
+            ? T[P] extends boolean
+              ? number
+              : GetScalarType<T[P], Gmb_reviewsGroupByOutputType[P]>
+            : GetScalarType<T[P], Gmb_reviewsGroupByOutputType[P]>
+        }
+      >
+    >
+
+
+  export type gmb_reviewsSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    reviewId?: boolean
+    accountId?: boolean
+    locationId?: boolean
+    reviewerName?: boolean
+    rating?: boolean
+    comment?: boolean
+    reviewReply?: boolean
+    createTime?: boolean
+    updateTime?: boolean
+    isDeleted?: boolean
+    deletedAt?: boolean
+    rawData?: boolean
+    createdAt?: boolean
+    updatedAt?: boolean
+  }, ExtArgs["result"]["gmb_reviews"]>
+
+
+
+  export type gmb_reviewsSelectScalar = {
+    id?: boolean
+    reviewId?: boolean
+    accountId?: boolean
+    locationId?: boolean
+    reviewerName?: boolean
+    rating?: boolean
+    comment?: boolean
+    reviewReply?: boolean
+    createTime?: boolean
+    updateTime?: boolean
+    isDeleted?: boolean
+    deletedAt?: boolean
+    rawData?: boolean
+    createdAt?: boolean
+    updatedAt?: boolean
+  }
+
+  export type gmb_reviewsOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "reviewId" | "accountId" | "locationId" | "reviewerName" | "rating" | "comment" | "reviewReply" | "createTime" | "updateTime" | "isDeleted" | "deletedAt" | "rawData" | "createdAt" | "updatedAt", ExtArgs["result"]["gmb_reviews"]>
+
+  export type $gmb_reviewsPayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    name: "gmb_reviews"
+    objects: {}
+    scalars: $Extensions.GetPayloadResult<{
+      id: string
+      reviewId: string
+      accountId: string
+      locationId: string
+      reviewerName: string | null
+      rating: number | null
+      comment: string | null
+      reviewReply: Prisma.JsonValue | null
+      createTime: Date | null
+      updateTime: Date | null
+      isDeleted: boolean
+      deletedAt: Date | null
+      rawData: Prisma.JsonValue
+      createdAt: Date
+      updatedAt: Date
+    }, ExtArgs["result"]["gmb_reviews"]>
+    composites: {}
+  }
+
+  type gmb_reviewsGetPayload<S extends boolean | null | undefined | gmb_reviewsDefaultArgs> = $Result.GetResult<Prisma.$gmb_reviewsPayload, S>
+
+  type gmb_reviewsCountArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> =
+    Omit<gmb_reviewsFindManyArgs, 'select' | 'include' | 'distinct' | 'omit'> & {
+      select?: Gmb_reviewsCountAggregateInputType | true
+    }
+
+  export interface gmb_reviewsDelegate<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> {
+    [K: symbol]: { types: Prisma.TypeMap<ExtArgs>['model']['gmb_reviews'], meta: { name: 'gmb_reviews' } }
+    /**
+     * Find zero or one Gmb_reviews that matches the filter.
+     * @param {gmb_reviewsFindUniqueArgs} args - Arguments to find a Gmb_reviews
+     * @example
+     * // Get one Gmb_reviews
+     * const gmb_reviews = await prisma.gmb_reviews.findUnique({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUnique<T extends gmb_reviewsFindUniqueArgs>(args: SelectSubset<T, gmb_reviewsFindUniqueArgs<ExtArgs>>): Prisma__gmb_reviewsClient<$Result.GetResult<Prisma.$gmb_reviewsPayload<ExtArgs>, T, "findUnique", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find one Gmb_reviews that matches the filter or throw an error with `error.code='P2025'`
+     * if no matches were found.
+     * @param {gmb_reviewsFindUniqueOrThrowArgs} args - Arguments to find a Gmb_reviews
+     * @example
+     * // Get one Gmb_reviews
+     * const gmb_reviews = await prisma.gmb_reviews.findUniqueOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUniqueOrThrow<T extends gmb_reviewsFindUniqueOrThrowArgs>(args: SelectSubset<T, gmb_reviewsFindUniqueOrThrowArgs<ExtArgs>>): Prisma__gmb_reviewsClient<$Result.GetResult<Prisma.$gmb_reviewsPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find the first Gmb_reviews that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {gmb_reviewsFindFirstArgs} args - Arguments to find a Gmb_reviews
+     * @example
+     * // Get one Gmb_reviews
+     * const gmb_reviews = await prisma.gmb_reviews.findFirst({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirst<T extends gmb_reviewsFindFirstArgs>(args?: SelectSubset<T, gmb_reviewsFindFirstArgs<ExtArgs>>): Prisma__gmb_reviewsClient<$Result.GetResult<Prisma.$gmb_reviewsPayload<ExtArgs>, T, "findFirst", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find the first Gmb_reviews that matches the filter or
+     * throw `PrismaKnownClientError` with `P2025` code if no matches were found.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {gmb_reviewsFindFirstOrThrowArgs} args - Arguments to find a Gmb_reviews
+     * @example
+     * // Get one Gmb_reviews
+     * const gmb_reviews = await prisma.gmb_reviews.findFirstOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirstOrThrow<T extends gmb_reviewsFindFirstOrThrowArgs>(args?: SelectSubset<T, gmb_reviewsFindFirstOrThrowArgs<ExtArgs>>): Prisma__gmb_reviewsClient<$Result.GetResult<Prisma.$gmb_reviewsPayload<ExtArgs>, T, "findFirstOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find zero or more Gmb_reviews that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {gmb_reviewsFindManyArgs} args - Arguments to filter and select certain fields only.
+     * @example
+     * // Get all Gmb_reviews
+     * const gmb_reviews = await prisma.gmb_reviews.findMany()
+     * 
+     * // Get first 10 Gmb_reviews
+     * const gmb_reviews = await prisma.gmb_reviews.findMany({ take: 10 })
+     * 
+     * // Only select the `id`
+     * const gmb_reviewsWithIdOnly = await prisma.gmb_reviews.findMany({ select: { id: true } })
+     * 
+     */
+    findMany<T extends gmb_reviewsFindManyArgs>(args?: SelectSubset<T, gmb_reviewsFindManyArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$gmb_reviewsPayload<ExtArgs>, T, "findMany", GlobalOmitOptions>>
+
+    /**
+     * Create a Gmb_reviews.
+     * @param {gmb_reviewsCreateArgs} args - Arguments to create a Gmb_reviews.
+     * @example
+     * // Create one Gmb_reviews
+     * const Gmb_reviews = await prisma.gmb_reviews.create({
+     *   data: {
+     *     // ... data to create a Gmb_reviews
+     *   }
+     * })
+     * 
+     */
+    create<T extends gmb_reviewsCreateArgs>(args: SelectSubset<T, gmb_reviewsCreateArgs<ExtArgs>>): Prisma__gmb_reviewsClient<$Result.GetResult<Prisma.$gmb_reviewsPayload<ExtArgs>, T, "create", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Create many Gmb_reviews.
+     * @param {gmb_reviewsCreateManyArgs} args - Arguments to create many Gmb_reviews.
+     * @example
+     * // Create many Gmb_reviews
+     * const gmb_reviews = await prisma.gmb_reviews.createMany({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     *     
+     */
+    createMany<T extends gmb_reviewsCreateManyArgs>(args?: SelectSubset<T, gmb_reviewsCreateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Delete a Gmb_reviews.
+     * @param {gmb_reviewsDeleteArgs} args - Arguments to delete one Gmb_reviews.
+     * @example
+     * // Delete one Gmb_reviews
+     * const Gmb_reviews = await prisma.gmb_reviews.delete({
+     *   where: {
+     *     // ... filter to delete one Gmb_reviews
+     *   }
+     * })
+     * 
+     */
+    delete<T extends gmb_reviewsDeleteArgs>(args: SelectSubset<T, gmb_reviewsDeleteArgs<ExtArgs>>): Prisma__gmb_reviewsClient<$Result.GetResult<Prisma.$gmb_reviewsPayload<ExtArgs>, T, "delete", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Update one Gmb_reviews.
+     * @param {gmb_reviewsUpdateArgs} args - Arguments to update one Gmb_reviews.
+     * @example
+     * // Update one Gmb_reviews
+     * const gmb_reviews = await prisma.gmb_reviews.update({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    update<T extends gmb_reviewsUpdateArgs>(args: SelectSubset<T, gmb_reviewsUpdateArgs<ExtArgs>>): Prisma__gmb_reviewsClient<$Result.GetResult<Prisma.$gmb_reviewsPayload<ExtArgs>, T, "update", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Delete zero or more Gmb_reviews.
+     * @param {gmb_reviewsDeleteManyArgs} args - Arguments to filter Gmb_reviews to delete.
+     * @example
+     * // Delete a few Gmb_reviews
+     * const { count } = await prisma.gmb_reviews.deleteMany({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     * 
+     */
+    deleteMany<T extends gmb_reviewsDeleteManyArgs>(args?: SelectSubset<T, gmb_reviewsDeleteManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Update zero or more Gmb_reviews.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {gmb_reviewsUpdateManyArgs} args - Arguments to update one or more rows.
+     * @example
+     * // Update many Gmb_reviews
+     * const gmb_reviews = await prisma.gmb_reviews.updateMany({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    updateMany<T extends gmb_reviewsUpdateManyArgs>(args: SelectSubset<T, gmb_reviewsUpdateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Create or update one Gmb_reviews.
+     * @param {gmb_reviewsUpsertArgs} args - Arguments to update or create a Gmb_reviews.
+     * @example
+     * // Update or create a Gmb_reviews
+     * const gmb_reviews = await prisma.gmb_reviews.upsert({
+     *   create: {
+     *     // ... data to create a Gmb_reviews
+     *   },
+     *   update: {
+     *     // ... in case it already exists, update
+     *   },
+     *   where: {
+     *     // ... the filter for the Gmb_reviews we want to update
+     *   }
+     * })
+     */
+    upsert<T extends gmb_reviewsUpsertArgs>(args: SelectSubset<T, gmb_reviewsUpsertArgs<ExtArgs>>): Prisma__gmb_reviewsClient<$Result.GetResult<Prisma.$gmb_reviewsPayload<ExtArgs>, T, "upsert", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find zero or more Gmb_reviews that matches the filter.
+     * @param {gmb_reviewsFindRawArgs} args - Select which filters you would like to apply.
+     * @example
+     * const gmb_reviews = await prisma.gmb_reviews.findRaw({
+     *   filter: { age: { $gt: 25 } }
+     * })
+     */
+    findRaw(args?: gmb_reviewsFindRawArgs): Prisma.PrismaPromise<JsonObject>
+
+    /**
+     * Perform aggregation operations on a Gmb_reviews.
+     * @param {gmb_reviewsAggregateRawArgs} args - Select which aggregations you would like to apply.
+     * @example
+     * const gmb_reviews = await prisma.gmb_reviews.aggregateRaw({
+     *   pipeline: [
+     *     { $match: { status: "registered" } },
+     *     { $group: { _id: "$country", total: { $sum: 1 } } }
+     *   ]
+     * })
+     */
+    aggregateRaw(args?: gmb_reviewsAggregateRawArgs): Prisma.PrismaPromise<JsonObject>
+
+
+    /**
+     * Count the number of Gmb_reviews.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {gmb_reviewsCountArgs} args - Arguments to filter Gmb_reviews to count.
+     * @example
+     * // Count the number of Gmb_reviews
+     * const count = await prisma.gmb_reviews.count({
+     *   where: {
+     *     // ... the filter for the Gmb_reviews we want to count
+     *   }
+     * })
+    **/
+    count<T extends gmb_reviewsCountArgs>(
+      args?: Subset<T, gmb_reviewsCountArgs>,
+    ): Prisma.PrismaPromise<
+      T extends $Utils.Record<'select', any>
+        ? T['select'] extends true
+          ? number
+          : GetScalarType<T['select'], Gmb_reviewsCountAggregateOutputType>
+        : number
+    >
+
+    /**
+     * Allows you to perform aggregations operations on a Gmb_reviews.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {Gmb_reviewsAggregateArgs} args - Select which aggregations you would like to apply and on what fields.
+     * @example
+     * // Ordered by age ascending
+     * // Where email contains prisma.io
+     * // Limited to the 10 users
+     * const aggregations = await prisma.user.aggregate({
+     *   _avg: {
+     *     age: true,
+     *   },
+     *   where: {
+     *     email: {
+     *       contains: "prisma.io",
+     *     },
+     *   },
+     *   orderBy: {
+     *     age: "asc",
+     *   },
+     *   take: 10,
+     * })
+    **/
+    aggregate<T extends Gmb_reviewsAggregateArgs>(args: Subset<T, Gmb_reviewsAggregateArgs>): Prisma.PrismaPromise<GetGmb_reviewsAggregateType<T>>
+
+    /**
+     * Group by Gmb_reviews.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {gmb_reviewsGroupByArgs} args - Group by arguments.
+     * @example
+     * // Group by city, order by createdAt, get count
+     * const result = await prisma.user.groupBy({
+     *   by: ['city', 'createdAt'],
+     *   orderBy: {
+     *     createdAt: true
+     *   },
+     *   _count: {
+     *     _all: true
+     *   },
+     * })
+     * 
+    **/
+    groupBy<
+      T extends gmb_reviewsGroupByArgs,
+      HasSelectOrTake extends Or<
+        Extends<'skip', Keys<T>>,
+        Extends<'take', Keys<T>>
+      >,
+      OrderByArg extends True extends HasSelectOrTake
+        ? { orderBy: gmb_reviewsGroupByArgs['orderBy'] }
+        : { orderBy?: gmb_reviewsGroupByArgs['orderBy'] },
+      OrderFields extends ExcludeUnderscoreKeys<Keys<MaybeTupleToUnion<T['orderBy']>>>,
+      ByFields extends MaybeTupleToUnion<T['by']>,
+      ByValid extends Has<ByFields, OrderFields>,
+      HavingFields extends GetHavingFields<T['having']>,
+      HavingValid extends Has<ByFields, HavingFields>,
+      ByEmpty extends T['by'] extends never[] ? True : False,
+      InputErrors extends ByEmpty extends True
+      ? `Error: "by" must not be empty.`
+      : HavingValid extends False
+      ? {
+          [P in HavingFields]: P extends ByFields
+            ? never
+            : P extends string
+            ? `Error: Field "${P}" used in "having" needs to be provided in "by".`
+            : [
+                Error,
+                'Field ',
+                P,
+                ` in "having" needs to be provided in "by"`,
+              ]
+        }[HavingFields]
+      : 'take' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "take", you also need to provide "orderBy"'
+      : 'skip' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "skip", you also need to provide "orderBy"'
+      : ByValid extends True
+      ? {}
+      : {
+          [P in OrderFields]: P extends ByFields
+            ? never
+            : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+        }[OrderFields]
+    >(args: SubsetIntersection<T, gmb_reviewsGroupByArgs, OrderByArg> & InputErrors): {} extends InputErrors ? GetGmb_reviewsGroupByPayload<T> : Prisma.PrismaPromise<InputErrors>
+  /**
+   * Fields of the gmb_reviews model
+   */
+  readonly fields: gmb_reviewsFieldRefs;
+  }
+
+  /**
+   * The delegate class that acts as a "Promise-like" for gmb_reviews.
+   * Why is this prefixed with `Prisma__`?
+   * Because we want to prevent naming conflicts as mentioned in
+   * https://github.com/prisma/prisma-client-js/issues/707
+   */
+  export interface Prisma__gmb_reviewsClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
+    readonly [Symbol.toStringTag]: "PrismaPromise"
+    /**
+     * Attaches callbacks for the resolution and/or rejection of the Promise.
+     * @param onfulfilled The callback to execute when the Promise is resolved.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of which ever callback is executed.
+     */
+    then<TResult1 = T, TResult2 = never>(onfulfilled?: ((value: T) => TResult1 | PromiseLike<TResult1>) | undefined | null, onrejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>) | undefined | null): $Utils.JsPromise<TResult1 | TResult2>
+    /**
+     * Attaches a callback for only the rejection of the Promise.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of the callback.
+     */
+    catch<TResult = never>(onrejected?: ((reason: any) => TResult | PromiseLike<TResult>) | undefined | null): $Utils.JsPromise<T | TResult>
+    /**
+     * Attaches a callback that is invoked when the Promise is settled (fulfilled or rejected). The
+     * resolved value cannot be modified from the callback.
+     * @param onfinally The callback to execute when the Promise is settled (fulfilled or rejected).
+     * @returns A Promise for the completion of the callback.
+     */
+    finally(onfinally?: (() => void) | undefined | null): $Utils.JsPromise<T>
+  }
+
+
+
+
+  /**
+   * Fields of the gmb_reviews model
+   */
+  interface gmb_reviewsFieldRefs {
+    readonly id: FieldRef<"gmb_reviews", 'String'>
+    readonly reviewId: FieldRef<"gmb_reviews", 'String'>
+    readonly accountId: FieldRef<"gmb_reviews", 'String'>
+    readonly locationId: FieldRef<"gmb_reviews", 'String'>
+    readonly reviewerName: FieldRef<"gmb_reviews", 'String'>
+    readonly rating: FieldRef<"gmb_reviews", 'Int'>
+    readonly comment: FieldRef<"gmb_reviews", 'String'>
+    readonly reviewReply: FieldRef<"gmb_reviews", 'Json'>
+    readonly createTime: FieldRef<"gmb_reviews", 'DateTime'>
+    readonly updateTime: FieldRef<"gmb_reviews", 'DateTime'>
+    readonly isDeleted: FieldRef<"gmb_reviews", 'Boolean'>
+    readonly deletedAt: FieldRef<"gmb_reviews", 'DateTime'>
+    readonly rawData: FieldRef<"gmb_reviews", 'Json'>
+    readonly createdAt: FieldRef<"gmb_reviews", 'DateTime'>
+    readonly updatedAt: FieldRef<"gmb_reviews", 'DateTime'>
+  }
+    
+
+  // Custom InputTypes
+  /**
+   * gmb_reviews findUnique
+   */
+  export type gmb_reviewsFindUniqueArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the gmb_reviews
+     */
+    select?: gmb_reviewsSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the gmb_reviews
+     */
+    omit?: gmb_reviewsOmit<ExtArgs> | null
+    /**
+     * Filter, which gmb_reviews to fetch.
+     */
+    where: gmb_reviewsWhereUniqueInput
+  }
+
+  /**
+   * gmb_reviews findUniqueOrThrow
+   */
+  export type gmb_reviewsFindUniqueOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the gmb_reviews
+     */
+    select?: gmb_reviewsSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the gmb_reviews
+     */
+    omit?: gmb_reviewsOmit<ExtArgs> | null
+    /**
+     * Filter, which gmb_reviews to fetch.
+     */
+    where: gmb_reviewsWhereUniqueInput
+  }
+
+  /**
+   * gmb_reviews findFirst
+   */
+  export type gmb_reviewsFindFirstArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the gmb_reviews
+     */
+    select?: gmb_reviewsSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the gmb_reviews
+     */
+    omit?: gmb_reviewsOmit<ExtArgs> | null
+    /**
+     * Filter, which gmb_reviews to fetch.
+     */
+    where?: gmb_reviewsWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of gmb_reviews to fetch.
+     */
+    orderBy?: gmb_reviewsOrderByWithRelationInput | gmb_reviewsOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for gmb_reviews.
+     */
+    cursor?: gmb_reviewsWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` gmb_reviews from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` gmb_reviews.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of gmb_reviews.
+     */
+    distinct?: Gmb_reviewsScalarFieldEnum | Gmb_reviewsScalarFieldEnum[]
+  }
+
+  /**
+   * gmb_reviews findFirstOrThrow
+   */
+  export type gmb_reviewsFindFirstOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the gmb_reviews
+     */
+    select?: gmb_reviewsSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the gmb_reviews
+     */
+    omit?: gmb_reviewsOmit<ExtArgs> | null
+    /**
+     * Filter, which gmb_reviews to fetch.
+     */
+    where?: gmb_reviewsWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of gmb_reviews to fetch.
+     */
+    orderBy?: gmb_reviewsOrderByWithRelationInput | gmb_reviewsOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for gmb_reviews.
+     */
+    cursor?: gmb_reviewsWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` gmb_reviews from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` gmb_reviews.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of gmb_reviews.
+     */
+    distinct?: Gmb_reviewsScalarFieldEnum | Gmb_reviewsScalarFieldEnum[]
+  }
+
+  /**
+   * gmb_reviews findMany
+   */
+  export type gmb_reviewsFindManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the gmb_reviews
+     */
+    select?: gmb_reviewsSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the gmb_reviews
+     */
+    omit?: gmb_reviewsOmit<ExtArgs> | null
+    /**
+     * Filter, which gmb_reviews to fetch.
+     */
+    where?: gmb_reviewsWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of gmb_reviews to fetch.
+     */
+    orderBy?: gmb_reviewsOrderByWithRelationInput | gmb_reviewsOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for listing gmb_reviews.
+     */
+    cursor?: gmb_reviewsWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` gmb_reviews from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` gmb_reviews.
+     */
+    skip?: number
+    distinct?: Gmb_reviewsScalarFieldEnum | Gmb_reviewsScalarFieldEnum[]
+  }
+
+  /**
+   * gmb_reviews create
+   */
+  export type gmb_reviewsCreateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the gmb_reviews
+     */
+    select?: gmb_reviewsSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the gmb_reviews
+     */
+    omit?: gmb_reviewsOmit<ExtArgs> | null
+    /**
+     * The data needed to create a gmb_reviews.
+     */
+    data: XOR<gmb_reviewsCreateInput, gmb_reviewsUncheckedCreateInput>
+  }
+
+  /**
+   * gmb_reviews createMany
+   */
+  export type gmb_reviewsCreateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to create many gmb_reviews.
+     */
+    data: gmb_reviewsCreateManyInput | gmb_reviewsCreateManyInput[]
+  }
+
+  /**
+   * gmb_reviews update
+   */
+  export type gmb_reviewsUpdateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the gmb_reviews
+     */
+    select?: gmb_reviewsSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the gmb_reviews
+     */
+    omit?: gmb_reviewsOmit<ExtArgs> | null
+    /**
+     * The data needed to update a gmb_reviews.
+     */
+    data: XOR<gmb_reviewsUpdateInput, gmb_reviewsUncheckedUpdateInput>
+    /**
+     * Choose, which gmb_reviews to update.
+     */
+    where: gmb_reviewsWhereUniqueInput
+  }
+
+  /**
+   * gmb_reviews updateMany
+   */
+  export type gmb_reviewsUpdateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to update gmb_reviews.
+     */
+    data: XOR<gmb_reviewsUpdateManyMutationInput, gmb_reviewsUncheckedUpdateManyInput>
+    /**
+     * Filter which gmb_reviews to update
+     */
+    where?: gmb_reviewsWhereInput
+    /**
+     * Limit how many gmb_reviews to update.
+     */
+    limit?: number
+  }
+
+  /**
+   * gmb_reviews upsert
+   */
+  export type gmb_reviewsUpsertArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the gmb_reviews
+     */
+    select?: gmb_reviewsSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the gmb_reviews
+     */
+    omit?: gmb_reviewsOmit<ExtArgs> | null
+    /**
+     * The filter to search for the gmb_reviews to update in case it exists.
+     */
+    where: gmb_reviewsWhereUniqueInput
+    /**
+     * In case the gmb_reviews found by the `where` argument doesn't exist, create a new gmb_reviews with this data.
+     */
+    create: XOR<gmb_reviewsCreateInput, gmb_reviewsUncheckedCreateInput>
+    /**
+     * In case the gmb_reviews was found with the provided `where` argument, update it with this data.
+     */
+    update: XOR<gmb_reviewsUpdateInput, gmb_reviewsUncheckedUpdateInput>
+  }
+
+  /**
+   * gmb_reviews delete
+   */
+  export type gmb_reviewsDeleteArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the gmb_reviews
+     */
+    select?: gmb_reviewsSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the gmb_reviews
+     */
+    omit?: gmb_reviewsOmit<ExtArgs> | null
+    /**
+     * Filter which gmb_reviews to delete.
+     */
+    where: gmb_reviewsWhereUniqueInput
+  }
+
+  /**
+   * gmb_reviews deleteMany
+   */
+  export type gmb_reviewsDeleteManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which gmb_reviews to delete
+     */
+    where?: gmb_reviewsWhereInput
+    /**
+     * Limit how many gmb_reviews to delete.
+     */
+    limit?: number
+  }
+
+  /**
+   * gmb_reviews findRaw
+   */
+  export type gmb_reviewsFindRawArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The query predicate filter. If unspecified, then all documents in the collection will match the predicate. ${@link https://docs.mongodb.com/manual/reference/operator/query MongoDB Docs}.
+     */
+    filter?: InputJsonValue
+    /**
+     * Additional options to pass to the `find` command ${@link https://docs.mongodb.com/manual/reference/command/find/#command-fields MongoDB Docs}.
+     */
+    options?: InputJsonValue
+  }
+
+  /**
+   * gmb_reviews aggregateRaw
+   */
+  export type gmb_reviewsAggregateRawArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * An array of aggregation stages to process and transform the document stream via the aggregation pipeline. ${@link https://docs.mongodb.com/manual/reference/operator/aggregation-pipeline MongoDB Docs}.
+     */
+    pipeline?: InputJsonValue[]
+    /**
+     * Additional options to pass to the `aggregate` command ${@link https://docs.mongodb.com/manual/reference/command/aggregate/#command-fields MongoDB Docs}.
+     */
+    options?: InputJsonValue
+  }
+
+  /**
+   * gmb_reviews without action
+   */
+  export type gmb_reviewsDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the gmb_reviews
+     */
+    select?: gmb_reviewsSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the gmb_reviews
+     */
+    omit?: gmb_reviewsOmit<ExtArgs> | null
+  }
+
+
+  /**
    * Enums
    */
 
@@ -24937,6 +26096,27 @@ export namespace Prisma {
   };
 
   export type GoogleReviewPosterScalarFieldEnum = (typeof GoogleReviewPosterScalarFieldEnum)[keyof typeof GoogleReviewPosterScalarFieldEnum]
+
+
+  export const Gmb_reviewsScalarFieldEnum: {
+    id: 'id',
+    reviewId: 'reviewId',
+    accountId: 'accountId',
+    locationId: 'locationId',
+    reviewerName: 'reviewerName',
+    rating: 'rating',
+    comment: 'comment',
+    reviewReply: 'reviewReply',
+    createTime: 'createTime',
+    updateTime: 'updateTime',
+    isDeleted: 'isDeleted',
+    deletedAt: 'deletedAt',
+    rawData: 'rawData',
+    createdAt: 'createdAt',
+    updatedAt: 'updatedAt'
+  };
+
+  export type Gmb_reviewsScalarFieldEnum = (typeof Gmb_reviewsScalarFieldEnum)[keyof typeof Gmb_reviewsScalarFieldEnum]
 
 
   export const SortOrder: {
@@ -27007,6 +28187,110 @@ export namespace Prisma {
     keywords?: StringNullableListFilter<"GoogleReviewPoster">
     createdAt?: DateTimeWithAggregatesFilter<"GoogleReviewPoster"> | Date | string
     updatedAt?: DateTimeWithAggregatesFilter<"GoogleReviewPoster"> | Date | string
+  }
+
+  export type gmb_reviewsWhereInput = {
+    AND?: gmb_reviewsWhereInput | gmb_reviewsWhereInput[]
+    OR?: gmb_reviewsWhereInput[]
+    NOT?: gmb_reviewsWhereInput | gmb_reviewsWhereInput[]
+    id?: StringFilter<"gmb_reviews"> | string
+    reviewId?: StringFilter<"gmb_reviews"> | string
+    accountId?: StringFilter<"gmb_reviews"> | string
+    locationId?: StringFilter<"gmb_reviews"> | string
+    reviewerName?: StringNullableFilter<"gmb_reviews"> | string | null
+    rating?: IntNullableFilter<"gmb_reviews"> | number | null
+    comment?: StringNullableFilter<"gmb_reviews"> | string | null
+    reviewReply?: JsonNullableFilter<"gmb_reviews">
+    createTime?: DateTimeNullableFilter<"gmb_reviews"> | Date | string | null
+    updateTime?: DateTimeNullableFilter<"gmb_reviews"> | Date | string | null
+    isDeleted?: BoolFilter<"gmb_reviews"> | boolean
+    deletedAt?: DateTimeNullableFilter<"gmb_reviews"> | Date | string | null
+    rawData?: JsonFilter<"gmb_reviews">
+    createdAt?: DateTimeFilter<"gmb_reviews"> | Date | string
+    updatedAt?: DateTimeFilter<"gmb_reviews"> | Date | string
+  }
+
+  export type gmb_reviewsOrderByWithRelationInput = {
+    id?: SortOrder
+    reviewId?: SortOrder
+    accountId?: SortOrder
+    locationId?: SortOrder
+    reviewerName?: SortOrder
+    rating?: SortOrder
+    comment?: SortOrder
+    reviewReply?: SortOrder
+    createTime?: SortOrder
+    updateTime?: SortOrder
+    isDeleted?: SortOrder
+    deletedAt?: SortOrder
+    rawData?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+  }
+
+  export type gmb_reviewsWhereUniqueInput = Prisma.AtLeast<{
+    id?: string
+    reviewId?: string
+    AND?: gmb_reviewsWhereInput | gmb_reviewsWhereInput[]
+    OR?: gmb_reviewsWhereInput[]
+    NOT?: gmb_reviewsWhereInput | gmb_reviewsWhereInput[]
+    accountId?: StringFilter<"gmb_reviews"> | string
+    locationId?: StringFilter<"gmb_reviews"> | string
+    reviewerName?: StringNullableFilter<"gmb_reviews"> | string | null
+    rating?: IntNullableFilter<"gmb_reviews"> | number | null
+    comment?: StringNullableFilter<"gmb_reviews"> | string | null
+    reviewReply?: JsonNullableFilter<"gmb_reviews">
+    createTime?: DateTimeNullableFilter<"gmb_reviews"> | Date | string | null
+    updateTime?: DateTimeNullableFilter<"gmb_reviews"> | Date | string | null
+    isDeleted?: BoolFilter<"gmb_reviews"> | boolean
+    deletedAt?: DateTimeNullableFilter<"gmb_reviews"> | Date | string | null
+    rawData?: JsonFilter<"gmb_reviews">
+    createdAt?: DateTimeFilter<"gmb_reviews"> | Date | string
+    updatedAt?: DateTimeFilter<"gmb_reviews"> | Date | string
+  }, "id" | "reviewId">
+
+  export type gmb_reviewsOrderByWithAggregationInput = {
+    id?: SortOrder
+    reviewId?: SortOrder
+    accountId?: SortOrder
+    locationId?: SortOrder
+    reviewerName?: SortOrder
+    rating?: SortOrder
+    comment?: SortOrder
+    reviewReply?: SortOrder
+    createTime?: SortOrder
+    updateTime?: SortOrder
+    isDeleted?: SortOrder
+    deletedAt?: SortOrder
+    rawData?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+    _count?: gmb_reviewsCountOrderByAggregateInput
+    _avg?: gmb_reviewsAvgOrderByAggregateInput
+    _max?: gmb_reviewsMaxOrderByAggregateInput
+    _min?: gmb_reviewsMinOrderByAggregateInput
+    _sum?: gmb_reviewsSumOrderByAggregateInput
+  }
+
+  export type gmb_reviewsScalarWhereWithAggregatesInput = {
+    AND?: gmb_reviewsScalarWhereWithAggregatesInput | gmb_reviewsScalarWhereWithAggregatesInput[]
+    OR?: gmb_reviewsScalarWhereWithAggregatesInput[]
+    NOT?: gmb_reviewsScalarWhereWithAggregatesInput | gmb_reviewsScalarWhereWithAggregatesInput[]
+    id?: StringWithAggregatesFilter<"gmb_reviews"> | string
+    reviewId?: StringWithAggregatesFilter<"gmb_reviews"> | string
+    accountId?: StringWithAggregatesFilter<"gmb_reviews"> | string
+    locationId?: StringWithAggregatesFilter<"gmb_reviews"> | string
+    reviewerName?: StringNullableWithAggregatesFilter<"gmb_reviews"> | string | null
+    rating?: IntNullableWithAggregatesFilter<"gmb_reviews"> | number | null
+    comment?: StringNullableWithAggregatesFilter<"gmb_reviews"> | string | null
+    reviewReply?: JsonNullableWithAggregatesFilter<"gmb_reviews">
+    createTime?: DateTimeNullableWithAggregatesFilter<"gmb_reviews"> | Date | string | null
+    updateTime?: DateTimeNullableWithAggregatesFilter<"gmb_reviews"> | Date | string | null
+    isDeleted?: BoolWithAggregatesFilter<"gmb_reviews"> | boolean
+    deletedAt?: DateTimeNullableWithAggregatesFilter<"gmb_reviews"> | Date | string | null
+    rawData?: JsonWithAggregatesFilter<"gmb_reviews">
+    createdAt?: DateTimeWithAggregatesFilter<"gmb_reviews"> | Date | string
+    updatedAt?: DateTimeWithAggregatesFilter<"gmb_reviews"> | Date | string
   }
 
   export type VersionCreateInput = {
@@ -29193,6 +30477,128 @@ export namespace Prisma {
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
+  export type gmb_reviewsCreateInput = {
+    id?: string
+    reviewId: string
+    accountId: string
+    locationId: string
+    reviewerName?: string | null
+    rating?: number | null
+    comment?: string | null
+    reviewReply?: InputJsonValue | null
+    createTime?: Date | string | null
+    updateTime?: Date | string | null
+    isDeleted?: boolean
+    deletedAt?: Date | string | null
+    rawData: InputJsonValue
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
+  export type gmb_reviewsUncheckedCreateInput = {
+    id?: string
+    reviewId: string
+    accountId: string
+    locationId: string
+    reviewerName?: string | null
+    rating?: number | null
+    comment?: string | null
+    reviewReply?: InputJsonValue | null
+    createTime?: Date | string | null
+    updateTime?: Date | string | null
+    isDeleted?: boolean
+    deletedAt?: Date | string | null
+    rawData: InputJsonValue
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
+  export type gmb_reviewsUpdateInput = {
+    reviewId?: StringFieldUpdateOperationsInput | string
+    accountId?: StringFieldUpdateOperationsInput | string
+    locationId?: StringFieldUpdateOperationsInput | string
+    reviewerName?: NullableStringFieldUpdateOperationsInput | string | null
+    rating?: NullableIntFieldUpdateOperationsInput | number | null
+    comment?: NullableStringFieldUpdateOperationsInput | string | null
+    reviewReply?: InputJsonValue | InputJsonValue | null
+    createTime?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    updateTime?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    isDeleted?: BoolFieldUpdateOperationsInput | boolean
+    deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    rawData?: InputJsonValue | InputJsonValue
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type gmb_reviewsUncheckedUpdateInput = {
+    reviewId?: StringFieldUpdateOperationsInput | string
+    accountId?: StringFieldUpdateOperationsInput | string
+    locationId?: StringFieldUpdateOperationsInput | string
+    reviewerName?: NullableStringFieldUpdateOperationsInput | string | null
+    rating?: NullableIntFieldUpdateOperationsInput | number | null
+    comment?: NullableStringFieldUpdateOperationsInput | string | null
+    reviewReply?: InputJsonValue | InputJsonValue | null
+    createTime?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    updateTime?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    isDeleted?: BoolFieldUpdateOperationsInput | boolean
+    deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    rawData?: InputJsonValue | InputJsonValue
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type gmb_reviewsCreateManyInput = {
+    id?: string
+    reviewId: string
+    accountId: string
+    locationId: string
+    reviewerName?: string | null
+    rating?: number | null
+    comment?: string | null
+    reviewReply?: InputJsonValue | null
+    createTime?: Date | string | null
+    updateTime?: Date | string | null
+    isDeleted?: boolean
+    deletedAt?: Date | string | null
+    rawData: InputJsonValue
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
+  export type gmb_reviewsUpdateManyMutationInput = {
+    reviewId?: StringFieldUpdateOperationsInput | string
+    accountId?: StringFieldUpdateOperationsInput | string
+    locationId?: StringFieldUpdateOperationsInput | string
+    reviewerName?: NullableStringFieldUpdateOperationsInput | string | null
+    rating?: NullableIntFieldUpdateOperationsInput | number | null
+    comment?: NullableStringFieldUpdateOperationsInput | string | null
+    reviewReply?: InputJsonValue | InputJsonValue | null
+    createTime?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    updateTime?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    isDeleted?: BoolFieldUpdateOperationsInput | boolean
+    deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    rawData?: InputJsonValue | InputJsonValue
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type gmb_reviewsUncheckedUpdateManyInput = {
+    reviewId?: StringFieldUpdateOperationsInput | string
+    accountId?: StringFieldUpdateOperationsInput | string
+    locationId?: StringFieldUpdateOperationsInput | string
+    reviewerName?: NullableStringFieldUpdateOperationsInput | string | null
+    rating?: NullableIntFieldUpdateOperationsInput | number | null
+    comment?: NullableStringFieldUpdateOperationsInput | string | null
+    reviewReply?: InputJsonValue | InputJsonValue | null
+    createTime?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    updateTime?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    isDeleted?: BoolFieldUpdateOperationsInput | boolean
+    deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    rawData?: InputJsonValue | InputJsonValue
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
   export type StringFilter<$PrismaModel = never> = {
     equals?: string | StringFieldRefInput<$PrismaModel>
     in?: string[] | ListStringFieldRefInput<$PrismaModel>
@@ -30700,6 +32106,91 @@ export namespace Prisma {
     createdAt?: SortOrder
     updatedAt?: SortOrder
   }
+  export type JsonNullableFilter<$PrismaModel = never> =
+    | PatchUndefined<
+        Either<Required<JsonNullableFilterBase<$PrismaModel>>, Exclude<keyof Required<JsonNullableFilterBase<$PrismaModel>>, 'path'>>,
+        Required<JsonNullableFilterBase<$PrismaModel>>
+      >
+    | OptionalFlat<Omit<Required<JsonNullableFilterBase<$PrismaModel>>, 'path'>>
+
+  export type JsonNullableFilterBase<$PrismaModel = never> = {
+    equals?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | null
+    not?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | null
+    isSet?: boolean
+  }
+
+  export type gmb_reviewsCountOrderByAggregateInput = {
+    id?: SortOrder
+    reviewId?: SortOrder
+    accountId?: SortOrder
+    locationId?: SortOrder
+    reviewerName?: SortOrder
+    rating?: SortOrder
+    comment?: SortOrder
+    reviewReply?: SortOrder
+    createTime?: SortOrder
+    updateTime?: SortOrder
+    isDeleted?: SortOrder
+    deletedAt?: SortOrder
+    rawData?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+  }
+
+  export type gmb_reviewsAvgOrderByAggregateInput = {
+    rating?: SortOrder
+  }
+
+  export type gmb_reviewsMaxOrderByAggregateInput = {
+    id?: SortOrder
+    reviewId?: SortOrder
+    accountId?: SortOrder
+    locationId?: SortOrder
+    reviewerName?: SortOrder
+    rating?: SortOrder
+    comment?: SortOrder
+    createTime?: SortOrder
+    updateTime?: SortOrder
+    isDeleted?: SortOrder
+    deletedAt?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+  }
+
+  export type gmb_reviewsMinOrderByAggregateInput = {
+    id?: SortOrder
+    reviewId?: SortOrder
+    accountId?: SortOrder
+    locationId?: SortOrder
+    reviewerName?: SortOrder
+    rating?: SortOrder
+    comment?: SortOrder
+    createTime?: SortOrder
+    updateTime?: SortOrder
+    isDeleted?: SortOrder
+    deletedAt?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+  }
+
+  export type gmb_reviewsSumOrderByAggregateInput = {
+    rating?: SortOrder
+  }
+  export type JsonNullableWithAggregatesFilter<$PrismaModel = never> =
+    | PatchUndefined<
+        Either<Required<JsonNullableWithAggregatesFilterBase<$PrismaModel>>, Exclude<keyof Required<JsonNullableWithAggregatesFilterBase<$PrismaModel>>, 'path'>>,
+        Required<JsonNullableWithAggregatesFilterBase<$PrismaModel>>
+      >
+    | OptionalFlat<Omit<Required<JsonNullableWithAggregatesFilterBase<$PrismaModel>>, 'path'>>
+
+  export type JsonNullableWithAggregatesFilterBase<$PrismaModel = never> = {
+    equals?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | null
+    not?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | null
+    _count?: NestedIntNullableFilter<$PrismaModel>
+    _min?: NestedJsonNullableFilter<$PrismaModel>
+    _max?: NestedJsonNullableFilter<$PrismaModel>
+    isSet?: boolean
+  }
 
   export type StringFieldUpdateOperationsInput = {
     set?: string
@@ -31118,6 +32609,18 @@ export namespace Prisma {
     _count?: NestedIntFilter<$PrismaModel>
     _min?: NestedEnumRankAlertTypeFilter<$PrismaModel>
     _max?: NestedEnumRankAlertTypeFilter<$PrismaModel>
+  }
+  export type NestedJsonNullableFilter<$PrismaModel = never> =
+    | PatchUndefined<
+        Either<Required<NestedJsonNullableFilterBase<$PrismaModel>>, Exclude<keyof Required<NestedJsonNullableFilterBase<$PrismaModel>>, 'path'>>,
+        Required<NestedJsonNullableFilterBase<$PrismaModel>>
+      >
+    | OptionalFlat<Omit<Required<NestedJsonNullableFilterBase<$PrismaModel>>, 'path'>>
+
+  export type NestedJsonNullableFilterBase<$PrismaModel = never> = {
+    equals?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | null
+    not?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | null
+    isSet?: boolean
   }
 
 
