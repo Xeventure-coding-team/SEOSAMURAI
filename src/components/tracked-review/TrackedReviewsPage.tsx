@@ -26,12 +26,14 @@ interface TrackingResult {
     totalFetched: number;
     newReviews: number;
     deletedReviews: number;
-    deletedReviewsList: DeletedReview[];
+    locationsProcessed?: number;
+    timestamp?: string;
     error?: string;
 }
 
 export default function TrackedReviewsPage() {
     const [isTracking, setIsTracking] = useState(false);
+    const [isLoadingDeleted, setIsLoadingDeleted] = useState(false);
     const [deletedReviews, setDeletedReviews] = useState<DeletedReview[]>([]);
     const [trackingResult, setTrackingResult] = useState<TrackingResult | null>(null);
     const [error, setError] = useState<string | null>(null);
@@ -44,6 +46,7 @@ export default function TrackedReviewsPage() {
     }, []);
 
     const loadDeletedReviews = async () => {
+        setIsLoadingDeleted(true);
         try {
             const response = await fetch(`/api/tracked-review/deleted?accountId=${accountId}`);
             if (response.ok) {
@@ -52,6 +55,8 @@ export default function TrackedReviewsPage() {
             }
         } catch (err) {
             console.error("Error loading deleted reviews:", err);
+        } finally {
+            setIsLoadingDeleted(false);
         }
     };
 
@@ -78,7 +83,11 @@ export default function TrackedReviewsPage() {
 
             const result = await response.json();
             setTrackingResult(result);
-            setDeletedReviews(result.deletedReviewsList || []);
+            
+            // Reload deleted reviews after tracking completes
+            if (result.success) {
+                await loadDeletedReviews();
+            }
         } catch (err) {
             setError(err instanceof Error ? err.message : 'An error occurred');
         } finally {
@@ -112,7 +121,6 @@ export default function TrackedReviewsPage() {
     };
 
     const getProfileImage = (review: DeletedReview) => {
-        // Try to get profile image from rawData
         return review.rawData?.reviewer?.profilePhotoUrl || null;
     };
 
@@ -158,6 +166,9 @@ export default function TrackedReviewsPage() {
                                     <p><strong>Total Reviews Fetched:</strong> {trackingResult.totalFetched}</p>
                                     <p><strong>New Reviews Saved:</strong> {trackingResult.newReviews}</p>
                                     <p><strong>Deleted Reviews Found:</strong> {trackingResult.deletedReviews}</p>
+                                    {trackingResult.locationsProcessed && (
+                                        <p><strong>Locations Processed:</strong> {trackingResult.locationsProcessed}</p>
+                                    )}
                                 </div>
                             </AlertDescription>
                         </Alert>
@@ -186,7 +197,12 @@ export default function TrackedReviewsPage() {
                     </div>
                 </CardHeader>
                 <CardContent>
-                    {deletedReviews.length === 0 ? (
+                    {isLoadingDeleted ? (
+                        <div className="text-center py-12">
+                            <Loader2 className="mx-auto h-12 w-12 animate-spin text-muted-foreground mb-3" />
+                            <p className="text-muted-foreground">Loading deleted reviews...</p>
+                        </div>
+                    ) : deletedReviews.length === 0 ? (
                         <div className="text-center py-12 text-muted-foreground">
                             <Trash2 className="mx-auto h-12 w-12 mb-3 opacity-20" />
                             <p>No deleted reviews found</p>
