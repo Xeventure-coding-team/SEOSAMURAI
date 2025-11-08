@@ -39,11 +39,11 @@ export default function GoogleReviewPosterCreate() {
   const handleLocationChange = (locationName: string, locationData: Location) => {
     setSelectedLocation(locationName)
     setSelectedLocationData(locationData)
-    
+
     // Set business name
     const displayName = locationData.displayName || locationData.title || locationName.split("/").pop() || "Unknown Location"
     setBusinessName(displayName)
-    
+
     // Set review URL from metadata.newReviewUri
     if (locationData.metadata?.newReviewUri) {
       setReviewUrl(locationData.metadata.newReviewUri)
@@ -91,7 +91,7 @@ export default function GoogleReviewPosterCreate() {
           duration: 3000,
           position: "top-right",
         })
-        
+
         // Optional: Reset form or redirect
         // resetForm()
       }
@@ -137,7 +137,7 @@ export default function GoogleReviewPosterCreate() {
               <CardHeader>
                 <CardTitle>Customize Poster</CardTitle>
               </CardHeader>
-              <CardContent className="space-y-6">
+              <CardContent className="space-y-5">
                 {/* Business Location Selection Component */}
                 <LocationSelector
                   value={selectedLocation}
@@ -145,6 +145,9 @@ export default function GoogleReviewPosterCreate() {
                   placeholder="Choose a location"
                   showLabel={true}
                 />
+                <div>
+                  <label className="text-sm font-medium">or</label>
+                </div>
 
                 <div className="space-y-2">
                   <label className="text-sm font-medium">Business Name</label>
@@ -212,8 +215,8 @@ export default function GoogleReviewPosterCreate() {
                     <QrCode className="h-4 w-4 mr-2" />
                     Preview
                   </Button>
-                  <Button 
-                    onClick={handleSave} 
+                  <Button
+                    onClick={handleSave}
                     disabled={saving || !businessName || !reviewUrl}
                     className="flex-1"
                   >
@@ -240,7 +243,7 @@ export default function GoogleReviewPosterCreate() {
               <CardHeader>
                 <CardTitle>Preview</CardTitle>
               </CardHeader>
-                  
+
               <CardContent>
                 {showPoster ? (
                   <div className="flex justify-center">
