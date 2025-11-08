@@ -28,7 +28,9 @@ async function fetchAllLocationReviews(
     let lastError: any = null;
     let success = false;
 
+    // Retry logic with exponential backoff
     for (let attempt = 1; attempt <= maxRetries; attempt++) {
+      // console.log('checking retry logic.!!')
       try {
         const reviewsResponse = await fetch(endpoint, {
           headers: {
@@ -40,6 +42,7 @@ async function fetchAllLocationReviews(
         if (!reviewsResponse.ok) {
           const errorText = await reviewsResponse.text();
 
+          // Don't retry on authentication or permission errors
           if (
             reviewsResponse.status === 401 ||
             reviewsResponse.status === 403
@@ -54,6 +57,7 @@ async function fetchAllLocationReviews(
             };
           }
 
+          // Don't retry on not found errors
           if (reviewsResponse.status === 404) {
             console.error(
               `Reviews API not found (${reviewsResponse.status}):`,
@@ -65,6 +69,7 @@ async function fetchAllLocationReviews(
             };
           }
 
+          // Retry on other errors (500, 503, network issues, etc.)
           lastError = new Error(`API error: ${reviewsResponse.status}`);
           console.warn(
             `Attempt ${attempt}/${maxRetries} failed for location ${locationId}:`,
@@ -72,6 +77,7 @@ async function fetchAllLocationReviews(
           );
 
           if (attempt < maxRetries) {
+            // Exponential backoff: 1s, 2s, 4s, 8s
             const delay = Math.pow(2, attempt - 1) * 1000;
             await new Promise((resolve) => setTimeout(resolve, delay));
             continue;
@@ -95,18 +101,20 @@ async function fetchAllLocationReviews(
         );
 
         if (attempt < maxRetries) {
+          // Exponential backoff on network errors
           const delay = Math.pow(2, attempt - 1) * 1000;
           await new Promise((resolve) => setTimeout(resolve, delay));
         }
       }
     }
 
+    // If all retries failed, return error
     if (!success) {
       console.error(
         `All ${maxRetries} attempts failed for location ${locationId}`
       );
       return {
-        reviews: allReviews,
+        reviews: allReviews, // Return any reviews fetched so far
         error:
           lastError instanceof Error
             ? lastError.message
@@ -141,6 +149,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    // Get all locations for this user from DB
     const dbLocations = await prisma.locations.findMany({
       where: { user_id: user.id },
       select: {
@@ -157,16 +166,20 @@ export async function POST(request: NextRequest) {
         totalFetched: 0,
         newReviews: 0,
         deletedReviews: 0,
+        deletedReviewsList: [],
       });
     }
 
     let totalFetchedCount = 0;
     let totalNewReviews = 0;
     let totalDeletedReviews = 0;
+    const allDeletedReviews: any[] = [];
 
+    // Process each location
     for (const location of dbLocations) {
       const locationId = location.location_id;
 
+      // Fetch all reviews from Google for this location
       const { reviews, error } = await fetchAllLocationReviews(
         { accountId, locationId },
         accessToken
@@ -177,11 +190,12 @@ export async function POST(request: NextRequest) {
           `Error fetching reviews for location ${locationId}:`,
           error
         );
-        continue;
+        continue; // Skip this location and continue with others
       }
 
       totalFetchedCount += reviews.length;
 
+      // Get existing reviews from DB for this location
       const existingReviews = await prisma.gmb_reviews.findMany({
         where: {
           accountId,
@@ -198,14 +212,17 @@ export async function POST(request: NextRequest) {
       );
       const allExistingIds = new Set(existingReviews.map((r) => r.reviewId));
 
+      // Current review IDs from Google
       const currentReviewIds = new Set(
         reviews.map((r: any) => r.reviewId || r.name)
       );
 
+      // Find deleted reviews (exist in DB but not in current fetch)
       const deletedReviewIds = [...allExistingIds].filter(
         (id) => !currentReviewIds.has(id)
       );
 
+      // Mark deleted reviews
       if (deletedReviewIds.length > 0) {
         await prisma.gmb_reviews.updateMany({
           where: {
@@ -220,6 +237,7 @@ export async function POST(request: NextRequest) {
         totalDeletedReviews += deletedReviewIds.length;
       }
 
+      // Prepare new reviews to insert
       const newReviews = reviews
         .filter((r: any) => {
           const reviewId = r.reviewId || r.name;
@@ -249,6 +267,7 @@ export async function POST(request: NextRequest) {
           rawData: r,
         }));
 
+      // Insert new reviews (MongoDB doesn't support skipDuplicates, so insert one by one)
       if (newReviews.length > 0) {
         for (const review of newReviews) {
           try {
@@ -257,6 +276,7 @@ export async function POST(request: NextRequest) {
             });
             totalNewReviews++;
           } catch (error: any) {
+            // Skip if review already exists (duplicate key error)
             if (error.code !== "P2002") {
               console.error("Error inserting review:", error);
             }
@@ -265,14 +285,27 @@ export async function POST(request: NextRequest) {
       }
     }
 
-    // SOLUTION: Return minimal response for cron job
+    // Get all deleted reviews for this user's locations
+    const deletedReviews = await prisma.gmb_reviews.findMany({
+      where: {
+        accountId,
+        locationId: {
+          in: dbLocations.map((loc) => loc.location_id),
+        },
+        isDeleted: true,
+      },
+      orderBy: {
+        deletedAt: "desc",
+      },
+    });
+
     return NextResponse.json({
       success: true,
       totalFetched: totalFetchedCount,
       newReviews: totalNewReviews,
       deletedReviews: totalDeletedReviews,
+      deletedReviewsList: deletedReviews,
       locationsProcessed: dbLocations.length,
-      timestamp: new Date().toISOString(),
     });
   } catch (error) {
     console.error("Error tracking reviews:", error);
