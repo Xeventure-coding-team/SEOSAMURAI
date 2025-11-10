@@ -194,8 +194,27 @@ export async function POST(request: NextRequest) {
     //   return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     // }
 
-    const body = await request.json();
-    const { accountId, accessToken, chunkSize = 5 } = body;
+        // 2️⃣ Get active integrations
+    const activeIntegrations = await prisma.gmbIntegration.findFirst({
+      where: {
+        isActive: true,
+        // Remove token expiry check here - we'll handle refresh in getValidAccessToken
+      },
+      select: {
+        id: true,
+        userId: true,
+        user_id: true,
+        accountName: true,
+        accountId: true,
+        accessToken: true,
+        refreshToken: true,
+        tokenExpiry: true
+      }
+    });
+
+    const accountId = activeIntegrations.accountId;
+    const accessToken = activeIntegrations.accessToken
+    const chunkSize = 5
 
     if (!accountId || !accessToken) {
       return NextResponse.json(
