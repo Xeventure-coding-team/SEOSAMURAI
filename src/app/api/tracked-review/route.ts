@@ -28,9 +28,7 @@ async function fetchAllLocationReviews(
     let lastError: any = null;
     let success = false;
 
-    // Retry logic with exponential backoff
     for (let attempt = 1; attempt <= maxRetries; attempt++) {
-      // console.log('checking retry logic.!!')
       try {
         const reviewsResponse = await fetch(endpoint, {
           headers: {
@@ -42,7 +40,6 @@ async function fetchAllLocationReviews(
         if (!reviewsResponse.ok) {
           const errorText = await reviewsResponse.text();
 
-          // Don't retry on authentication or permission errors
           if (
             reviewsResponse.status === 401 ||
             reviewsResponse.status === 403
@@ -57,7 +54,6 @@ async function fetchAllLocationReviews(
             };
           }
 
-          // Don't retry on not found errors
           if (reviewsResponse.status === 404) {
             console.error(
               `Reviews API not found (${reviewsResponse.status}):`,
@@ -69,7 +65,6 @@ async function fetchAllLocationReviews(
             };
           }
 
-          // Retry on other errors (500, 503, network issues, etc.)
           lastError = new Error(`API error: ${reviewsResponse.status}`);
           console.warn(
             `Attempt ${attempt}/${maxRetries} failed for location ${locationId}:`,
@@ -77,7 +72,6 @@ async function fetchAllLocationReviews(
           );
 
           if (attempt < maxRetries) {
-            // Exponential backoff: 1s, 2s, 4s, 8s
             const delay = Math.pow(2, attempt - 1) * 1000;
             await new Promise((resolve) => setTimeout(resolve, delay));
             continue;
@@ -101,20 +95,18 @@ async function fetchAllLocationReviews(
         );
 
         if (attempt < maxRetries) {
-          // Exponential backoff on network errors
           const delay = Math.pow(2, attempt - 1) * 1000;
           await new Promise((resolve) => setTimeout(resolve, delay));
         }
       }
     }
 
-    // If all retries failed, return error
     if (!success) {
       console.error(
         `All ${maxRetries} attempts failed for location ${locationId}`
       );
       return {
-        reviews: allReviews, // Return any reviews fetched so far
+        reviews: allReviews,
         error:
           lastError instanceof Error
             ? lastError.message
@@ -140,7 +132,7 @@ export async function POST(request: NextRequest) {
     }
 
     const body = await request.json();
-    const { accountId, accessToken } = body;
+    const { accountId, accessToken, locationIds, chunkIndex = 0 } = body;
 
     if (!accountId || !accessToken) {
       return NextResponse.json(
@@ -151,7 +143,12 @@ export async function POST(request: NextRequest) {
 
     // Get all locations for this user from DB
     const dbLocations = await prisma.locations.findMany({
-      where: { user_id: user.id },
+      where: { 
+        user_id: user.id,
+        ...(locationIds && locationIds.length > 0 
+          ? { location_id: { in: locationIds } }
+          : {})
+      },
       select: {
         id: true,
         location_id: true,
@@ -166,17 +163,25 @@ export async function POST(request: NextRequest) {
         totalFetched: 0,
         newReviews: 0,
         deletedReviews: 0,
-        deletedReviewsList: [],
+        hasMore: false,
       });
     }
+
+    console.log('check route!')
+
+    // Process locations in chunks of 5
+    const CHUNK_SIZE = 5;
+    const startIndex = chunkIndex * CHUNK_SIZE;
+    const endIndex = startIndex + CHUNK_SIZE;
+    const locationsChunk = dbLocations.slice(startIndex, endIndex);
+    const hasMore = endIndex < dbLocations.length;
 
     let totalFetchedCount = 0;
     let totalNewReviews = 0;
     let totalDeletedReviews = 0;
-    const allDeletedReviews: any[] = [];
 
-    // Process each location
-    for (const location of dbLocations) {
+    // Process each location in this chunk
+    for (const location of locationsChunk) {
       const locationId = location.location_id;
 
       // Fetch all reviews from Google for this location
@@ -190,7 +195,7 @@ export async function POST(request: NextRequest) {
           `Error fetching reviews for location ${locationId}:`,
           error
         );
-        continue; // Skip this location and continue with others
+        continue;
       }
 
       totalFetchedCount += reviews.length;
@@ -217,7 +222,7 @@ export async function POST(request: NextRequest) {
         reviews.map((r: any) => r.reviewId || r.name)
       );
 
-      // Find deleted reviews (exist in DB but not in current fetch)
+      // Find deleted reviews
       const deletedReviewIds = [...allExistingIds].filter(
         (id) => !currentReviewIds.has(id)
       );
@@ -267,7 +272,7 @@ export async function POST(request: NextRequest) {
           rawData: r,
         }));
 
-      // Insert new reviews (MongoDB doesn't support skipDuplicates, so insert one by one)
+      // Insert new reviews
       if (newReviews.length > 0) {
         for (const review of newReviews) {
           try {
@@ -276,7 +281,6 @@ export async function POST(request: NextRequest) {
             });
             totalNewReviews++;
           } catch (error: any) {
-            // Skip if review already exists (duplicate key error)
             if (error.code !== "P2002") {
               console.error("Error inserting review:", error);
             }
@@ -285,27 +289,17 @@ export async function POST(request: NextRequest) {
       }
     }
 
-    // Get all deleted reviews for this user's locations
-    const deletedReviews = await prisma.gmb_reviews.findMany({
-      where: {
-        accountId,
-        locationId: {
-          in: dbLocations.map((loc) => loc.location_id),
-        },
-        isDeleted: true,
-      },
-      orderBy: {
-        deletedAt: "desc",
-      },
-    });
-
     return NextResponse.json({
       success: true,
       totalFetched: totalFetchedCount,
       newReviews: totalNewReviews,
       deletedReviews: totalDeletedReviews,
-      deletedReviewsList: deletedReviews,
-      locationsProcessed: dbLocations.length,
+      locationsProcessed: locationsChunk.length,
+      chunkIndex,
+      hasMore,
+      nextChunkIndex: hasMore ? chunkIndex + 1 : null,
+      totalLocations: dbLocations.length,
+      progress: `${Math.min(endIndex, dbLocations.length)}/${dbLocations.length}`,
     });
   } catch (error) {
     console.error("Error tracking reviews:", error);
