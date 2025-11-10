@@ -4,7 +4,8 @@ import { stackServerApp } from "@/stack";
 
 async function fetchAllLocationReviews(
   { accountId, locationId }: { accountId: string; locationId: string },
-  accessToken: string
+  accessToken: string,
+  maxRetries: number = 4
 ) {
   try {
     const cleanAccountId = accountId.replace(/^accounts\//, "");
@@ -25,33 +26,101 @@ async function fetchAllLocationReviews(
 
       endpoint += `?${params.toString()}`;
 
-      const reviewsResponse = await fetch(endpoint, {
-        headers: {
-          Authorization: `Bearer ${accessToken}`,
-          "Content-Type": "application/json",
-        },
-      });
+      let lastError: any = null;
+      let success = false;
 
-      if (!reviewsResponse.ok) {
-        const errorText = await reviewsResponse.text();
-        console.error(
-          `Reviews API error (${reviewsResponse.status}):`,
-          errorText
-        );
+      // Retry logic with exponential backoff
+      for (let attempt = 1; attempt <= maxRetries; attempt++) {
+        try {
+          const reviewsResponse = await fetch(endpoint, {
+            headers: {
+              Authorization: `Bearer ${accessToken}`,
+              "Content-Type": "application/json",
+            },
+          });
 
-        return {
-          reviews: [],
-          error: `API error: ${reviewsResponse.status}`,
-        };
+          if (!reviewsResponse.ok) {
+            const errorText = await reviewsResponse.text();
+
+            // Don't retry on authentication or permission errors
+            if (
+              reviewsResponse.status === 401 ||
+              reviewsResponse.status === 403
+            ) {
+              console.error(
+                `Reviews API auth error (${reviewsResponse.status}):`,
+                errorText
+              );
+              return {
+                reviews: [],
+                error: `Authentication error: ${reviewsResponse.status}`,
+              };
+            }
+
+            // Don't retry on not found errors
+            if (reviewsResponse.status === 404) {
+              console.error(
+                `Reviews API not found (${reviewsResponse.status}):`,
+                errorText
+              );
+              return {
+                reviews: [],
+                error: "Location not found",
+              };
+            }
+
+            // Retry on other errors (500, 503, network issues, etc.)
+            lastError = new Error(`API error: ${reviewsResponse.status}`);
+            console.warn(
+              `Attempt ${attempt}/${maxRetries} failed for location ${locationId}:`,
+              errorText
+            );
+
+            if (attempt < maxRetries) {
+              // Exponential backoff: 1s, 2s, 4s, 8s
+              const delay = Math.pow(2, attempt - 1) * 1000;
+              await new Promise((resolve) => setTimeout(resolve, delay));
+              continue;
+            }
+          } else {
+            const reviewsData = await reviewsResponse.json();
+            const pageReviews =
+              reviewsData.reviews?.reviews ?? reviewsData.reviews ?? [];
+            allReviews = [...allReviews, ...pageReviews];
+
+            nextPageToken = reviewsData.nextPageToken || null;
+            hasMorePages = !!nextPageToken;
+            success = true;
+            break;
+          }
+        } catch (error) {
+          lastError = error;
+          console.warn(
+            `Attempt ${attempt}/${maxRetries} failed for location ${locationId}:`,
+            error
+          );
+
+          if (attempt < maxRetries) {
+            // Exponential backoff on network errors
+            const delay = Math.pow(2, attempt - 1) * 1000;
+            await new Promise((resolve) => setTimeout(resolve, delay));
+          }
+        }
       }
 
-      const reviewsData = await reviewsResponse.json();
-      const pageReviews =
-        reviewsData.reviews?.reviews ?? reviewsData.reviews ?? [];
-      allReviews = [...allReviews, ...pageReviews];
-
-      nextPageToken = reviewsData.nextPageToken || null;
-      hasMorePages = !!nextPageToken;
+      // If all retries failed, return error
+      if (!success) {
+        console.error(
+          `All ${maxRetries} attempts failed for location ${locationId}`
+        );
+        return {
+          reviews: allReviews, // Return any reviews fetched so far
+          error:
+            lastError instanceof Error
+              ? lastError.message
+              : "Network or API error after retries",
+        };
+      }
 
       if (allReviews.length > 1000) {
         console.warn("Reached maximum review fetch limit (1000)");
@@ -194,7 +263,7 @@ export async function POST(request: NextRequest) {
     //   return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     // }
 
-        // 2️⃣ Get active integrations
+    // 2️⃣ Get active integrations
     const activeIntegrations = await prisma.gmbIntegration.findFirst({
       where: {
         isActive: true,
@@ -208,13 +277,13 @@ export async function POST(request: NextRequest) {
         accountId: true,
         accessToken: true,
         refreshToken: true,
-        tokenExpiry: true
-      }
+        tokenExpiry: true,
+      },
     });
 
     const accountId = activeIntegrations.accountId;
-    const accessToken = activeIntegrations.accessToken
-    const chunkSize = 5
+    const accessToken = activeIntegrations.accessToken;
+    const chunkSize = 5;
 
     if (!accountId || !accessToken) {
       return NextResponse.json(
