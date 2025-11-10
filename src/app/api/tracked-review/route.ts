@@ -1,6 +1,14 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "../../../../lib/prisma";
 import { stackServerApp } from "@/stack";
+import { gzip } from "zlib";
+import { promisify } from "util";
+
+// Add this export for Vercel to prevent timeout issues
+export const maxDuration = 60; // 60 seconds max for hobby plan
+export const dynamic = 'force-dynamic';
+
+const gzipAsync = promisify(gzip);
 
 async function fetchAllLocationReviews(
   { accountId, locationId }: { accountId: string; locationId: string },
@@ -158,25 +166,18 @@ export async function POST(request: NextRequest) {
 
     if (dbLocations.length === 0) {
       return NextResponse.json({
-        success: true,
-        message: "No locations found for user",
-        totalFetched: 0,
-        newReviews: 0,
-        deletedReviews: 0,
-        hasMore: false,
+        ok: true,
+        stats: { new: 0, deleted: 0, more: false }
       });
     }
 
-    console.log('check route!')
-
-    // Process locations in chunks of 5
-    const CHUNK_SIZE = 5;
+    // Process locations in chunks of 2 (optimized for Vercel timeout)
+    const CHUNK_SIZE = 2;
     const startIndex = chunkIndex * CHUNK_SIZE;
     const endIndex = startIndex + CHUNK_SIZE;
     const locationsChunk = dbLocations.slice(startIndex, endIndex);
     const hasMore = endIndex < dbLocations.length;
 
-    let totalFetchedCount = 0;
     let totalNewReviews = 0;
     let totalDeletedReviews = 0;
 
@@ -197,8 +198,6 @@ export async function POST(request: NextRequest) {
         );
         continue;
       }
-
-      totalFetchedCount += reviews.length;
 
       // Get existing reviews from DB for this location
       const existingReviews = await prisma.gmb_reviews.findMany({
@@ -289,22 +288,41 @@ export async function POST(request: NextRequest) {
       }
     }
 
-    return NextResponse.json({
-      success: true,
-      totalFetched: totalFetchedCount,
-      newReviews: totalNewReviews,
-      deletedReviews: totalDeletedReviews,
-      locationsProcessed: locationsChunk.length,
-      chunkIndex,
-      hasMore,
-      nextChunkIndex: hasMore ? chunkIndex + 1 : null,
-      totalLocations: dbLocations.length,
-      progress: `${Math.min(endIndex, dbLocations.length)}/${dbLocations.length}`,
-    });
+    // Prepare response data
+    const responseData = {
+      ok: true,
+      stats: {
+        new: totalNewReviews,
+        deleted: totalDeletedReviews,
+        more: hasMore,
+      }
+    };
+
+    // Check if client accepts gzip compression
+    const acceptEncoding = request.headers.get("accept-encoding") || "";
+    const supportsGzip = acceptEncoding.includes("gzip");
+
+    if (supportsGzip) {
+      // Compress response with gzip
+      const jsonString = JSON.stringify(responseData);
+      const compressed = await gzipAsync(Buffer.from(jsonString));
+
+      return new NextResponse(compressed, {
+        status: 200,
+        headers: {
+          "Content-Type": "application/json",
+          "Content-Encoding": "gzip",
+          "Content-Length": compressed.length.toString(),
+        },
+      });
+    } else {
+      // Return uncompressed if client doesn't support gzip
+      return NextResponse.json(responseData);
+    }
   } catch (error) {
     console.error("Error tracking reviews:", error);
     return NextResponse.json(
-      { error: "Failed to track reviews" },
+      { error: "Failed" },
       { status: 500 }
     );
   }
