@@ -74,8 +74,6 @@ export default function LocationSelector({
         },
       })
 
-      console.log(response,'response.!')
-
       if (response.data.data?.accounts && response.data.data.accounts.length > 0) {
         setLocations(response.data.data.accounts)
       } else if (response.data.accounts && response.data.accounts.length > 0) {
@@ -117,7 +115,7 @@ export default function LocationSelector({
   }
 
   return (
-    <div className={`space-y-2 ${className}`}>
+    <div className={`space-y-1 ${className}`}>
       {showLabel && (
         <label className="text-sm font-medium flex items-center gap-2">
           <MapPin className="h-4 w-4" />

@@ -6,7 +6,7 @@ import { promisify } from "util";
 
 // Add this export for Vercel to prevent timeout issues
 export const maxDuration = 60; // 60 seconds max for hobby plan
-export const dynamic = 'force-dynamic';
+export const dynamic = "force-dynamic";
 
 const gzipAsync = promisify(gzip);
 
@@ -151,11 +151,11 @@ export async function POST(request: NextRequest) {
 
     // Get all locations for this user from DB
     const dbLocations = await prisma.locations.findMany({
-      where: { 
+      where: {
         user_id: user.id,
-        ...(locationIds && locationIds.length > 0 
+        ...(locationIds && locationIds.length > 0
           ? { location_id: { in: locationIds } }
-          : {})
+          : {}),
       },
       select: {
         id: true,
@@ -167,7 +167,7 @@ export async function POST(request: NextRequest) {
     if (dbLocations.length === 0) {
       return NextResponse.json({
         ok: true,
-        stats: { new: 0, deleted: 0, more: false }
+        stats: { new: 0, deleted: 0, more: false },
       });
     }
 
@@ -295,7 +295,7 @@ export async function POST(request: NextRequest) {
         new: totalNewReviews,
         deleted: totalDeletedReviews,
         more: hasMore,
-      }
+      },
     };
 
     // Check if client accepts gzip compression
@@ -307,23 +307,12 @@ export async function POST(request: NextRequest) {
       const jsonString = JSON.stringify(responseData);
       const compressed = await gzipAsync(Buffer.from(jsonString));
 
-      return new NextResponse(compressed, {
-        status: 200,
-        headers: {
-          "Content-Type": "application/json",
-          "Content-Encoding": "gzip",
-          "Content-Length": compressed.length.toString(),
-        },
-      });
+      return NextResponse.json({ success: true }, { status: 200 });
     } else {
-      // Return uncompressed if client doesn't support gzip
-      return NextResponse.json(responseData);
+      return NextResponse.json({ success: true }, { status: 200 });
     }
   } catch (error) {
     console.error("Error tracking reviews:", error);
-    return NextResponse.json(
-      { error: "Failed" },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: "Failed" }, { status: 500 });
   }
 }
