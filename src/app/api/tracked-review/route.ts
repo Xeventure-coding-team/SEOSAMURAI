@@ -224,7 +224,7 @@ export async function POST(request: NextRequest) {
     }
 
     const dbLocations = await prisma.locations.findMany({
-      where: { user_id: user.id },
+      where: { user_id: activeIntegrations.userId },
       select: {
         id: true,
         location_id: true,
