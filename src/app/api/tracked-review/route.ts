@@ -135,9 +135,7 @@ export async function POST(request: NextRequest) {
   try {
     const user = await stackServerApp.getUser();
 
-    if (!user) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
+
 
     const body = await request.json();
     const { accountId, accessToken, locationIds, chunkIndex = 0 } = body;
@@ -152,7 +150,7 @@ export async function POST(request: NextRequest) {
     // Get all locations for this user from DB
     const dbLocations = await prisma.locations.findMany({
       where: {
-        user_id: user.id,
+        user_id: user.id, 
         ...(locationIds && locationIds.length > 0
           ? { location_id: { in: locationIds } }
           : {}),
