@@ -19,6 +19,8 @@ interface DeletedReview {
     deletedAt: Date | null;
     createTime: Date | null;
     rawData?: any;
+    locationName?: string;
+    profilePhotoUrl?: string | null;
 }
 
 interface TrackingResult {
@@ -32,6 +34,7 @@ interface TrackingResult {
 
 export default function TrackedReviewsPage() {
     const [isTracking, setIsTracking] = useState(false);
+    const [isLoading, setIsLoading] = useState(true);
     const [deletedReviews, setDeletedReviews] = useState<DeletedReview[]>([]);
     const [trackingResult, setTrackingResult] = useState<TrackingResult | null>(null);
     const [error, setError] = useState<string | null>(null);
@@ -40,18 +43,28 @@ export default function TrackedReviewsPage() {
     const accessToken = useGMBStore((state) => state.accessToken);
 
     useEffect(() => {
-        loadDeletedReviews();
-    }, []);
+        // Only load deleted reviews when accountId is available
+        if (accountId) {
+            loadDeletedReviews();
+        }
+    }, [accountId]);
 
     const loadDeletedReviews = async () => {
+        if (!accountId) return;
+        
+        setIsLoading(true);
         try {
             const response = await fetch(`/api/tracked-review/deleted?accountId=${accountId}`);
             if (response.ok) {
                 const data = await response.json();
                 setDeletedReviews(data.deletedReviews || []);
+            } else {
+                console.error("Failed to load deleted reviews");
             }
         } catch (err) {
             console.error("Error loading deleted reviews:", err);
+        } finally {
+            setIsLoading(false);
         }
     };
 
@@ -78,7 +91,9 @@ export default function TrackedReviewsPage() {
 
             const result = await response.json();
             setTrackingResult(result);
-            setDeletedReviews(result.deletedReviewsList || []);
+            
+            // Reload deleted reviews after tracking to get fresh data
+            await loadDeletedReviews();
         } catch (err) {
             setError(err instanceof Error ? err.message : 'An error occurred');
         } finally {
@@ -112,8 +127,8 @@ export default function TrackedReviewsPage() {
     };
 
     const getProfileImage = (review: DeletedReview) => {
-        // Try to get profile image from rawData
-        return review.rawData?.reviewer?.profilePhotoUrl || null;
+        // Use profilePhotoUrl from the review if available, otherwise try rawData
+        return review.profilePhotoUrl || review.rawData?.reviewer?.profilePhotoUrl || null;
     };
 
     return (
@@ -135,7 +150,7 @@ export default function TrackedReviewsPage() {
                 <CardContent>
                     <Button
                         onClick={handleTrackNow}
-                        disabled={isTracking}
+                        disabled={isTracking || !accountId}
                         className="w-full sm:w-auto"
                     >
                         {isTracking ? (
@@ -186,7 +201,12 @@ export default function TrackedReviewsPage() {
                     </div>
                 </CardHeader>
                 <CardContent>
-                    {deletedReviews.length === 0 ? (
+                    {isLoading ? (
+                        <div className="text-center py-12">
+                            <Loader2 className="mx-auto h-12 w-12 mb-3 animate-spin text-muted-foreground" />
+                            <p className="text-muted-foreground">Loading deleted reviews...</p>
+                        </div>
+                    ) : deletedReviews.length === 0 ? (
                         <div className="text-center py-12 text-muted-foreground">
                             <Trash2 className="mx-auto h-12 w-12 mb-3 opacity-20" />
                             <p>No deleted reviews found</p>
@@ -216,6 +236,11 @@ export default function TrackedReviewsPage() {
                                                         <div className="flex items-center gap-2 mt-1">
                                                             {renderStars(review.rating)}
                                                         </div>
+                                                        {review.locationName && (
+                                                            <p className="text-xs text-muted-foreground mt-1">
+                                                                {review.locationName}
+                                                            </p>
+                                                        )}
                                                     </div>
                                                     <Badge variant="destructive" className="text-xs flex-shrink-0">
                                                         Deleted
