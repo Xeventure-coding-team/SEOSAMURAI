@@ -248,7 +248,7 @@ export default function SharedGoogleReviewPosterList() {
               <CardHeader className="pb-3">
                 <div className="flex items-start justify-between gap-3">
                   <div className="flex-1 min-w-0">
-                    <CardTitle className="text-lg font-semibold truncate mb-1">
+                    <CardTitle className="text-lg font-semibold truncate mb-1 capitalize">
                       {poster.businessName}
                     </CardTitle>
                     <div className="flex items-center gap-1.5 text-xs text-muted-foreground">

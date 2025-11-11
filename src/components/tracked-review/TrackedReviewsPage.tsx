@@ -215,7 +215,7 @@ export default function TrackedReviewsPage() {
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                             {deletedReviews.map((review) => (
                                 <Card key={review.id} className="border-destructive/50 bg-destructive/5">
-                                    <CardContent className="p-4">
+                                    <CardContent>
                                         <div className="flex items-start gap-3">
                                             <Avatar className="h-10 w-10 flex-shrink-0">
                                                 <AvatarImage 
