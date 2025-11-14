@@ -11,6 +11,7 @@ interface Poster {
   businessName: string
   reviewUrl: string
   bgColor: string
+  bgPattern: string
   keywords: string[]
 }
 
@@ -52,14 +53,15 @@ export default function PosterViewPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 flex flex-col items-center justify-center ">
-        <ReviewPosterDisplay
-            businessName={poster.businessName}
-            reviewUrl={poster.reviewUrl}
-            bgColor={poster.bgColor}
-            keywords={poster.keywords.join(", ")}
-            fullWidth={true}
-        />
+    <div className="min-h-screen w-full" style={{ backgroundColor: poster.bgColor }}>
+      <ReviewPosterDisplay
+        businessName={poster.businessName}
+        reviewUrl={poster.reviewUrl}
+        bgColor={poster.bgColor}
+        bgPattern={poster.bgPattern}
+        keywords={poster.keywords.join(", ")}
+        fullWidth={true}
+      />
     </div>
   )
 }

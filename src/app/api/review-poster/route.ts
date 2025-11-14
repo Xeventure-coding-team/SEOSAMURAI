@@ -15,8 +15,7 @@ export async function POST(request: NextRequest) {
     }
 
     const body = await request.json();
-    const { businessName, reviewUrl, bgColor, keywords } = body;
-
+    const { businessName, reviewUrl, bgColor, bgPattern, keywords } = body;
 
     // Validation
     if (!businessName || !reviewUrl) {
@@ -49,6 +48,10 @@ export async function POST(request: NextRequest) {
       }
     }
 
+    // Validate bgPattern
+    const validPatterns = ["none", "dots", "grid", "lines", "zigzag", "circles", "diagonal", "waves"];
+    const finalBgPattern = validPatterns.includes(bgPattern) ? bgPattern : "none";
+
     // Create poster in database
     const poster = await prisma.googleReviewPoster.create({
       data: {
@@ -56,6 +59,7 @@ export async function POST(request: NextRequest) {
         businessName,
         reviewUrl,
         bgColor: bgColor || "#10b981",
+        bgPattern: finalBgPattern,
         keywords: keywordsArray,
         // placeId: placeId || null,
       },
@@ -68,6 +72,8 @@ export async function POST(request: NextRequest) {
         poster: {
           id: poster.id,
           businessName: poster.businessName,
+          bgColor: poster.bgColor,
+          bgPattern: poster.bgPattern,
           createdAt: poster.createdAt,
         }
       },
@@ -81,7 +87,6 @@ export async function POST(request: NextRequest) {
     );
   }
 }
-
 
 export async function GET(request: NextRequest) {
   try {
@@ -116,6 +121,16 @@ export async function GET(request: NextRequest) {
         orderBy: { createdAt: "desc" },
         take: limit,
         skip: offset,
+        select: {
+          id: true,
+          businessName: true,
+          reviewUrl: true,
+          bgColor: true,
+          bgPattern: true, 
+          keywords: true,
+          createdAt: true,
+          updatedAt: true,
+        },
       }),
       prisma.googleReviewPoster.count({ where }),
     ]);
@@ -227,7 +242,7 @@ export async function PUT(request: NextRequest) {
     }
 
     const body = await request.json();
-    const { businessName, reviewUrl, bgColor, keywords } = body;
+    const { businessName, reviewUrl, bgColor, bgPattern, keywords } = body;
 
     // Validation
     if (!businessName || !reviewUrl) {
@@ -279,6 +294,10 @@ export async function PUT(request: NextRequest) {
       }
     }
 
+    // Validate bgPattern
+    const validPatterns = ["none", "dots", "grid", "lines", "zigzag", "circles", "diagonal", "waves"];
+    const finalBgPattern = validPatterns.includes(bgPattern) ? bgPattern : "none";
+
     // Update poster in database
     const updatedPoster = await prisma.googleReviewPoster.update({
       where: { id: posterId },
@@ -286,6 +305,7 @@ export async function PUT(request: NextRequest) {
         businessName,
         reviewUrl,
         bgColor: bgColor || "#10b981",
+        bgPattern: finalBgPattern,
         keywords: keywordsArray,
       },
     });

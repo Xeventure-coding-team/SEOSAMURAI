@@ -1,6 +1,5 @@
 // app/api/review-poster/[id]/route.ts
 import { NextRequest, NextResponse } from "next/server";
-// import { prisma } from "@/lib/prisma";
 import { stackServerApp } from "@/stack";
 import { prisma } from "../../../../../lib/prisma";
 
@@ -32,6 +31,17 @@ export async function GET(
     // Fetch the poster
     const poster = await prisma.googleReviewPoster.findUnique({
       where: { id: posterId },
+      select: {
+        id: true,
+        businessName: true,
+        reviewUrl: true,
+        bgColor: true,
+        bgPattern: true, // Make sure to include bgPattern
+        keywords: true,
+        userId: true,
+        createdAt: true,
+        updatedAt: true,
+      },
     });
 
     if (!poster) {

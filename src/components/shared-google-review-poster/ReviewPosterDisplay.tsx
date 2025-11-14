@@ -8,12 +8,116 @@ interface ReviewPosterDisplayProps {
   businessName: string
   reviewUrl: string
   bgColor: string
+  bgPattern: string
   keywords: string
   fullWidth?: boolean
-
 }
 
-export default function ReviewPosterDisplay({ businessName, reviewUrl, bgColor, keywords,fullWidth = false }: ReviewPosterDisplayProps) {
+const PatternOverlay = ({ pattern, color }: { pattern: string; color: string }) => {
+  if (pattern === "none") return null;
+
+  const patterns = {
+    dots: (
+      <div className="w-full h-full" style={{ backgroundColor: color }}>
+        <svg width="100%" height="100%" xmlns="http://www.w3.org/2000/svg">
+          <defs>
+            <pattern id="dots-pattern" x="0" y="0" width="20" height="20" patternUnits="userSpaceOnUse">
+              <circle cx="2" cy="2" r="1" fill="white" opacity="0.15" />
+            </pattern>
+          </defs>
+          <rect width="100%" height="100%" fill="url(#dots-pattern)" />
+        </svg>
+      </div>
+    ),
+    grid: (
+      <div className="w-full h-full" style={{ backgroundColor: color }}>
+        <svg width="100%" height="100%" xmlns="http://www.w3.org/2000/svg">
+          <defs>
+            <pattern id="grid-pattern" width="20" height="20" patternUnits="userSpaceOnUse">
+              <path d="M 20 0 L 0 0 0 20" fill="none" stroke="white" strokeWidth="1" opacity="0.15" />
+            </pattern>
+          </defs>
+          <rect width="100%" height="100%" fill="url(#grid-pattern)" />
+        </svg>
+      </div>
+    ),
+    lines: (
+      <div className="w-full h-full" style={{ backgroundColor: color }}>
+        <svg width="100%" height="100%" xmlns="http://www.w3.org/2000/svg">
+          <defs>
+            <pattern id="lines-pattern" width="10" height="10" patternUnits="userSpaceOnUse">
+              <path d="M 0 10 L 10 0" stroke="white" strokeWidth="1" opacity="0.15" />
+            </pattern>
+          </defs>
+          <rect width="100%" height="100%" fill="url(#lines-pattern)" />
+        </svg>
+      </div>
+    ),
+    zigzag: (
+      <div className="w-full h-full" style={{ backgroundColor: color }}>
+        <svg width="100%" height="100%" xmlns="http://www.w3.org/2000/svg">
+          <defs>
+            <pattern id="zigzag-pattern" width="20" height="20" patternUnits="userSpaceOnUse">
+              <path d="M 0 10 L 10 0 L 20 10 L 30 0" stroke="white" strokeWidth="2" opacity="0.15" fill="none" />
+            </pattern>
+          </defs>
+          <rect width="100%" height="100%" fill="url(#zigzag-pattern)" />
+        </svg>
+      </div>
+    ),
+    circles: (
+      <div className="w-full h-full" style={{ backgroundColor: color }}>
+        <svg width="100%" height="100%" xmlns="http://www.w3.org/2000/svg">
+          <defs>
+            <pattern id="circles-pattern" width="40" height="40" patternUnits="userSpaceOnUse">
+              <circle cx="20" cy="20" r="15" fill="none" stroke="white" strokeWidth="1" opacity="0.15" />
+            </pattern>
+          </defs>
+          <rect width="100%" height="100%" fill="url(#circles-pattern)" />
+        </svg>
+      </div>
+    ),
+    diagonal: (
+      <div className="w-full h-full" style={{ backgroundColor: color }}>
+        <svg width="100%" height="100%" xmlns="http://www.w3.org/2000/svg">
+          <defs>
+            <pattern id="diagonal-pattern" width="10" height="10" patternUnits="userSpaceOnUse">
+              <line x1="0" y1="0" x2="10" y2="10" stroke="white" strokeWidth="1" opacity="0.15" />
+            </pattern>
+          </defs>
+          <rect width="100%" height="100%" fill="url(#diagonal-pattern)" />
+        </svg>
+      </div>
+    ),
+    waves: (
+      <div className="w-full h-full" style={{ backgroundColor: color }}>
+        <svg width="100%" height="100%" xmlns="http://www.w3.org/2000/svg">
+          <defs>
+            <pattern id="waves-pattern" width="40" height="20" patternUnits="userSpaceOnUse">
+              <path d="M 0 10 Q 10 5, 20 10 T 40 10" stroke="white" strokeWidth="1" opacity="0.15" fill="none" />
+            </pattern>
+          </defs>
+          <rect width="100%" height="100%" fill="url(#waves-pattern)" />
+        </svg>
+      </div>
+    )
+  };
+
+  return (
+    <div className="absolute inset-0 pointer-events-none z-0">
+      {patterns[pattern as keyof typeof patterns] || null}
+    </div>
+  );
+};
+
+export default function ReviewPosterDisplay({
+  businessName,
+  reviewUrl,
+  bgColor,
+  bgPattern,
+  keywords,
+  fullWidth = false
+}: ReviewPosterDisplayProps) {
   const posterRef = useRef<HTMLDivElement>(null)
   const [qrCode, setQrCode] = useState<string>("")
 
@@ -62,19 +166,31 @@ export default function ReviewPosterDisplay({ businessName, reviewUrl, bgColor, 
 
   return (
     <div
-    className={"w-full flex flex-col items-center"}
-    style={{
-      backgroundColor: fullWidth ? bgColor : "#f9fafb",
-    }}
-  >
-    <div ref={posterRef} className={`w-full max-w-4xl overflow-hidden ${
-        fullWidth
-          ? "shadow-none rounded-t-3xl"
-          : "max-w-4xl shadow-2xl rounded-2xl"
-      }`}>
-     <div className="w-full h-full flex flex-col" style={{ backgroundColor: bgColor }}>
+      className={"w-full flex flex-col items-center justify-center min-h-screen"}>
+      {fullWidth && (
+        <div className="fixed inset-0 pointer-events-none z-0">
+          <PatternOverlay pattern={bgPattern} color={bgColor} />
+        </div>
+      )}
+
+      {/* Poster Content Container */}
+      <div
+        ref={posterRef}
+        className={`overflow-hidden relative ${fullWidth
+          ? "w-[1080px] shadow-none rounded-t-3xl"
+          : "w-full max-w-4xl shadow-2xl rounded-2xl"
+          }`}
+        style={{
+          backgroundColor: fullWidth ? 'transparent' : bgColor,
+        }}
+      >
+        {!fullWidth && (
+          <PatternOverlay pattern={bgPattern} color={bgColor} />
+        )}
+
+        {/* Main Content */}
+        <div className="w-full h-full flex flex-col relative z-10">
           <div className="flex-1 px-8 md:px-12 pt-12 pb-8 text-white">
-            {/* Title section with better typography */}
             <div className="text-center mb-10">
               <h1 className="text-4xl md:text-5xl font-bold mb-4 tracking-tight leading-tight">
                 Share Your Experience
@@ -85,7 +201,6 @@ export default function ReviewPosterDisplay({ businessName, reviewUrl, bgColor, 
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-12 items-center mt-10">
-              {/* Left side - Instructions with improved styling */}
               <div className="space-y-6">
                 <div className="space-y-5">
                   {[
@@ -119,9 +234,8 @@ export default function ReviewPosterDisplay({ businessName, reviewUrl, bgColor, 
                 </div>
               </div>
 
-              {/* Right side - Phone mockup with improved design */}
+              {/* Right side */}
               <div className="relative flex items-center justify-center h-full">
-
                 <div className="relative z-10">
                   <div
                     className="bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 rounded-[2.5rem] p-3 shadow-2xl"
@@ -144,7 +258,6 @@ export default function ReviewPosterDisplay({ businessName, reviewUrl, bgColor, 
                     </div>
                   </div>
                 </div>
- 
               </div>
             </div>
           </div>
@@ -159,7 +272,6 @@ export default function ReviewPosterDisplay({ businessName, reviewUrl, bgColor, 
                 <p className="text-sm text-gray-600">Highly rated on Google</p>
               </div>
             </div>
-
 
             {keywordList.length > 0 && (
               <div>
@@ -177,17 +289,18 @@ export default function ReviewPosterDisplay({ businessName, reviewUrl, bgColor, 
               </div>
             )}
           </div>
+
+          {/* Bottom section */}
           <div
-            className={`bg-gradient-to-r from-gray-900 via-gray-800 to-gray-900 text-white px-8 md:px-12 py-8 ${
-            fullWidth ? "rounded-t-3xl": ""}` }
+            className={`bg-gradient-to-r from-gray-900 via-gray-800 to-gray-900 text-white px-8 md:px-12 py-8 ${fullWidth ? "rounded-t-3xl" : ""}`}
           >
-            <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4 ">
+            <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
               <div>
                 <p className="font-bold text-lg md:text-xl mb-1">What would you say about us?</p>
                 <p className="text-sm opacity-75">Your feedback helps us improve</p>
               </div>
-              <div className="flex items-center gap-2 bg-white/10 px-4 py-2.5  backdrop-blur-sm whitespace-nowrap">
-                <div className="w-6 h-6 bg-blue-500  flex items-center justify-center flex-shrink-0">
+              <div className="flex items-center gap-2 bg-white/10 px-4 py-2.5 backdrop-blur-sm whitespace-nowrap">
+                <div className="w-6 h-6 bg-blue-500 flex items-center justify-center flex-shrink-0">
                   <span className="text-white text-xs font-bold">S</span>
                 </div>
                 <span className="text-sm font-semibold">SEO Samurai</span>

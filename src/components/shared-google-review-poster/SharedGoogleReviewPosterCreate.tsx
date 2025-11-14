@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
 import { Card, CardHeader, CardContent, CardTitle } from "@/components/ui/card"
-import { QrCode, Save, Loader2 } from "lucide-react"
+import { QrCode, Save, Loader2, Palette } from "lucide-react"
 import ReviewPosterDisplay from "./ReviewPosterDisplay"
 import LocationSelector from "./LocationSelector"
 import toast from "react-hot-toast"
@@ -26,13 +26,121 @@ interface Location {
   }
 }
 
+// Background pattern options
+const patternOptions = [
+  { 
+    id: "none", 
+    name: "None", 
+    component: null 
+  },
+  { 
+    id: "dots", 
+    name: "Dots", 
+    component: (
+      <svg width="100%" height="100%" xmlns="http://www.w3.org/2000/svg">
+        <defs>
+          <pattern id="dots" x="0" y="0" width="20" height="20" patternUnits="userSpaceOnUse">
+            <circle cx="2" cy="2" r="1" fill="currentColor" opacity="0.1"/>
+          </pattern>
+        </defs>
+        <rect width="100%" height="100%" fill="url(#dots)" />
+      </svg>
+    )
+  },
+  { 
+    id: "grid", 
+    name: "Grid", 
+    component: (
+      <svg width="100%" height="100%" xmlns="http://www.w3.org/2000/svg">
+        <defs>
+          <pattern id="grid" width="20" height="20" patternUnits="userSpaceOnUse">
+            <path d="M 20 0 L 0 0 0 20" fill="none" stroke="currentColor" strokeWidth="1" opacity="0.1"/>
+          </pattern>
+        </defs>
+        <rect width="100%" height="100%" fill="url(#grid)" />
+      </svg>
+    )
+  },
+  { 
+    id: "lines", 
+    name: "Lines", 
+    component: (
+      <svg width="100%" height="100%" xmlns="http://www.w3.org/2000/svg">
+        <defs>
+          <pattern id="lines" width="10" height="10" patternUnits="userSpaceOnUse">
+            <path d="M 0 10 L 10 0" stroke="currentColor" strokeWidth="1" opacity="0.1"/>
+          </pattern>
+        </defs>
+        <rect width="100%" height="100%" fill="url(#lines)" />
+      </svg>
+    )
+  },
+  { 
+    id: "zigzag", 
+    name: "Zigzag", 
+    component: (
+      <svg width="100%" height="100%" xmlns="http://www.w3.org/2000/svg">
+        <defs>
+          <pattern id="zigzag" width="20" height="20" patternUnits="userSpaceOnUse">
+            <path d="M 0 10 L 10 0 L 20 10 L 30 0" stroke="currentColor" strokeWidth="2" opacity="0.1" fill="none"/>
+          </pattern>
+        </defs>
+        <rect width="100%" height="100%" fill="url(#zigzag)" />
+      </svg>
+    )
+  },
+  { 
+    id: "circles", 
+    name: "Circles", 
+    component: (
+      <svg width="100%" height="100%" xmlns="http://www.w3.org/2000/svg">
+        <defs>
+          <pattern id="circles" width="40" height="40" patternUnits="userSpaceOnUse">
+            <circle cx="20" cy="20" r="15" fill="none" stroke="currentColor" strokeWidth="1" opacity="0.1"/>
+          </pattern>
+        </defs>
+        <rect width="100%" height="100%" fill="url(#circles)" />
+      </svg>
+    )
+  },
+  { 
+    id: "diagonal", 
+    name: "Diagonal", 
+    component: (
+      <svg width="100%" height="100%" xmlns="http://www.w3.org/2000/svg">
+        <defs>
+          <pattern id="diagonal" width="10" height="10" patternUnits="userSpaceOnUse">
+            <line x1="0" y1="0" x2="10" y2="10" stroke="currentColor" strokeWidth="1" opacity="0.1"/>
+          </pattern>
+        </defs>
+        <rect width="100%" height="100%" fill="url(#diagonal)" />
+      </svg>
+    )
+  },
+  { 
+    id: "waves", 
+    name: "Waves", 
+    component: (
+      <svg width="100%" height="100%" xmlns="http://www.w3.org/2000/svg">
+        <defs>
+          <pattern id="waves" width="40" height="20" patternUnits="userSpaceOnUse">
+            <path d="M 0 10 Q 10 5, 20 10 T 40 10" stroke="currentColor" strokeWidth="1" opacity="0.1" fill="none"/>
+          </pattern>
+        </defs>
+        <rect width="100%" height="100%" fill="url(#waves)" />
+      </svg>
+    )
+  }
+]
+
 export default function GoogleReviewPosterCreate() {
   const [businessName, setBusinessName] = useState("")
   const [reviewUrl, setReviewUrl] = useState("")
   const [bgColor, setBgColor] = useState("#10b981")
+  const [bgPattern, setBgPattern] = useState("none")
   const [keywords, setKeywords] = useState("")
   const [showPoster, setShowPoster] = useState(false)
-  const [selectedLocation, setSelectedLocation] = useState<string>("")
+  const [selectedLocation, setSelectedLocation] = useState("")
   const [selectedLocationData, setSelectedLocationData] = useState<Location | null>(null)
   const [saving, setSaving] = useState(false)
 
@@ -80,6 +188,7 @@ export default function GoogleReviewPosterCreate() {
         businessName,
         reviewUrl,
         bgColor,
+        bgPattern, 
         keywords: keywords || null,
         placeId: selectedLocationData?.metadata?.placeId || null,
       }
@@ -91,9 +200,6 @@ export default function GoogleReviewPosterCreate() {
           duration: 3000,
           position: "top-right",
         })
-
-        // Optional: Reset form or redirect
-        // resetForm()
       }
     } catch (error: any) {
       const errorMessage = error.response?.data?.error || error.message || "Failed to save poster"
@@ -198,6 +304,44 @@ export default function GoogleReviewPosterCreate() {
                   </div>
                 </div>
 
+                {/* New Background Pattern Section */}
+                <div className="space-y-2">
+                  <label className="text-sm font-medium flex items-center gap-2">
+                    <Palette className="w-4 h-4" />
+                    Background Pattern
+                  </label>
+                  <div className="grid grid-cols-4 gap-2">
+                    {patternOptions.map((pattern) => (
+                      <button
+                        key={pattern.id}
+                        onClick={() => setBgPattern(pattern.id)}
+                        className={`relative aspect-square rounded-md border-2 overflow-hidden transition-all ${
+                          bgPattern === pattern.id 
+                            ? "border-primary ring-2 ring-primary/20" 
+                            : "border-border hover:border-primary/50"
+                        }`}
+                        title={pattern.name}
+                      >
+                        {pattern.id === "none" ? (
+                          <div className="w-full h-full bg-muted flex items-center justify-center">
+                            <span className="text-xs font-medium">None</span>
+                          </div>
+                        ) : (
+                          <div 
+                            className="w-full h-full text-white"
+                            style={{ color: bgColor }}
+                          >
+                            {pattern.component}
+                          </div>
+                        )}
+                      </button>
+                    ))}
+                  </div>
+                  <p className="text-xs text-muted-foreground">
+                    Choose a pattern to overlay on your background
+                  </p>
+                </div>
+
                 <div className="space-y-2">
                   <label className="text-sm font-medium">Keywords / Review Hints</label>
                   <Textarea
@@ -251,6 +395,7 @@ export default function GoogleReviewPosterCreate() {
                       businessName={businessName}
                       reviewUrl={reviewUrl}
                       bgColor={bgColor}
+                      bgPattern={bgPattern} 
                       keywords={keywords}
                     />
                   </div>

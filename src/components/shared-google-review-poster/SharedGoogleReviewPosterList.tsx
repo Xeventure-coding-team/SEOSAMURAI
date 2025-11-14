@@ -34,6 +34,7 @@ interface SavedPoster {
   businessName: string
   reviewUrl: string
   bgColor: string
+  bgPattern: string
   keywords: string[]
   placeId: string | null
   createdAt: string
@@ -44,6 +45,7 @@ interface EditFormData {
   businessName: string
   reviewUrl: string
   bgColor: string
+  bgPattern: string
   keywords: string
 }
 
@@ -59,6 +61,7 @@ export default function SharedGoogleReviewPosterList() {
     businessName: "",
     reviewUrl: "",
     bgColor: "#10b981",
+    bgPattern: "none",
     keywords: "",
   })
 
@@ -85,11 +88,11 @@ export default function SharedGoogleReviewPosterList() {
   }
 
   const handleViewClick = (poster: SavedPoster) => {
-    // Open in new tab with poster data as URL params
     const params = new URLSearchParams({
       businessName: poster.businessName,
       reviewUrl: poster.reviewUrl,
       bgColor: poster.bgColor,
+      bgPattern: poster.bgPattern || "none",
       keywords: poster.keywords.join(","),
     })
     window.open(`/app/shared-google-review-poster/view?${params.toString()}`, '_blank')
@@ -101,6 +104,7 @@ export default function SharedGoogleReviewPosterList() {
       businessName: poster.businessName,
       reviewUrl: poster.reviewUrl,
       bgColor: poster.bgColor,
+      bgPattern: poster.bgPattern || "none",
       keywords: poster.keywords.join(", "),
     })
     setEditDialogOpen(true)
@@ -122,6 +126,7 @@ export default function SharedGoogleReviewPosterList() {
         businessName: editFormData.businessName,
         reviewUrl: editFormData.reviewUrl,
         bgColor: editFormData.bgColor,
+        bgPattern: editFormData.bgPattern,
         keywords: editFormData.keywords,
       })
 
@@ -131,7 +136,6 @@ export default function SharedGoogleReviewPosterList() {
           position: "top-right",
         })
         
-        // Update local state
         setPosters(posters.map(p => 
           p.id === editing ? { ...p, ...response.data.poster } : p
         ))
@@ -164,7 +168,6 @@ export default function SharedGoogleReviewPosterList() {
         position: "top-right",
       })
       
-      // Remove from local state
       setPosters(posters.filter(p => p.id !== posterToDelete))
       setDeleteDialogOpen(false)
       setPosterToDelete(null)
@@ -185,6 +188,15 @@ export default function SharedGoogleReviewPosterList() {
     { name: "Purple", value: "#8b5cf6" },
     { name: "Orange", value: "#f59e0b" },
     { name: "Red", value: "#ef4444" },
+  ]
+
+  const patternOptions = [
+    { name: "None", value: "none" },
+    { name: "Dots", value: "dots" },
+    { name: "Grid", value: "grid" },
+    { name: "Diagonal", value: "diagonal" },
+    { name: "Waves", value: "waves" },
+    { name: "Circles", value: "circles" },
   ]
 
   if (loading) {
@@ -379,6 +391,26 @@ export default function SharedGoogleReviewPosterList() {
                     style={{ backgroundColor: color.value }}
                     title={color.name}
                   />
+                ))}
+              </div>
+            </div>
+
+            {/* Pattern Selector */}
+            <div className="space-y-2">
+              <label className="text-sm font-medium">Background Pattern</label>
+              <div className="grid grid-cols-3 gap-2">
+                {patternOptions.map((pattern) => (
+                  <button
+                    key={pattern.value}
+                    onClick={() => setEditFormData({ ...editFormData, bgPattern: pattern.value })}
+                    className={`px-3 py-2 rounded-md border-2 text-sm font-medium transition-colors ${
+                      editFormData.bgPattern === pattern.value
+                        ? "border-primary bg-primary/10 text-primary"
+                        : "border-border hover:border-primary"
+                    }`}
+                  >
+                    {pattern.name}
+                  </button>
                 ))}
               </div>
             </div>
