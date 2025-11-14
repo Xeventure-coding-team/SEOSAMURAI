@@ -432,6 +432,7 @@ exports.Prisma.GoogleReviewPosterScalarFieldEnum = {
   businessName: 'businessName',
   reviewUrl: 'reviewUrl',
   bgColor: 'bgColor',
+  bgPattern: 'bgPattern',
   keywords: 'keywords',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'

@@ -493,6 +493,7 @@ model GoogleReviewPoster {
   businessName String
   reviewUrl    String
   bgColor      String   @default("#10b981")
+  bgPattern    String   @default("none")
   keywords     String[] @default([])  // Array of keywords
   
   createdAt    DateTime @default(now())

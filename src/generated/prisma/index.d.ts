@@ -23694,6 +23694,7 @@ export namespace Prisma {
     businessName: string | null
     reviewUrl: string | null
     bgColor: string | null
+    bgPattern: string | null
     createdAt: Date | null
     updatedAt: Date | null
   }
@@ -23704,6 +23705,7 @@ export namespace Prisma {
     businessName: string | null
     reviewUrl: string | null
     bgColor: string | null
+    bgPattern: string | null
     createdAt: Date | null
     updatedAt: Date | null
   }
@@ -23714,6 +23716,7 @@ export namespace Prisma {
     businessName: number
     reviewUrl: number
     bgColor: number
+    bgPattern: number
     keywords: number
     createdAt: number
     updatedAt: number
@@ -23727,6 +23730,7 @@ export namespace Prisma {
     businessName?: true
     reviewUrl?: true
     bgColor?: true
+    bgPattern?: true
     createdAt?: true
     updatedAt?: true
   }
@@ -23737,6 +23741,7 @@ export namespace Prisma {
     businessName?: true
     reviewUrl?: true
     bgColor?: true
+    bgPattern?: true
     createdAt?: true
     updatedAt?: true
   }
@@ -23747,6 +23752,7 @@ export namespace Prisma {
     businessName?: true
     reviewUrl?: true
     bgColor?: true
+    bgPattern?: true
     keywords?: true
     createdAt?: true
     updatedAt?: true
@@ -23831,6 +23837,7 @@ export namespace Prisma {
     businessName: string
     reviewUrl: string
     bgColor: string
+    bgPattern: string
     keywords: string[]
     createdAt: Date
     updatedAt: Date
@@ -23859,6 +23866,7 @@ export namespace Prisma {
     businessName?: boolean
     reviewUrl?: boolean
     bgColor?: boolean
+    bgPattern?: boolean
     keywords?: boolean
     createdAt?: boolean
     updatedAt?: boolean
@@ -23872,12 +23880,13 @@ export namespace Prisma {
     businessName?: boolean
     reviewUrl?: boolean
     bgColor?: boolean
+    bgPattern?: boolean
     keywords?: boolean
     createdAt?: boolean
     updatedAt?: boolean
   }
 
-  export type GoogleReviewPosterOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "userId" | "businessName" | "reviewUrl" | "bgColor" | "keywords" | "createdAt" | "updatedAt", ExtArgs["result"]["googleReviewPoster"]>
+  export type GoogleReviewPosterOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "userId" | "businessName" | "reviewUrl" | "bgColor" | "bgPattern" | "keywords" | "createdAt" | "updatedAt", ExtArgs["result"]["googleReviewPoster"]>
 
   export type $GoogleReviewPosterPayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     name: "GoogleReviewPoster"
@@ -23888,6 +23897,7 @@ export namespace Prisma {
       businessName: string
       reviewUrl: string
       bgColor: string
+      bgPattern: string
       keywords: string[]
       createdAt: Date
       updatedAt: Date
@@ -24288,6 +24298,7 @@ export namespace Prisma {
     readonly businessName: FieldRef<"GoogleReviewPoster", 'String'>
     readonly reviewUrl: FieldRef<"GoogleReviewPoster", 'String'>
     readonly bgColor: FieldRef<"GoogleReviewPoster", 'String'>
+    readonly bgPattern: FieldRef<"GoogleReviewPoster", 'String'>
     readonly keywords: FieldRef<"GoogleReviewPoster", 'String[]'>
     readonly createdAt: FieldRef<"GoogleReviewPoster", 'DateTime'>
     readonly updatedAt: FieldRef<"GoogleReviewPoster", 'DateTime'>
@@ -26090,6 +26101,7 @@ export namespace Prisma {
     businessName: 'businessName',
     reviewUrl: 'reviewUrl',
     bgColor: 'bgColor',
+    bgPattern: 'bgPattern',
     keywords: 'keywords',
     createdAt: 'createdAt',
     updatedAt: 'updatedAt'
@@ -28131,6 +28143,7 @@ export namespace Prisma {
     businessName?: StringFilter<"GoogleReviewPoster"> | string
     reviewUrl?: StringFilter<"GoogleReviewPoster"> | string
     bgColor?: StringFilter<"GoogleReviewPoster"> | string
+    bgPattern?: StringFilter<"GoogleReviewPoster"> | string
     keywords?: StringNullableListFilter<"GoogleReviewPoster">
     createdAt?: DateTimeFilter<"GoogleReviewPoster"> | Date | string
     updatedAt?: DateTimeFilter<"GoogleReviewPoster"> | Date | string
@@ -28142,6 +28155,7 @@ export namespace Prisma {
     businessName?: SortOrder
     reviewUrl?: SortOrder
     bgColor?: SortOrder
+    bgPattern?: SortOrder
     keywords?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
@@ -28156,6 +28170,7 @@ export namespace Prisma {
     businessName?: StringFilter<"GoogleReviewPoster"> | string
     reviewUrl?: StringFilter<"GoogleReviewPoster"> | string
     bgColor?: StringFilter<"GoogleReviewPoster"> | string
+    bgPattern?: StringFilter<"GoogleReviewPoster"> | string
     keywords?: StringNullableListFilter<"GoogleReviewPoster">
     createdAt?: DateTimeFilter<"GoogleReviewPoster"> | Date | string
     updatedAt?: DateTimeFilter<"GoogleReviewPoster"> | Date | string
@@ -28167,6 +28182,7 @@ export namespace Prisma {
     businessName?: SortOrder
     reviewUrl?: SortOrder
     bgColor?: SortOrder
+    bgPattern?: SortOrder
     keywords?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
@@ -28184,6 +28200,7 @@ export namespace Prisma {
     businessName?: StringWithAggregatesFilter<"GoogleReviewPoster"> | string
     reviewUrl?: StringWithAggregatesFilter<"GoogleReviewPoster"> | string
     bgColor?: StringWithAggregatesFilter<"GoogleReviewPoster"> | string
+    bgPattern?: StringWithAggregatesFilter<"GoogleReviewPoster"> | string
     keywords?: StringNullableListFilter<"GoogleReviewPoster">
     createdAt?: DateTimeWithAggregatesFilter<"GoogleReviewPoster"> | Date | string
     updatedAt?: DateTimeWithAggregatesFilter<"GoogleReviewPoster"> | Date | string
@@ -30410,6 +30427,7 @@ export namespace Prisma {
     businessName: string
     reviewUrl: string
     bgColor?: string
+    bgPattern?: string
     keywords?: GoogleReviewPosterCreatekeywordsInput | string[]
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -30421,6 +30439,7 @@ export namespace Prisma {
     businessName: string
     reviewUrl: string
     bgColor?: string
+    bgPattern?: string
     keywords?: GoogleReviewPosterCreatekeywordsInput | string[]
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -30431,6 +30450,7 @@ export namespace Prisma {
     businessName?: StringFieldUpdateOperationsInput | string
     reviewUrl?: StringFieldUpdateOperationsInput | string
     bgColor?: StringFieldUpdateOperationsInput | string
+    bgPattern?: StringFieldUpdateOperationsInput | string
     keywords?: GoogleReviewPosterUpdatekeywordsInput | string[]
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -30441,6 +30461,7 @@ export namespace Prisma {
     businessName?: StringFieldUpdateOperationsInput | string
     reviewUrl?: StringFieldUpdateOperationsInput | string
     bgColor?: StringFieldUpdateOperationsInput | string
+    bgPattern?: StringFieldUpdateOperationsInput | string
     keywords?: GoogleReviewPosterUpdatekeywordsInput | string[]
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -30452,6 +30473,7 @@ export namespace Prisma {
     businessName: string
     reviewUrl: string
     bgColor?: string
+    bgPattern?: string
     keywords?: GoogleReviewPosterCreatekeywordsInput | string[]
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -30462,6 +30484,7 @@ export namespace Prisma {
     businessName?: StringFieldUpdateOperationsInput | string
     reviewUrl?: StringFieldUpdateOperationsInput | string
     bgColor?: StringFieldUpdateOperationsInput | string
+    bgPattern?: StringFieldUpdateOperationsInput | string
     keywords?: GoogleReviewPosterUpdatekeywordsInput | string[]
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -30472,6 +30495,7 @@ export namespace Prisma {
     businessName?: StringFieldUpdateOperationsInput | string
     reviewUrl?: StringFieldUpdateOperationsInput | string
     bgColor?: StringFieldUpdateOperationsInput | string
+    bgPattern?: StringFieldUpdateOperationsInput | string
     keywords?: GoogleReviewPosterUpdatekeywordsInput | string[]
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -32082,6 +32106,7 @@ export namespace Prisma {
     businessName?: SortOrder
     reviewUrl?: SortOrder
     bgColor?: SortOrder
+    bgPattern?: SortOrder
     keywords?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
@@ -32093,6 +32118,7 @@ export namespace Prisma {
     businessName?: SortOrder
     reviewUrl?: SortOrder
     bgColor?: SortOrder
+    bgPattern?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
   }
@@ -32103,6 +32129,7 @@ export namespace Prisma {
     businessName?: SortOrder
     reviewUrl?: SortOrder
     bgColor?: SortOrder
+    bgPattern?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
   }
