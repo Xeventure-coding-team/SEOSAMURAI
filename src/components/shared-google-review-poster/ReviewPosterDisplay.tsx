@@ -235,7 +235,7 @@ export default function ReviewPosterDisplay({
               </div>
 
               {/* Right side */}
-              <div className="relative flex items-center justify-center h-full">
+              <div className="relative flex items-center justify-end h-full">
                 <div className="relative z-10">
                   <div
                     className="bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 rounded-[2.5rem] p-3 shadow-2xl"
