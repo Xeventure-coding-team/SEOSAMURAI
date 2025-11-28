@@ -34,7 +34,9 @@ import {
   ExternalLink,
   Megaphone,
   Contact,
-  ScanSearch
+  ScanSearch,
+  MessageCircle,
+  Headset
 } from "lucide-react"
 import { useUser } from "@stackframe/stack";
 import { usePathname } from "next/navigation";
@@ -87,6 +89,16 @@ const data = {
       title: "Tracked Reviews",
       url: "/app/tracked-reviews",
       icon: ScanSearch,
+    },
+    // {
+    //   title: "Chat",
+    //   url: "/app/new-chat",
+    //   icon: MessageCircle,
+    // },
+    {
+      title: "Help Desk",
+      url: "/app/help-desk",
+      icon: Headset,
     },
   ],
   navClouds: [

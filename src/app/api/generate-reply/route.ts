@@ -17,7 +17,7 @@ interface ErrorResponse {
   error: string
   details?: string
 }
-
+  
 interface SuccessResponse {
   reply: string
 }

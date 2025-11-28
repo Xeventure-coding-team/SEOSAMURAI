@@ -456,6 +456,20 @@ exports.Prisma.Gmb_reviewsScalarFieldEnum = {
   updatedAt: 'updatedAt'
 };
 
+exports.Prisma.ChatScalarFieldEnum = {
+  id: 'id',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+};
+
+exports.Prisma.MessageScalarFieldEnum = {
+  id: 'id',
+  chatId: 'chatId',
+  role: 'role',
+  content: 'content',
+  createdAt: 'createdAt'
+};
+
 exports.Prisma.SortOrder = {
   asc: 'asc',
   desc: 'desc'
@@ -520,7 +534,9 @@ exports.Prisma.ModelName = {
   LocationAchievement: 'LocationAchievement',
   UserTaskRefresh: 'UserTaskRefresh',
   GoogleReviewPoster: 'GoogleReviewPoster',
-  gmb_reviews: 'gmb_reviews'
+  gmb_reviews: 'gmb_reviews',
+  Chat: 'Chat',
+  Message: 'Message'
 };
 
 /**
