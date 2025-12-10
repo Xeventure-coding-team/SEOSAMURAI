@@ -24,22 +24,11 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog"
-import { Loader2, QrCode, Trash2, Edit, Eye, Calendar, ExternalLink, Plus } from "lucide-react"
+import { Loader2, QrCode, Trash2, Edit, Eye, Calendar, ExternalLink, Plus, Download } from "lucide-react"
 import axios from "axios"
 import toast from "react-hot-toast"
 import Link from "next/link"
-
-interface SavedPoster {
-  id: string
-  businessName: string
-  reviewUrl: string
-  bgColor: string
-  bgPattern: string
-  keywords: string[]
-  placeId: string | null
-  createdAt: string
-  updatedAt: string
-}
+import { downloadPosterAsPDF, SavedPoster } from "@/lib/download/poster-download"
 
 interface EditFormData {
   businessName: string
@@ -54,6 +43,7 @@ export default function SharedGoogleReviewPosterList() {
   const [loading, setLoading] = useState(true)
   const [deleting, setDeleting] = useState<string | null>(null)
   const [editing, setEditing] = useState<string | null>(null)
+  const [downloading, setDownloading] = useState<string | null>(null)
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
   const [posterToDelete, setPosterToDelete] = useState<string | null>(null)
   const [editDialogOpen, setEditDialogOpen] = useState(false)
@@ -73,7 +63,7 @@ export default function SharedGoogleReviewPosterList() {
     try {
       setLoading(true)
       const response = await axios.get("/api/review-poster")
-      
+
       if (response.data.success) {
         setPosters(response.data.posters)
       }
@@ -84,6 +74,27 @@ export default function SharedGoogleReviewPosterList() {
       })
     } finally {
       setLoading(false)
+    }
+  }
+
+  const handleDownloadClick = async (poster: SavedPoster) => {
+    setDownloading(poster.id)
+
+    try {
+      await downloadPosterAsPDF(poster)
+
+      toast.success("Poster downloaded successfully!", {
+        duration: 2000,
+        position: "top-right",
+      })
+    } catch (error) {
+      console.error('Download error:', error)
+      toast.error("Failed to download poster", {
+        duration: 3000,
+        position: "top-right",
+      })
+    } finally {
+      setDownloading(null)
     }
   }
 
@@ -135,11 +146,11 @@ export default function SharedGoogleReviewPosterList() {
           duration: 2000,
           position: "top-right",
         })
-        
-        setPosters(posters.map(p => 
+
+        setPosters(posters.map(p =>
           p.id === editing ? { ...p, ...response.data.poster } : p
         ))
-        
+
         setEditDialogOpen(false)
         setEditing(null)
       }
@@ -162,12 +173,12 @@ export default function SharedGoogleReviewPosterList() {
     try {
       setDeleting(posterToDelete)
       await axios.delete(`/api/review-poster?id=${posterToDelete}`)
-      
+
       toast.success("Poster deleted successfully", {
         duration: 2000,
         position: "top-right",
       })
-      
+
       setPosters(posters.filter(p => p.id !== posterToDelete))
       setDeleteDialogOpen(false)
       setPosterToDelete(null)
@@ -265,20 +276,20 @@ export default function SharedGoogleReviewPosterList() {
                     </CardTitle>
                     <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
                       <Calendar className="h-3 w-3" />
-                      <span>{new Date(poster.createdAt).toLocaleDateString('en-US', { 
-                        month: 'short', 
-                        day: 'numeric', 
-                        year: 'numeric' 
+                      <span>{new Date(poster.createdAt).toLocaleDateString('en-US', {
+                        month: 'short',
+                        day: 'numeric',
+                        year: 'numeric'
                       })}</span>
                     </div>
                   </div>
-                  <div 
-                    className="w-10 h-10 rounded-lg flex-shrink-0 shadow-sm ring-1 ring-black/5" 
+                  <div
+                    className="w-10 h-10 rounded-lg flex-shrink-0 shadow-sm ring-1 ring-black/5"
                     style={{ backgroundColor: poster.bgColor }}
                   />
                 </div>
               </CardHeader>
-              
+
               <CardContent className="space-y-4">
                 {/* Keywords */}
                 {poster.keywords && poster.keywords.length > 0 && (
@@ -312,15 +323,27 @@ export default function SharedGoogleReviewPosterList() {
                       View
                     </Link>
                   </Button>
-                  <Button 
-                    variant="outline" 
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => handleDownloadClick(poster)}
+                    disabled={downloading === poster.id}
+                  >
+                    {downloading === poster.id ? (
+                      <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                    ) : (
+                      <Download className="h-3.5 w-3.5" />
+                    )}
+                  </Button>
+                  <Button
+                    variant="outline"
                     size="sm"
                     onClick={() => handleEditClick(poster)}
                   >
                     <Edit className="h-3.5 w-3.5" />
                   </Button>
-                  <Button 
-                    variant="outline" 
+                  <Button
+                    variant="outline"
                     size="sm"
                     disabled={deleting === poster.id}
                     onClick={() => handleDeleteClick(poster.id)}
@@ -348,7 +371,7 @@ export default function SharedGoogleReviewPosterList() {
               Update your review poster details below
             </DialogDescription>
           </DialogHeader>
-          
+
           <div className="space-y-4 py-4">
             <div className="space-y-2">
               <label className="text-sm font-medium">Business Name</label>
@@ -385,9 +408,8 @@ export default function SharedGoogleReviewPosterList() {
                   <button
                     key={color.value}
                     onClick={() => setEditFormData({ ...editFormData, bgColor: color.value })}
-                    className={`w-full h-10 rounded-md border-2 transition-colors ${
-                      editFormData.bgColor === color.value ? 'border-primary' : 'border-border hover:border-primary'
-                    }`}
+                    className={`w-full h-10 rounded-md border-2 transition-colors ${editFormData.bgColor === color.value ? 'border-primary' : 'border-border hover:border-primary'
+                      }`}
                     style={{ backgroundColor: color.value }}
                     title={color.name}
                   />
@@ -403,11 +425,10 @@ export default function SharedGoogleReviewPosterList() {
                   <button
                     key={pattern.value}
                     onClick={() => setEditFormData({ ...editFormData, bgPattern: pattern.value })}
-                    className={`px-3 py-2 rounded-md border-2 text-sm font-medium transition-colors ${
-                      editFormData.bgPattern === pattern.value
+                    className={`px-3 py-2 rounded-md border-2 text-sm font-medium transition-colors ${editFormData.bgPattern === pattern.value
                         ? "border-primary bg-primary/10 text-primary"
                         : "border-border hover:border-primary"
-                    }`}
+                      }`}
                   >
                     {pattern.name}
                   </button>
