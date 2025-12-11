@@ -73,7 +73,7 @@ export default function Navbar({
         <NavbarComponent className="bg-transparent dark:bg-transparent rounded-full px-6 py-2.5 shadow-sm shadow-gray-200/50 dark:shadow-gray-800/50 backdrop-blur-md border border-gray-200/30 dark:border-gray-500/30">
           <NavbarLeft>
             <Link
-              href={homeUrl}
+              href={"#"}
               className="flex items-center gap-2 text-xl font-semibold text-gray-900 dark:text-white tracking-tight hover:opacity-90 transition-opacity duration-300"
             >
               {logo}

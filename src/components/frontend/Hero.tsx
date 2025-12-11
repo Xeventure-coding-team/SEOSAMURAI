@@ -2,8 +2,29 @@ import { ChevronRight, ArrowRight } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import SphereAnimation from "../eldoraui/sphere-animation"
 import Squares from "../Squares"
+import { useStackApp, useUser } from "@stackframe/stack"
+import { useRouter } from "next/navigation"                // App Router navigation
 
 export default function Hero() {
+
+  const user = useUser()
+  const stackApp = useStackApp()
+  const router = useRouter()
+
+  const handleGetStarted = () => {
+    if (user) {
+      router.push("app/dashboard")
+    } else {
+      // User not logged in → redirect to sign-in (and return to home after login)
+      //   stackApp.redirectToSignIn(
+      //     // Optional: redirect back to home after sign-in
+      //     {
+      //     redirectTo: "/",
+      //   }
+      // )
+      router.push("handler/signup")
+    }
+  }
   return (
     <div className="relative w-full flex flex-col overflow-hidden">
 
@@ -57,7 +78,9 @@ export default function Hero() {
                 </p>
 
                 <div className="flex items-center gap-4">
-                  <Button size="lg" className="rounded-full shadow-sm hover:shadow-md">
+                  <Button size="lg" className="rounded-full shadow-sm hover:shadow-md"
+                    onClick={handleGetStarted}
+                  >
                     Get Started
                     <ArrowRight className="ml-2 h-4 w-4" />
                   </Button>
