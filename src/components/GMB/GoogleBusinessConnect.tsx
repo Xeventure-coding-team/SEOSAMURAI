@@ -63,7 +63,7 @@ const GoogleBusinessConnect: React.FC = () => {
     const initializeComponent = async () => {
         try {
 
-            console.log(window.location.href, "window location href>!!")
+            console.log(window.location.href, "window location href testing!!")
 
             setState('loading')
             setError(null)
@@ -105,7 +105,7 @@ const GoogleBusinessConnect: React.FC = () => {
             })
 
             if (response.ok) {
-                console.log(window.location.href, "window location href>!!")
+                console.log(window.location.href, "window location")
 
                 const data = await response.json()
                 if (data.accessToken && data.isActive) {
