@@ -62,6 +62,9 @@ const GoogleBusinessConnect: React.FC = () => {
 
     const initializeComponent = async () => {
         try {
+
+            console.log(window.location.href, "window location href>!!")
+
             setState('loading')
             setError(null)
 
@@ -102,6 +105,8 @@ const GoogleBusinessConnect: React.FC = () => {
             })
 
             if (response.ok) {
+                console.log(window.location.href, "window location href>!!")
+
                 const data = await response.json()
                 if (data.accessToken && data.isActive) {
                     console.log("Existing valid connection found")
@@ -112,6 +117,8 @@ const GoogleBusinessConnect: React.FC = () => {
                     setTimeout(() => {
                         if (!window.location.pathname.includes('/locations')) {
                             window.location.href = "/app/locations"
+
+                            console.log(window.location.href, "window location href>!!")
                         }
                     }, 2000)
                     return
