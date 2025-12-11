@@ -105,7 +105,6 @@ const GoogleBusinessConnect: React.FC = () => {
             })
 
             if (response.ok) {
-                console.log(window.location.href, "window location")
 
                 const data = await response.json()
                 if (data.accessToken && data.isActive) {
