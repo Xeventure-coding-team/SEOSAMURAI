@@ -8,7 +8,7 @@ export default function Home() {
   return (
     <MainLayout>
         <Hero />
-      <div className="max-w-screen-xl mx-auto text-gray-600 gap-x-12 ">
+      <div className="max-w-screen-xl mx-auto text-gray-600 gap-x-12 pb-8 mb-8">
         <FeaturesList />
       </div>
     </MainLayout>
