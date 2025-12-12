@@ -113,6 +113,8 @@ export default function LocationDashboard() {
         const apiUrl = process.env.NEXT_PUBLIC_API_URL
         const url = `${apiUrl}/api/gmb/location?location_name=${encodeURIComponent(locationId)}&access_token=${encodeURIComponent(accessToken)}&gmb_account_id=${encodeURIComponent(accountId || "")}`
 
+        console.log('url from locations detail..!', url)
+
         const res = await fetch(url, { cache: "no-store" })
 
         if (!res.ok) {
