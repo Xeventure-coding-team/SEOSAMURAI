@@ -122,7 +122,7 @@ export async function POST(request: NextRequest): Promise<NextResponse<SuccessRe
             temperature: 0.7,
             topP: 0.8,
             topK: 40,
-            maxOutputTokens: 500,
+            maxOutputTokens: 1024,
           },
         });
 
