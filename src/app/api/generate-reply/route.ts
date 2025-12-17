@@ -17,7 +17,7 @@ interface ErrorResponse {
   error: string
   details?: string
 }
-  
+
 interface SuccessResponse {
   reply: string
 }
@@ -122,7 +122,7 @@ export async function POST(request: NextRequest): Promise<NextResponse<SuccessRe
             temperature: 0.7,
             topP: 0.8,
             topK: 40,
-            maxOutputTokens: 1024,
+            // maxOutputTokens: 1024,
           },
         });
 
