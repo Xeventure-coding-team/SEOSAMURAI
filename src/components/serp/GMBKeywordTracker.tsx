@@ -329,7 +329,7 @@ const KeywordTracker: React.FC<KeywordTrackerProps> = ({ location, businessName,
     setError(null)
   }
 
-  type RankChange = "UP" | "DOWN" | "NEW" | "NOT_FOUND" | "UNKNOWN"
+  type RankChange = "UP" | "DOWN" | "NEW" | "NOT_FOUND" | "SAME" |"UNKNOWN"
 
   interface RankChangeConfig {
     text: string
@@ -357,6 +357,11 @@ const KeywordTracker: React.FC<KeywordTrackerProps> = ({ location, businessName,
       text: "Not Ranked",
       icon: <SearchX className="w-3.5 h-3.5" />,
       colors: "text-gray-700 bg-gray-50/80 border border-gray-200 dark:text-gray-300 dark:bg-gray-900/80 dark:border-gray-700/60"
+    },
+    SAME: {
+      text: "Ranking Unchanged",
+      icon: <Minus className="w-3.5 h-3.5" />,
+      colors: "text-gray-600 bg-gray-50/80 border border-gray-200 dark:text-gray-400 dark:bg-gray-900/80 dark:border-gray-700/60"
     },
     UNKNOWN: {
       text: "Unknown",
@@ -721,8 +726,12 @@ const KeywordTracker: React.FC<KeywordTrackerProps> = ({ location, businessName,
                       <TooltipTrigger asChild>
                         <Button
                           onClick={requestBatchUpdate}
-                          className={`w-full sm:w-auto h-12 shadow-lg ${batchUpdateAvailable ? "bg-blue-600 hover:bg-blue-700" : "cursor-not-allowed"
-                            }`}
+                          disabled={!batchUpdateAvailable}
+                          className={`w-full sm:w-auto h-12 shadow-lg ${
+                            batchUpdateAvailable 
+                              ? "bg-blue-600 hover:bg-blue-700" 
+                              : "opacity-50 cursor-not-allowed"
+                          }`}
                           size="lg"
                         >
                           {updating === "batch" ? (
@@ -740,7 +749,7 @@ const KeywordTracker: React.FC<KeywordTrackerProps> = ({ location, businessName,
                           )}
                         </Button>
                       </TooltipTrigger>
-                      <TooltipContent>
+                       <TooltipContent>
                         {batchUpdateAvailable
                           ? "Update all tracked keywords with latest rankings"
                           : `Batch update will be available ${formatCountdown(batchCountdown)}`}
