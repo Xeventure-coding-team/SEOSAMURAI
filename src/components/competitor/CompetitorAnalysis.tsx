@@ -67,11 +67,20 @@ export function CompetitorAnalysisWithMap({
         setExpandedCompetitor(expandedCompetitor === competitorId ? null : competitorId)
     }
 
+    const selectCompetitor = (competitor: EnhancedCompetitor) => {
+        setSelectedCompetitor(competitor)
+        if (!showMap) setShowMap(true) // Auto-show map on first selection (like old version)
+    }
+
     const getMapCenter = () => {
         if (selectedCompetitor?.coordinates) {
             return selectedCompetitor.coordinates
         }
         return coordinates || { lat: 40.7128, lng: -74.006 }
+    }
+
+    const getMapZoom = () => {
+        return selectedCompetitor ? 15 : 12
     }
 
     if (loading) {
@@ -211,8 +220,9 @@ export function CompetitorAnalysisWithMap({
                         {competitors.map((competitor) => (
                             <Card
                                 key={competitor.id}
-                                className={`hover:shadow-md transition-all cursor-pointer ${selectedCompetitor?.id === competitor.id ? "ring-2 ring-primary" : ""}`}
-                                onClick={() => setSelectedCompetitor(competitor)}
+                                className={`hover:shadow-md transition-all cursor-pointer ${selectedCompetitor?.id === competitor.id ? "ring-2 ring-primary" : ""
+                                    }`}
+                                onClick={() => selectCompetitor(competitor)}
                             >
                                 <CardContent className="p-6">
                                     <div className="space-y-4">
@@ -252,7 +262,7 @@ export function CompetitorAnalysisWithMap({
                                                         <TooltipTrigger>
                                                             <div className="flex items-center gap-1">
                                                                 <Star className="h-4 w-4 text-blue-500" />
-                                                                <span className="font-medium">Avg: #{competitor.averageRank}</span>
+                                                                <span className="font-medium">Avg: #{Math.round(competitor.averageRank || 0)}</span>
                                                             </div>
                                                         </TooltipTrigger>
                                                         <TooltipContent>
@@ -274,33 +284,23 @@ export function CompetitorAnalysisWithMap({
                                                 {(competitor.rating || competitor.reviewCount || competitor.distance) && (
                                                     <div className="flex items-center gap-4 text-sm flex-wrap pt-2 border-t">
                                                         {competitor.rating && (
-                                                            <Tooltip>
-                                                                <TooltipTrigger>
-                                                                    <div className="flex items-center gap-1">
-                                                                        <Star className="h-4 w-4 fill-yellow-400 text-yellow-400" />
-                                                                        <span className="font-medium">{competitor.rating}/5</span>
-                                                                    </div>
-                                                                </TooltipTrigger>
-                                                                <TooltipContent>
-                                                                    <p>Google rating</p>
-                                                                </TooltipContent>
-                                                            </Tooltip>
+                                                            <div className="flex items-center gap-1">
+                                                                <Star className="h-4 w-4 fill-yellow-400 text-yellow-400" />
+                                                                <span className="font-medium">{competitor.rating}/5</span>
+                                                                {competitor.reviewCount && (
+                                                                    <span className="text-muted-foreground ml-1">
+                                                                        ({competitor.reviewCount} reviews)
+                                                                    </span>
+                                                                )}
+                                                            </div>
                                                         )}
-                                                        {competitor.reviewCount && (
-                                                            <span className="text-muted-foreground">({competitor.reviewCount} reviews)</span>
-                                                        )}
-                                                        {competitor.distance && (
-                                                            <Tooltip>
-                                                                <TooltipTrigger>
-                                                                    <div className="flex items-center gap-1 text-muted-foreground">
-                                                                        <MapPin className="h-4 w-4" />
-                                                                        <span className="font-medium">{(competitor.distance / 1000).toFixed(1)} km away</span>
-                                                                    </div>
-                                                                </TooltipTrigger>
-                                                                <TooltipContent>
-                                                                    <p>Distance from your business location</p>
-                                                                </TooltipContent>
-                                                            </Tooltip>
+                                                        {competitor.distance && !competitor.rating && (
+                                                            <div className="flex items-center gap-1 text-muted-foreground">
+                                                                <MapPin className="h-4 w-4" />
+                                                                <span className="font-medium">
+                                                                    {(competitor.distance / 1000).toFixed(1)} km away
+                                                                </span>
+                                                            </div>
                                                         )}
                                                     </div>
                                                 )}
@@ -308,35 +308,21 @@ export function CompetitorAnalysisWithMap({
 
                                             <div className="flex flex-col gap-2">
                                                 {competitor.googleMapsUri ? (
-                                                    <Tooltip>
-                                                        <TooltipTrigger asChild>
-                                                            <Button asChild size="sm" className="whitespace-nowrap">
-                                                                <a href={competitor.googleMapsUri} target="_blank" rel="noopener noreferrer">
-                                                                    View on Maps
-                                                                </a>
-                                                            </Button>
-                                                        </TooltipTrigger>
-                                                        <TooltipContent>
-                                                            <p>Open competitor's location in Google Maps</p>
-                                                        </TooltipContent>
-                                                    </Tooltip>
+                                                    <Button asChild size="sm" className="whitespace-nowrap">
+                                                        <a href={competitor.googleMapsUri} target="_blank" rel="noopener noreferrer">
+                                                            View on Maps
+                                                        </a>
+                                                    </Button>
                                                 ) : competitor.website || competitor.domain ? (
-                                                    <Tooltip>
-                                                        <TooltipTrigger asChild>
-                                                            <Button asChild size="sm" className="whitespace-nowrap">
-                                                                <a href={competitor.website || `https://${competitor.domain}`} target="_blank" rel="noopener noreferrer">
-                                                                    Visit Website
-                                                                </a>
-                                                            </Button>
-                                                        </TooltipTrigger>
-                                                        <TooltipContent>
-                                                            <p>Open competitor's website</p>
-                                                        </TooltipContent>
-                                                    </Tooltip>
+                                                    <Button asChild size="sm" variant="outline" className="whitespace-nowrap">
+                                                        <a href={competitor.website || `https://${competitor.domain}`} target="_blank" rel="noopener noreferrer">
+                                                            Visit Website
+                                                        </a>
+                                                    </Button>
                                                 ) : null}
 
-                                                {/* <Button 
-                                                    variant="outline" 
+                                                {/* <Button
+                                                    variant="outline"
                                                     size="sm"
                                                     onClick={(e) => {
                                                         e.stopPropagation();
@@ -358,7 +344,6 @@ export function CompetitorAnalysisWithMap({
                                                 <></>
                                             </div>
                                         </div>
-
                                         {/* Expanded keyword rankings */}
                                         {expandedCompetitor === competitor.id && (
                                             <div className="mt-4 pt-4 border-t">
@@ -395,95 +380,126 @@ export function CompetitorAnalysisWithMap({
                     </div>
 
                     {showMap && (
-                        <div className="lg:sticky lg:top-6 lg:self-start">
-                            <div className="h-[450px]">
-                                <div className="p-0 h-[calc(100%-60px)] rounded-md">
-                                    <div className="w-full h-full rounded-lg overflow-hidden">
-                                        <APIProvider apiKey={process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY || ""}>
-                                            <Map
-                                                defaultCenter={getMapCenter()}
-                                                defaultZoom={selectedCompetitor ? 15 : 12}
-                                                style={{ borderRadius: "10px" }}
-                                                mapId="competitor-analysis-map"
-                                                className="w-full h-full rounded-md custom-map"
-                                                clickableIcons={false}
-                                                options={{
-                                                    disableDefaultUI: true, // removes all controls
-                                                }}
-                                            >
-                                                {coordinates && (
-                                                    <AdvancedMarker position={coordinates}>
-                                                        <Pin background="#3b82f6" borderColor="#1e40af" glyphColor="#ffffff">
-                                                            <div className="w-3 h-3 bg-blue-600 rounded-full"></div>
-                                                        </Pin>
-                                                    </AdvancedMarker>
-                                                )}
+                        <div className="lg:sticky lg:top-6 lg:self-start space-y-4">
+                            <div className="h-[450px] rounded-lg overflow-hidden shadow-lg">
+                                <APIProvider apiKey={process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY || ""}>
+                                    <Map
+                                        center={getMapCenter()}
+                                        zoom={getMapZoom()}
+                                        mapId="competitor-analysis-map"
+                                        className="w-full h-full"
+                                        clickableIcons={false}
+                                        options={{
+                                            disableDefaultUI: true,
+                                        }}
+                                    >
+                                        {/* Your business location */}
+                                        {coordinates && (
+                                            <AdvancedMarker position={coordinates}>
+                                                <Pin background="#3b82f6" borderColor="#1e40af" glyphColor="#ffffff">
+                                                    <div className="w-3 h-3 bg-blue-600 rounded-full"></div>
+                                                </Pin>
+                                            </AdvancedMarker>
+                                        )}
 
-                                                {competitors.map((competitor) => {
-                                                    const mockCoords = {
-                                                        lat: (coordinates?.lat || 40.7128) + (Math.random() - 0.5) * 0.01,
-                                                        lng: (coordinates?.lng || -74.006) + (Math.random() - 0.5) * 0.01,
-                                                    }
+                                        {/* Competitors */}
+                                        {competitors.map((competitor) => {
+                                            const mockCoords = coordinates
+                                                ? {
+                                                    lat: coordinates.lat + (Math.random() - 0.5) * 0.02,
+                                                    lng: coordinates.lng + (Math.random() - 0.5) * 0.02,
+                                                }
+                                                : { lat: 40.7128, lng: -74.006 }
 
-                                                    return (
-                                                        <AdvancedMarker
-                                                            key={competitor.id}
-                                                            position={competitor.coordinates || mockCoords}
-                                                            onClick={() => setSelectedCompetitor(competitor)}
-                                                        >
-                                                            <Pin
-                                                                background={selectedCompetitor?.id === competitor.id ? "#ef4444" : "#10b981"}
-                                                                borderColor={selectedCompetitor?.id === competitor.id ? "#dc2626" : "#059669"}
-                                                                glyphColor="#ffffff"
-                                                            >
-                                                                <div className="text-xs font-bold text-white">#{competitor.rank}</div>
-                                                            </Pin>
-                                                        </AdvancedMarker>
-                                                    )
-                                                })}
-                                            </Map>
-                                        </APIProvider>
-                                    </div>
-                                </div>
+                                            return (
+                                                <AdvancedMarker
+                                                    key={competitor.id}
+                                                    position={competitor.coordinates || mockCoords}
+                                                    onClick={() => selectCompetitor(competitor)}
+                                                >
+                                                    <Pin
+                                                        background={selectedCompetitor?.id === competitor.id ? "#ef4444" : "#10b981"}
+                                                        borderColor={selectedCompetitor?.id === competitor.id ? "#dc2626" : "#059669"}
+                                                        glyphColor="#ffffff"
+                                                    >
+                                                        <div className="text-xs font-bold text-white">#{competitor.rank}</div>
+                                                    </Pin>
+                                                </AdvancedMarker>
+                                            )
+                                        })}
+                                    </Map>
+                                </APIProvider>
                             </div>
 
+                            {/* Enhanced Selected Competitor Panel */}
                             {selectedCompetitor && (
-                                <Card className="mt-4">
-                                    <CardContent className="p-3">
-                                        <div className="space-y-2">
-                                            <div className="flex items-center gap-2">
-                                                <Badge variant="default" className="text-xs">
+                                <Card>
+                                    <CardContent className="p-4">
+                                        <div className="space-y-4">
+                                            <div className="flex items-center gap-3">
+                                                <Badge variant="default" className="text-sm font-bold">
                                                     #{selectedCompetitor.rank}
                                                 </Badge>
-                                                <h4 className="font-medium text-sm truncate">{selectedCompetitor.name}</h4>
+                                                <h4 className="font-semibold text-lg truncate">{selectedCompetitor.name}</h4>
                                             </div>
-                                            <p className="text-xs text-muted-foreground line-clamp-1">
-                                                {selectedCompetitor.address || selectedCompetitor.domain || 'No address'}
+
+                                            <p className="text-sm text-muted-foreground">
+                                                {selectedCompetitor.address || selectedCompetitor.domain || 'Online competitor'}
                                             </p>
-                                            <div className="flex items-center gap-3 text-xs">
-                                                {selectedCompetitor.rating && (
-                                                    <div className="flex items-center gap-1">
-                                                        <Star className="h-3 w-3 fill-yellow-400 text-yellow-400" />
-                                                        <span>{selectedCompetitor.rating}/5</span>
-                                                    </div>
+
+                                            <div className="grid grid-cols-3 gap-4 text-center py-3 bg-muted/50 rounded-lg">
+                                                <div>
+                                                    <p className="text-xs text-muted-foreground">Best Rank</p>
+                                                    <p className="text-2xl font-bold text-green-600">#{selectedCompetitor.bestRank}</p>
+                                                </div>
+                                                <div>
+                                                    <p className="text-xs text-muted-foreground">Average</p>
+                                                    <p className="text-2xl font-bold">#{Math.round(selectedCompetitor.averageRank || 0)}</p>
+                                                </div>
+                                                <div>
+                                                    <p className="text-xs text-muted-foreground">Keywords</p>
+                                                    <p className="text-2xl font-bold">{selectedCompetitor.totalKeywordsRanked}</p>
+                                                </div>
+                                            </div>
+
+                                            {(selectedCompetitor.rating || selectedCompetitor.reviewCount || selectedCompetitor.distance) && (
+                                                <div className="flex flex-wrap gap-4 text-sm pt-2 border-t">
+                                                    {selectedCompetitor.rating && (
+                                                        <div className="flex items-center gap-1">
+                                                            <Star className="h-4 w-4 fill-yellow-400 text-yellow-400" />
+                                                            <span>{selectedCompetitor.rating}/5</span>
+                                                            {selectedCompetitor.reviewCount && (
+                                                                <span className="text-muted-foreground ml-1">
+                                                                    ({selectedCompetitor.reviewCount} reviews)
+                                                                </span>
+                                                            )}
+                                                        </div>
+                                                    )}
+                                                    {selectedCompetitor.distance && (
+                                                        <div className="flex items-center gap-1">
+                                                            <MapPin className="h-4 w-4" />
+                                                            <span>{(selectedCompetitor.distance / 1000).toFixed(1)} km away</span>
+                                                        </div>
+                                                    )}
+                                                </div>
+                                            )}
+
+                                            <div className="flex flex-col gap-2 pt-3">
+                                                {selectedCompetitor.googleMapsUri && (
+                                                    <Button asChild size="sm" className="w-full">
+                                                        <a href={selectedCompetitor.googleMapsUri} target="_blank" rel="noopener noreferrer">
+                                                            View on Google Maps
+                                                        </a>
+                                                    </Button>
                                                 )}
-                                                {selectedCompetitor.reviewCount && (
-                                                    <span className="text-muted-foreground">({selectedCompetitor.reviewCount} reviews)</span>
-                                                )}
-                                                {selectedCompetitor.distance && (
-                                                    <div className="flex items-center gap-1">
-                                                        <MapPin className="h-3 w-3" />
-                                                        <span>{(selectedCompetitor.distance / 1000).toFixed(1)} km away</span>
-                                                    </div>
+                                                {(selectedCompetitor.website || selectedCompetitor.domain) && (
+                                                    <Button asChild size="sm" variant="outline" className="w-full">
+                                                        <a href={selectedCompetitor.website || `https://${selectedCompetitor.domain}`} target="_blank" rel="noopener noreferrer">
+                                                            Visit Website
+                                                        </a>
+                                                    </Button>
                                                 )}
                                             </div>
-                                            {selectedCompetitor.googleMapsUri && (
-                                                <Button asChild size="sm" className="w-full h-7 text-xs">
-                                                    <a href={selectedCompetitor.googleMapsUri} target="_blank" rel="noopener noreferrer">
-                                                        View on Google Maps
-                                                    </a>
-                                                </Button>
-                                            )}
                                         </div>
                                     </CardContent>
                                 </Card>
