@@ -6,14 +6,16 @@ import { CompetitorAnalysisWithMap } from './CompetitorAnalysis';
 function CompetitorsPage({
     locationId,
     businessType,
-    coordinates
+    coordinates,
+      businessName
 }: {
     locationId: string;
     businessType: string;
+    businessName: string;
     coordinates: { lat: number; lng: number } | null;
 }) {
     return (
-        <div><CompetitorAnalysisWithMap locationId={locationId} businessType={businessType} coordinates={coordinates} /></div>
+        <div><CompetitorAnalysisWithMap locationId={locationId} businessType={businessType} coordinates={coordinates} businessName={businessName}/></div>
     )
 }
 

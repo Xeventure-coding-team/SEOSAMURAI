@@ -165,6 +165,8 @@ export default function ManageLocation() {
 
   const setPageName = usePageStore((state) => state.setPageName)
   const pageName = usePageStore((state) => state.pageName)
+
+  console.log(pageName, "page name..!")
   const { deletePost } = useGmbPosts()
 
   const [imageLoadingStates, setImageLoadingStates] = useState<Record<string, boolean>>({})
@@ -537,7 +539,7 @@ export default function ManageLocation() {
               <GMBInsights accessToken={accessToken} locationId={locationId} />
             </AnimatedTabItem>
             <AnimatedTabItem value="competitor-insights">
-              <CompetitorsPage locationId={locationId} coordinates={payload?.location?.locationData?.geometry?.location} businessType={payload?.location?.data?.categories?.primaryCategory?.displayName} />
+              <CompetitorsPage locationId={locationId} coordinates={payload?.location?.locationData?.geometry?.location} businessType={payload?.location?.data?.categories?.primaryCategory?.displayName} businessName={pageName}  />
             </AnimatedTabItem>
             <AnimatedTabItem value="social-posts">
               <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
