@@ -389,9 +389,7 @@ export function CompetitorAnalysisWithMap({
                                         mapId="competitor-analysis-map"
                                         className="w-full h-full"
                                         clickableIcons={false}
-                                        options={{
-                                            disableDefaultUI: true,
-                                        }}
+                                        disableDefaultUI={true}
                                     >
                                         {/* Your business location */}
                                         {coordinates && (
