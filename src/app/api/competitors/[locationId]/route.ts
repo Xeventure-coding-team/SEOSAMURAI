@@ -1,6 +1,6 @@
-import { NextRequest, NextResponse } from 'next/server';
-import { stackServerApp } from '@/stack';
-import { prisma } from '../../../../../lib/prisma';
+import { NextRequest, NextResponse } from "next/server";
+import { stackServerApp } from "@/stack";
+import { prisma } from "../../../../../lib/prisma";
 
 interface GooglePlacesResult {
   id: string;
@@ -57,18 +57,21 @@ interface EnhancedCompetitor {
 
 // Helper function to calculate distance between two coordinates
 function calculateDistance(
-  lat1: number, 
-  lon1: number, 
-  lat2: number, 
+  lat1: number,
+  lon1: number,
+  lat2: number,
   lon2: number
 ): number {
   const R = 6371000; // Earth's radius in meters
-  const dLat = (lat2 - lat1) * Math.PI / 180;
-  const dLon = (lon2 - lon1) * Math.PI / 180;
-  const a = Math.sin(dLat/2) * Math.sin(dLat/2) +
-    Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
-    Math.sin(dLon/2) * Math.sin(dLon/2);
-  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+  const dLat = ((lat2 - lat1) * Math.PI) / 180;
+  const dLon = ((lon2 - lon1) * Math.PI) / 180;
+  const a =
+    Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+    Math.cos((lat1 * Math.PI) / 180) *
+      Math.cos((lat2 * Math.PI) / 180) *
+      Math.sin(dLon / 2) *
+      Math.sin(dLon / 2);
+  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
   return R * c;
 }
 
@@ -81,28 +84,39 @@ async function searchGooglePlaces(
 ): Promise<GooglePlacesResult[]> {
   const searchRadius = 10000; // 10km radius
   const query = encodeURIComponent(businessType);
-  
+
+  console.log(location.lat, location.lng, "location lat");
+
   const url = `https://maps.googleapis.com/maps/api/place/nearbysearch/json?location=${location.lat},${location.lng}&radius=${searchRadius}&type=establishment&key=${apiKey}&keyword=${query}`;
 
-  console.log('🔍 Google Places API URL:', url.replace(apiKey, 'API_KEY_HIDDEN'));
+  console.log(
+    "🔍 Google Places API URL:",
+    url.replace(apiKey, "API_KEY_HIDDEN")
+  );
 
   try {
     const response = await fetch(url);
-    
+
     if (!response.ok) {
       const errorText = await response.text();
-      throw new Error(`Google Places API error: ${response.status} - ${errorText}`);
+      throw new Error(
+        `Google Places API error: ${response.status} - ${errorText}`
+      );
     }
 
     const data = await response.json();
 
-    if (data.status !== 'OK' && data.status !== 'ZERO_RESULTS') {
-      console.error('❌ Google Places API Error:', data);
-      throw new Error(`Google Places API returned status: ${data.status} - ${data.error_message || 'Unknown error'}`);
+    if (data.status !== "OK" && data.status !== "ZERO_RESULTS") {
+      console.error("❌ Google Places API Error:", data);
+      throw new Error(
+        `Google Places API returned status: ${data.status} - ${
+          data.error_message || "Unknown error"
+        }`
+      );
     }
 
-    if (data.status === 'ZERO_RESULTS') {
-      console.log('⚠️ No results found for the search criteria');
+    if (data.status === "ZERO_RESULTS") {
+      console.log("⚠️ No results found for the search criteria");
       return [];
     }
 
@@ -119,32 +133,82 @@ async function searchGooglePlaces(
         id: place.place_id,
         displayName: {
           text: place.name,
-          languageCode: 'en'
+          languageCode: "en",
         },
-        formattedAddress: place.vicinity || place.formatted_address || 'Address not available',
+        formattedAddress:
+          place.vicinity || place.formatted_address || "Address not available",
         location: {
           latitude: place.geometry?.location?.lat || 0,
-          longitude: place.geometry?.location?.lng || 0
+          longitude: place.geometry?.location?.lng || 0,
         },
         rating: place.rating,
         userRatingCount: place.user_ratings_total,
         types: place.types || [],
         businessStatus: place.business_status,
-        priceLevel: place.price_level ? `PRICE_LEVEL_${place.price_level}` : undefined,
+        priceLevel: place.price_level
+          ? `PRICE_LEVEL_${place.price_level}`
+          : undefined,
         googleMapsUri: `https://maps.google.com/maps/place/?q=place_id:${place.place_id}`,
-        website: place.website
+        website: place.website,
       }))
-      .slice(0, 10); // Limit to 10 competitors
+      .slice(0, 20); // Limit to 20 competitors
 
     console.log(`✅ Processed ${results.length} competitor results`);
     return results;
   } catch (error) {
-    console.error('❌ Error in searchGooglePlaces:', error);
+    console.error("❌ Error in searchGooglePlaces:", error);
     throw new Error(`Error fetching competitors: ${error}`);
   }
 }
 
 // Function to enrich competitor with Google Places data
+// async function enrichCompetitor(
+//   competitor: EnhancedCompetitor,
+//   searchLocation: { lat: number; lng: number },
+//   locationString: string,
+//   apiKey: string
+// ): Promise<void> {
+//   try {
+//     const query = `${competitor.name} in ${locationString}`;
+//     const encodedQuery = encodeURIComponent(query);
+//     const url = `https://maps.googleapis.com/maps/api/place/textsearch/json?query=${encodedQuery}&location=${searchLocation.lat},${searchLocation.lng}&radius=10000&key=${apiKey}`;
+
+//     console.log(`🔍 Enriching ${competitor.name} with URL:`, url.replace(apiKey, 'API_KEY_HIDDEN'));
+
+//     const response = await fetch(url);
+//     if (!response.ok) {
+//       throw new Error(`Google Places textsearch error: ${response.status}`);
+//     }
+
+//     const data = await response.json();
+//     if (data.status === 'OK' && data.results?.length > 0) {
+//       const place = data.results[0];
+//       if (place.name.toLowerCase().includes(competitor.name.toLowerCase())) {
+//         competitor.id = place.place_id || competitor.id;
+//         competitor.address = place.formatted_address || competitor.address;
+//         competitor.rating = place.rating;
+//         competitor.reviewCount = place.user_ratings_total;
+//         competitor.googleMapsUri = `https://maps.google.com/maps/place/?q=place_id:${place.place_id}`;
+//         competitor.website = place.website;
+//         if (place.geometry?.location) {
+//           competitor.coordinates = {
+//             lat: place.geometry.location.lat,
+//             lng: place.geometry.location.lng
+//           };
+//           competitor.distance = calculateDistance(
+//             searchLocation.lat,
+//             searchLocation.lng,
+//             place.geometry.location.lat,
+//             place.geometry.location.lng
+//           );
+//         }
+//       }
+//     }
+//   } catch (error) {
+//     console.error(`❌ Error enriching competitor ${competitor.name}:`, error);
+//   }
+// }
+
 async function enrichCompetitor(
   competitor: EnhancedCompetitor,
   searchLocation: { lat: number; lng: number },
@@ -154,37 +218,80 @@ async function enrichCompetitor(
   try {
     const query = `${competitor.name} in ${locationString}`;
     const encodedQuery = encodeURIComponent(query);
-    const url = `https://maps.googleapis.com/maps/api/place/textsearch/json?query=${encodedQuery}&location=${searchLocation.lat},${searchLocation.lng}&radius=10000&key=${apiKey}`;
+    const url = `https://maps.googleapis.com/maps/api/place/textsearch/json?query=${encodedQuery}&location=${searchLocation.lat},${searchLocation.lng}&radius=30000&key=${apiKey}`; // Increased radius to 30km
 
-    console.log(`🔍 Enriching ${competitor.name} with URL:`, url.replace(apiKey, 'API_KEY_HIDDEN'));
+    console.log(
+      `🔍 Enriching ${competitor.name} with URL:`,
+      url.replace(apiKey, "API_KEY_HIDDEN")
+    );
 
     const response = await fetch(url);
     if (!response.ok) {
-      throw new Error(`Google Places textsearch error: ${response.status}`);
+      console.warn(
+        `⚠️ Textsearch failed for ${competitor.name}: ${response.status}`
+      );
+      return;
     }
 
     const data = await response.json();
-    if (data.status === 'OK' && data.results?.length > 0) {
+    if (data.status === "OK" && data.results?.length > 0) {
       const place = data.results[0];
-      if (place.name.toLowerCase().includes(competitor.name.toLowerCase())) {
+
+      // Stronger name match required
+      const placeNameLower = place.name.toLowerCase();
+      const competitorNameLower = competitor.name.toLowerCase();
+      const isGoodNameMatch =
+        placeNameLower.includes(competitorNameLower) ||
+        competitorNameLower.includes(placeNameLower) ||
+        placeNameLower.replace(/[^a-z0-9]/g, "") ===
+          competitorNameLower.replace(/[^a-z0-9]/g, "");
+
+      if (!isGoodNameMatch) {
+        console.log(
+          `⏭️ Skipping poor name match: "${place.name}" vs "${competitor.name}"`
+        );
+        return;
+      }
+
+      // Calculate distance
+      if (place.geometry?.location) {
+        const dist = calculateDistance(
+          searchLocation.lat,
+          searchLocation.lng,
+          place.geometry.location.lat,
+          place.geometry.location.lng
+        );
+
+        // REJECT if too far (> 50km = 50000 meters)
+        const MAX_DISTANCE_METERS = 50000; // 50km max
+        if (dist > MAX_DISTANCE_METERS) {
+          console.log(
+            `🚫 Rejecting distant match: ${place.name} (${(dist / 1000).toFixed(
+              0
+            )}km away)`
+          );
+          return;
+        }
+
+        // Only enrich if within reasonable distance
         competitor.id = place.place_id || competitor.id;
         competitor.address = place.formatted_address || competitor.address;
         competitor.rating = place.rating;
         competitor.reviewCount = place.user_ratings_total;
         competitor.googleMapsUri = `https://maps.google.com/maps/place/?q=place_id:${place.place_id}`;
         competitor.website = place.website;
-        if (place.geometry?.location) {
-          competitor.coordinates = {
-            lat: place.geometry.location.lat,
-            lng: place.geometry.location.lng
-          };
-          competitor.distance = calculateDistance(
-            searchLocation.lat,
-            searchLocation.lng,
-            place.geometry.location.lat,
-            place.geometry.location.lng
-          );
-        }
+
+        competitor.coordinates = {
+          lat: place.geometry.location.lat,
+          lng: place.geometry.location.lng,
+        };
+        competitor.distance = dist;
+
+        console.log(
+          `✅ Enriched local competitor: ${competitor.name} (${(
+            dist / 1000
+          ).toFixed(1)}km)`
+        );
       }
     }
   } catch (error) {
@@ -193,26 +300,31 @@ async function enrichCompetitor(
 }
 
 // New helper: Fetch business name from Google Places using place_id (locationId)
-async function getBusinessName(placeId: string, apiKey: string): Promise<string | null> {
+async function getBusinessName(
+  placeId: string,
+  apiKey: string
+): Promise<string | null> {
   const url = `https://maps.googleapis.com/maps/api/place/details/json?place_id=${placeId}&fields=name&key=${apiKey}`;
 
-  console.log('🔍 Fetching business name for place_id:', placeId);
+  console.log("🔍 Fetching business name for place_id:", placeId);
 
   try {
     const response = await fetch(url);
     if (!response.ok) {
       const errorText = await response.text();
-      throw new Error(`Google Places details error: ${response.status} - ${errorText}`);
+      throw new Error(
+        `Google Places details error: ${response.status} - ${errorText}`
+      );
     }
 
     const data = await response.json();
-    if (data.status === 'OK' && data.result?.name) {
+    if (data.status === "OK" && data.result?.name) {
       console.log(`✅ Fetched business name: ${data.result.name}`);
       return data.result.name;
     }
     return null;
   } catch (error) {
-    console.error('❌ Error fetching business name:', error);
+    console.error("❌ Error fetching business name:", error);
     return null;
   }
 }
@@ -231,17 +343,21 @@ async function getCompetitors(
   hoursUntilNextUpdate: number;
 }> {
   try {
-    console.log('🎯 Getting competitors for:', { locationId, businessType, currentLocation });
+    console.log("🎯 Getting competitors for:", {
+      locationId,
+      businessType,
+      currentLocation,
+    });
 
     // Get current user
     const user = await stackServerApp.getUser();
     if (!user) {
-      throw new Error('User not authenticated');
+      throw new Error("User not authenticated");
     }
 
     const userId = user.id;
     const now = new Date();
-    console.log('👤 User ID:', userId);
+    console.log("👤 User ID:", userId);
 
     // Check existing analysis for this user
     const existingAnalysis = await prisma.competitorAnalysis.findUnique({
@@ -249,35 +365,44 @@ async function getCompetitors(
         userId_locationId_businessType: {
           userId,
           locationId,
-          businessType
-        }
-      }
+          businessType,
+        },
+      },
     });
 
-    const canUpdate = !existingAnalysis || now >= existingAnalysis.nextUpdate || forceUpdate;
-    const hoursUntilNextUpdate = existingAnalysis 
-      ? Math.max(0, Math.ceil((existingAnalysis.nextUpdate.getTime() - now.getTime()) / (1000 * 60 * 60)))
+    const canUpdate =
+      !existingAnalysis || now >= existingAnalysis.nextUpdate || forceUpdate;
+    const hoursUntilNextUpdate = existingAnalysis
+      ? Math.max(
+          0,
+          Math.ceil(
+            (existingAnalysis.nextUpdate.getTime() - now.getTime()) /
+              (1000 * 60 * 60)
+          )
+        )
       : 0;
 
-    console.log('📊 Analysis status:', { 
-      hasExisting: !!existingAnalysis, 
-      canUpdate, 
+    console.log("📊 Analysis status:", {
+      hasExisting: !!existingAnalysis,
+      canUpdate,
       hoursUntilNextUpdate,
-      forceUpdate
+      forceUpdate,
     });
 
     // If we have data and it's not time to update yet, return cached results
     if (existingAnalysis && !canUpdate) {
-      console.log(`♻️ Returning cached competitor data. Next update in ${hoursUntilNextUpdate} hours`);
+      console.log(
+        `♻️ Returning cached competitor data. Next update in ${hoursUntilNextUpdate} hours`
+      );
       return {
         competitors: existingAnalysis.competitors as CompetitorData[],
         nextUpdateTime: existingAnalysis.nextUpdate,
         canUpdate: false,
-        hoursUntilNextUpdate
+        hoursUntilNextUpdate,
       };
     }
 
-    console.log('🔄 Fetching fresh competitor data from Google Places API');
+    console.log("🔄 Fetching fresh competitor data from Google Places API");
 
     // Fetch fresh data from Google Places API
     const placesResults = await searchGooglePlaces(
@@ -288,14 +413,14 @@ async function getCompetitors(
     );
 
     if (placesResults.length === 0) {
-      console.log('⚠️ No competitors found in the area');
-      
+      console.log("⚠️ No competitors found in the area");
+
       // Still save the empty result to avoid repeated API calls
-      const nextUpdate = new Date(now.getTime() + (24 * 60 * 60 * 1000));
-      
+      const nextUpdate = new Date(now.getTime() + 24 * 60 * 60 * 1000);
+
       if (existingAnalysis) {
         await prisma.competitorAnalysis.delete({
-          where: { id: existingAnalysis.id }
+          where: { id: existingAnalysis.id },
         });
       }
 
@@ -306,15 +431,15 @@ async function getCompetitors(
           businessType,
           competitors: [],
           lastUpdated: now,
-          nextUpdate: nextUpdate
-        }
+          nextUpdate: nextUpdate,
+        },
       });
 
       return {
         competitors: [],
         nextUpdateTime: nextUpdate,
         canUpdate: true,
-        hoursUntilNextUpdate: 0
+        hoursUntilNextUpdate: 0,
       };
     }
 
@@ -337,33 +462,36 @@ async function getCompetitors(
         distance: distance,
         googleMapsUri: place.googleMapsUri,
         rank: index + 1, // Initial ranking
-        lastUpdated: new Date()
+        lastUpdated: new Date(),
       };
     });
 
     // Sort by distance (closest first)
     competitors.sort((a, b) => a.distance - b.distance);
-    
+
     // Re-assign rankings after sorting to ensure they're correct
     competitors.forEach((competitor, index) => {
       competitor.rank = index + 1;
     });
 
-    console.log('📍 Competitors ranked by distance:', 
-      competitors.map(c => `#${c.rank}: ${c.name} (${(c.distance/1000).toFixed(1)}km)`)
+    console.log(
+      "📍 Competitors ranked by distance:",
+      competitors.map(
+        (c) => `#${c.rank}: ${c.name} (${(c.distance / 1000).toFixed(1)}km)`
+      )
     );
 
     // Calculate next update time (24 hours from now)
-    const nextUpdate = new Date(now.getTime() + (24 * 60 * 60 * 1000));
+    const nextUpdate = new Date(now.getTime() + 24 * 60 * 60 * 1000);
 
     // Delete old data and save new data (fresh start each day)
     if (existingAnalysis) {
       await prisma.competitorAnalysis.delete({
         where: {
-          id: existingAnalysis.id
-        }
+          id: existingAnalysis.id,
+        },
       });
-      console.log('🗑️ Deleted old competitor analysis');
+      console.log("🗑️ Deleted old competitor analysis");
     }
 
     // Create fresh analysis
@@ -374,23 +502,22 @@ async function getCompetitors(
         businessType,
         competitors: competitors,
         lastUpdated: now,
-        nextUpdate: nextUpdate
-      }
+        nextUpdate: nextUpdate,
+      },
     });
 
-    console.log('💾 Saved new competitor analysis to database');
-    console.log('⏰ Next update time:', nextUpdate.toISOString());
+    console.log("💾 Saved new competitor analysis to database");
+    console.log("⏰ Next update time:", nextUpdate.toISOString());
 
     return {
       competitors,
       nextUpdateTime: nextUpdate,
       canUpdate: true,
-      hoursUntilNextUpdate: 0
+      hoursUntilNextUpdate: 0,
     };
-
   } catch (error) {
-    console.error('❌ Error in getCompetitors:', error);
-    
+    console.error("❌ Error in getCompetitors:", error);
+
     // If API fails, try to return cached data for this user
     try {
       const user = await stackServerApp.getUser();
@@ -400,26 +527,32 @@ async function getCompetitors(
             userId_locationId_businessType: {
               userId: user.id,
               locationId,
-              businessType
-            }
-          }
+              businessType,
+            },
+          },
         });
 
         if (fallbackAnalysis) {
-          console.log('♻️ Returning fallback cached data due to API error');
+          console.log("♻️ Returning fallback cached data due to API error");
           const now = new Date();
-          const hoursUntilNextUpdate = Math.max(0, Math.ceil((fallbackAnalysis.nextUpdate.getTime() - now.getTime()) / (1000 * 60 * 60)));
-          
+          const hoursUntilNextUpdate = Math.max(
+            0,
+            Math.ceil(
+              (fallbackAnalysis.nextUpdate.getTime() - now.getTime()) /
+                (1000 * 60 * 60)
+            )
+          );
+
           return {
             competitors: fallbackAnalysis.competitors as CompetitorData[],
             nextUpdateTime: fallbackAnalysis.nextUpdate,
             canUpdate: now >= fallbackAnalysis.nextUpdate,
-            hoursUntilNextUpdate
+            hoursUntilNextUpdate,
           };
         }
       }
     } catch (fallbackError) {
-      console.error('❌ Fallback also failed:', fallbackError);
+      console.error("❌ Fallback also failed:", fallbackError);
     }
 
     throw new Error(`Failed to get competitors: ${error}`);
@@ -432,53 +565,55 @@ export async function GET(
   { params }: { params: { locationId: string } }
 ) {
   try {
-    console.log('🔍 Enhanced Competitor API called:', params.locationId);
+    console.log("🔍 Enhanced Competitor API called:", params.locationId);
 
     const user = await stackServerApp.getUser();
     if (!user) {
       return NextResponse.json(
-        { 
-          success: false, 
-          error: 'Authentication required',
-          code: 'AUTH_REQUIRED'
+        {
+          success: false,
+          error: "Authentication required",
+          code: "AUTH_REQUIRED",
         },
         { status: 401 }
       );
     }
 
     const userId = user.id;
-    console.log(user.id, 'user id from competitors.!')
+    console.log(user.id, "user id from competitors.!");
     const searchParams = request.nextUrl.searchParams;
-    console.log(searchParams,"searchParams..!")
-    let businessName = searchParams.get('businessName');
+    console.log(searchParams, "searchParams..!");
+    let businessName = searchParams.get("businessName");
 
     // Validation
-    if (!searchParams.get('lat') || !searchParams.get('lng')) {
+    if (!searchParams.get("lat") || !searchParams.get("lng")) {
       return NextResponse.json(
-        { 
-          success: false, 
-          error: 'lat and lng parameters are required'
+        {
+          success: false,
+          error: "lat and lng parameters are required",
         },
         { status: 400 }
       );
     }
 
-    const latitude = parseFloat(searchParams.get('lat')!);
-    const longitude = parseFloat(searchParams.get('lng')!);
+    const latitude = parseFloat(searchParams.get("lat")!);
+    const longitude = parseFloat(searchParams.get("lng")!);
 
     const apiKey = process.env.PLACES_KEY;
     if (!apiKey) {
-      console.error('❌ Google Places API key not found');
+      console.error("❌ Google Places API key not found");
       // Proceed without enrichment
     }
 
     // NEW: Fallback to fetch businessName if not provided (using locationId as place_id)
-    if (apiKey && (!businessName || businessName === 'null')) {
+    if (apiKey && (!businessName || businessName === "null")) {
       businessName = await getBusinessName(params.locationId, apiKey);
       if (businessName) {
         console.log(`✅ Using fetched businessName: ${businessName}`);
       } else {
-        console.warn('⚠️ Could not fetch businessName; skipping own business exclusion may not work');
+        console.warn(
+          "⚠️ Could not fetch businessName; skipping own business exclusion may not work"
+        );
       }
     }
 
@@ -487,8 +622,8 @@ export async function GET(
       where: {
         userId,
         locationId: params.locationId,
-        isActive: true
-      }
+        isActive: true,
+      },
     });
 
     // If no keywords tracked, return empty state
@@ -502,10 +637,11 @@ export async function GET(
           hasKeywords: false,
           metadata: {
             totalCount: 0,
-            message: 'No keywords are being tracked for this location. Add keywords to see competitor rankings.',
-            trackedKeywordsCount: 0
-          }
-        }
+            message:
+              "No keywords are being tracked for this location. Add keywords to see competitor rankings.",
+            trackedKeywordsCount: 0,
+          },
+        },
       });
     }
 
@@ -518,25 +654,34 @@ export async function GET(
         where: {
           keyword: tracking.keyword,
           location: tracking.location,
-          userId
+          userId,
         },
-        orderBy: { createdAt: 'desc' } // Order by date descending to get latest first
+        orderBy: { createdAt: "desc" }, // Order by date descending to get latest first
       });
 
-      console.log(allRanks,"all ranks from competitor.!")
+      console.log(allRanks, "all ranks from competitor.!");
 
-      console.log(`📍 Keyword "${tracking.keyword}" has ${allRanks.length} ranking entries`);
+      console.log(
+        `📍 Keyword "${tracking.keyword}" has ${allRanks.length} ranking entries`
+      );
 
       if (allRanks.length === 0) continue;
 
       // Use only the latest rank entry for each keyword to avoid outdated or duplicate data
       const latestRankEntry = allRanks[0];
 
-      let searchResultsArray: Array<{ position: number; title: string; link: string | null }> = [];
+      let searchResultsArray: Array<{
+        position: number;
+        title: string;
+        link: string | null;
+      }> = [];
       try {
         searchResultsArray = JSON.parse(latestRankEntry.searchResults);
       } catch (parseError) {
-        console.error(`❌ Failed to parse searchResults for keyword "${tracking.keyword}":`, parseError);
+        console.error(
+          `❌ Failed to parse searchResults for keyword "${tracking.keyword}":`,
+          parseError
+        );
         continue;
       }
 
@@ -557,9 +702,13 @@ export async function GET(
           if (result.link) {
             try {
               const urlObj = new URL(result.link);
-              const hostname = urlObj.hostname.replace(/^www\./, '').toLowerCase();
-              if (hostname.includes(cleanBusinessName.replace(/\s+/g, '')) || 
-                  hostname.includes(cleanBusinessName.replace(/\s+/g, '-'))) {
+              const hostname = urlObj.hostname
+                .replace(/^www\./, "")
+                .toLowerCase();
+              if (
+                hostname.includes(cleanBusinessName.replace(/\s+/g, "")) ||
+                hostname.includes(cleanBusinessName.replace(/\s+/g, "-"))
+              ) {
                 isOwnBusiness = true;
               }
             } catch {}
@@ -569,8 +718,11 @@ export async function GET(
           if (!isOwnBusiness) {
             const titleLower = result.title.toLowerCase();
             if (titleLower.includes(cleanBusinessName)) {
-              const lengthDiff = Math.abs(titleLower.length - cleanBusinessName.length);
-              if (lengthDiff < 40) { // Avoid loose matches
+              const lengthDiff = Math.abs(
+                titleLower.length - cleanBusinessName.length
+              );
+              if (lengthDiff < 40) {
+                // Avoid loose matches
                 isOwnBusiness = true;
               }
             }
@@ -588,13 +740,16 @@ export async function GET(
         if (url) {
           try {
             const urlObj = new URL(url);
-            domain = urlObj.hostname.replace('www.', '');
+            domain = urlObj.hostname.replace("www.", "");
           } catch {
             domain = url;
           }
         } else {
           // Fallback: Create a unique slug from title if no URL
-          domain = result.title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '');
+          domain = result.title
+            .toLowerCase()
+            .replace(/[^a-z0-9]+/g, "-")
+            .replace(/^-+|-+$/g, "");
         }
 
         // Use domain (or slug) as unique identifier
@@ -612,18 +767,18 @@ export async function GET(
             totalKeywordsRanked: 0,
             rank: 0,
             bestRank: 999,
-            worstRank: 0
+            worstRank: 0,
           });
         }
 
         const competitor = competitorMap.get(competitorId)!;
-        
+
         // Add this keyword ranking
         competitor.keywordRankings.push({
           keyword: tracking.keyword,
           rank: result.position,
           url: url || undefined,
-          title: result.title
+          title: result.title,
         });
 
         // Update best and worst ranks
@@ -644,7 +799,9 @@ export async function GET(
       const searchLocation = { lat: latitude, lng: longitude };
       const competitorsArray = Array.from(competitorMap.values());
       await Promise.all(
-        competitorsArray.map(competitor => enrichCompetitor(competitor, searchLocation, locationString, apiKey))
+        competitorsArray.map((competitor) =>
+          enrichCompetitor(competitor, searchLocation, locationString, apiKey)
+        )
       );
     }
 
@@ -660,79 +817,122 @@ export async function GET(
           metadata: {
             totalCount: 0,
             trackedKeywordsCount: trackedKeywords.length,
-            message: 'No competitors found in search results. You may be dominating all tracked keywords!'
-          }
-        }
+            message:
+              "No competitors found in search results. You may be dominating all tracked keywords!",
+          },
+        },
       });
     }
 
     // Calculate averages and sort competitors
+    // const competitors: EnhancedCompetitor[] = Array.from(competitorMap.values())
+    //   .map((competitor) => {
+    //     const totalRank = competitor.keywordRankings.reduce((sum, kr) => sum + kr.rank, 0);
+    //     const avgRank = totalRank / competitor.keywordRankings.length;
+
+    //     return {
+    //       ...competitor,
+    //       totalKeywordsRanked: competitor.keywordRankings.length,
+    //       averageRank: Math.round(avgRank * 100) / 100,
+    //       rank: 0 // Will be assigned based on sort position
+    //     };
+    //   })
+    //   .sort((a, b) => {
+    //     // Sort by best rank first, then by average rank
+    //     if (a.bestRank !== b.bestRank) {
+    //       return a.bestRank - b.bestRank;
+    //     }
+    //     return a.averageRank - b.averageRank;
+    //   })
+    //   .map((competitor, index) => ({
+    //     ...competitor,
+    //     rank: index + 1
+    //   }))
+    //   .slice(0, 20); // Top 20 competitors
+
+    // Calculate averages, filter only those with valid address, then sort and rank
     const competitors: EnhancedCompetitor[] = Array.from(competitorMap.values())
       .map((competitor) => {
-        const totalRank = competitor.keywordRankings.reduce((sum, kr) => sum + kr.rank, 0);
+        const totalRank = competitor.keywordRankings.reduce(
+          (sum, kr) => sum + kr.rank,
+          0
+        );
         const avgRank = totalRank / competitor.keywordRankings.length;
-        
+
         return {
           ...competitor,
           totalKeywordsRanked: competitor.keywordRankings.length,
           averageRank: Math.round(avgRank * 100) / 100,
-          rank: 0 // Will be assigned based on sort position
+          rank: 0,
         };
       })
-      .sort((a, b) => {
-        // Sort by best rank first, then by average rank
-        if (a.bestRank !== b.bestRank) {
-          return a.bestRank - b.bestRank;
+      // 🔥 NEW: Only keep competitors with a real address (local physical businesses)
+      .filter((competitor) => {
+        const hasAddress =
+          competitor.address &&
+          competitor.address.trim() !== "" &&
+          !competitor.address.includes("No address available") &&
+          competitor.address.toLowerCase().includes("kerala"); // Extra safety
+
+        if (!hasAddress) {
+          console.log(`🚫 Excluding non-local competitor: ${competitor.name}`);
         }
+
+        return hasAddress;
+      })
+      // Sort by best rank → average rank
+      .sort((a, b) => {
+        if (a.bestRank !== b.bestRank) return a.bestRank - b.bestRank;
         return a.averageRank - b.averageRank;
       })
+      // Re-assign ranks based on final filtered & sorted list
       .map((competitor, index) => ({
         ...competitor,
-        rank: index + 1
+        rank: index + 1,
       }))
-      .slice(0, 10); // Top 10 competitors
+      .slice(0, 20); // Top 20 local competitors
 
     console.log(`✅ Returning ${competitors.length} competitors`);
 
-    return NextResponse.json({
-      success: true,
-      data: {
-        locationId: params.locationId,
-        coordinates: { lat: latitude, lng: longitude },
-        competitors,
-        hasKeywords: true,
-        metadata: {
-          totalCount: competitors.length,
-          trackedKeywordsCount: trackedKeywords.length,
-          lastUpdated: new Date(),
-          dataSource: 'keyword_rankings',
-          message: `Showing top ${competitors.length} competitors based on keyword rankings`
-        }
+    return NextResponse.json(
+      {
+        success: true,
+        data: {
+          locationId: params.locationId,
+          coordinates: { lat: latitude, lng: longitude },
+          competitors,
+          hasKeywords: true,
+          metadata: {
+            totalCount: competitors.length,
+            trackedKeywordsCount: trackedKeywords.length,
+            lastUpdated: new Date(),
+            dataSource: "keyword_rankings",
+            message: `Showing top ${competitors.length} competitors based on keyword rankings`,
+          },
+        },
+      },
+      {
+        status: 200,
+        headers: {
+          "Cache-Control": "private, max-age=300",
+          "Content-Type": "application/json",
+        },
       }
-    }, { 
-      status: 200,
-      headers: {
-        'Cache-Control': 'private, max-age=300',
-        'Content-Type': 'application/json',
-      }
-    });
-
+    );
   } catch (error) {
-    console.error('❌ Enhanced Competitor API Error:', error);
+    console.error("❌ Enhanced Competitor API Error:", error);
 
     return NextResponse.json(
-      { 
-        success: false, 
-        error: 'Internal server error occurred while fetching competitors',
-        code: 'INTERNAL_ERROR',
-        timestamp: new Date().toISOString()
+      {
+        success: false,
+        error: "Internal server error occurred while fetching competitors",
+        code: "INTERNAL_ERROR",
+        timestamp: new Date().toISOString(),
       },
       { status: 500 }
     );
   }
 }
-
-
 
 // Handle POST method (optional - for future use)
 export async function POST(
@@ -745,9 +945,9 @@ export async function POST(
 
     if (!businessType || !lat || !lng) {
       return NextResponse.json(
-        { 
-          success: false, 
-          error: 'businessType, lat, and lng are required in request body' 
+        {
+          success: false,
+          error: "businessType, lat, and lng are required in request body",
         },
         { status: 400 }
       );
@@ -756,9 +956,9 @@ export async function POST(
     const apiKey = process.env.GOOGLE_PLACES_API_KEY;
     if (!apiKey) {
       return NextResponse.json(
-        { 
-          success: false, 
-          error: 'Google Places API key not configured' 
+        {
+          success: false,
+          error: "Google Places API key not configured",
         },
         { status: 500 }
       );
@@ -774,21 +974,20 @@ export async function POST(
 
     return NextResponse.json({
       success: true,
-      message: 'Competitor analysis completed',
+      message: "Competitor analysis completed",
       data: {
         competitors: result.competitors,
         nextUpdateTime: result.nextUpdateTime,
         canUpdate: result.canUpdate,
-        hoursUntilNextUpdate: result.hoursUntilNextUpdate
-      }
+        hoursUntilNextUpdate: result.hoursUntilNextUpdate,
+      },
     });
-
   } catch (error) {
-    console.error('❌ POST Competitor API Error:', error);
+    console.error("❌ POST Competitor API Error:", error);
     return NextResponse.json(
-      { 
-        success: false, 
-        error: 'Failed to process competitor analysis request' 
+      {
+        success: false,
+        error: "Failed to process competitor analysis request",
       },
       { status: 500 }
     );
@@ -798,53 +997,53 @@ export async function POST(
 // Handle unsupported methods
 export async function PUT() {
   return NextResponse.json(
-    { 
-      success: false, 
-      error: 'Method PUT not allowed. Use GET or POST instead.',
-      allowedMethods: ['GET', 'POST']
+    {
+      success: false,
+      error: "Method PUT not allowed. Use GET or POST instead.",
+      allowedMethods: ["GET", "POST"],
     },
-    { 
+    {
       status: 405,
       headers: {
-        'Allow': 'GET, POST'
-      }
+        Allow: "GET, POST",
+      },
     }
   );
 }
 
 export async function DELETE() {
   return NextResponse.json(
-    { 
-      success: false, 
-      error: 'Method DELETE not allowed. Use GET or POST instead.',
-      allowedMethods: ['GET', 'POST']
+    {
+      success: false,
+      error: "Method DELETE not allowed. Use GET or POST instead.",
+      allowedMethods: ["GET", "POST"],
     },
-    { 
+    {
       status: 405,
       headers: {
-        'Allow': 'GET, POST'
-      }
+        Allow: "GET, POST",
+      },
     }
   );
 }
 
 export async function PATCH() {
   return NextResponse.json(
-    { 
-      success: false, 
-      error: 'Method PATCH not allowed. Use GET or POST instead.',
-      allowedMethods: ['GET', 'POST']
+    {
+      success: false,
+      error: "Method PATCH not allowed. Use GET or POST instead.",
+      allowedMethods: ["GET", "POST"],
     },
-    { 
+    {
       status: 405,
       headers: {
-        'Allow': 'GET, POST'
-      }
+        Allow: "GET, POST",
+      },
     }
   );
 }
 
 // Export route segment config (optional)
-export const runtime = 'nodejs';
-export const dynamic = 'force-dynamic';
+export const runtime = "nodejs";
+export const dynamic = "force-dynamic";
 export const revalidate = 0;
