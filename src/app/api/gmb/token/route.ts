@@ -53,6 +53,8 @@ export async function POST(request: NextRequest) {
       clientId 
     } = body
 
+    console.log(accountName, 'account name', accountId,'account id..!')
+
     if (!accessToken) {
       return NextResponse.json({ error: "Access token is required" }, { status: 400 })
     }
@@ -84,6 +86,8 @@ export async function POST(request: NextRequest) {
       },
     })
 
+    console.log('check token from api.!')
+
     return NextResponse.json({ 
       success: true, 
       id: integration.id,
@@ -92,6 +96,7 @@ export async function POST(request: NextRequest) {
       accountName: integration.accountName,
       accountId: integration.accountId,
     })
+
   } catch (error) {
     console.error("Error storing GMB token:", error)
     return NextResponse.json({ error: "Internal server error" }, { status: 500 })
