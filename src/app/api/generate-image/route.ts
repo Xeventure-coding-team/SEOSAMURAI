@@ -1,34 +1,33 @@
 import { NextRequest, NextResponse } from "next/server"
 import { GoogleGenAI } from "@google/genai"
-
-// Gemini setup (prefers GEMINI_API_KEY, falls back to AI_KEY)
+// Gemini setup
 const genAI = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY || process.env.AI_KEY! });
 
+// Pollinations API key (required now)
+const POLLINATIONS_API_KEY = process.env.POLLinations_API_KEY;
+
+if (!POLLINATIONS_API_KEY) {
+  console.error("Pollinations API key not set in environment variables");
+}
+
 interface RequestBody {
-  occasion: string
+  occasion: string;
 }
 
 export async function POST(request: NextRequest) {
   try {
-    // Validate Gemini API key
+    // Gemini key check
     if (!process.env.GEMINI_API_KEY && !process.env.AI_KEY) {
-      console.error("API key environment variable not found")
-      return NextResponse.json(
-        { error: "API key not configured" },
-        { status: 500 }
-      )
+      return NextResponse.json({ error: "Gemini API key not configured" }, { status: 500 });
     }
 
-    const { occasion }: RequestBody = await request.json()
+    const { occasion }: RequestBody = await request.json();
     if (!occasion || typeof occasion !== "string") {
-      return NextResponse.json(
-        { error: "occasion is required and must be a string" },
-        { status: 400 }
-      )
+      return NextResponse.json({ error: "occasion is required and must be a string" }, { status: 400 });
     }
 
-    // 1️⃣ Generate an image prompt using Gemini
-    const promptRequest = `Generate a short, descriptive image prompt (under 40 words) for "${occasion}". Focus on visual elements, colors, and composition. Example: "colorful birthday party with balloons and cake". Generate only the prompt text, nothing else.`
+    // 1. Generate refined prompt with Gemini
+    const promptRequest = `Generate a short, descriptive image prompt (under 40 words) for "${occasion}". Focus on visual elements, colors, and composition. Example: "colorful birthday party with balloons and cake". Generate only the prompt text, nothing else.`;
 
     let result;
     try {
@@ -45,97 +44,66 @@ export async function POST(request: NextRequest) {
       });
     }
 
-    const generatedPrompt = result.text.trim()
-
+    const generatedPrompt = result.text.trim();
     if (!generatedPrompt) {
-      console.error("Gemini returned empty prompt")
+      return NextResponse.json({ error: "Failed to generate prompt" }, { status: 500 });
+    }
+
+    // 2. Call Pollinations modern endpoint (direct image)
+    if (!POLLINATIONS_API_KEY) {
       return NextResponse.json(
-        { error: "Failed to generate prompt" },
+        { error: "Pollinations API key not configured on server" },
         { status: 500 }
-      )
+      );
     }
 
-    // 2️⃣ Try multiple Pollinations URL formats
-    const seed = Math.floor(Math.random() * 1000000)
-    
-    const urlFormats = [
-      // Format 1: Official docs format
-      `https://pollinations.ai/p/${encodeURIComponent(generatedPrompt)}?width=1024&height=1024&seed=${seed}&model=flux&nologo=true`,
-      
-      // Format 2: Alternative format
-      `https://image.pollinations.ai/prompt/${encodeURIComponent(generatedPrompt)}?width=1024&height=1024&seed=${seed}&nologo=true`,
-      
-      // Format 3: Simpler format
-      `https://pollinations.ai/p/${encodeURIComponent(generatedPrompt)}?width=1024&height=1024&seed=${seed}&nologo=true`,
-      
-      // Format 4: Most basic format
-      `https://pollinations.ai/p/${encodeURIComponent(generatedPrompt)}&nologo=true`,
-    ]
+    const seed = Math.floor(Math.random() * 1000000);
+    const encodedPrompt = encodeURIComponent(generatedPrompt);
+    const imageUrl = `https://gen.pollinations.ai/image/${encodedPrompt}?model=flux&width=1024&height=1024&seed=${seed}&nologo=true&key=${POLLINATIONS_API_KEY}`;
 
-    // Try each URL format
-    for (let i = 0; i < urlFormats.length; i++) {
-      const imageUrl = urlFormats[i]
+    // Test fetch to confirm it's an image
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 30000); // 30s timeout
 
-      try {
-        // Test the URL with a GET request and timeout
-        const controller = new AbortController()
-        const timeoutId = setTimeout(() => controller.abort(), 15000) // 15 second timeout
-
-        const testResponse = await fetch(imageUrl, {
-          method: 'GET',
-          signal: controller.signal,
-          headers: {
-            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
-            'Accept': 'image/*,*/*',
-          },
-        })
-
-        clearTimeout(timeoutId)
-
-        if (testResponse.ok) {
-          const contentType = testResponse.headers.get('content-type')
-          
-          // Check if it's actually an image
-          if (contentType && contentType.startsWith('image/')) {
-            
-            return NextResponse.json({
-              success: true,
-              prompt: generatedPrompt,
-              imageUrl: imageUrl,
-              provider: "pollinations",
-              seed: seed,
-              formatUsed: i + 1,
-              contentType: contentType
-            })
-          } else {
-            console.log(`❌ Format ${i + 1} returned non-image content:`, contentType)
-            // Continue to next format
-          }
-        } else {
-          console.log(`❌ Format ${i + 1} failed with status:`, testResponse.status)
-          // Continue to next format
-        }
-
-      } catch (fetchError) {
-        console.log(`❌ Format ${i + 1} threw error:`, fetchError instanceof Error ? fetchError.message : 'Unknown error')
-        // Continue to next format
-      }
-    }
-    return NextResponse.json(
-      { 
-        error: "All image generation formats failed",
-        prompt: generatedPrompt,
-        testedUrls: urlFormats,
-        seed: seed,
-        suggestion: "Try calling the API again or check Pollinations service status"
+    const response = await fetch(imageUrl, {
+      method: "GET",
+      signal: controller.signal,
+      headers: {
+        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36",
+        Accept: "image/*,*/*",
       },
-      { status: 500 }
-    )
+    });
+
+    clearTimeout(timeoutId);
+
+    if (!response.ok) {
+      const errorText = await response.text().catch(() => "Unknown error");
+      console.error(`Pollinations failed: ${response.status} - ${errorText}`);
+      throw new Error(`Pollinations returned ${response.status}: ${errorText}`);
+    }
+
+    const contentType = response.headers.get("content-type");
+    if (!contentType?.startsWith("image/")) {
+      throw new Error(`Unexpected content type: ${contentType}`);
+    }
+
+    // Success: return the direct generation URL (it's cached & permanent)
+    return NextResponse.json({
+      success: true,
+      prompt: generatedPrompt,
+      imageUrl: imageUrl,  // This is the direct link you can set in form.setValue("image_url", imageUrl)
+      provider: "pollinations",
+      seed,
+    });
 
   } catch (error) {
+    console.error("API error:", error);
     return NextResponse.json(
-      { error: "Internal server error", details: error instanceof Error ? error.message : 'Unknown error' },
+      {
+        error: "Failed to generate image",
+        details: error instanceof Error ? error.message : "Unknown error",
+      },
       { status: 500 }
-    )
+    );
   }
 }
