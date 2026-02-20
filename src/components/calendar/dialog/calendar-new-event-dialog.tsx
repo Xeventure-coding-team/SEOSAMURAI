@@ -212,7 +212,7 @@ export default function CalendarNewEventDialog({
   }
 
   const generateImage = async () => {
-    alert("starting")
+    // alert("starting")
     if (!imagePrompt.trim()) {
       toast.error("Please enter a prompt for image generation")
       return
