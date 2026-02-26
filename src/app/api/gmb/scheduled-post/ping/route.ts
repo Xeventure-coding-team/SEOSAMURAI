@@ -179,7 +179,7 @@ async function getValidAccessToken(integration: any) {
   params.append("refresh_token", integration.refreshToken);
   params.append("grant_type", "refresh_token");
 
-  const res = await axios.post("https://oauth2.googleapis.com/token", params);
+  const res = await axios.post("https://oauth2.googleapis.com/token", params);  
 
   const newAccessToken = res.data.access_token;
   const newExpiry = new Date(Date.now() + res.data.expires_in * 1000);
@@ -302,8 +302,10 @@ export async function GET(request: NextRequest) {
 
   // 🔐 Protect with secret
   const secret = request.nextUrl.searchParams.get("secret");
+  console.log(request.nextUrl,'secret key ..!');
+  
   if (secret !== process.env.CRON_SECRET) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });       
   }
 
   try {
