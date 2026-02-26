@@ -305,7 +305,7 @@ export async function GET(request: NextRequest) {
   console.log(request.nextUrl,'secret key ..!');
   
   if (secret !== process.env.CRON_SECRET) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });       
+    return NextResponse.json({ error: "Unauthorized..!" }, { status: 401 });       
   }
 
   try {
