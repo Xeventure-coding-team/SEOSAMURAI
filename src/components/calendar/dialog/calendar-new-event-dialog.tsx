@@ -808,7 +808,7 @@ export default function CalendarNewEventDialog({
                         </div>
                         <div className="grid grid-cols-3 gap-2">
 
-                          {!form.getValues().image_url ? <Button
+                          {/* {!form.getValues().image_url ? <Button
                             type="button"
                             className="col-span-2 w-full"
                             disabled={true}
@@ -828,19 +828,42 @@ export default function CalendarNewEventDialog({
                               ) : (
                                 <>
                                   <Send className="mr-2 h-4 w-4" />
-                                  Create Post
+                                  Create Postt
                                 </>
                               )}
                             </Button>
-                          )}
+                          )} */}
+
+                          <Button
+                            type="submit"
+                            className="col-span-2 w-full"
+                            disabled={
+                              loading ||
+                              !form.formState.isValid ||
+                              // Require either image_url filled OR file selected
+                              (!form.getValues("image_url") && !selectedFile)
+                            }
+                          >
+                            {loading ? (
+                              <>
+                                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                                Creating Post...
+                              </>
+                            ) : (
+                              <>
+                                <Send className="mr-2 h-4 w-4" />
+                                Create Post
+                              </>
+                            )}
+                          </Button>
 
                           <DialogClose asChild>
                             <Button type="button" variant="outline" className="w-full">
                               Close
                             </Button>
                           </DialogClose>
-                        </div>
 
+                        </div>
                       </form>
                     </CardContent>
                   </Card>
