@@ -10,6 +10,8 @@ const createScheduledPostSchema = z.object({
     summary: z.string().min(1, 'Post content is required'),
     actionType: z.string().nullable().optional(),
     actionUrl: z.string().nullable().optional(),
+    // FIX: added callPhone field to schema so it can be received and mapped
+    callPhone: z.string().nullable().optional(),
     accountId: z.string().min(1, 'Account ID is required'),
     locationId: z.string().min(1, 'Location ID is required'),
     accessToken: z.string().min(1, 'Access token is required'),
@@ -24,8 +26,10 @@ const updateScheduledPostSchema = z.object({
     mediaFormat: z.string().default("PHOTO"),
     actionType: z.string().nullable().optional(),
     actionUrl: z.string().nullable().optional(),
+    // FIX: added callPhone to update schema too
+    callPhone: z.string().nullable().optional(),
     scheduledAt: z.string().optional(),
-    scheduledPublishTime: z.string().optional(), // Accept both formats
+    scheduledPublishTime: z.string().optional(),// Accept both formats
     timezone: z.string().optional(),
     status: z.enum(['PENDING', 'PROCESSING', 'PUBLISHED', 'FAILED', 'CANCELLED', 'EXPIRED']).optional(),
     // Add nested callToAction support
@@ -39,7 +43,7 @@ const updateScheduledPostSchema = z.object({
         mediaFormat: z.string().default("PHOTO"),
         sourceUrl: z.string()
     })).optional(),
-    imageUrl: z.string().optional() // Direct image URL
+    imageUrl: z.string().optional()
 });
 
 
@@ -48,7 +52,7 @@ async function deleteFromImageKit(imageUrl: string): Promise<void> {
     try {
         const IMAGEKIT_PRIVATE_KEY = process.env.IMAGEKIT_PRIVATE_KEY;
         const IMAGEKIT_PUBLIC_KEY = process.env.IMAGEKIT_PUBLIC_KEY;
-        const IMAGEKIT_URL_ENDPOINT = 'https://ik.imagekit.io/9onnlplci'; // Your ImageKit URL endpoint
+        const IMAGEKIT_URL_ENDPOINT = 'https://ik.imagekit.io/9onnlplci';// Your ImageKit URL endpoint
 
         if (!IMAGEKIT_PRIVATE_KEY || !IMAGEKIT_PUBLIC_KEY) {
             throw new Error('ImageKit credentials not configured');
@@ -247,11 +251,34 @@ export async function POST(request: NextRequest) {
             body = await request.json();
         }
 
+        // Resolve the raw action type
+        const rawActionType = body.actionButton === 'NO_ACTION'
+            ? null
+            : (body.actionButton || body.actionType || null);
+
+        // FIX: When actionType is CALL, actionUrl must be the phone number.
+        // For all other action types, actionUrl is the link (book/order/shop etc).
+        // callPhone is sent separately from the form — map it here correctly.
+        const resolvedActionUrl = (() => {
+            if (!rawActionType || rawActionType === 'NO_ACTION') return null;
+
+            if (rawActionType === 'CALL') {
+                // Use callPhone as the actionUrl for CALL actions
+                const phone = body.callPhone || body.actionUrl || null;
+                return phone === 'null' ? null : phone;
+            }
+
+            // Non-CALL actions: use actionLink / actionUrl
+            const url = body.actionLink || body.actionUrl || null;
+            return url === 'null' ? null : url;
+        })();
+
         // Map frontend field names to schema field names
         const mappedBody = {
             summary: body.postContent || body.summary,
-            actionType: body.actionButton === 'NO_ACTION' ? null : body.actionButton || body.actionType,
-            actionUrl: body.actionLink === 'null' ? null : body.actionLink || body.actionUrl,
+            actionType: rawActionType,
+            actionUrl: resolvedActionUrl,
+            callPhone: body.callPhone || null, // pass through for schema, already mapped above
             accountId: body.account || body.accountId,
             locationId: body.location || body.selectedLocation || body.locationId,
             accessToken: body.accessToken,
@@ -289,6 +316,7 @@ export async function POST(request: NextRequest) {
                 imageUrl,
                 originalImageUrl: validatedData.image_url || null,
                 actionType: validatedData.actionType === 'null' ? null : validatedData.actionType,
+                // FIX: actionUrl now correctly holds the phone number for CALL actions
                 actionUrl: validatedData.actionUrl === 'null' ? null : validatedData.actionUrl,
                 accountId,
                 locationId,
@@ -296,7 +324,7 @@ export async function POST(request: NextRequest) {
                 scheduledAt: new Date(validatedData.scheduledAt),
                 timezone: validatedData.timezone,
                 createdBy: validatedData.createdBy,
-                viewColor: mappedBody.viewColor, // Add this field
+                viewColor: mappedBody.viewColor,
                 status: 'PENDING',
                 user_id: user?.id,
             }
@@ -430,11 +458,18 @@ export async function PUT(request: NextRequest) {
                 updateData.actionUrl = validatedData.callToAction.url || null;
             }
         } else {
-            // Handle flat format
+            // FIX: For PUT as well — if actionType is CALL, actionUrl = callPhone
+            const putActionType = validatedData.actionType === 'null' ? null : validatedData.actionType;
+
             if (validatedData.actionType !== undefined) {
-                updateData.actionType = validatedData.actionType === 'null' ? null : validatedData.actionType;
+                updateData.actionType = putActionType;
             }
-            if (validatedData.actionUrl !== undefined) {
+
+            if (putActionType === 'CALL') {
+                // Use callPhone as actionUrl for CALL updates
+                const phone = validatedData.callPhone || validatedData.actionUrl || null;
+                updateData.actionUrl = phone === 'null' ? null : phone;
+            } else if (validatedData.actionUrl !== undefined) {
                 updateData.actionUrl = validatedData.actionUrl === 'null' ? null : validatedData.actionUrl;
             }
         }
@@ -523,7 +558,6 @@ export async function DELETE(request: NextRequest) {
                 message: 'Scheduled post not found'
             }, { status: 404 });
         }
-
         // Don't allow deletion of published posts
         if (existingPost.status === 'PUBLISHED') {
             return NextResponse.json({

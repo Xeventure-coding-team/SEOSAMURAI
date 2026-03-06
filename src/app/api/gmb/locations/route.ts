@@ -31,6 +31,10 @@ interface LocationDetails {
   metadata?: {
     placeId?: string;
   };
+  phoneNumbers?: {
+    primaryPhone?: string;
+    additionalPhones?: string[];
+  };
 }
 
 interface DBLocation {
@@ -152,7 +156,8 @@ async function fetchLocationDetails(
   const apiUrl = `https://mybusinessbusinessinformation.googleapis.com/v1/${locationId}`;
   
   const params = {
-    readMask: 'name,title,profile,websiteUri,categories,serviceArea,storefrontAddress,metadata'
+    // readMask: 'name,title,profile,websiteUri,categories,serviceArea,storefrontAddress,metadata'
+    readMask: 'name,title,profile,websiteUri,categories,serviceArea,storefrontAddress,metadata,phoneNumbers'
   };
 
   const headers = {

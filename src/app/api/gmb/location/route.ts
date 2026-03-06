@@ -57,7 +57,7 @@ async function fetchLocationDetails(locationId: string, gmbAccountId: string, ac
 
     // 1. Get basic location data from GMB Account Management API
     const locationResponse = await fetch(
-      `https://mybusinessaccountmanagement.googleapis.com/v1/locations/${locationId}?readMask=name,storeCode,profile,labels,metadata,categories`,
+      `https://mybusinessaccountmanagement.googleapis.com/v1/locations/${locationId}?readMask=name,storeCode,profile,labels,metadata,categories,phoneNumbers`,
       {
         headers: {
           Authorization: `Bearer ${accessToken}`,
