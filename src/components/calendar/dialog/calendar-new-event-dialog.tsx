@@ -9,12 +9,12 @@ import {
   FormItem,
   FormLabel,
   FormMessage,
-  FormDescription, // added
+  FormDescription,
 } from "@/components/ui/form"
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
 
-import React from "react"
+import React, { useEffect } from "react"
 import { useState, useRef, useCallback } from "react"
 import {
   Upload,
@@ -33,6 +33,7 @@ import {
   Eye,
   Wand2,
 } from "lucide-react"
+import axios from "axios"
 
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Textarea } from "@/components/ui/textarea"
@@ -84,11 +85,8 @@ const postSchema = z.object({
     .max(1500, "Post content must be less than 1500 characters"),
   actionButton: z.string().optional(),
   actionLink: z.string().url("Please enter a valid URL").optional().or(z.literal("")),
-  callPhone: z
-    .string()
-    .regex(/^[+]?[1-9][\d]{0,15}$/, "Please enter a valid phone number")
-    .optional()
-    .or(z.literal("")),
+  // callPhone is auto-filled from Google profile — no user input, no regex needed
+  callPhone: z.string().optional(),
   image_url: z.string().url("Please enter a valid image URL").optional().or(z.literal("")),
   scheduled: z.string().optional(),
   color: z.string().optional(),
@@ -122,10 +120,17 @@ export default function CalendarNewEventDialog({
   const [bulkPosts, setBulkPosts] = useState<BulkPostData[]>([])
   const fileInputRef = useRef<HTMLInputElement>(null)
   const [isSubmitting, setIsSubmitting] = useState(false)
+  const [isLoadingDetails, setIsLoadingDetails] = useState(false)
 
   const { createPost, loading } = useGmbPostsScheduled()
   const { key, increaseKey } = useStore()
   const { newEventDialogOpen, setNewEventDialogOpen, date, events, setEvents } = useCalendarContext();
+  const [localLocationDetails, setLocalLocationDetails] = useState<LocationDetails | null>(null);
+
+  console.log(localLocationDetails, 'locationDetails..!')
+
+  const accessToken = useGMBStore((state) => state.accessToken)
+  const gmbAccountId = useGMBStore((state) => state.accountId)
 
   const form = useForm<PostFormData>({
     resolver: zodResolver(postSchema),
@@ -140,10 +145,99 @@ export default function CalendarNewEventDialog({
     } as any,
   })
 
+  // Fetch location details (including phone number) when dialog opens
+  useEffect(() => {
+    if (!newEventDialogOpen || !locationId || !accessToken || !gmbAccountId) {
+      if (newEventDialogOpen) {
+        toast.error("Missing credentials – cannot load location phone number")
+      }
+      return
+    }
+
+    const fetchLocationDetails = async () => {
+      setIsLoadingDetails(true)
+      try {
+        const cleanLocationName = locationId.startsWith("locations/")
+          ? locationId.replace("locations/", "")
+          : locationId
+
+        const response = await axios.get("/api/gmb/location", {
+          params: {
+            location_name: cleanLocationName,
+            access_token: accessToken,
+            gmb_account_id: gmbAccountId,
+          },
+        })
+
+        if (response.data?.location) {
+          setLocalLocationDetails(response.data.location)
+        } else {
+          toast.error("No location details returned")
+        }
+      } catch (err: any) {
+        console.error("Failed to fetch location details:", err)
+        const msg = err.response?.data?.error || "Could not load location details"
+        toast.error(msg)
+      } finally {
+        setIsLoadingDetails(false)
+      }
+    }
+
+    fetchLocationDetails()
+  }, [newEventDialogOpen, locationId, accessToken, gmbAccountId])
+
+  // Helper to get best phone number
+  const getBestPhoneNumber = (location: LocationDetails | null): string | undefined => {
+    console.log(location, 'location in bestPhoneNumber.!')
+    if (!location?.phoneNumbers) return undefined
+    return location.phoneNumbers.primaryPhone || location.phoneNumbers.additionalPhones?.[0]
+  }
+
+  // Check if location has a phone number
+  const hasPhoneNumber = Boolean(
+    localLocationDetails?.phoneNumbers?.primaryPhone ||
+    localLocationDetails?.phoneNumbers?.additionalPhones?.length
+  )
+
+  // Filter options: remove "CALL" if no phone number
+  const availableActionOptions = hasPhoneNumber
+    ? actionButtonOptions
+    : actionButtonOptions.filter(opt => opt.value !== "CALL")
+
+  const defaultPhone = getBestPhoneNumber(localLocationDetails)
+
+  console.log(defaultPhone, "defaultPhone from calendar-new-event-dialog..!")
+
+  // FIX 2: When user selects "CALL", sync defaultPhone into form value so validation passes.
+  // When they switch away from "CALL", clear callPhone so it doesn't linger.
+  useEffect(() => {
+    const subscription = form.watch((value, { name }) => {
+      if (name === "actionButton") {
+        if (value.actionButton === "CALL") {
+          // Set the phone value in the form so schema validation passes
+          form.setValue("callPhone", defaultPhone || "", { shouldValidate: true })
+          if (defaultPhone) {
+            toast.success("Location phone number auto-filled", { duration: 3000 })
+          }
+        } else {
+          // Clear callPhone when switching away from CALL
+          form.setValue("callPhone", "", { shouldValidate: true })
+        }
+      }
+    })
+    return () => subscription.unsubscribe()
+  }, [form, defaultPhone])
+
+  // FIX 3: If defaultPhone loads AFTER the user already selected CALL, sync it in
+  useEffect(() => {
+    if (defaultPhone && form.getValues("actionButton") === "CALL") {
+      form.setValue("callPhone", defaultPhone, { shouldValidate: true })
+    }
+  }, [defaultPhone, form])
+
 
   const displayImageUrl = previewUrl || form.watch("image_url")
   const watchedImageUrl = form.watch("image_url")
-  const accessToken = useGMBStore((state) => state.accessToken)
 
   const generateImageFromContent = async () => {
     const postContent = form.getValues("postContent")
@@ -212,7 +306,6 @@ export default function CalendarNewEventDialog({
   }
 
   const generateImage = async () => {
-    // alert("starting")
     if (!imagePrompt.trim()) {
       toast.error("Please enter a prompt for image generation")
       return
@@ -246,13 +339,11 @@ export default function CalendarNewEventDialog({
 
   const handleFileSelect = useCallback(
     (file: File) => {
-      // Validate file type
       if (!ACCEPTED_IMAGE_TYPES.includes(file.type)) {
         toast.error("Please select a valid image file (JPEG, PNG, WebP)")
         return
       }
 
-      // Validate file size
       if (file.size > MAX_FILE_SIZE) {
         toast.error("File size must be less than 10MB")
         return
@@ -260,17 +351,57 @@ export default function CalendarNewEventDialog({
 
       setSelectedFile(file)
 
-      // Create preview URL
       const url = URL.createObjectURL(file)
       setPreviewUrl(url)
 
-      // Clear image URL field when file is selected
       form.setValue("image_url", "")
 
       toast.success("Image selected successfully")
     },
     [form],
   )
+
+  useEffect(() => {
+    if (!newEventDialogOpen || !locationId || !accessToken || !gmbAccountId) {
+      if (newEventDialogOpen) {
+        toast.error("Missing Google account ID – cannot load location details");
+      }
+      return;
+    }
+
+    const fetchDetails = async () => {
+      try {
+        const cleanLocationName = locationId.startsWith("locations/")
+          ? locationId.replace("locations/", "")
+          : locationId;
+
+        const res = await axios.get(`/api/gmb/location`, {
+          params: {
+            location_name: cleanLocationName,
+            access_token: accessToken,
+            gmb_account_id: gmbAccountId,
+          },
+        });
+
+        if (res.data) {
+          setLocalLocationDetails(res.data.location.data);
+          console.log(res.data.location.data, "fetch details res..!")
+          if (getBestPhoneNumber(res.data.location.data.phoneNumbers)) {
+            toast.success("Location details loaded (phone available)", { duration: 3000 });
+          }
+        } else {
+          toast.error("No location details returned");
+        }
+      } catch (err: any) {
+        console.error("Failed to fetch location details in dialog:", err);
+        const msg = err.response?.data?.error || "Could not load location phone number";
+        toast.error(msg);
+      }
+    };
+
+    fetchDetails();
+  }, [newEventDialogOpen, locationId, accessToken, gmbAccountId]);
+
 
   const handleDrag = useCallback((e: React.DragEvent) => {
     e.preventDefault()
@@ -313,12 +444,15 @@ export default function CalendarNewEventDialog({
     }
 
     try {
+      const isCallAction = data.actionButton?.toUpperCase() === "CALL"
+
       const postData: CreatePostData = {
         selectedLocation: selectedLocation,
         postContent: data.postContent,
         actionButton: data.actionButton || null,
-        actionLink: data.actionLink || null,
-        callPhone: data.callPhone || null,
+        // For CALL: actionLink carries the phone so the API can save it as actionUrl
+        actionLink: isCallAction ? (data.callPhone || defaultPhone || null) : (data.actionLink || null),
+        callPhone: data.callPhone || defaultPhone || null,
         account: accountId,
         location: locationId,
         accessToken: accessToken,
@@ -351,10 +485,8 @@ export default function CalendarNewEventDialog({
 
   const getActionButtonInfo = (actionType: string) => {
     const option = actionButtonOptions.find((opt) => opt.value === actionType)
-
     return option || { label: "No Action", icon: Send }
   }
-
 
   const handleEnhanceContent = async (e: React.MouseEvent) => {
     e.preventDefault()
@@ -367,10 +499,10 @@ export default function CalendarNewEventDialog({
   return (
     <Dialog open={newEventDialogOpen} onOpenChange={setNewEventDialogOpen}>
       <DialogContent className="min-w-full
-      fixed inset-0 left-0 top-0 translate-x-0 translate-y-0
-      m-0 p-0 w-screen h-screen max-w-none max-h-screen
-      rounded-none overflow-hidden flex flex-col
-    ">
+        fixed inset-0 left-0 top-0 translate-x-0 translate-y-0
+        m-0 p-0 w-screen h-screen max-w-none max-h-screen
+        rounded-none overflow-hidden flex flex-col
+      ">
         <DialogHeader className="shrink-0 pl-4 pt-4 hidden">
           <DialogTitle>Create Scheduled Post</DialogTitle>
         </DialogHeader>
@@ -742,7 +874,7 @@ export default function CalendarNewEventDialog({
                                   </FormControl>
                                   <SelectContent>
                                     <SelectItem value="NO_ACTION">No action button</SelectItem>
-                                    {actionButtonOptions.map((option) => {
+                                    {availableActionOptions.map((option) => {
                                       const Icon = option.icon
                                       return (
                                         <SelectItem key={option.value} value={option.value}>
@@ -760,6 +892,7 @@ export default function CalendarNewEventDialog({
                             )}
                           />
 
+                          {/* FIX 4: Show actionLink for all non-CALL, non-NO_ACTION buttons (including BOOK) */}
                           {watchedActionButton &&
                             watchedActionButton !== "CALL" &&
                             watchedActionButton !== "NO_ACTION" && (
@@ -784,6 +917,7 @@ export default function CalendarNewEventDialog({
                               />
                             )}
 
+                          {/* FIX 5: CALL phone — uses react-hook-form field so form value stays in sync */}
                           {watchedActionButton === "CALL" && (
                             <FormField
                               control={form.control}
@@ -792,13 +926,23 @@ export default function CalendarNewEventDialog({
                                 <FormItem>
                                   <FormLabel className="flex items-center gap-2">
                                     <Phone className="h-4 w-4" />
-                                    Phone Number
+                                    Phone Number (from Google profile)
+                                    {isLoadingDetails && (
+                                      <Loader2 className="h-3 w-3 animate-spin text-muted-foreground" />
+                                    )}
                                   </FormLabel>
                                   <FormControl>
-                                    <Input placeholder="+1234567890" {...field} />
+                                    {/* Use {...field} so the form value is properly registered & validated */}
+                                    <Input
+                                      {...field}
+                                      disabled
+                                      className="bg-muted cursor-not-allowed"
+                                    />
                                   </FormControl>
-                                  <FormDescription>
-                                    Phone number users can call when they click the action button
+                                  <FormDescription className="text-muted-foreground">
+                                    {isLoadingDetails
+                                      ? "Fetching business phone number..."
+                                      : "This number is taken directly from your Google Business Profile and cannot be changed here."}
                                   </FormDescription>
                                   <FormMessage />
                                 </FormItem>
@@ -806,42 +950,16 @@ export default function CalendarNewEventDialog({
                             />
                           )}
                         </div>
+
                         <div className="grid grid-cols-3 gap-2">
-
-                          {/* {!form.getValues().image_url ? <Button
-                            type="button"
-                            className="col-span-2 w-full"
-                            disabled={true}
-                          >
-                             Create Post
-                          </Button> : (
-                            <Button
-                              type="submit"
-                              className="col-span-2 w-full"
-                              disabled={loading}
-                            >
-                              {loading ? (
-                                <>
-                                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                                  Creating Post...
-                                </>
-                              ) : (
-                                <>
-                                  <Send className="mr-2 h-4 w-4" />
-                                  Create Postt
-                                </>
-                              )}
-                            </Button>
-                          )} */}
-
+                          {/* Image (upload or URL) is required to submit */}
                           <Button
                             type="submit"
                             className="col-span-2 w-full"
                             disabled={
                               loading ||
                               !form.formState.isValid ||
-                              // Require either image_url filled OR file selected
-                              (!form.getValues("image_url") && !selectedFile)
+                              (!form.watch("image_url") && !selectedFile)
                             }
                           >
                             {loading ? (
@@ -862,7 +980,6 @@ export default function CalendarNewEventDialog({
                               Close
                             </Button>
                           </DialogClose>
-
                         </div>
                       </form>
                     </CardContent>
