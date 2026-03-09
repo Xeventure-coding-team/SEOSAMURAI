@@ -18,9 +18,10 @@ interface DateTimePickerProps {
     value: string
     onChange: (value: string) => void
   }
+  minDate?: Date // Optional prop - won't affect existing components
 }
 
-export function DateTimePicker({ field }: DateTimePickerProps) {
+export function DateTimePicker({ field, minDate }: DateTimePickerProps) {
   const [date, setDate] = React.useState<Date>(
     field.value ? new Date(field.value) : new Date()
   )
@@ -30,6 +31,20 @@ export function DateTimePicker({ field }: DateTimePickerProps) {
 
   const handleDateSelect = (selectedDate: Date | undefined) => {
     if (selectedDate) {
+      // If minDate is provided and selected date is before minDate, don't update
+      if (minDate) {
+        const selectedDateOnly = new Date(selectedDate)
+        selectedDateOnly.setHours(0, 0, 0, 0)
+        
+        const minDateOnly = new Date(minDate)
+        minDateOnly.setHours(0, 0, 0, 0)
+        
+        if (selectedDateOnly < minDateOnly) {
+          // Optionally show a toast or just return without updating
+          return
+        }
+      }
+
       const newDate = new Date(date)
       newDate.setFullYear(selectedDate.getFullYear())
       newDate.setMonth(selectedDate.getMonth())
@@ -44,6 +59,7 @@ export function DateTimePicker({ field }: DateTimePickerProps) {
     value: string
   ) => {
     const newDate = new Date(date)
+    
     if (type === 'hour') {
       newDate.setHours(
         (parseInt(value) % 12) + (newDate.getHours() >= 12 ? 12 : 0)
@@ -59,12 +75,25 @@ export function DateTimePicker({ field }: DateTimePickerProps) {
         newDate.setHours(currentHours - 12)
       }
     }
+    
     setDate(newDate)
     field.onChange(newDate.toISOString())
   }
 
-  document.body.style.pointerEvents = 'auto';
+  // Function to check if a date should be disabled
+  const isDateDisabled = (date: Date) => {
+    if (!minDate) return false
+    
+    const dateOnly = new Date(date)
+    dateOnly.setHours(0, 0, 0, 0)
+    
+    const minDateOnly = new Date(minDate)
+    minDateOnly.setHours(0, 0, 0, 0)
+    
+    return dateOnly < minDateOnly
+  }
 
+  document.body.style.pointerEvents = 'auto';
 
   return (
     <Popover open={isOpen} onOpenChange={setIsOpen}>
@@ -96,6 +125,7 @@ export function DateTimePicker({ field }: DateTimePickerProps) {
             selected={date}
             onSelect={handleDateSelect}
             initialFocus
+            disabled={isDateDisabled} // This will disable past dates visually
           />
           <div className="flex flex-col sm:flex-row sm:h-[300px] divide-y sm:divide-y-0 sm:divide-x">
             <ScrollArea className="w-64 sm:w-auto">

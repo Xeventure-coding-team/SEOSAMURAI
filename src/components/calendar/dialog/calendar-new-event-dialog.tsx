@@ -633,7 +633,7 @@ export default function CalendarNewEventDialog({
                         />
 
 
-                        <FormField
+                        {/* <FormField
                           control={form.control}
                           name="scheduled"
                           render={({ field }) => (
@@ -648,7 +648,7 @@ export default function CalendarNewEventDialog({
                               <FormMessage />
                             </FormItem>
                           )}
-                        />
+                        /> */}
 
                         {/* Color Field */}
                         <FormField
@@ -950,6 +950,26 @@ export default function CalendarNewEventDialog({
                             />
                           )}
                         </div>
+
+                        <FormField
+                          control={form.control}
+                          name="scheduled"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel className="font-bold">Scheduled Date & Time</FormLabel>
+                              <FormControl>
+                                <DateTimePicker
+                                  field={field}
+                                  minDate={new Date()}
+                                />
+                              </FormControl>
+                              <FormDescription>
+                                When this post should be published to Google My Business
+                              </FormDescription>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
 
                         <div className="grid grid-cols-3 gap-2">
                           {/* Image (upload or URL) is required to submit */}
