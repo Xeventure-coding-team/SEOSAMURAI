@@ -38,14 +38,46 @@ function getActionType(actionType: string): string | null {
   return actionTypeMap[actionType] || actionType.toUpperCase();
 }
 
+// function validatePhoneNumber(phone: string): string {
+//   const cleanPhone = phone.replace(/\D/g, '');
+//   if (cleanPhone.length === 10) {
+//     return `tel:+1${cleanPhone}`;
+//   } else if (cleanPhone.length === 11 && cleanPhone.startsWith('1')) {
+//     return `tel:+${cleanPhone}`;
+//   }
+//   throw new Error('Invalid phone number format. Please provide a 10-digit US phone number.');
+// }
+
+
 function validatePhoneNumber(phone: string): string {
   const cleanPhone = phone.replace(/\D/g, '');
+
+  // Already formatted as tel: URI
+  if (phone.startsWith('tel:')) return phone;
+
+  // US 10-digit
   if (cleanPhone.length === 10) {
     return `tel:+1${cleanPhone}`;
-  } else if (cleanPhone.length === 11 && cleanPhone.startsWith('1')) {
+  }
+
+  // US 11-digit starting with 1
+  if (cleanPhone.length === 11 && cleanPhone.startsWith('1')) {
     return `tel:+${cleanPhone}`;
   }
-  throw new Error('Invalid phone number format. Please provide a 10-digit US phone number.');
+
+  // International: if already has country code (e.g. +91xxxxxxxxxx = 12 digits starting with 91)
+  // Accept any number between 7-15 digits (E.164 standard)
+  if (cleanPhone.length >= 7 && cleanPhone.length <= 15) {
+    // If it starts with 0, it's likely a local number needing country code
+    if (cleanPhone.startsWith('0')) {
+      // Strip leading 0, assume stored with country code prefix issue
+      // You'll need to know the country — for India, prepend +91
+      return `tel:+91${cleanPhone.slice(1)}`;
+    }
+    return `tel:+${cleanPhone}`;
+  }
+
+  throw new Error(`Invalid phone number format: ${phone}`);
 }
 
 function validateUrl(url: string): string {
