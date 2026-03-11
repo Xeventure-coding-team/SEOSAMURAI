@@ -38,46 +38,14 @@ function getActionType(actionType: string): string | null {
   return actionTypeMap[actionType] || actionType.toUpperCase();
 }
 
-// function validatePhoneNumber(phone: string): string {
-//   const cleanPhone = phone.replace(/\D/g, '');
-//   if (cleanPhone.length === 10) {
-//     return `tel:+1${cleanPhone}`;
-//   } else if (cleanPhone.length === 11 && cleanPhone.startsWith('1')) {
-//     return `tel:+${cleanPhone}`;
-//   }
-//   throw new Error('Invalid phone number format. Please provide a 10-digit US phone number.');
-// }
-
-
 function validatePhoneNumber(phone: string): string {
   const cleanPhone = phone.replace(/\D/g, '');
-
-  // Already formatted as tel: URI
-  if (phone.startsWith('tel:')) return phone;
-
-  // US 10-digit
   if (cleanPhone.length === 10) {
     return `tel:+1${cleanPhone}`;
-  }
-
-  // US 11-digit starting with 1
-  if (cleanPhone.length === 11 && cleanPhone.startsWith('1')) {
+  } else if (cleanPhone.length === 11 && cleanPhone.startsWith('1')) {
     return `tel:+${cleanPhone}`;
   }
-
-  // International: if already has country code (e.g. +91xxxxxxxxxx = 12 digits starting with 91)
-  // Accept any number between 7-15 digits (E.164 standard)
-  if (cleanPhone.length >= 7 && cleanPhone.length <= 15) {
-    // If it starts with 0, it's likely a local number needing country code
-    if (cleanPhone.startsWith('0')) {
-      // Strip leading 0, assume stored with country code prefix issue
-      // You'll need to know the country — for India, prepend +91
-      return `tel:+91${cleanPhone.slice(1)}`;
-    }
-    return `tel:+${cleanPhone}`;
-  }
-
-  throw new Error(`Invalid phone number format: ${phone}`);
+  throw new Error('Invalid phone number format. Please provide a 10-digit US phone number.');
 }
 
 function validateUrl(url: string): string {
@@ -211,7 +179,7 @@ async function getValidAccessToken(integration: any) {
   params.append("refresh_token", integration.refreshToken);
   params.append("grant_type", "refresh_token");
 
-  const res = await axios.post("https://oauth2.googleapis.com/token", params);  
+  const res = await axios.post("https://oauth2.googleapis.com/token", params);
 
   const newAccessToken = res.data.access_token;
   const newExpiry = new Date(Date.now() + res.data.expires_in * 1000);
@@ -334,10 +302,8 @@ export async function GET(request: NextRequest) {
 
   // 🔐 Protect with secret
   const secret = request.nextUrl.searchParams.get("secret");
-  console.log(request.nextUrl,'secret key ..!');
-  
   if (secret !== process.env.CRON_SECRET) {
-    return NextResponse.json({ error: "Unauthorized..!" }, { status: 401 });       
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
   try {
