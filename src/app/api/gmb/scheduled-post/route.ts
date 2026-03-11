@@ -259,19 +259,33 @@ export async function POST(request: NextRequest) {
         // FIX: When actionType is CALL, actionUrl must be the phone number.
         // For all other action types, actionUrl is the link (book/order/shop etc).
         // callPhone is sent separately from the form — map it here correctly.
+        // const resolvedActionUrl = (() => {
+        //     if (!rawActionType || rawActionType === 'NO_ACTION') return null;
+
+        //     if (rawActionType === 'CALL') {
+        //         // Use callPhone as the actionUrl for CALL actions
+        //         const phone = body.callPhone || body.actionUrl || null;
+        //         return phone === 'null' ? null : phone;
+        //     }
+
+        //     // Non-CALL actions: use actionLink / actionUrl
+        //     const url = body.actionLink || body.actionUrl || null;
+        //     return url === 'null' ? null : url;
+        // })();
+
         const resolvedActionUrl = (() => {
-            if (!rawActionType || rawActionType === 'NO_ACTION') return null;
+        if (!rawActionType || rawActionType === 'NO_ACTION') return null;
 
-            if (rawActionType === 'CALL') {
-                // Use callPhone as the actionUrl for CALL actions
-                const phone = body.callPhone || body.actionUrl || null;
-                return phone === 'null' ? null : phone;
-            }
+        if (rawActionType === 'CALL') {
+            // For CALL actions, actionUrl should be null as per your schema requirement
+            return null;
+        }
 
-            // Non-CALL actions: use actionLink / actionUrl
-            const url = body.actionLink || body.actionUrl || null;
-            return url === 'null' ? null : url;
-        })();
+        // Non-CALL actions: use actionLink / actionUrl
+        const url = body.actionLink || body.actionUrl || null;
+        return url === 'null' ? null : url;
+    })();
+
 
         // Map frontend field names to schema field names
         const mappedBody = {
@@ -317,7 +331,10 @@ export async function POST(request: NextRequest) {
                 originalImageUrl: validatedData.image_url || null,
                 actionType: validatedData.actionType === 'null' ? null : validatedData.actionType,
                 // FIX: actionUrl now correctly holds the phone number for CALL actions
-                actionUrl: validatedData.actionUrl === 'null' ? null : validatedData.actionUrl,
+
+                // actionUrl: validatedData.actionUrl === 'null' ? null : validatedData.actionUrl,
+                
+                actionUrl: resolvedActionUrl, // This will be null for CALL actions
                 accountId,
                 locationId,
                 accessToken: validatedData.accessToken,

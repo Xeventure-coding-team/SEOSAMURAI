@@ -451,7 +451,8 @@ export default function CalendarNewEventDialog({
         postContent: data.postContent,
         actionButton: data.actionButton || null,
         // For CALL: actionLink carries the phone so the API can save it as actionUrl
-        actionLink: isCallAction ? (data.callPhone || defaultPhone || null) : (data.actionLink || null),
+        // actionLink: isCallAction ? (data.callPhone || defaultPhone || null) : (data.actionLink || null),
+        actionLink: data.actionLink || null,
         callPhone: data.callPhone || defaultPhone || null,
         account: accountId,
         location: locationId,
