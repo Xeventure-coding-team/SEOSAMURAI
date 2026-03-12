@@ -520,6 +520,7 @@ model gmb_reviews {
   createdAt    DateTime  @default(now())
   updatedAt    DateTime  @updatedAt
 
+  @@unique([accountId, locationId, reviewId])
   @@index([accountId, locationId])
   @@index([isDeleted])
 }

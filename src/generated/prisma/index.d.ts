@@ -30442,6 +30442,7 @@ export namespace Prisma {
   export type gmb_reviewsWhereUniqueInput = Prisma.AtLeast<{
     id?: string
     reviewId?: string
+    accountId_locationId_reviewId?: gmb_reviewsAccountIdLocationIdReviewIdCompoundUniqueInput
     AND?: gmb_reviewsWhereInput | gmb_reviewsWhereInput[]
     OR?: gmb_reviewsWhereInput[]
     NOT?: gmb_reviewsWhereInput | gmb_reviewsWhereInput[]
@@ -30458,7 +30459,7 @@ export namespace Prisma {
     rawData?: JsonFilter<"gmb_reviews">
     createdAt?: DateTimeFilter<"gmb_reviews"> | Date | string
     updatedAt?: DateTimeFilter<"gmb_reviews"> | Date | string
-  }, "id" | "reviewId">
+  }, "id" | "reviewId" | "accountId_locationId_reviewId">
 
   export type gmb_reviewsOrderByWithAggregationInput = {
     id?: SortOrder
@@ -34531,6 +34532,12 @@ export namespace Prisma {
     equals?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | null
     not?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | null
     isSet?: boolean
+  }
+
+  export type gmb_reviewsAccountIdLocationIdReviewIdCompoundUniqueInput = {
+    accountId: string
+    locationId: string
+    reviewId: string
   }
 
   export type gmb_reviewsCountOrderByAggregateInput = {

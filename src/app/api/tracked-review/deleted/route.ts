@@ -39,6 +39,7 @@ export async function GET(request: NextRequest) {
           in: locationIds,
         },
         isDeleted: true,
+        deletedAt: { not: null }, // or use a combination to get only "final" deletions
       },
       orderBy: {
         deletedAt: 'desc',
