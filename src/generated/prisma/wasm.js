@@ -129,6 +129,8 @@ exports.Prisma.LocationsScalarFieldEnum = {
   location_id: 'location_id',
   location_name: 'location_name',
   website: 'website',
+  is_deleted: 'is_deleted',
+  deleted_at: 'deleted_at',
   categories: 'categories',
   last_rank_updated: 'last_rank_updated',
   created_at: 'created_at',

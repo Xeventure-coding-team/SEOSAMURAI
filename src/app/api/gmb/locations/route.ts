@@ -56,13 +56,16 @@ interface DetailedLocation extends LocationDetails {
 // Utility function to validate GMB access token
 async function validateGMBToken(token: string): Promise<boolean> {
   try {
-    const response = await axios.get('https://mybusinessaccountmanagement.googleapis.com/v1/accounts', {
-      headers: { Authorization: `Bearer ${token}` },
-      timeout: 10000,
-    });
+    const response = await axios.get(
+      "https://mybusinessaccountmanagement.googleapis.com/v1/accounts",
+      {
+        headers: { Authorization: `Bearer ${token}` },
+        timeout: 10000,
+      },
+    );
     return response.status === 200;
   } catch (error) {
-    console.error('GMB token validation failed:', error);
+    console.error("GMB token validation failed:", error);
     return false;
   }
 }
@@ -72,18 +75,18 @@ function extractDisplayName(locationData: LocationDetails): string {
   if (locationData.title) {
     return locationData.title;
   }
-  
+
   if (locationData.profile?.businessName) {
     return locationData.profile.businessName;
   }
-  
+
   if (locationData.name) {
-    const parts = locationData.name.split('/');
+    const parts = locationData.name.split("/");
     const locationId = parts[parts.length - 1];
     return locationId || locationData.name;
   }
-  
-  return 'Unknown Location';
+
+  return "Unknown Location";
 }
 
 // Extract formatted address from various API response fields
@@ -91,32 +94,32 @@ function extractFormattedAddress(locationData: LocationDetails): string | null {
   if (locationData.storefrontAddress) {
     const addr = locationData.storefrontAddress;
     const addressParts: string[] = [];
-    
+
     if (addr.addressLines && addr.addressLines.length > 0) {
       addressParts.push(...addr.addressLines);
     }
-    
+
     if (addr.locality) {
       addressParts.push(addr.locality);
     }
-    
+
     if (addr.administrativeArea) {
       addressParts.push(addr.administrativeArea);
     }
-    
+
     if (addr.postalCode) {
       addressParts.push(addr.postalCode);
     }
-    
+
     if (addressParts.length > 0) {
-      return addressParts.join(', ');
+      return addressParts.join(", ");
     }
   }
-  
+
   if (locationData.profile?.address) {
     return locationData.profile.address;
   }
-  
+
   return null;
 }
 
@@ -125,11 +128,11 @@ function extractWebsiteUrl(locationData: LocationDetails): string | null {
   if (locationData.websiteUri) {
     return locationData.websiteUri;
   }
-  
+
   if (locationData.profile?.websiteUrl) {
     return locationData.profile.websiteUrl;
   }
-  
+
   if (locationData.profile?.description) {
     const urlRegex = /(https?:\/\/[^\s]+)/g;
     const match = locationData.profile.description.match(urlRegex);
@@ -137,27 +140,28 @@ function extractWebsiteUrl(locationData: LocationDetails): string | null {
       return match[0];
     }
   }
-  
+
   return null;
 }
 
 // Fetch location details from Google with improved error handling
 async function fetchLocationDetails(
   locationId: string,
-  accessToken: string
+  accessToken: string,
 ): Promise<LocationDetails | null> {
   // Validate locationId format - it should be locations/XXXXXXX
-  if (!locationId || !locationId.startsWith('locations/')) {
-    console.error(`❌ Invalid location ID format: ${locationId} - Expected format: locations/XXXXXXX`);
+  if (!locationId || !locationId.startsWith("locations/")) {
+    console.error(
+      `❌ Invalid location ID format: ${locationId} - Expected format: locations/XXXXXXX`,
+    );
     return null;
   }
 
   // Construct API URL
   const apiUrl = `https://mybusinessbusinessinformation.googleapis.com/v1/${locationId}`;
-  
+
   const params = {
-    // readMask: 'name,title,profile,websiteUri,categories,serviceArea,storefrontAddress,metadata'
-    readMask: 'name,title,profile,websiteUri,categories,serviceArea,storefrontAddress,metadata,phoneNumbers'
+    readMask: 'name,title,profile,websiteUri,categories,serviceArea,storefrontAddress,metadata,phoneNumbers '
   };
 
   const headers = {
@@ -173,7 +177,7 @@ async function fetchLocationDetails(
       const { data } = await axios.get(apiUrl, {
         headers,
         params,
-        timeout: 15000
+        timeout: 15000,
       });
       return data;
     } catch (error: any) {
@@ -181,13 +185,13 @@ async function fetchLocationDetails(
         status: error.response?.status,
         message: error.message,
         url: apiUrl,
-        data: error.response?.data
+        data: error.response?.data,
       });
 
       // Handle rate limiting
       if (error.response?.status === 429) {
         const waitTime = Math.min(Math.pow(2, retryCount) * 2000, 10000);
-        console.warn(`⏳ Rate limit exceeded. Retrying in ${waitTime / 1000}s...`);
+        console.warn(`⏳ Rate limit exceeded. Retrying in ${waitTime / 1000}s...`,);
         await new Promise((res) => setTimeout(res, waitTime));
         retryCount++;
         continue;
@@ -195,7 +199,7 @@ async function fetchLocationDetails(
 
       // Handle authentication errors
       if (error.response?.status === 401) {
-        throw new Error('Invalid or expired access token');
+        throw new Error("Invalid or expired access token");
       }
 
       // Handle forbidden/permission errors
@@ -216,7 +220,7 @@ async function fetchLocationDetails(
         await new Promise((res) => setTimeout(res, waitTime));
         retryCount++;
       } else {
-        console.error(`💥 Failed to fetch location after ${maxRetries} attempts: ${locationId}`);
+        console.error(`💥 Failed to fetch location after ${maxRetries} attempts: ${locationId}`,);
         return null;
       }
     }
@@ -229,29 +233,33 @@ async function fetchLocationDetails(
 async function fetchLocationsBatch(
   locations: DBLocation[],
   accessToken: string,
-  batchSize: number = 3
+  batchSize: number = 3,
 ): Promise<DetailedLocation[]> {
   const results: DetailedLocation[] = [];
 
   for (let i = 0; i < locations.length; i += batchSize) {
     const batch = locations.slice(i, i + batchSize);
-    
+
     const batchResults = await Promise.allSettled(
       batch.map(async (location): Promise<DetailedLocation | null> => {
-        
         try {
-          const googleData = await fetchLocationDetails(location.location_id, accessToken);
-          
+          const googleData = await fetchLocationDetails(
+            location.location_id,
+            accessToken,
+          );
+
           if (!googleData) {
-            console.warn(`⚠️ Using database fallback for: ${location.location_id}`);
+            console.warn(`⚠️ Using database fallback for: ${location.location_id}`, );
             return {
               name: location.location_id,
-              title: location.location_name || '',
+              title: location.location_name || "",
               websiteUri: location.website || undefined,
-              categories: location.categories ? JSON.parse(location.categories) : undefined,
+              categories: location.categories
+                ? JSON.parse(location.categories)
+                : undefined,
               location_id: location.location_id,
               last_rank_updated: location.last_rank_updated,
-              displayName: location.location_name || 'Unknown Location',
+              displayName: location.location_name || "Unknown Location",
               businessWebsite: location.website || null,
               formattedAddress: null,
             };
@@ -271,46 +279,47 @@ async function fetchLocationsBatch(
             formattedAddress,
           };
         } catch (error) {
-          console.error(`💥 Error processing location ${location.location_id}:`, error);
+          console.error(`💥 Error processing location ${location.location_id}:`,error,);
           return {
             name: location.location_id,
-            title: location.location_name || '',
+            title: location.location_name || "",
             websiteUri: location.website || undefined,
-            categories: location.categories ? JSON.parse(location.categories) : undefined,
+            categories: location.categories
+              ? JSON.parse(location.categories)
+              : undefined,
             location_id: location.location_id,
             last_rank_updated: location.last_rank_updated,
-            displayName: location.location_name || 'Unknown Location',
+            displayName: location.location_name || "Unknown Location",
             businessWebsite: location.website || null,
             formattedAddress: null,
           };
         }
-      })
+      }),
     );
 
     // Process batch results
     batchResults.forEach((result, index) => {
-      if (result.status === 'fulfilled' && result.value) {
+      if (result.status === "fulfilled" && result.value) {
         results.push(result.value);
       } else {
-        console.warn(`⚠️ Failed to process location: ${batch[index].location_id}`, result.reason);
+        console.warn( `⚠️ Failed to process location: ${batch[index].location_id}`,result.reason,);
         const location = batch[index];
         results.push({
           name: location.location_id,
-          title: location.location_name || '',
+          title: location.location_name || "",
           websiteUri: location.website || undefined,
           location_id: location.location_id,
           last_rank_updated: location.last_rank_updated,
-          displayName: location.location_name || 'Unknown Location',
+          displayName: location.location_name || "Unknown Location",
           businessWebsite: location.website || null,
           formattedAddress: null,
         });
       }
     });
 
-    
     // Add delay between batches
     if (i + batchSize < locations.length) {
-      await new Promise(resolve => setTimeout(resolve, 2000));
+      await new Promise((resolve) => setTimeout(resolve, 2000));
     }
   }
 
@@ -324,7 +333,7 @@ export async function GET(req: Request) {
     if (!user?.id) {
       return NextResponse.json(
         { error: "User authentication required" },
-        { status: 401 }
+        { status: 401 },
       );
     }
 
@@ -335,7 +344,7 @@ export async function GET(req: Request) {
     if (!accessToken) {
       return NextResponse.json(
         { error: "Missing accessToken parameter" },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -344,13 +353,13 @@ export async function GET(req: Request) {
     if (!isValidToken) {
       return NextResponse.json(
         { error: "Invalid or expired GMB access token" },
-        { status: 401 }
+        { status: 401 },
       );
     }
 
     // Get locations from database
     const dbLocations = await prisma.locations.findMany({
-      where: { user_id: user.id },
+      where: { user_id: user.id, is_deleted: false },
       select: {
         location_id: true,
         location_name: true,
@@ -369,11 +378,11 @@ export async function GET(req: Request) {
     }
 
     // Fetch Google details in batches
-    const detailedLocations = await fetchLocationsBatch(dbLocations, accessToken);
+    const detailedLocations = await fetchLocationsBatch(dbLocations,accessToken,);
 
     // Log summary of results
-    const successfulFetches = detailedLocations.filter(loc => loc.profile || loc.title).length;
-    
+    const successfulFetches = detailedLocations.filter((loc) => loc.profile || loc.title,).length;
+
     return NextResponse.json({
       accounts: detailedLocations,
       source: "google_api_with_database_fallback",
@@ -382,24 +391,23 @@ export async function GET(req: Request) {
       summary: {
         total: detailedLocations.length,
         withGoogleData: successfulFetches,
-        databaseFallback: detailedLocations.length - successfulFetches
-      }
+        databaseFallback: detailedLocations.length - successfulFetches,
+      },
     });
-
   } catch (error: any) {
     console.error("Error in GMB locations API:", {
       message: error.message,
       stack: error.stack,
-      response: error.response?.data
+      response: error.response?.data,
     });
 
-    if (error.message?.includes('Invalid or expired access token')) {
+    if (error.message?.includes("Invalid or expired access token")) {
       return NextResponse.json(
         {
           error: "Authentication failed",
-          message: "Please re-authenticate with Google My Business"
+          message: "Please re-authenticate with Google My Business",
         },
-        { status: 401 }
+        { status: 401 },
       );
     }
 
@@ -407,9 +415,9 @@ export async function GET(req: Request) {
       {
         error: "Error fetching GMB locations",
         message: "An unexpected error occurred while fetching location data",
-        ...(process.env.NODE_ENV === 'development' && { debug: error.message })
+        ...(process.env.NODE_ENV === "development" && { debug: error.message }),
       },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

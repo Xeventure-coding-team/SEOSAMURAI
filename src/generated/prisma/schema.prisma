@@ -29,6 +29,8 @@ model locations {
   location_id       String
   location_name     String
   website           String?
+  is_deleted        Boolean   @default(false)
+  deleted_at        DateTime?
   categories        String?
   last_rank_updated DateTime?
   created_at        DateTime  @default(now())

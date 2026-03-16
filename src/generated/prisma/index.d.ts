@@ -3969,6 +3969,8 @@ export namespace Prisma {
     location_id: string | null
     location_name: string | null
     website: string | null
+    is_deleted: boolean | null
+    deleted_at: Date | null
     categories: string | null
     last_rank_updated: Date | null
     created_at: Date | null
@@ -3981,6 +3983,8 @@ export namespace Prisma {
     location_id: string | null
     location_name: string | null
     website: string | null
+    is_deleted: boolean | null
+    deleted_at: Date | null
     categories: string | null
     last_rank_updated: Date | null
     created_at: Date | null
@@ -3993,6 +3997,8 @@ export namespace Prisma {
     location_id: number
     location_name: number
     website: number
+    is_deleted: number
+    deleted_at: number
     categories: number
     last_rank_updated: number
     created_at: number
@@ -4007,6 +4013,8 @@ export namespace Prisma {
     location_id?: true
     location_name?: true
     website?: true
+    is_deleted?: true
+    deleted_at?: true
     categories?: true
     last_rank_updated?: true
     created_at?: true
@@ -4019,6 +4027,8 @@ export namespace Prisma {
     location_id?: true
     location_name?: true
     website?: true
+    is_deleted?: true
+    deleted_at?: true
     categories?: true
     last_rank_updated?: true
     created_at?: true
@@ -4031,6 +4041,8 @@ export namespace Prisma {
     location_id?: true
     location_name?: true
     website?: true
+    is_deleted?: true
+    deleted_at?: true
     categories?: true
     last_rank_updated?: true
     created_at?: true
@@ -4116,6 +4128,8 @@ export namespace Prisma {
     location_id: string
     location_name: string
     website: string | null
+    is_deleted: boolean
+    deleted_at: Date | null
     categories: string | null
     last_rank_updated: Date | null
     created_at: Date
@@ -4145,6 +4159,8 @@ export namespace Prisma {
     location_id?: boolean
     location_name?: boolean
     website?: boolean
+    is_deleted?: boolean
+    deleted_at?: boolean
     categories?: boolean
     last_rank_updated?: boolean
     created_at?: boolean
@@ -4159,13 +4175,15 @@ export namespace Prisma {
     location_id?: boolean
     location_name?: boolean
     website?: boolean
+    is_deleted?: boolean
+    deleted_at?: boolean
     categories?: boolean
     last_rank_updated?: boolean
     created_at?: boolean
     updated_at?: boolean
   }
 
-  export type locationsOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "user_id" | "location_id" | "location_name" | "website" | "categories" | "last_rank_updated" | "created_at" | "updated_at", ExtArgs["result"]["locations"]>
+  export type locationsOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "user_id" | "location_id" | "location_name" | "website" | "is_deleted" | "deleted_at" | "categories" | "last_rank_updated" | "created_at" | "updated_at", ExtArgs["result"]["locations"]>
 
   export type $locationsPayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     name: "locations"
@@ -4176,6 +4194,8 @@ export namespace Prisma {
       location_id: string
       location_name: string
       website: string | null
+      is_deleted: boolean
+      deleted_at: Date | null
       categories: string | null
       last_rank_updated: Date | null
       created_at: Date
@@ -4577,6 +4597,8 @@ export namespace Prisma {
     readonly location_id: FieldRef<"locations", 'String'>
     readonly location_name: FieldRef<"locations", 'String'>
     readonly website: FieldRef<"locations", 'String'>
+    readonly is_deleted: FieldRef<"locations", 'Boolean'>
+    readonly deleted_at: FieldRef<"locations", 'DateTime'>
     readonly categories: FieldRef<"locations", 'String'>
     readonly last_rank_updated: FieldRef<"locations", 'DateTime'>
     readonly created_at: FieldRef<"locations", 'DateTime'>
@@ -27915,6 +27937,8 @@ export namespace Prisma {
     location_id: 'location_id',
     location_name: 'location_name',
     website: 'website',
+    is_deleted: 'is_deleted',
+    deleted_at: 'deleted_at',
     categories: 'categories',
     last_rank_updated: 'last_rank_updated',
     created_at: 'created_at',
@@ -28560,6 +28584,8 @@ export namespace Prisma {
     location_id?: StringFilter<"locations"> | string
     location_name?: StringFilter<"locations"> | string
     website?: StringNullableFilter<"locations"> | string | null
+    is_deleted?: BoolFilter<"locations"> | boolean
+    deleted_at?: DateTimeNullableFilter<"locations"> | Date | string | null
     categories?: StringNullableFilter<"locations"> | string | null
     last_rank_updated?: DateTimeNullableFilter<"locations"> | Date | string | null
     created_at?: DateTimeFilter<"locations"> | Date | string
@@ -28572,6 +28598,8 @@ export namespace Prisma {
     location_id?: SortOrder
     location_name?: SortOrder
     website?: SortOrder
+    is_deleted?: SortOrder
+    deleted_at?: SortOrder
     categories?: SortOrder
     last_rank_updated?: SortOrder
     created_at?: SortOrder
@@ -28587,6 +28615,8 @@ export namespace Prisma {
     location_id?: StringFilter<"locations"> | string
     location_name?: StringFilter<"locations"> | string
     website?: StringNullableFilter<"locations"> | string | null
+    is_deleted?: BoolFilter<"locations"> | boolean
+    deleted_at?: DateTimeNullableFilter<"locations"> | Date | string | null
     categories?: StringNullableFilter<"locations"> | string | null
     last_rank_updated?: DateTimeNullableFilter<"locations"> | Date | string | null
     created_at?: DateTimeFilter<"locations"> | Date | string
@@ -28599,6 +28629,8 @@ export namespace Prisma {
     location_id?: SortOrder
     location_name?: SortOrder
     website?: SortOrder
+    is_deleted?: SortOrder
+    deleted_at?: SortOrder
     categories?: SortOrder
     last_rank_updated?: SortOrder
     created_at?: SortOrder
@@ -28617,6 +28649,8 @@ export namespace Prisma {
     location_id?: StringWithAggregatesFilter<"locations"> | string
     location_name?: StringWithAggregatesFilter<"locations"> | string
     website?: StringNullableWithAggregatesFilter<"locations"> | string | null
+    is_deleted?: BoolWithAggregatesFilter<"locations"> | boolean
+    deleted_at?: DateTimeNullableWithAggregatesFilter<"locations"> | Date | string | null
     categories?: StringNullableWithAggregatesFilter<"locations"> | string | null
     last_rank_updated?: DateTimeNullableWithAggregatesFilter<"locations"> | Date | string | null
     created_at?: DateTimeWithAggregatesFilter<"locations"> | Date | string
@@ -30677,6 +30711,8 @@ export namespace Prisma {
     location_id: string
     location_name: string
     website?: string | null
+    is_deleted?: boolean
+    deleted_at?: Date | string | null
     categories?: string | null
     last_rank_updated?: Date | string | null
     created_at?: Date | string
@@ -30689,6 +30725,8 @@ export namespace Prisma {
     location_id: string
     location_name: string
     website?: string | null
+    is_deleted?: boolean
+    deleted_at?: Date | string | null
     categories?: string | null
     last_rank_updated?: Date | string | null
     created_at?: Date | string
@@ -30700,6 +30738,8 @@ export namespace Prisma {
     location_id?: StringFieldUpdateOperationsInput | string
     location_name?: StringFieldUpdateOperationsInput | string
     website?: NullableStringFieldUpdateOperationsInput | string | null
+    is_deleted?: BoolFieldUpdateOperationsInput | boolean
+    deleted_at?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     categories?: NullableStringFieldUpdateOperationsInput | string | null
     last_rank_updated?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     created_at?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -30711,6 +30751,8 @@ export namespace Prisma {
     location_id?: StringFieldUpdateOperationsInput | string
     location_name?: StringFieldUpdateOperationsInput | string
     website?: NullableStringFieldUpdateOperationsInput | string | null
+    is_deleted?: BoolFieldUpdateOperationsInput | boolean
+    deleted_at?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     categories?: NullableStringFieldUpdateOperationsInput | string | null
     last_rank_updated?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     created_at?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -30723,6 +30765,8 @@ export namespace Prisma {
     location_id: string
     location_name: string
     website?: string | null
+    is_deleted?: boolean
+    deleted_at?: Date | string | null
     categories?: string | null
     last_rank_updated?: Date | string | null
     created_at?: Date | string
@@ -30734,6 +30778,8 @@ export namespace Prisma {
     location_id?: StringFieldUpdateOperationsInput | string
     location_name?: StringFieldUpdateOperationsInput | string
     website?: NullableStringFieldUpdateOperationsInput | string | null
+    is_deleted?: BoolFieldUpdateOperationsInput | boolean
+    deleted_at?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     categories?: NullableStringFieldUpdateOperationsInput | string | null
     last_rank_updated?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     created_at?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -30745,6 +30791,8 @@ export namespace Prisma {
     location_id?: StringFieldUpdateOperationsInput | string
     location_name?: StringFieldUpdateOperationsInput | string
     website?: NullableStringFieldUpdateOperationsInput | string | null
+    is_deleted?: BoolFieldUpdateOperationsInput | boolean
+    deleted_at?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     categories?: NullableStringFieldUpdateOperationsInput | string | null
     last_rank_updated?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     created_at?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -33165,6 +33213,8 @@ export namespace Prisma {
     location_id?: SortOrder
     location_name?: SortOrder
     website?: SortOrder
+    is_deleted?: SortOrder
+    deleted_at?: SortOrder
     categories?: SortOrder
     last_rank_updated?: SortOrder
     created_at?: SortOrder
@@ -33177,6 +33227,8 @@ export namespace Prisma {
     location_id?: SortOrder
     location_name?: SortOrder
     website?: SortOrder
+    is_deleted?: SortOrder
+    deleted_at?: SortOrder
     categories?: SortOrder
     last_rank_updated?: SortOrder
     created_at?: SortOrder
@@ -33189,6 +33241,8 @@ export namespace Prisma {
     location_id?: SortOrder
     location_name?: SortOrder
     website?: SortOrder
+    is_deleted?: SortOrder
+    deleted_at?: SortOrder
     categories?: SortOrder
     last_rank_updated?: SortOrder
     created_at?: SortOrder

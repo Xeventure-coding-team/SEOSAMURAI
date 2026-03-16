@@ -186,6 +186,11 @@ export default function LocationDashboard() {
         throw new Error("Access token not found")
       }
 
+      // Extract just the numeric ID if it's in the full format
+      const locationIdToSend = locationId.startsWith('locations/')
+        ? locationId.replace('locations/', '')
+        : locationId;
+
       const apiUrl = process.env.NEXT_PUBLIC_API_URL
       const url = `${apiUrl}/api/gmb/location/remove`
 
@@ -195,20 +200,22 @@ export default function LocationDashboard() {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          location_name: locationId,
+          location_name: locationIdToSend, // Send just the numeric ID
           access_token: accessToken,
           gmb_account_id: accountId,
         }),
       })
 
+      const data = await res.json();
+
       if (!res.ok) {
-        throw new Error("Failed to remove location")
+        throw new Error(data.error || "Failed to remove location")
       }
 
       toast.success("Location removed successfully")
       setShowRemoveDialog(false)
       // Redirect or refresh after successful removal
-      window.location.href = "/locations"
+      window.location.href = "/app/locations"
     } catch (error: any) {
       toast.error(error.message || "Failed to remove location")
     } finally {
