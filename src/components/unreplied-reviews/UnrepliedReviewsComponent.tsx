@@ -24,7 +24,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog"
-import { Star, Loader2, Reply, Send, Sparkles, AlertCircle, Edit, Trash2, MoreHorizontal, MapPin } from "lucide-react"
+import { Star, Loader2, Reply, Send, Sparkles, AlertCircle, Edit, Trash2, MoreHorizontal, MapPin, SortAsc, SortDesc } from "lucide-react"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
 import toast from "react-hot-toast"
 import { format } from "timeago.js";
@@ -122,6 +122,8 @@ export default function UnrepliedReviews({
   const [showIncorrectInput, setShowIncorrectInput] = useState(false);
   const [incorrectReason, setIncorrectReason] = useState("");
 
+  const [sortOrder, setSortOrder] = useState<"latest" | "oldest">("latest")
+
   const accountId = useGMBStore((state) => state.accountId)
   const accessToken = useGMBStore((state) => state.accessToken)
   const token = useGMBStore((state) => state.accessToken)
@@ -189,7 +191,8 @@ export default function UnrepliedReviews({
           .sort((a, b) => {
             const timeA = new Date(a.createTime).getTime()
             const timeB = new Date(b.createTime).getTime()
-            return timeB - timeA // descending: newest first
+            return sortOrder === "latest" ? timeB - timeA : timeA - timeB
+
           })
 
         return {
@@ -209,7 +212,7 @@ export default function UnrepliedReviews({
       groupedReviews: grouped,
       totalUnrepliedCount: totalCount,
     }
-  }, [unrepliedData])
+  }, [unrepliedData, sortOrder])
 
 
   const formatDate = (dateString: string) => {
@@ -507,14 +510,23 @@ export default function UnrepliedReviews({
   return (
     <Card className={className}>
       <CardHeader>
-        <div className="flex items-center justify-between">
-          <div>
-            <CardTitle>Unreplied Reviews</CardTitle>
-            <CardDescription>
-              {totalUnrepliedCount} unreplied reviews across {groupedReviews.length} locations
-            </CardDescription>
-          </div>
+        <div className="flex items-center gap-2">
+          <CardTitle>Unreplied Reviews</CardTitle>
+          <button
+            onClick={() => setSortOrder(sortOrder === "latest" ? "oldest" : "latest")}
+            title={sortOrder === "latest" ? "Showing latest first" : "Showing oldest first"}
+            className="ml-2 p-1 rounded text-primary bg-muted hover:bg-muted/70 transition-colors"
+          >
+            {sortOrder === "latest" ? (
+              <SortAsc className="h-4 w-4" />
+            ) : (
+              <SortDesc className="h-4 w-4" />
+            )}
+          </button>
         </div>
+        <CardDescription>
+          {totalUnrepliedCount} unreplied reviews across {groupedReviews.length} locations
+        </CardDescription>
       </CardHeader>
 
       <CardContent>
@@ -651,22 +663,22 @@ export default function UnrepliedReviews({
                                               </Button>
                                             ) : (
                                               <>
-                                              <Textarea
-                                                placeholder="Please explain why you think this review is incorrect..."
-                                                value={incorrectReason}
-                                                onChange={(e) => setIncorrectReason(e.target.value)}
-                                                rows={3}
-                                              />
-                                              <div className="text-right">
-                                                <Button
-                                                variant="destructive"
-                                                size="sm"
-                                                className="mt-2"
-                                                onClick={() => setShowIncorrectInput(false)}
-                                              >
-                                                Cancel
-                                              </Button>
-                                              </div>
+                                                <Textarea
+                                                  placeholder="Please explain why you think this review is incorrect..."
+                                                  value={incorrectReason}
+                                                  onChange={(e) => setIncorrectReason(e.target.value)}
+                                                  rows={3}
+                                                />
+                                                <div className="text-right">
+                                                  <Button
+                                                    variant="destructive"
+                                                    size="sm"
+                                                    className="mt-2"
+                                                    onClick={() => setShowIncorrectInput(false)}
+                                                  >
+                                                    Cancel
+                                                  </Button>
+                                                </div>
                                               </>
                                             )}
                                           </div>
