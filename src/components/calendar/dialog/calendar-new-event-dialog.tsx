@@ -127,7 +127,6 @@ export default function CalendarNewEventDialog({
   const { newEventDialogOpen, setNewEventDialogOpen, date, events, setEvents } = useCalendarContext();
   const [localLocationDetails, setLocalLocationDetails] = useState<LocationDetails | null>(null);
 
-  console.log(localLocationDetails, 'locationDetails..!')
 
   const accessToken = useGMBStore((state) => state.accessToken)
   const gmbAccountId = useGMBStore((state) => state.accountId)
@@ -145,46 +144,6 @@ export default function CalendarNewEventDialog({
     } as any,
   })
 
-  // Fetch location details (including phone number) when dialog opens
-  useEffect(() => {
-    if (!newEventDialogOpen || !locationId || !accessToken || !gmbAccountId) {
-      if (newEventDialogOpen) {
-        toast.error("Missing credentials – cannot load location phone number")
-      }
-      return
-    }
-
-    const fetchLocationDetails = async () => {
-      setIsLoadingDetails(true)
-      try {
-        const cleanLocationName = locationId.startsWith("locations/")
-          ? locationId.replace("locations/", "")
-          : locationId
-
-        const response = await axios.get("/api/gmb/location", {
-          params: {
-            location_name: cleanLocationName,
-            access_token: accessToken,
-            gmb_account_id: gmbAccountId,
-          },
-        })
-
-        if (response.data?.location) {
-          setLocalLocationDetails(response.data.location)
-        } else {
-          toast.error("No location details returned")
-        }
-      } catch (err: any) {
-        console.error("Failed to fetch location details:", err)
-        const msg = err.response?.data?.error || "Could not load location details"
-        toast.error(msg)
-      } finally {
-        setIsLoadingDetails(false)
-      }
-    }
-
-    fetchLocationDetails()
-  }, [newEventDialogOpen, locationId, accessToken, gmbAccountId])
 
   // Helper to get best phone number
   const getBestPhoneNumber = (location: LocationDetails | null): string | undefined => {
@@ -373,7 +332,7 @@ export default function CalendarNewEventDialog({
       try {
         const cleanLocationName = locationId.startsWith("locations/")
           ? locationId.replace("locations/", "")
-          : locationId;
+          : locationId; 
 
         const res = await axios.get(`/api/gmb/location`, {
           params: {
