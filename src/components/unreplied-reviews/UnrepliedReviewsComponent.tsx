@@ -574,7 +574,7 @@ export default function UnrepliedReviews({
                           </div>
                           <div className="flex-1 space-y-2">
                             <div className="flex items-center justify-between">
-                              <p className="font-medium text-sm">{review.reviewer?.displayName || "Anonymous"}</p>
+                              <p className="font-medium text-sm capitalize">{review.reviewer?.displayName || "Anonymous"}</p>
                               <div className="flex items-center gap-2">
                                 <div className="flex">
                                   {Array.from({ length: 5 }).map((_, i) => (
