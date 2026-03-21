@@ -147,7 +147,6 @@ export default function CalendarNewEventDialog({
 
   // Helper to get best phone number
   const getBestPhoneNumber = (location: LocationDetails | null): string | undefined => {
-    console.log(location, 'location in bestPhoneNumber.!')
     if (!location?.phoneNumbers) return undefined
     return location.phoneNumbers.primaryPhone || location.phoneNumbers.additionalPhones?.[0]
   }
@@ -164,8 +163,6 @@ export default function CalendarNewEventDialog({
     : actionButtonOptions.filter(opt => opt.value !== "CALL")
 
   const defaultPhone = getBestPhoneNumber(localLocationDetails)
-
-  console.log(defaultPhone, "defaultPhone from calendar-new-event-dialog..!")
 
   // FIX 2: When user selects "CALL", sync defaultPhone into form value so validation passes.
   // When they switch away from "CALL", clear callPhone so it doesn't linger.
@@ -344,7 +341,6 @@ export default function CalendarNewEventDialog({
 
         if (res.data) {
           setLocalLocationDetails(res.data.location.data);
-          console.log(res.data.location.data, "fetch details res..!")
           if (getBestPhoneNumber(res.data.location.data.phoneNumbers)) {
             toast.success("Location details loaded (phone available)", { duration: 3000 });
           }
