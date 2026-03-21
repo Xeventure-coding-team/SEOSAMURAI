@@ -12,13 +12,33 @@ import NextTopLoader from 'nextjs-toploader'
 import { usePathname } from "next/navigation";
 import GMBAuthWrapper from "../wrapper/GMBAuthWrapper";
 import { APIProvider } from "@vis.gl/react-google-maps";
+import { useStackApp, useUser } from "@stackframe/stack"
+import { useRouter } from "next/navigation"              
+import { useEffect } from "react";
 
 interface DashboardLayoutProps {
   children: React.ReactNode;
 }
 
+
 export default function DashboardLayout({ children }: DashboardLayoutProps) {
   const pathname = usePathname();
+
+  const user = useUser()
+  const stackApp = useStackApp()
+  const router = useRouter()
+
+  useEffect(() => {
+
+    // Not logged in → redirect
+    if (!user) { 
+      // Optional: add ?redirect=original-path so you can send user back after login
+      const redirectTo = `/handler/signup?redirect=${encodeURIComponent(pathname)}`;
+      router.replace(redirectTo);
+    }
+
+  }, [user, pathname, router]);
+
 
   const noPadding =
     ["/app/settings", "/app/scan"].some(p => pathname.startsWith(p)) ||
