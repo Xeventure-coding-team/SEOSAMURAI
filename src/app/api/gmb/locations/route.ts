@@ -90,35 +90,67 @@ function extractDisplayName(locationData: LocationDetails): string {
 }
 
 // Extract formatted address from various API response fields
+// function extractFormattedAddress(locationData: LocationDetails): string | null {
+
+//   console.log(locationData, "location data Address..!")
+
+//   if (locationData.storefrontAddress) {
+//     const addr = locationData.storefrontAddress;
+//     const addressParts: string[] = [];
+
+//     if (addr.addressLines && addr.addressLines.length > 0) {
+//       addressParts.push(...addr.addressLines);
+//     }
+
+//     if (addr.locality) {
+//       addressParts.push(addr.locality);
+//     }
+
+//     if (addr.administrativeArea) {
+//       addressParts.push(addr.administrativeArea);
+//     }
+
+//     if (addr.postalCode) {
+//       addressParts.push(addr.postalCode);
+//     }
+
+//     if (addressParts.length > 0) {
+//       return addressParts.join(", ");
+//     }
+//   }
+
+//   if (locationData.profile?.address) {
+//     return locationData.profile.address;
+//   }
+
+//   return null;
+// }
+
 function extractFormattedAddress(locationData: LocationDetails): string | null {
   if (locationData.storefrontAddress) {
     const addr = locationData.storefrontAddress;
     const addressParts: string[] = [];
 
-    if (addr.addressLines && addr.addressLines.length > 0) {
-      addressParts.push(...addr.addressLines);
-    }
+    if (addr.addressLines?.length) addressParts.push(...addr.addressLines);
+    if (addr.sublocality) addressParts.push(addr.sublocality);
+    if (addr.locality) addressParts.push(addr.locality);
+    if (addr.administrativeArea) addressParts.push(addr.administrativeArea);
+    if (addr.postalCode) addressParts.push(addr.postalCode);
+    if (addr.regionCode) addressParts.push(addr.regionCode);
 
-    if (addr.locality) {
-      addressParts.push(addr.locality);
-    }
-
-    if (addr.administrativeArea) {
-      addressParts.push(addr.administrativeArea);
-    }
-
-    if (addr.postalCode) {
-      addressParts.push(addr.postalCode);
-    }
-
-    if (addressParts.length > 0) {
-      return addressParts.join(", ");
-    }
+    if (addressParts.length > 0) return addressParts.join(", ");
   }
 
-  if (locationData.profile?.address) {
-    return locationData.profile.address;
+  if (locationData.serviceArea) {
+    const sa = locationData.serviceArea;
+
+    if (sa.places?.length) {
+      return sa.places.map((p) => p.name).join(", ");
+    }
+    if (sa.regionCode) return sa.regionCode;
   }
+
+  if (locationData.profile?.address) return locationData.profile.address;
 
   return null;
 }
@@ -161,7 +193,9 @@ async function fetchLocationDetails(
   const apiUrl = `https://mybusinessbusinessinformation.googleapis.com/v1/${locationId}`;
 
   const params = {
-    readMask: 'name,title,profile,websiteUri,categories,serviceArea,storefrontAddress,metadata,phoneNumbers '
+    // readMask: 'name,title,profile,websiteUri,categories,serviceArea,storefrontAddress,metadata '
+    readMask:
+      "name,title,profile,websiteUri,categories,serviceArea,storefrontAddress,metadata,phoneNumbers",
   };
 
   const headers = {

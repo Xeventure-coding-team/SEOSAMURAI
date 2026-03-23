@@ -55,7 +55,9 @@ type SortDirection = "asc" | "desc"
 const ITEMS_PER_PAGE_OPTIONS = [10, 25, 50, 100]
 
 const getPreferredLocality = (loc: Location) => {
-  return loc.formattedAddress || loc.storefrontAddress?.addressLines?.join(", ") || "";
+  return   loc.formattedAddress || loc.storefrontAddress?.locality || loc.storefrontAddress?.addressLines?.join(", ") || ""
+  // loc.formattedAddress || loc.storefrontAddress?.addressLines?.join(", ") || ""
+  ;
 };
 
 export default function LocationsTable() {
@@ -206,6 +208,8 @@ export default function LocationsTable() {
   const startIndex = (currentPage - 1) * itemsPerPage
   const endIndex = startIndex + itemsPerPage
   const paginatedLocations = filteredAndSortedLocations.slice(startIndex, endIndex)
+
+  console.log('paginatedLocations...!', paginatedLocations)
 
   // Reset to first page when filters change
   useEffect(() => {
@@ -374,44 +378,44 @@ export default function LocationsTable() {
               </div>
             </div>
 
- {/* Advanced Filters */}
-{showFilters && (
-  <div className="grid gap-4 md:grid-cols-3 p-6 bg-muted/30 rounded-lg border">
-    <div className="space-y-2">
-      <label className="text-sm font-medium">Business Category</label>
-      <Select value={categoryFilter} onValueChange={setCategoryFilter}>
-        <SelectTrigger className="h-10 mt-2 w-full">
-          <SelectValue placeholder="All Categories" />
-        </SelectTrigger>
-        <SelectContent>
-          <SelectItem value="all">All Categories</SelectItem>
-          {filterOptions.categories.map((category) => (
-            <SelectItem key={category} value={category}>
-              {category}
-            </SelectItem>
-          ))}
-        </SelectContent>
-      </Select>
-    </div>
+            {/* Advanced Filters */}
+            {showFilters && (
+              <div className="grid gap-4 md:grid-cols-3 p-6 bg-muted/30 rounded-lg border">
+                <div className="space-y-2">
+                  <label className="text-sm font-medium">Business Category</label>
+                  <Select value={categoryFilter} onValueChange={setCategoryFilter}>
+                    <SelectTrigger className="h-10 mt-2 w-full">
+                      <SelectValue placeholder="All Categories" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="all">All Categories</SelectItem>
+                      {filterOptions.categories.map((category) => (
+                        <SelectItem key={category} value={category}>
+                          {category}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
 
-    <div className="space-y-2">
-      <label className="text-sm font-medium">Location</label>
-      <Select value={locationFilter} onValueChange={setLocationFilter}>
-        <SelectTrigger className="h-10 mt-2 w-full">
-          <SelectValue placeholder="All Locations" />
-        </SelectTrigger>
-        <SelectContent>
-          <SelectItem value="all">All Locations</SelectItem>
-          {filterOptions.locations.map((location) => (
-            <SelectItem key={location} value={location}>
-              {location}
-            </SelectItem>
-          ))}
-        </SelectContent>
-      </Select>
-    </div>
-  </div>
-)}
+                <div className="space-y-2">
+                  <label className="text-sm font-medium">Location</label>
+                  <Select value={locationFilter} onValueChange={setLocationFilter}>
+                    <SelectTrigger className="h-10 mt-2 w-full">
+                      <SelectValue placeholder="All Locations" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="all">All Locations</SelectItem>
+                      {filterOptions.locations.map((location) => (
+                        <SelectItem key={location} value={location}>
+                          {location}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+            )}
 
 
           </CardContent>
