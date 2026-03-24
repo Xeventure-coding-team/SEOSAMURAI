@@ -89,43 +89,6 @@ function extractDisplayName(locationData: LocationDetails): string {
   return "Unknown Location";
 }
 
-// Extract formatted address from various API response fields
-// function extractFormattedAddress(locationData: LocationDetails): string | null {
-
-//   console.log(locationData, "location data Address..!")
-
-//   if (locationData.storefrontAddress) {
-//     const addr = locationData.storefrontAddress;
-//     const addressParts: string[] = [];
-
-//     if (addr.addressLines && addr.addressLines.length > 0) {
-//       addressParts.push(...addr.addressLines);
-//     }
-
-//     if (addr.locality) {
-//       addressParts.push(addr.locality);
-//     }
-
-//     if (addr.administrativeArea) {
-//       addressParts.push(addr.administrativeArea);
-//     }
-
-//     if (addr.postalCode) {
-//       addressParts.push(addr.postalCode);
-//     }
-
-//     if (addressParts.length > 0) {
-//       return addressParts.join(", ");
-//     }
-//   }
-
-//   if (locationData.profile?.address) {
-//     return locationData.profile.address;
-//   }
-
-//   return null;
-// }
-
 function extractFormattedAddress(locationData: LocationDetails): string | null {
   if (locationData.storefrontAddress) {
     const addr = locationData.storefrontAddress;

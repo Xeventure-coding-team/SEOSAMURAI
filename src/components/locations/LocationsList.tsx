@@ -209,8 +209,6 @@ export default function LocationsTable() {
   const endIndex = startIndex + itemsPerPage
   const paginatedLocations = filteredAndSortedLocations.slice(startIndex, endIndex)
 
-  console.log('paginatedLocations...!', paginatedLocations)
-
   // Reset to first page when filters change
   useEffect(() => {
     setCurrentPage(1)
