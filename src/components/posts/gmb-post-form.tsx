@@ -63,6 +63,7 @@ interface BulkPostData {
 }
 
 const MAX_FILE_SIZE = 10 * 1024 * 1024 // 10MB
+const MIN_FILE_SIZE = 10240
 const ACCEPTED_IMAGE_TYPES = ["image/jpeg", "image/jpg", "image/png", "image/webp"]
 
 const postSchema = z.object({
@@ -311,6 +312,10 @@ export function GmbPostForm({
         toast.error("File size must be less than 10MB")
         return
       }
+      if (file.size > MIN_FILE_SIZE) {
+          toast.error("File size must be at least 10KB. Please use a higher quality image.");
+        return
+      }
 
       setSelectedFile(file)
 
@@ -388,7 +393,7 @@ export function GmbPostForm({
         onPostCreated?.(result.data)
       } else {
         toast.error(result.message || "Failed to create post")
-      }
+      }   
     } catch (error) {
       toast.error("An error occurred while creating the post")
       console.error("Post creation error:", error)
@@ -477,7 +482,7 @@ export function GmbPostForm({
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <Plus className="h-5 w-5" />
-            Create New GMB Post
+            Create New GMB Post 
           </DialogTitle>
           <DialogDescription>
             Publish updates, offers, or events to your Google Business Profile and engage with customers.
