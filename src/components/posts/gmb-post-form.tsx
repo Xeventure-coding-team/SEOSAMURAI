@@ -312,7 +312,7 @@ export function GmbPostForm({
         toast.error("File size must be less than 10MB")
         return
       }
-      if (file.size > MIN_FILE_SIZE) {
+      if (file.size < MIN_FILE_SIZE) {
           toast.error("File size must be at least 10KB. Please use a higher quality image.");
         return
       }
