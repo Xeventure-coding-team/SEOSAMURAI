@@ -63,7 +63,7 @@ interface BulkPostData {
 }
 
 const MAX_FILE_SIZE = 10 * 1024 * 1024 // 10MB
-const MIN_FILE_SIZE = 10240
+const MIN_FILE_SIZE = 10240 //10 KB
 const ACCEPTED_IMAGE_TYPES = ["image/jpeg", "image/jpg", "image/png", "image/webp"]
 
 const postSchema = z.object({
