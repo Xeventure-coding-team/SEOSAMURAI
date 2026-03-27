@@ -76,6 +76,7 @@ interface BulkPostData {
 }
 
 const MAX_FILE_SIZE = 10 * 1024 * 1024 // 10MB
+const MIN_FILE_SIZE = 10240 //10 KB
 const ACCEPTED_IMAGE_TYPES = ["image/jpeg", "image/jpg", "image/png", "image/webp"]
 
 const postSchema = z.object({
@@ -303,6 +304,10 @@ export default function CalendarNewEventDialog({
       if (file.size > MAX_FILE_SIZE) {
         toast.error("File size must be less than 10MB")
         return
+      }
+
+      if(file.size < MIN_FILE_SIZE) {
+          toast.error("File size must be at least 10KB. Please use a higher quality image.");
       }
 
       setSelectedFile(file)
