@@ -120,7 +120,7 @@ function Page ()  {
             placeholder="Please provide detailed information about your issue"
             value={formData.description}
             onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-            rows={6}
+            rows={8}
             required
           />
         </div>
