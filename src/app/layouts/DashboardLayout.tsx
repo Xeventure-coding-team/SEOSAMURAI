@@ -13,7 +13,7 @@ import { usePathname } from "next/navigation";
 import GMBAuthWrapper from "../wrapper/GMBAuthWrapper";
 import { APIProvider } from "@vis.gl/react-google-maps";
 import { useStackApp, useUser } from "@stackframe/stack"
-import { useRouter } from "next/navigation"              
+import { useRouter } from "next/navigation"
 import { useEffect } from "react";
 
 interface DashboardLayoutProps {
@@ -31,7 +31,7 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
   useEffect(() => {
 
     // Not logged in → redirect
-    if (!user) { 
+    if (!user) {
       // Optional: add ?redirect=original-path so you can send user back after login
       const redirectTo = `/handler/signup?redirect=${encodeURIComponent(pathname)}`;
       router.replace(redirectTo);
@@ -84,7 +84,7 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
         <AppSidebar variant={pathname === "/app/scan" ? "sidebar" : "inset"} />
         <SidebarInset>
           {<SiteHeader />}
-          <div className="flex flex-1 flex-col">
+          <div className="flex flex-1 flex-col bg-[#f5f7fc]">
             <div className="@container/main flex flex-1 flex-col gap-2">
               <div className={`flex flex-col gap-4 md:gap-6 ${noPadding ? "" : "py-4 md:py-6 px-4 lg:px-6"}`}>
                 <APIProvider apiKey={process.env.NEXT_PUBLIC_PLACES_KEY}><GMBAuthWrapper>{children}</GMBAuthWrapper></APIProvider>

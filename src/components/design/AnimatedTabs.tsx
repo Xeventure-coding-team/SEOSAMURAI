@@ -207,7 +207,7 @@ export function AnimatedTabs({ children, items, defaultTab, className, noPadding
   return (
     <div className={cn("w-full", className)}>
       <div
-        className={`relative flex w-full bg-background items-center justify-between rounded-t-3xl rounded-b-none ${noPadding ? "border" : "border-b"} ${noPadding ? "rounded-md" : ""} border-border overflow-x-auto overflow-y-hidden`}
+        className={`relative flex w-full bg-background items-center justify-between rounded-b-none ${noPadding ? "border" : "border-b"} ${noPadding ? "rounded-md" : ""} border-border overflow-x-auto overflow-y-hidden`}
       >
         <TabNavigation {...framer.tabProps} />
       </div>

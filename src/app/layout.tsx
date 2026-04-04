@@ -11,9 +11,9 @@ const outfit = Outfit({
 });
 
 export const metadata: Metadata = {
-  title: process.env.APP_NAME || "SEO Samurai",
+  title: process.env.APP_NAME || "Rankerly",
   description:
-    "SEO Samurai is your all-in-one tool to boost rankings, optimize local SEO, manage Google Business Profiles, and grow online visibility.",
+    "Rankerly is your all-in-one tool to boost rankings, optimize local SEO, manage Google Business Profiles, and grow online visibility.",
 };
 
 const theme = {

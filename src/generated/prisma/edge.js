@@ -523,7 +523,7 @@ const config = {
       "value": "prisma-client-js"
     },
     "output": {
-      "value": "E:\\GMB v2\\src\\generated\\prisma",
+      "value": "E:\\SEOSAMURAI\\src\\generated\\prisma",
       "fromEnvVar": null
     },
     "config": {
@@ -537,7 +537,7 @@ const config = {
       }
     ],
     "previewFeatures": [],
-    "sourceFilePath": "E:\\GMB v2\\prisma\\schema.prisma",
+    "sourceFilePath": "E:\\SEOSAMURAI\\prisma\\schema.prisma",
     "isCustomOutput": true
   },
   "relativeEnvPaths": {
@@ -551,6 +551,7 @@ const config = {
     "db"
   ],
   "activeProvider": "mongodb",
+  "postinstall": false,
   "inlineDatasources": {
     "db": {
       "url": {

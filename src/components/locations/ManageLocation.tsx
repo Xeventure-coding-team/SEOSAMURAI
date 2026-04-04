@@ -129,6 +129,15 @@ export default function ManageLocation() {
   const params = useParams()
   const locationId = (params?.locationId as string) || "default-location"
 
+  const items = [
+    'tasks',
+    'keywords',
+    'analytics',
+    'competitor-insights',
+    'social-posts',
+    'customer-reviews'
+  ];
+
   const [payload, setPayload] = useState<GMBApiResponse | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
@@ -152,6 +161,11 @@ export default function ManageLocation() {
   const [isDeleting, setIsDeleting] = useState(false)
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false)
 
+  const [activeTab, setActiveTab] = useState(() => {
+    const hash = window.location.hash.slice(1);
+    return items.includes(hash) ? hash : 'tasks';
+  });
+
   const location = useMemo(() => payload?.locationData ?? null, [payload])
   const businessData = useMemo(() => payload?.data ?? null, [payload])
   const reviews = useMemo(() => payload?.reviews ?? { reviews: [], averageRating: 0, totalReviewCount: 0 }, [payload])
@@ -166,13 +180,20 @@ export default function ManageLocation() {
   const setPageName = usePageStore((state) => state.setPageName)
   const pageName = usePageStore((state) => state.pageName)
 
-  console.log(pageName, "page name..!")
   const { deletePost } = useGmbPosts()
 
   const [imageLoadingStates, setImageLoadingStates] = useState<Record<string, boolean>>({})
   const [imageErrorStates, setImageErrorStates] = useState<Record<string, boolean>>({})
   const [imageLoadingQueue, setImageLoadingQueue] = useState<string[]>([])
   const [currentlyLoadingImages, setCurrentlyLoadingImages] = useState<Set<string>>(new Set())
+
+  useEffect(() => {
+    const hash = window.location.hash.slice(1);
+    if (hash && validTabs.includes(hash)) {
+      setActiveTab(hash);
+    }
+  }, []);
+
 
   useEffect(() => {
     async function fetchLocation() {
@@ -489,31 +510,13 @@ export default function ManageLocation() {
       </div>
     );
   }
-  const items = [
-    'tasks',
-    'keywords',
-    'analytics',
-    'competitor-insights',
-    'social-posts',
-    'customer-reviews'
-  ];
 
-  let active = searchParams.get("active");
-
-  // handle aliases
-  if (active === "reviews") {
-    active = "customer-reviews";
-  } else if (active === "posts") {
-    active = "social-posts";
-  }
-
-  const defaultTab = items.includes(active) ? active : "tasks";
 
   return (
     <TooltipProvider>
       <div>
         <div>
-          {payload?.location?.locationData === null || undefined ? <LoadingSpinner /> : <AnimatedTabs items={items} defaultTab={defaultTab}>
+          {payload?.location?.locationData === null || undefined ? <LoadingSpinner /> : <AnimatedTabs items={items} defaultTab={activeTab}>
             <AnimatedTabItem value="tasks">
 
               {payload ? <TaskManager
@@ -539,7 +542,7 @@ export default function ManageLocation() {
               <GMBInsights accessToken={accessToken} locationId={locationId} />
             </AnimatedTabItem>
             <AnimatedTabItem value="competitor-insights">
-              <CompetitorsPage locationId={locationId} coordinates={payload?.location?.locationData?.geometry?.location} businessType={payload?.location?.data?.categories?.primaryCategory?.displayName} businessName={pageName}  />
+              <CompetitorsPage locationId={locationId} coordinates={payload?.location?.locationData?.geometry?.location} businessType={payload?.location?.data?.categories?.primaryCategory?.displayName} businessName={pageName} />
             </AnimatedTabItem>
             <AnimatedTabItem value="social-posts">
               <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">

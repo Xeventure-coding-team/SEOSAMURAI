@@ -1,5 +1,5 @@
 export const siteConfig = {
-  name: "SEO Samurai",
+  name: "Rankerly",
   description: "AI-powered SEO tools and resources for startups and businesses.",
   url: "https://example.com", // your site URL
   ogImage: "https://example.com/og-image.png", // Open Graph / social share image

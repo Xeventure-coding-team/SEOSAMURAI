@@ -307,38 +307,62 @@ export default function GMBLocationSelector() {
                                 </CardContent>
                             </Card>
                         ) : (
-                            locations.map((location) => (
-                                <Card
-                                    key={location.name}
-                                    className={`cursor-pointer transition-all hover:shadow-md border ${selectedLocation === location.name
-                                        ? "border-primary bg-primary/5 shadow-sm"
-                                        : "border-border hover:border-primary/50"
-                                        }`}
-                                    onClick={() => handleLocationSelect(location.name)}
-                                >
-                                    <CardContent>
-                                        <div className="flex items-center justify-between">
-                                            <div className="flex items-center gap-4">
-                                                <div
-                                                    className={`p-3 rounded-lg ${selectedLocation === location.name ? "bg-primary text-primary-foreground" : "bg-muted"
-                                                        }`}
-                                                >
-                                                    <Building2 className="h-5 w-5" />
+                            locations.map((location) => {
+                                const isSelected = selectedLocation === location.name
+
+                                return (
+                                    <Card
+                                        key={location.name}
+                                        onClick={() => handleLocationSelect(location.name)}
+                                        className={`group cursor-pointer border transition-all duration-200
+        ${isSelected
+                                                ? "border-primary border-2 shadow-sm bg-background"
+                                                : "hover:border-primary/40 hover:bg-muted/30"
+                                            }
+      `}
+                                    >
+                                        <CardContent className="p-4">
+                                            <div className="flex items-center justify-between">
+
+                                                {/* Left */}
+                                                <div className="flex items-center gap-3">
+                                                    <div
+                                                        className={`flex h-10 w-10 items-center justify-center rounded-md transition-colors
+                ${isSelected
+                                                                ? "bg-primary text-primary-foreground"
+                                                                : "bg-muted text-muted-foreground group-hover:bg-muted-foreground/10"
+                                                            }
+              `}
+                                                    >
+                                                        <Building2 className="h-4 w-4" />
+                                                    </div>
+
+                                                    <div className="space-y-0.5">
+                                                        <p className="text-sm font-medium leading-none">
+                                                            {getLocationDisplayName(location)}
+                                                        </p>
+
+                                                        {location.storefrontAddress && (
+                                                            <p className="text-xs text-muted-foreground truncate max-w-[240px] line-clamp-4">
+                                                                {location.formattedAddress}
+                                                            </p>
+                                                        )}
+
+                                                    </div>
                                                 </div>
-                                                <div>
-                                                    <div className="font-semibold text-base">{getLocationDisplayName(location)}</div>
-                                                    {location.storefrontAddress && (
-                                                        <div className="text-sm text-muted-foreground mt-1">
-                                                            {location.formattedAddress}
-                                                        </div>
+
+                                                {/* Right */}
+                                                <div className="flex items-center">
+                                                    {isSelected && (
+                                                        <CheckCircle className="h-4 w-4 text-primary" />
                                                     )}
                                                 </div>
+
                                             </div>
-                                            {selectedLocation === location.name && <CheckCircle className="h-5 w-5 text-primary" />}
-                                        </div>
-                                    </CardContent>
-                                </Card>
-                            ))
+                                        </CardContent>
+                                    </Card>
+                                )
+                            })
                         )}
                     </div>
                 </ScrollArea>
@@ -347,7 +371,7 @@ export default function GMBLocationSelector() {
             {loadingDetails && (
                 <Card>
                     <CardContent className="flex items-center justify-center py-12">
-                         <Loader text="Preparing your workspace..." />
+                        <Loader text="Preparing your workspace..." />
                     </CardContent>
                 </Card>
             )}

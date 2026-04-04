@@ -329,7 +329,7 @@ const KeywordTracker: React.FC<KeywordTrackerProps> = ({ location, businessName,
     setError(null)
   }
 
-  type RankChange = "UP" | "DOWN" | "NEW" | "NOT_FOUND" | "SAME" |"UNKNOWN"
+  type RankChange = "UP" | "DOWN" | "NEW" | "NOT_FOUND" | "SAME" | "UNKNOWN"
 
   interface RankChangeConfig {
     text: string
@@ -501,7 +501,7 @@ const KeywordTracker: React.FC<KeywordTrackerProps> = ({ location, businessName,
 
   return (
     <TooltipProvider>
-      <div className="min-h-screen bg-background">
+      <div className="min-h-screen">
         <BatchProgressModal
           isOpen={showProgress}
           onClose={handleProgressClose}
@@ -703,7 +703,7 @@ const KeywordTracker: React.FC<KeywordTrackerProps> = ({ location, businessName,
             )}
 
             {trackedKeywords.length > 0 && (
-              <Card className="border-blue-200 bg-blue-50 dark:border-blue-800 dark:bg-blue-950 shadow-lg">
+              <Card className="border-blue-200 bg-blue-50 dark:border-blue-800 dark:bg-blue-950">
                 <CardContent>
                   <div className="flex flex-col gap-6 sm:flex-row sm:items-center sm:justify-between">
                     <div className="flex items-center gap-4">
@@ -727,11 +727,10 @@ const KeywordTracker: React.FC<KeywordTrackerProps> = ({ location, businessName,
                         <Button
                           onClick={requestBatchUpdate}
                           disabled={!batchUpdateAvailable}
-                          className={`w-full sm:w-auto h-12 shadow-lg ${
-                            batchUpdateAvailable 
-                              ? "bg-blue-600 hover:bg-blue-700" 
-                              : "opacity-50 cursor-not-allowed"
-                          }`}
+                          className={`w-full sm:w-auto h-12 shadow-lg ${batchUpdateAvailable
+                            ? "bg-blue-600 hover:bg-blue-700"
+                            : "opacity-50 cursor-not-allowed"
+                            }`}
                           size="lg"
                         >
                           {updating === "batch" ? (
@@ -749,7 +748,7 @@ const KeywordTracker: React.FC<KeywordTrackerProps> = ({ location, businessName,
                           )}
                         </Button>
                       </TooltipTrigger>
-                       <TooltipContent>
+                      <TooltipContent>
                         {batchUpdateAvailable
                           ? "Update all tracked keywords with latest rankings"
                           : `Batch update will be available ${formatCountdown(batchCountdown)}`}
@@ -760,17 +759,17 @@ const KeywordTracker: React.FC<KeywordTrackerProps> = ({ location, businessName,
               </Card>
             )}
 
-            <Card className="shadow-lg">
-              <CardHeader className="pb-4">
-                <CardTitle className="flex items-center gap-3 text-xl">
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-3">
                   <BarChart3 className="h-6 w-6" />
                   Tracked Keywords
-                  <Badge variant="secondary" className="ml-auto bg-primary/10 text-primary border-primary/20">
+                  <Badge variant="secondary" className="ml-auto">
                     {trackedKeywords.length}/{MAX_KEYWORDS}
                   </Badge>
                 </CardTitle>
               </CardHeader>
-              <CardContent className="p-0">
+              <CardContent>
                 {fetchingKeywords ? (
                   <div className="p-8">
                     <div className="space-y-6">
@@ -787,29 +786,29 @@ const KeywordTracker: React.FC<KeywordTrackerProps> = ({ location, businessName,
                     </div>
                   </div>
                 ) : trackedKeywords.length === 0 ? (
-                  <div className="p-16 text-center">
-                    <div className="mx-auto mb-8 h-32 w-32 rounded-full bg-gradient-to-br from-primary/10 to-primary/5 flex items-center justify-center">
-                      <Target className="h-16 w-16 text-primary/60" />
+                  <div className="flex flex-col items-center justify-center py-16 text-center">
+                    <div className="mb-6 rounded-full bg-muted/50 p-4">
+                      <Target className="h-8 w-8 text-muted-foreground/70" />
                     </div>
-                    <h3 className="text-2xl font-semibold mb-4 text-balance">No Keywords Tracked Yet</h3>
-                    <p className="text-muted-foreground mb-8 max-w-md mx-auto text-lg leading-relaxed">
-                      Start tracking keywords to monitor your search rankings and performance over time
+                    <h3 className="mb-2 text-lg font-medium">No keywords tracked</h3>
+                    <p className="mb-6 text-sm text-muted-foreground max-w-sm">
+                      Add keywords to monitor your search rankings and track performance over time.
                     </p>
-                    <Button onClick={() => setShowAddModal(true)} size="lg" className="shadow-lg">
-                      <Plus className="mr-2 h-4 w-4" />
-                      Add Your First Keyword
+                    <Button onClick={() => setShowAddModal(true)} variant="outline" size="sm">
+                      <Plus className="mr-2 h-3.5 w-3.5" />
+                      Add keyword
                     </Button>
                   </div>
                 ) : (
                   <div className="overflow-x-auto">
                     <Table>
                       <TableHeader>
-                        <TableRow className="border-b-2">
-                          <TableHead className="w-[350px] font-semibold">Keyword</TableHead>
-                          <TableHead className="text-center font-semibold">Position</TableHead>
-                          <TableHead className="text-center font-semibold">Ranking Change</TableHead>
-                          <TableHead className="text-center font-semibold">Previous Rank</TableHead>
-                          <TableHead className="text-right font-semibold">Actions</TableHead>
+                        <TableRow>
+                          <TableHead className="w-[350px]">Keyword</TableHead>
+                          <TableHead className="text-center">Position</TableHead>
+                          <TableHead className="text-center">Ranking Change</TableHead>
+                          <TableHead className="text-center">Previous Rank</TableHead>
+                          <TableHead className="text-right">Actions</TableHead>
                         </TableRow>
                       </TableHeader>
                       <TableBody>
@@ -883,7 +882,7 @@ const KeywordTracker: React.FC<KeywordTrackerProps> = ({ location, businessName,
                                 <TooltipTrigger asChild>
                                   <Badge
                                     variant="outline"
-                                    className={`font-mono text-xs px-3 py-1 bg-gray-100 ${getPositionBadgeColor(
+                                    className={`font-mono text-xs px-3 py-1 ${getPositionBadgeColor(
                                       kw.previousRank
                                     )}`}
                                   >

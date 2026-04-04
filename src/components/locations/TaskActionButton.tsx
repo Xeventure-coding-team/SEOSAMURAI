@@ -223,7 +223,7 @@ const validationHelpers = {
 
     return null
   },
-  
+
 }
 
 const TaskActionButton = ({
@@ -724,109 +724,87 @@ const TaskActionButton = ({
 
   return (
     <>
+
       {showSuccessAlert && taskResult && (
         <AlertDialog open={showSuccessAlert} onOpenChange={setShowSuccessAlert}>
-          <AlertDialogContent className="max-w-md">
+          <AlertDialogContent className="max-w-sm">
             <AlertDialogHeader>
-              <AlertDialogTitle className="flex items-center gap-2">
-                <span className="text-2xl">🎉</span>
-                Task Completed!
+              <AlertDialogTitle className="text-lg font-semibold">
+                Task completed
               </AlertDialogTitle>
-              <AlertDialogDescription asChild>
-                <div className="space-y-4 pt-4">
-                  <div className="flex items-center justify-between p-3 bg-green-50 dark:bg-green-950 rounded-lg">
-                    <div>
-                      <div className="text-sm font-medium text-green-900 dark:text-green-100">Points Earned</div>
-                      <div className="text-2xl font-bold text-green-600 dark:text-green-400">
-                        +{taskResult.pointsAwarded}
-                      </div>
-                    </div>
-                    {taskResult.leveledUp && (
-                      <div className="text-right">
-                        <div className="text-sm font-medium text-green-900 dark:text-green-100">Level Up!</div>
-                        <div className="text-2xl font-bold text-green-600 dark:text-green-400">
-                          Level {taskResult.newLevel}
-                        </div>
-                      </div>
-                    )}
-                  </div>
-
-                  {taskResult.newStreak > 1 && (
-                    <div className="flex items-center gap-2 p-3 bg-orange-50 dark:bg-orange-950 rounded-lg">
-                      <span className="text-2xl">🔥</span>
-                      <div>
-                        <div className="text-sm font-medium text-orange-900 dark:text-orange-100">Streak Active</div>
-                        <div className="text-lg font-bold text-orange-600 dark:text-orange-400">
-                          {taskResult.newStreak} Days
-                        </div>
-                      </div>
-                    </div>
-                  )}
-
-                  {taskResult.newMilestones && taskResult.newMilestones.length > 0 && (
-                    <div className="space-y-2">
-                      <div className="text-sm font-medium flex items-center gap-2">
-                        <span className="text-xl">🏆</span>
-                        New Milestones Unlocked
-                      </div>
-                      {taskResult.newMilestones.map((milestone: any, idx: number) => (
-                        <div
-                          key={idx}
-                          className="p-2 bg-purple-50 dark:bg-purple-950 rounded border border-purple-200 dark:border-purple-800"
-                        >
-                          <div className="text-sm font-medium text-purple-900 dark:text-purple-100">
-                            {milestone.name}
-                          </div>
-                          <div className="text-xs text-purple-600 dark:text-purple-400">{milestone.description}</div>
-                        </div>
-                      ))}
-                    </div>
-                  )}
-
-                  {taskResult.newAchievements && taskResult.newAchievements.length > 0 && (
-                    <div className="space-y-2">
-                      <div className="text-sm font-medium flex items-center gap-2">
-                        <span className="text-xl">🎖️</span>
-                        New Achievements
-                      </div>
-                      {taskResult.newAchievements.map((achievement: any, idx: number) => (
-                        <div
-                          key={idx}
-                          className="p-2 bg-blue-50 dark:bg-blue-950 rounded border border-blue-200 dark:border-blue-800"
-                        >
-                          <div className="text-sm font-medium text-blue-900 dark:text-blue-100">{achievement.name}</div>
-                          <div className="text-xs text-blue-600 dark:text-blue-400">{achievement.description}</div>
-                        </div>
-                      ))}
-                    </div>
-                  )}
-
-                  {taskResult.gmbUpdated && taskResult.gmbUpdateNote && (
-                    <div className="p-3 bg-blue-50 dark:bg-blue-950 rounded-lg border border-blue-200 dark:border-blue-800">
-                      <div className="flex items-start gap-2">
-                        <span className="text-lg mt-0.5">ℹ️</span>
-                        <div>
-                          <div className="text-sm font-medium text-blue-900 dark:text-blue-100 mb-1">
-                            Google My Business Update
-                          </div>
-                          <div className="text-xs text-blue-700 dark:text-blue-300">{taskResult.gmbUpdateNote}</div>
-                        </div>
-                      </div>
-                    </div>
-                  )}
-
-                </div>
-              </AlertDialogDescription>
             </AlertDialogHeader>
+
+            <AlertDialogDescription asChild>
+              <div className="space-y-3">
+                {/* Points & Level */}
+                <div className="flex items-center justify-between rounded-lg border border-border p-3">
+                  <div>
+                    <p className="text-xs text-muted-foreground">Points earned</p>
+                    <p className="text-2xl font-semibold">+{taskResult.pointsAwarded}</p>
+                  </div>
+                  {taskResult.leveledUp && (
+                    <div className="text-right">
+                      <p className="text-xs text-muted-foreground">New level</p>
+                      <p className="text-2xl font-semibold text-foreground">
+                        {taskResult.newLevel}
+                      </p>
+                    </div>
+                  )}
+                </div>
+
+                {/* Streak */}
+                {taskResult.newStreak > 1 && (
+                  <div className="rounded-lg border border-border p-3">
+                    <p className="text-xs text-muted-foreground">Streak</p>
+                    <p className="text-lg font-semibold">{taskResult.newStreak} days</p>
+                  </div>
+                )}
+
+                {/* Milestones */}
+                {taskResult.newMilestones?.length > 0 && (
+                  <div className="space-y-2">
+                    <p className="text-xs font-medium text-muted-foreground">Milestones</p>
+                    {taskResult.newMilestones.map((milestone: any) => (
+                      <div key={milestone.id} className="rounded-lg border border-border p-2.5">
+                        <p className="text-sm font-medium">{milestone.name}</p>
+                        <p className="text-xs text-muted-foreground">{milestone.description}</p>
+                      </div>
+                    ))}
+                  </div>
+                )}
+
+                {/* Achievements */}
+                {taskResult.newAchievements?.length > 0 && (
+                  <div className="space-y-2">
+                    <p className="text-xs font-medium text-muted-foreground">Achievements</p>
+                    {taskResult.newAchievements.map((achievement: any) => (
+                      <div key={achievement.id} className="rounded-lg border border-border p-2.5">
+                        <p className="text-sm font-medium">{achievement.name}</p>
+                        <p className="text-xs text-muted-foreground">{achievement.description}</p>
+                      </div>
+                    ))}
+                  </div>
+                )}
+
+                {/* GMB Note */}
+                {taskResult.gmbUpdated && taskResult.gmbUpdateNote && (
+                  <div className="rounded-lg border border-border bg-muted/30 p-3">
+                    <p className="text-xs text-muted-foreground">{taskResult.gmbUpdateNote}</p>
+                  </div>
+                )}
+              </div>
+            </AlertDialogDescription>
+
             <AlertDialogFooter>
               <AlertDialogAction
+                className="w-full"
                 onClick={() => {
-                  setShowSuccessAlert(false)
-                  setTaskResult(null)
-                  mutate()
+                  setShowSuccessAlert(false);
+                  setTaskResult(null);
+                  mutate();
                 }}
               >
-                Awesome!
+                Continue
               </AlertDialogAction>
             </AlertDialogFooter>
           </AlertDialogContent>

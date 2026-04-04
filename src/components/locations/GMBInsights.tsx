@@ -80,12 +80,12 @@ export default function GMBInsights({ locationId, accessToken }: GMBInsightsProp
       try {
         const response = await fetch(
           "/api/insights?" +
-            new URLSearchParams({
-              location_name: locationId,
-              access_token: accessToken,
-              start_date: startDateStr,
-              end_date: endDateStr,
-            }),
+          new URLSearchParams({
+            location_name: locationId,
+            access_token: accessToken,
+            start_date: startDateStr,
+            end_date: endDateStr,
+          }),
         )
 
         if (!response.ok) {
@@ -287,7 +287,7 @@ export default function GMBInsights({ locationId, accessToken }: GMBInsightsProp
 
   if (error) {
     return (
-       <ErrorRender error="We couldn't load this content. You can retry or report the issue." />
+      <ErrorRender error="We couldn't load this content. You can retry or report the issue." />
     )
   }
 
@@ -315,53 +315,62 @@ export default function GMBInsights({ locationId, accessToken }: GMBInsightsProp
           </p>
         </CardHeader>
         <CardContent>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-  {Object.entries(totals).map(([metric, total]) => (
-    <Card key={metric}>
-      <CardContent>
-        <div className="flex items-center justify-between mb-2">
-          <div className="flex items-center gap-2">
-            {getMetricIcon(metric)}
-            <h3 className="font-medium text-sm">{formatMetricName(metric)}</h3>
-          </div>
-        </div>
-        <div className="text-2xl font-bold">{total.toLocaleString()}</div>
-        <p className="text-xs text-muted-foreground">Total in period</p>
-      </CardContent>
-    </Card>
-  ))}
-</div>
 
-{!dataInfo.hasData && (
-  <div className="mt-4">
-    <Card>
-      <CardContent className="p-6">
-        <div className="flex items-start gap-3">
-          <div className="text-yellow-500 mt-1">
-            <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
-              <path fillRule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
-            </svg>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+            {Object.entries(totals).map(([metric, total]) => (
+              <Card key={metric} className="overflow-hidden">
+                <CardContent>
+                  <div className="flex items-center justify-between mb-3">
+                    <div className="flex items-center gap-2.5">
+                      <div className="rounded-md bg-primary/10 p-2">
+                        {getMetricIcon(metric)}
+                      </div>
+                      <span className="text-sm font-medium text-muted-foreground">
+                        {formatMetricName(metric)}
+                      </span>
+                    </div>
+                  </div>
+                  <div className="text-3xl font-semibold tracking-tight">
+                    {total.toLocaleString()}
+                  </div>
+                  <p className="mt-1 text-xs text-muted-foreground">
+                    Total this period
+                  </p>
+                </CardContent>
+              </Card>
+            ))}
           </div>
-          <div>
-            <h4 className="font-medium mb-1">No Activity Recorded</h4>
-            <p className="text-sm text-muted-foreground mb-3">
-              We retrieved {dataInfo.dayCount} days of data from your Google My Business account, but no customer engagement was recorded during this period.
-            </p>
-            <div className="text-sm text-muted-foreground">
-              <p className="font-medium mb-2">Possible reasons:</p>
-              <ul className="list-disc list-inside space-y-1">
-                <li>Your business profile had no customer interactions</li>
-                <li>The location is newly created</li>
-                <li>Some metrics may not be available for your business type</li>
-                <li>Data may be delayed (typically 24-48 hours)</li>
-              </ul>
+
+          {!dataInfo.hasData && (
+            <div className="mt-4">
+              <Card>
+                <CardContent className="p-6">
+                  <div className="flex items-start gap-3">
+                    <div className="text-yellow-500 mt-1">
+                      <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                        <path fillRule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
+                      </svg>
+                    </div>
+                    <div>
+                      <h4 className="font-medium mb-1">No Activity Recorded</h4>
+                      <p className="text-sm text-muted-foreground mb-3">
+                        We retrieved {dataInfo.dayCount} days of data from your Google My Business account, but no customer engagement was recorded during this period.
+                      </p>
+                      <div className="text-sm text-muted-foreground">
+                        <p className="font-medium mb-2">Possible reasons:</p>
+                        <ul className="list-disc list-inside space-y-1">
+                          <li>Your business profile had no customer interactions</li>
+                          <li>The location is newly created</li>
+                          <li>Some metrics may not be available for your business type</li>
+                          <li>Data may be delayed (typically 24-48 hours)</li>
+                        </ul>
+                      </div>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
             </div>
-          </div>
-        </div>
-      </CardContent>
-    </Card>
-  </div>
-)}
+          )}
         </CardContent>
       </Card>
 

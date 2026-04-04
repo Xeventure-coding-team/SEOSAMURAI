@@ -37,8 +37,8 @@ interface NavbarProps {
 }
 
 export default function Navbar({
-  logo = "SEO Samurai",
-  name = "SEO Samurai",
+  logo = "Rankerly",
+  name = "Rankerly",
   homeUrl = siteConfig.url,
   mobileLinks = [],
   actions = [],

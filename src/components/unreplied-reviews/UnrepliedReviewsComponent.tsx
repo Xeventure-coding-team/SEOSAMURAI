@@ -509,23 +509,45 @@ export default function UnrepliedReviews({
 
   return (
     <Card className={className}>
+
       <CardHeader>
-        <div className="flex items-center gap-2">
-          <CardTitle>Unreplied Reviews</CardTitle>
+        <div className="flex items-center justify-between">
+
+          {/* Left */}
+          <div className="flex items-center gap-2">
+            <CardTitle>Unreplied Reviews</CardTitle>
+            <CardDescription><Badge>{totalUnrepliedCount}</Badge></CardDescription>
+          </div>
+
+          {/* Right - Sort */}
           <button
-            onClick={() => setSortOrder(sortOrder === "latest" ? "oldest" : "latest")}
-            title={sortOrder === "latest" ? "Showing latest first" : "Showing oldest first"}
-            className="ml-2 p-1 rounded text-primary bg-muted hover:bg-muted/70 transition-colors"
+            onClick={() =>
+              setSortOrder(sortOrder === "latest" ? "oldest" : "latest")
+            }
+            className="flex items-center gap-1 rounded-md border px-2 py-1 text-xs text-muted-foreground hover:bg-muted transition-colors"
+            title={
+              sortOrder === "latest"
+                ? "Showing latest first"
+                : "Showing oldest first"
+            }
           >
             {sortOrder === "latest" ? (
-              <SortAsc className="h-4 w-4" />
+              <>
+                <SortDesc className="h-3.5 w-3.5" />
+                Latest
+              </>
             ) : (
-              <SortDesc className="h-4 w-4" />
+              <>
+                <SortAsc className="h-3.5 w-3.5" />
+                Oldest
+              </>
             )}
           </button>
         </div>
+
+        {/* Description */}
         <CardDescription>
-          {totalUnrepliedCount} unreplied reviews across {groupedReviews.length} locations
+          {groupedReviews.length} locations with pending replies
         </CardDescription>
       </CardHeader>
 

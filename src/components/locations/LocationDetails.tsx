@@ -67,6 +67,9 @@ interface GMBApiResponse {
 const REVIEWS_PER_PAGE = 10
 const MEDIA_PER_PAGE = 12
 
+// ✅ Define allowed tab values
+const validTabs = ["overview", "reviews", "media", "hours", "location-map", "remove"];
+
 export default function LocationDashboard() {
   const params = useParams()
   const router = useRouter()
@@ -97,8 +100,20 @@ export default function LocationDashboard() {
   const gmbAccountId = useGMBStore((state) => state.accountId)
   const gmbAccountName = useGMBStore((state) => state.accountName)
 
+  const [activeTab, setActiveTab] = useState('overview');
+
 
   const setPageName = usePageStore((state) => state.setPageName)
+
+
+  // Listen to hash changes
+  useEffect(() => {
+    const hash = window.location.hash.slice(1); // Remove the #
+    if (hash && validTabs.includes(hash)) {
+      setActiveTab(hash);
+    }
+  }, []);
+
 
   useEffect(() => {
     async function fetchLocation() {
@@ -315,12 +330,15 @@ export default function LocationDashboard() {
     : null
 
 
-
-  // ✅ Define allowed tab values
-  const validTabs = ["overview", "reviews", "media", "hours", "map", "remove"];
-
   // ✅ Fallback to "overview" if not found
   const defaultTab = validTabs.includes(active ?? "") ? active! : "overview";
+
+
+  // Handle dropdown navigation
+  const handleNavigation = (tabId: string) => {
+    setActiveTab(tabId);
+    window.location.hash = tabId;
+  };
 
 
   return (
@@ -340,46 +358,60 @@ export default function LocationDashboard() {
           </Card>
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+            {/* Category */}
             <Card>
-              <CardContent className="p-6">
+              <CardContent>
                 <div className="flex items-center gap-3">
-                  <Building2 className="w-5 h-5 text-muted-foreground" />
-                  <div>
-                    <p className="text-sm font-medium">Category</p>
-                    <p className="text-xs text-muted-foreground">{category}</p>
+                  <Building2 className="w-5 h-5 text-muted-foreground shrink-0" />
+                  <div className="min-w-0">
+                    <p className="text-sm text-muted-foreground">Category</p>
+                    <p className="text-sm font-medium truncate">{category}</p>
                   </div>
                 </div>
               </CardContent>
             </Card>
+
+            {/* Rating */}
             <Card>
-              <CardContent className="p-6">
+              <CardContent>
                 <div className="flex items-center gap-3">
-                  <Star className="w-5 h-5 text-muted-foreground" />
+                  <Star className="w-5 h-5 text-muted-foreground shrink-0" />
                   <div>
-                    <p className="text-sm font-medium">Rating</p>
-                    <p className="text-xs text-muted-foreground">{rating}/5 ⭐</p>
+                    <p className="text-sm text-muted-foreground">Rating</p>
+                    <p className="text-sm font-medium">
+                      {rating}/5
+                    </p>
                   </div>
                 </div>
               </CardContent>
             </Card>
+
+            {/* Reviews */}
             <Card>
-              <CardContent className="p-6">
+              <CardContent>
                 <div className="flex items-center gap-3">
-                  <Users className="w-5 h-5 text-muted-foreground" />
+                  <Users className="w-5 h-5 text-muted-foreground shrink-0" />
                   <div>
-                    <p className="text-sm font-medium">Reviews</p>
-                    <p className="text-xs text-muted-foreground">{reviews.totalReviewCount || 0} total</p>
+                    <p className="text-sm text-muted-foreground">Reviews</p>
+                    <p className="text-sm font-medium">
+                      {reviews.totalReviewCount || 0}
+                    </p>
                   </div>
                 </div>
               </CardContent>
             </Card>
+
+            {/* Status */}
             <Card>
-              <CardContent className="p-6">
+              <CardContent>
                 <div className="flex items-center gap-3">
-                  <Clock className="w-5 h-5 text-muted-foreground" />
-                  <div>
-                    <p className="text-sm font-medium">Status</p>
-                    <Badge variant={isOpen ? "default" : "secondary"} className="text-xs">
+                  <Clock className="w-5 h-5 text-muted-foreground shrink-0" />
+                  <div className="flex flex-col gap-1">
+                    <p className="text-sm text-muted-foreground">Status</p>
+                    <Badge
+                      variant={isOpen ? "default" : "secondary"}
+                      className="w-fit text-xs"
+                    >
                       {isOpen ? "Open" : "Closed"}
                     </Badge>
                   </div>
@@ -399,7 +431,7 @@ export default function LocationDashboard() {
                 'danger-zone'
               ]
               }
-              defaultTab="overview"
+              defaultTab={activeTab}
               className="w-full"
               noPadding={true}
             >
@@ -407,89 +439,114 @@ export default function LocationDashboard() {
 
                 <div className="p-6">
                   <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                    {/* Business Info */}
                     <Card>
                       <CardHeader>
-                        <CardTitle>Business Information</CardTitle>
-                        <CardDescription>Core details and contact information</CardDescription>
+                        <CardTitle className="text-base font-semibold">
+                          Business Information
+                        </CardTitle>
+                        <CardDescription className="text-sm">
+                          Core details and contact information
+                        </CardDescription>
                       </CardHeader>
-                      <CardContent className="space-y-4">
-                        <div className="space-y-3">
+
+                      <CardContent className="pt-0 space-y-5">
+                        {/* Address */}
+                        <div className="space-y-2">
                           <div className="flex items-center justify-between">
-                            <span className="text-sm font-medium">Address</span>
+                            <span className="text-sm text-muted-foreground">Address</span>
                             <Tooltip>
                               <TooltipTrigger asChild>
-                                <Button variant="ghost" size="sm" onClick={() => copyToClipboard(address, "Address")}>
+                                <Button
+                                  variant="ghost"
+                                  size="icon"
+                                  onClick={() => copyToClipboard(address, "Address")}
+                                >
                                   <Copy className="w-4 h-4" />
                                 </Button>
                               </TooltipTrigger>
-                              <TooltipContent>Copy address</TooltipContent>
+                              <TooltipContent>Copy</TooltipContent>
                             </Tooltip>
                           </div>
-                          <p className="text-sm text-muted-foreground">{address}</p>
+                          <p className="text-sm font-medium">{address}</p>
                         </div>
+
+                        {/* Phone */}
                         {location.primaryPhone && (
-                          <div className="space-y-3">
+                          <div className="space-y-2">
                             <div className="flex items-center justify-between">
-                              <span className="text-sm font-medium">Phone</span>
+                              <span className="text-sm text-muted-foreground">Phone</span>
                               <div className="flex gap-1">
                                 <Tooltip>
                                   <TooltipTrigger asChild>
-                                    <Button variant="ghost" size="sm" asChild>
+                                    <Button variant="ghost" size="icon" asChild>
                                       <a href={`tel:${location.primaryPhone}`}>
                                         <Phone className="w-4 h-4" />
                                       </a>
                                     </Button>
                                   </TooltipTrigger>
-                                  <TooltipContent>Call phone number</TooltipContent>
+                                  <TooltipContent>Call</TooltipContent>
                                 </Tooltip>
+
                                 <Tooltip>
                                   <TooltipTrigger asChild>
                                     <Button
                                       variant="ghost"
-                                      size="sm"
-                                      onClick={() => copyToClipboard(location.primaryPhone, "Phone")}
+                                      size="icon"
+                                      onClick={() =>
+                                        copyToClipboard(location.primaryPhone, "Phone")
+                                      }
                                     >
                                       <Copy className="w-4 h-4" />
                                     </Button>
                                   </TooltipTrigger>
-                                  <TooltipContent>Copy phone number</TooltipContent>
+                                  <TooltipContent>Copy</TooltipContent>
                                 </Tooltip>
                               </div>
                             </div>
-                            <p className="text-sm text-muted-foreground">{location.primaryPhone}</p>
+                            <p className="text-sm font-medium">{location.primaryPhone}</p>
                           </div>
                         )}
+
+                        {/* Website */}
                         {website && (
-                          <div className="space-y-3">
+                          <div className="space-y-2">
                             <div className="flex items-center justify-between">
-                              <span className="text-sm font-medium">Website</span>
-                              <Button variant="ghost" size="sm" asChild>
+                              <span className="text-sm text-muted-foreground">Website</span>
+                              <Button variant="ghost" size="icon" asChild>
                                 <a href={website} target="_blank" rel="noopener noreferrer">
                                   <Globe className="w-4 h-4" />
                                 </a>
                               </Button>
                             </div>
-                            <p className="text-sm text-muted-foreground break-all">{website}</p>
+                            <p className="text-sm font-medium break-all">{website}</p>
                           </div>
                         )}
+
+                        {/* Place ID */}
                         {businessData.metadata?.placeId && (
-                          <div className="space-y-3">
+                          <div className="space-y-2">
                             <div className="flex items-center justify-between">
-                              <span className="text-sm font-medium">Place ID</span>
+                              <span className="text-sm text-muted-foreground">Place ID</span>
                               <Tooltip>
                                 <TooltipTrigger asChild>
                                   <Button
                                     variant="ghost"
-                                    size="sm"
-                                    onClick={() => copyToClipboard(businessData.metadata.placeId, "Place ID")}
+                                    size="icon"
+                                    onClick={() =>
+                                      copyToClipboard(
+                                        businessData.metadata.placeId,
+                                        "Place ID"
+                                      )
+                                    }
                                   >
                                     <Copy className="w-4 h-4" />
                                   </Button>
                                 </TooltipTrigger>
-                                <TooltipContent>Copy Place ID</TooltipContent>
+                                <TooltipContent>Copy</TooltipContent>
                               </Tooltip>
                             </div>
-                            <p className="text-xs font-mono bg-muted p-2 rounded break-all">
+                            <p className="text-xs font-mono bg-muted px-2 py-1 rounded break-all">
                               {businessData.metadata.placeId}
                             </p>
                           </div>
@@ -497,44 +554,67 @@ export default function LocationDashboard() {
                       </CardContent>
                     </Card>
 
+                    {/* Categories */}
                     <Card>
                       <CardHeader>
-                        <CardTitle>Categories & Services</CardTitle>
-                        <CardDescription>Business categories and available services</CardDescription>
+                        <CardTitle className="text-base font-semibold">
+                          Categories & Services
+                        </CardTitle>
+                        <CardDescription className="text-sm">
+                          Business categories and services
+                        </CardDescription>
                       </CardHeader>
-                      <CardContent className="space-y-4">
+
+                      <CardContent className="pt-0 space-y-5">
+                        {/* Primary */}
                         {businessData.categories?.primaryCategory ? (
-                          <div>
-                            <p className="text-sm font-medium mb-2">Primary Category</p>
-                            <Badge variant="default">{businessData.categories.primaryCategory.displayName}</Badge>
+                          <div className="space-y-2">
+                            <p className="text-sm text-muted-foreground">
+                              Primary Category
+                            </p>
+                            <Badge variant="default" className="text-sm">
+                              {businessData.categories.primaryCategory.displayName}
+                            </Badge>
                           </div>
                         ) : (
-                          <div className="text-center py-4 text-muted-foreground">
-                            <Building2 className="w-8 h-8 mx-auto mb-2 opacity-50" />
-                            <p className="text-sm">No primary category available</p>
+                          <div className="text-center py-6 text-muted-foreground">
+                            <Building2 className="w-6 h-6 mx-auto mb-2 opacity-50" />
+                            <p className="text-sm">No primary category</p>
                           </div>
                         )}
+
+                        {/* Additional */}
                         {businessData.categories?.additionalCategories?.length > 0 ? (
-                          <div>
-                            <p className="text-sm font-medium mb-2">Additional Categories</p>
+                          <div className="space-y-2">
+                            <p className="text-sm text-muted-foreground">
+                              Additional Categories
+                            </p>
                             <div className="flex flex-wrap gap-2">
                               {businessData.categories.additionalCategories
-                                .slice(0, 3)
+                                .slice(0, 10)
                                 .map((category: any, index: number) => (
-                                  <Badge key={index} variant="secondary">
+                                  <Badge
+                                    key={index}
+                                    variant="secondary"
+                                    className="text-sm shrink-0"
+                                  >
                                     {category.displayName}
                                   </Badge>
                                 ))}
-                              {businessData.categories.additionalCategories.length > 3 && (
-                                <Badge variant="outline">
-                                  +{businessData.categories.additionalCategories.length - 3} more
+
+                              {businessData.categories.additionalCategories.length > 10 && (
+                                <Badge
+                                  variant="outline"
+                                  className="text-sm shrink-0"
+                                >
+                                  +{businessData.categories.additionalCategories.length - 10}
                                 </Badge>
                               )}
                             </div>
                           </div>
                         ) : (
-                          <div className="text-center py-4 text-muted-foreground">
-                            <p className="text-sm">No additional categories available</p>
+                          <div className="text-center py-6 text-muted-foreground">
+                            <p className="text-sm">No additional categories</p>
                           </div>
                         )}
                       </CardContent>
@@ -666,7 +746,7 @@ export default function LocationDashboard() {
                       <CardDescription>Weekly operating schedule</CardDescription>
                     </CardHeader>
                     <CardContent>
-                      <div className="p-6">
+                      <div>
                         {location.opening_hours?.weekday_text?.length > 0 ? (
                           <div className="space-y-3">
                             {location.opening_hours.weekday_text.map((hours: string, index: number) => {
@@ -675,7 +755,7 @@ export default function LocationDashboard() {
                               return (
                                 <div
                                   key={index}
-                                  className={`flex justify-between items-center p-3 rounded-lg ${isToday ? "bg-primary/10 border border-primary/20" : "bg-muted/50"
+                                  className={`flex justify-between items-center p-3 rounded-lg border ${isToday ? "bg-primary/10 border border-primary/20" : "bg-muted/50"
                                     }`}
                                 >
                                   <span className={`font-medium ${isToday ? "text-primary" : ""}`}>{day}</span>

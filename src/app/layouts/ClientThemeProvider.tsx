@@ -7,7 +7,7 @@ export function ClientThemeProvider({ children }: { children: ReactNode }) {
   return (
     <ThemeProvider
       attribute="class"
-      defaultTheme="system"
+      defaultTheme="light"
       enableSystem={true}
       disableTransitionOnChange
       enableColorScheme={false}

@@ -303,7 +303,7 @@ export default function ReviewPosterDisplay({
                 <div className="w-6 h-6 bg-blue-500 flex items-center justify-center flex-shrink-0">
                   <span className="text-white text-xs font-bold">S</span>
                 </div>
-                <span className="text-sm font-semibold">SEO Samurai</span>
+                <span className="text-sm font-semibold">Rankerly</span>
               </div>
             </div>
           </div>

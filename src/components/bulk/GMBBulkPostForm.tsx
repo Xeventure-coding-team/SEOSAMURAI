@@ -593,6 +593,7 @@ export function GmbBulkPostForm({
       )}
 
       <div className="grid grid-cols-1 xl:grid-cols-12 gap-6 items-start">
+
         <Card className="xl:col-span-4 flex flex-col">
           <CardHeader className="flex-shrink-0">
             <CardTitle className="flex items-center gap-2">
@@ -611,7 +612,7 @@ export function GmbBulkPostForm({
             </CardDescription>
           </CardHeader>
 
-          <CardContent className="flex-1 flex flex-col p-6">
+          <CardContent className="flex-1 flex flex-col">
             <div className="bg-white border rounded-lg p-4 shadow-sm flex-1 min-h-0 flex flex-col">
               {/* Business Header Mockup */}
               <div className="flex items-center gap-3 mb-4 flex-shrink-0">
@@ -679,7 +680,7 @@ export function GmbBulkPostForm({
         <Card className="xl:col-span-8 flex flex-col h-full">
           <CardContent className="flex-1 min-h-0">
             <div className="h-full flex flex-col">
-              <div className="flex items-center justify-between p-4 bg-muted/50 rounded-lg mb-6 flex-shrink-0">
+              <div className="flex items-center justify-between p-4 bg-muted/50 rounded-lg mb-6 flex-shrink-0 border">
                 <div className="min-w-0 flex-1">
                   <h3 className="text-lg font-semibold">Bulk Post Creation</h3>
                   <p className="text-sm text-muted-foreground">
@@ -753,10 +754,10 @@ export function GmbBulkPostForm({
                       </div>
                     )}
 
-                    <div className="flex-1 min-h-0 overflow-y-auto pr-2">
+                    <div className="flex-1 min-h-0 overflow-y-auto">
                       {bulkPosts.map((post, index) => (
                         <Card key={post.id} className={index === activeForm ? "" : "hidden"}>
-                          <CardHeader className="pb-4">
+                          <CardHeader>
                             <div className="flex items-center justify-between">
                               <div className="flex items-center gap-3 min-w-0 flex-1">
                                 <Badge variant="default">Post {index + 1}</Badge>

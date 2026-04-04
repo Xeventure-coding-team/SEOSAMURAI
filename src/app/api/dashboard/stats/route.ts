@@ -1,4 +1,3 @@
-// app/api/dashboard/stats/route.ts
 import { NextRequest, NextResponse } from 'next/server';
 import { PrismaClient } from '@/generated/prisma';
 
@@ -6,67 +5,56 @@ const prisma = new PrismaClient();
 
 export async function GET(request: NextRequest) {
   try {
-    // Get userId from headers or auth session
     const userId = request.headers.get('x-user-id');
-    
     if (!userId) {
-      return NextResponse.json(
-        { error: 'Unauthorized - User ID required' },
-        { status: 401 }
-      );
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    // Fetch all statistics in parallel for better performance
+    const now = new Date();
+    const sevenDaysAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+    const fourteenDaysAhead = new Date(now.getTime() + 14 * 24 * 60 * 60 * 1000);
+    const thirtyDaysAgo = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
+
     const [
-      locationsCount,
-      activeLocations,
-      keywordsStats,
-      scheduledPostsStats,
-      recentKeywordRanks,
-      gmbIntegration,
-      competitorAnalysesCount,
+      locationsData,
+      keywordTracking,
+      recentRanks,
+      gmbStatus,
       upcomingPosts,
-      recentRankChanges,
-      keywordTrackingStats
+      allPostCounts,
+      topRanks,
+      improvedRanks,
+      userProgress,       // ← replaces locationProgress aggregation
     ] = await Promise.all([
-      // Total locations for user
-      prisma.locations.count({
-        where: { user_id: userId }
-      }),
-
-      // Active locations (updated in last 30 days)
-      prisma.locations.count({
-        where: {
-          user_id: userId,
-          updated_at: {
-            gte: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000)
-          }
-        }
-      }),
-
-      // Keywords statistics
-      prisma.keywords.aggregate({
-        where: { user_id: userId },
-        _count: { id: true }
-      }),
-
-      // Scheduled posts statistics
-      prisma.scheduledPost.groupBy({
-        by: ['status'],
-        where: { user_id: userId },
-        _count: true
-      }),
-
-      // Recent keyword rankings (last 7 days)
-      prisma.keywordRank.findMany({
-        where: {
-          userId: userId,
-          createdAt: {
-            gte: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000)
-          }
+      // 1. Locations
+      prisma.locations.findMany({
+        where: { user_id: userId, is_deleted: false },
+        select: {
+          id: true,
+          location_id: true,
+          location_name: true,
+          last_rank_updated: true,
         },
-        orderBy: { createdAt: 'desc' },
-        take: 10,
+      }),
+
+      // 2. Keyword tracking config
+      prisma.keywordTracking.findMany({
+        where: { userId, isActive: true },
+        select: {
+          id: true,
+          keyword: true,
+          location: true,
+          locationId: true,
+          lastChecked: true,
+          nextBatchUpdate: true,
+          refreshRate: true,
+        },
+        orderBy: { lastChecked: 'desc' },
+      }),
+
+      // 3. Recent rank results
+      prisma.keywordRank.findMany({
+        where: { userId, createdAt: { gte: sevenDaysAgo } },
         select: {
           keyword: true,
           rank: true,
@@ -74,34 +62,28 @@ export async function GET(request: NextRequest) {
           rankChange: true,
           rankChangeValue: true,
           location: true,
-          createdAt: true
-        }
+          locationId: true,
+          createdAt: true,
+        },
+        orderBy: { createdAt: 'desc' },
       }),
 
-      // GMB integration status
+      // 4. GMB integration
       prisma.gmbIntegration.findUnique({
-        where: { userId: userId },
+        where: { userId },
         select: {
           isActive: true,
+          accountName: true,
           tokenExpiry: true,
-          accountName: true
-        }
+        },
       }),
 
-      // Competitor analyses count
-      prisma.competitorAnalysis.count({
-        where: { userId: userId }
-      }),
-
-      // Upcoming scheduled posts (next 7 days)
+      // 5. Upcoming posts — 14-day window
       prisma.scheduledPost.findMany({
         where: {
           user_id: userId,
           status: 'PENDING',
-          scheduledAt: {
-            gte: new Date(),
-            lte: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000)
-          }
+          scheduledAt: { gte: now, lte: fourteenDaysAhead },
         },
         orderBy: { scheduledAt: 'asc' },
         take: 5,
@@ -109,158 +91,167 @@ export async function GET(request: NextRequest) {
           id: true,
           summary: true,
           scheduledAt: true,
-          locationId: true,
-          viewColor: true
-        }
+          timezone: true,
+          viewColor: true,
+        },
       }),
 
-      // Recent rank changes (improvements and drops)
+      // 6. All post counts by status
+      prisma.scheduledPost.groupBy({
+        by: ['status'],
+        where: { user_id: userId },
+        _count: { id: true },
+      }),
+
+      // 7. Top ranking keywords (rank ≤ 10)
       prisma.keywordRank.findMany({
         where: {
-          userId: userId,
-          rankChange: { in: ['UP', 'DOWN'] },
-          createdAt: {
-            gte: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000)
-          }
+          userId,
+          rank: { lte: 10, not: null },
+          createdAt: { gte: sevenDaysAgo },
         },
-        orderBy: { createdAt: 'desc' },
+        distinct: ['keyword'],
+        orderBy: [{ rank: 'asc' }, { createdAt: 'desc' }],
+        take: 5,
+        select: {
+          keyword: true,
+          rank: true,
+          location: true,
+          rankChangeValue: true,
+        },
+      }),
+
+      // 8. Most improved this week
+      prisma.keywordRank.findMany({
+        where: {
+          userId,
+          rankChange: 'UP',
+          createdAt: { gte: sevenDaysAgo },
+        },
+        distinct: ['keyword'],
+        orderBy: [{ rankChangeValue: 'desc' }, { createdAt: 'desc' }],
         take: 5,
         select: {
           keyword: true,
           rank: true,
           previousRank: true,
-          rankChange: true,
           rankChangeValue: true,
-          location: true
-        }
+          location: true,
+        },
       }),
 
-      // Keyword tracking statistics
-      prisma.keywordTracking.aggregate({
-        where: {
-          userId: userId,
-          isActive: true
+      // 9. UserProgress — single global row per user, no aggregation needed
+      prisma.userProgress.findUnique({
+        where: { userId },
+        select: {
+          totalPoints: true,
+          currentLevel: true,
+          tasksCompleted: true,
+          locationsCount: true,
         },
-        _count: { id: true }
-      })
+      }),
     ]);
 
-    // Calculate scheduled posts by status
-    const postsByStatus = scheduledPostsStats.reduce((acc, item) => {
-      acc[item.status] = item._count;
-      return acc;
-    }, {} as Record<string, number>);
+    // ── Post counts
+    const postCounts = allPostCounts.reduce(
+      (acc, row) => ({ ...acc, [row.status.toLowerCase()]: row._count.id }),
+      { pending: 0, published: 0, failed: 0, processing: 0, cancelled: 0, expired: 0 } as Record<string, number>
+    );
 
-    // Calculate average rank for tracked keywords
-    const avgRankData = await prisma.keywordRank.aggregate({
-      where: {
-        userId: userId,
-        rank: { not: null },
-        createdAt: {
-          gte: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000)
-        }
-      },
-      _avg: { rank: true }
+    // ── Active locations (ranked in last 30 days)
+    const activeLocations = locationsData.filter(
+      (l) => l.last_rank_updated && new Date(l.last_rank_updated) > thirtyDaysAgo
+    );
+
+    // ── Keyword data: merge tracking config with latest rank result
+    const rankMap = new Map<string, (typeof recentRanks)[0]>();
+    for (const r of recentRanks) {
+      const key = `${r.keyword}__${r.locationId}`;
+      if (!rankMap.has(key)) rankMap.set(key, r);
+    }
+
+    const keywords = keywordTracking.map((kt) => {
+      const rankKey = `${kt.keyword}__${kt.locationId}`;
+      const rank = rankMap.get(rankKey) ?? null;
+      const isStale = !kt.lastChecked || new Date(kt.lastChecked) < sevenDaysAgo;
+      return {
+        keyword: kt.keyword,
+        location: kt.location,
+        locationId: kt.locationId,
+        rank: rank?.rank ?? null,
+        rankChange: rank?.rankChange ?? null,
+        rankChangeValue: rank?.rankChangeValue ?? 0,
+        lastChecked: kt.lastChecked,
+        nextBatchUpdate: kt.nextBatchUpdate,
+        isStale,
+        neverRanked: !rank,
+      };
     });
 
-    // Get top performing keywords (rank <= 10)
-    const topPerformingKeywords = await prisma.keywordRank.findMany({
-      where: {
-        userId: userId,
-        rank: { lte: 10, not: null }
-      },
-      orderBy: { rank: 'asc' },
-      take: 10,
-      distinct: ['keyword'],
-      select: {
-        keyword: true,
-        rank: true,
-        location: true,
-        url: true
-      }
-    });
+    // ── Staleness
+    const mostRecentCheck = keywordTracking
+      .filter((k) => k.lastChecked)
+      .sort((a, b) => new Date(b.lastChecked!).getTime() - new Date(a.lastChecked!).getTime())[0];
 
-    // Construct the response
-    const stats = {
+    const rankDataStale =
+      !mostRecentCheck || new Date(mostRecentCheck.lastChecked!) < sevenDaysAgo;
+
+    // ── GMB token days remaining
+    const tokenDaysLeft = gmbStatus?.tokenExpiry
+      ? Math.ceil((new Date(gmbStatus.tokenExpiry).getTime() - now.getTime()) / (1000 * 60 * 60 * 24))
+      : null;
+
+    return NextResponse.json({
       overview: {
-        totalLocations: locationsCount,
-        activeLocations: activeLocations,
-        totalKeywords: keywordsStats._count.id,
-        activeKeywordTracking: keywordTrackingStats._count.id,
-        competitorAnalyses: competitorAnalysesCount
+        totalLocations: locationsData.length,
+        activeLocations: activeLocations.length,
+        totalKeywords: keywordTracking.length,
+        keywordsWithRankData: keywords.filter((k) => !k.neverRanked).length,
+        keywordsStale: keywords.filter((k) => k.isStale && !k.neverRanked).length,
+        rankDataStale,
+        lastRankedAt: mostRecentCheck?.lastChecked ?? null,
       },
-      scheduledPosts: {
-        total: Object.values(postsByStatus).reduce((sum, count) => sum + count, 0),
-        pending: postsByStatus.PENDING || 0,
-        published: postsByStatus.PUBLISHED || 0,
-        failed: postsByStatus.FAILED || 0,
-        upcoming: upcomingPosts
+
+      gmb: {
+        connected: gmbStatus?.isActive ?? false,
+        accountName: gmbStatus?.accountName ?? null,
+        tokenExpiry: gmbStatus?.tokenExpiry ?? null,
+        tokenDaysLeft,
+        tokenValid: tokenDaysLeft !== null && tokenDaysLeft > 0,
       },
+
       rankings: {
-        averageRank: avgRankData._avg.rank ? Math.round(avgRankData._avg.rank * 10) / 10 : null,
-        recentRankings: recentKeywordRanks,
-        topPerformingKeywords: topPerformingKeywords,
-        recentChanges: recentRankChanges
+        topKeywords: topRanks,
+        improvedKeywords: improvedRanks,
+        inTopTen: topRanks.length,
+        improved: improvedRanks.length,
       },
-      integrations: {
-        gmbConnected: gmbIntegration?.isActive || false,
-        gmbAccountName: gmbIntegration?.accountName || null,
-        gmbTokenValid: gmbIntegration 
-          ? new Date(gmbIntegration.tokenExpiry) > new Date()
-          : false
+
+      keywords,
+
+      scheduledPosts: {
+        pending: postCounts.pending,
+        published: postCounts.published,
+        failed: postCounts.failed,
+        total: Object.values(postCounts).reduce((a, b) => a + b, 0),
+        upcoming: upcomingPosts,
+        nextPost: upcomingPosts[0] ?? null,
       },
-      lastUpdated: new Date().toISOString()
-    };
 
-    return NextResponse.json(stats, { status: 200 });
+      // Flat global progress — no aggregation, directly from UserProgress model
+      progress: {
+        totalPoints:    userProgress?.totalPoints    ?? 0,
+        currentLevel:   userProgress?.currentLevel   ?? 1,
+        tasksCompleted: userProgress?.tasksCompleted ?? 0,
+        locationsCount: userProgress?.locationsCount ?? 0,
+      },
 
+      lastUpdated: now.toISOString(),
+    });
   } catch (error) {
     console.error('Dashboard stats error:', error);
     return NextResponse.json(
-      { 
-        error: 'Failed to fetch dashboard statistics',
-        details: error instanceof Error ? error.message : 'Unknown error'
-      },
-      { status: 500 }
-    );
-  } finally {
-    await prisma.$disconnect();
-  }
-}
-
-// Optional: Add POST endpoint for refreshing specific stats
-export async function POST(request: NextRequest) {
-  try {
-    const userId = request.headers.get('x-user-id');
-    
-    if (!userId) {
-      return NextResponse.json(
-        { error: 'Unauthorized' },
-        { status: 401 }
-      );
-    }
-
-    const body = await request.json();
-    const { refreshType } = body;
-
-    // Handle specific refresh requests
-    switch (refreshType) {
-      case 'rankings':
-        // Trigger ranking refresh logic here
-        return NextResponse.json({ message: 'Rankings refresh initiated' });
-      
-      case 'posts':
-        // Trigger posts refresh logic here
-        return NextResponse.json({ message: 'Posts refresh initiated' });
-      
-      default:
-        return NextResponse.json({ error: 'Invalid refresh type' }, { status: 400 });
-    }
-
-  } catch (error) {
-    console.error('Dashboard refresh error:', error);
-    return NextResponse.json(
-      { error: 'Failed to refresh dashboard' },
+      { error: 'Failed to fetch dashboard statistics', details: error instanceof Error ? error.message : 'Unknown error' },
       { status: 500 }
     );
   } finally {

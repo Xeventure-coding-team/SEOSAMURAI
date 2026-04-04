@@ -178,7 +178,7 @@ export const downloadPosterAsPDF = async (poster: SavedPoster): Promise<void> =>
                   <div style="width: 24px; height: 24px; background: #3b82f6; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
                     <span style="color: white; font-size: 12px; font-weight: 700;">S</span>
                   </div>
-                  <span style="font-size: 14px; font-weight: 600;">SEO Samurai</span>
+                  <span style="font-size: 14px; font-weight: 600;">Rankerly</span>
                 </div>
               </div>
             </div>

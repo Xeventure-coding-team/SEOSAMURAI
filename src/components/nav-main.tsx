@@ -1,9 +1,6 @@
 "use client"
 
-import { IconCirclePlusFilled, IconMail, type Icon } from "@tabler/icons-react"
 import { usePathname } from "next/navigation"
-
-import { Button } from "@/components/ui/button"
 import {
   SidebarGroup,
   SidebarGroupContent,
@@ -20,39 +17,51 @@ export function NavMain({
   items: {
     title: string
     url: string
-    icon?: Icon
+    icon?: any
+    group?: string
   }[]
 }) {
   const pathname = usePathname()
 
   const isActive = (url: string) => {
-    if (url === "/") {
-      return pathname === "/"
-    }
+    if (url === "/") return pathname === "/"
     return pathname.startsWith(url)
   }
 
   return (
-    <SidebarGroup>
-      <SidebarGroupContent className="flex flex-col gap-2">
-        <SidebarMenu>
+    <SidebarGroup className="py-2">
+      <SidebarGroupContent>
+        <SidebarMenu className="gap-2">
           {items.map((item) => {
             const active = isActive(item.url)
-            
+
             return (
               <SidebarMenuItem key={item.title}>
                 <SidebarMenuButton
-                  tooltip={item.title}
                   asChild
                   className={cn(
-                    "transition-colors duration-200",
-                    active && "bg-sidebar-accent text-sidebar-accent-foreground font-medium"
+                    "h-9 px-3 rounded-md",
+                    "text-[15px] font-500",
+                    "transition-all duration-150",
+                    // Default state
+                    "text-sidebar-foreground/80 hover:text-sidebar-foreground",
+                    // Hover state
+                    "hover:bg-sidebar-accent/50",
+                    // Active state - uses primary color from theme
+                    active && [
+                      "bg-primary/10 text-primary font-600",
+                      "hover:bg-primary/15"
+                    ]
                   )}
-                  data-active={active}
                 >
-                  <Link href={item.url}>
-                    {item.icon && <item.icon />}
-                    <span>{item.title}</span>
+                  <Link href={item.url} className="flex items-center gap-3 w-full">
+                    {item.icon && (
+                      <item.icon className={cn(
+                        "w-4 h-4 shrink-0 transition-colors",
+                        active ? "text-primary" : "text-sidebar-foreground/60"
+                      )} />
+                    )}
+                    <span className="truncate">{item.title}</span>
                   </Link>
                 </SidebarMenuButton>
               </SidebarMenuItem>

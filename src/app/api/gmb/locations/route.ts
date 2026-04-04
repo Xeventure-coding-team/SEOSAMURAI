@@ -63,9 +63,23 @@ async function validateGMBToken(token: string): Promise<boolean> {
         timeout: 10000,
       },
     );
+    
+    // If we get here, the token is valid AND the user has at least one account
     return response.status === 200;
   } catch (error) {
-    console.error("GMB token validation failed:", error);
+    if (axios.isAxiosError(error)) {
+      if (error.response?.status === 401) {
+        console.error("Token invalid or expired");
+      } else if (error.response?.status === 403) {
+        console.error("Token lacks required permissions");
+      } else if (error.code === 'ECONNABORTED') {
+        console.error("Request timeout - API may be slow");
+      } else {
+        console.error(`API error: ${error.response?.status}`, error.response?.data);
+      }
+    } else {
+      console.error("Unexpected error:", error);
+    }
     return false;
   }
 }
@@ -344,7 +358,7 @@ export async function GET(req: Request) {
         { status: 400 },
       );
     }
-
+ 
     // Validate GMB access token
     const isValidToken = await validateGMBToken(accessToken);
     if (!isValidToken) {

@@ -322,7 +322,7 @@ export default function SelectLocation() {
                                 <Card
                                     key={location.name}
                                     className={`cursor-pointer transition-all hover:shadow-md border ${selectedLocation === location.name
-                                        ? "border-primary bg-primary/5 shadow-sm"
+                                        ? "border-primary border-2 shadow-sm bg-background"
                                         : "border-border hover:border-primary/50"
                                         }`}
                                     onClick={() => handleLocationSelect(location.name)}
@@ -338,11 +338,12 @@ export default function SelectLocation() {
                                                 </div>
                                                 <div>
                                                     <div className="font-semibold text-base">{getLocationDisplayName(location)}</div>
-                                                    {location.storefrontAddress && (
-                                                        <div className="text-sm text-muted-foreground mt-1">
-                                                            {location.formattedAddress}
-                                                        </div>
-                                                    )}
+                                                        {location.storefrontAddress && (
+                                                            <p className="text-xs text-muted-foreground truncate max-w-[240px] line-clamp-4">
+                                                                {location.formattedAddress}
+                                                            </p>
+                                                        )}
+
                                                 </div>
                                             </div>
                                             {selectedLocation === location.name && <CheckCircle className="h-5 w-5 text-primary" />}

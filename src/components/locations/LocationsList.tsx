@@ -7,7 +7,6 @@ import { Input } from "@/components/ui/input"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Badge } from "@/components/ui/badge"
 import { Skeleton } from "@/components/ui/skeleton"
-import { TooltipProvider } from "@/components/ui/tooltip"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import Link from "next/link"
 import {
@@ -35,6 +34,19 @@ import stringSimilarity from "string-similarity"
 import { toast } from "react-hot-toast"
 import { useGMBStore } from "@/store/gmbStore"
 import ErrorRender from "../Error"
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu"
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip"
+import LocationTable from "./LocationTable"
 
 type Location = {
   name: string
@@ -55,9 +67,9 @@ type SortDirection = "asc" | "desc"
 const ITEMS_PER_PAGE_OPTIONS = [10, 25, 50, 100]
 
 const getPreferredLocality = (loc: Location) => {
-  return   loc.formattedAddress || loc.storefrontAddress?.locality || loc.storefrontAddress?.addressLines?.join(", ") || ""
-  // loc.formattedAddress || loc.storefrontAddress?.addressLines?.join(", ") || ""
-  ;
+  return loc.formattedAddress || loc.storefrontAddress?.locality || loc.storefrontAddress?.addressLines?.join(", ") || ""
+    // loc.formattedAddress || loc.storefrontAddress?.addressLines?.join(", ") || ""
+    ;
 };
 
 export default function LocationsTable() {
@@ -326,113 +338,89 @@ export default function LocationsTable() {
           </Button>
         </div>
 
-        <Card>
+        <Card className="gap-0">
           <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Search className="h-5 w-5" />
+            <CardTitle className="text-base flex items-center gap-2">
+              <Search className="h-4 w-4" />
               Search & Filter Locations
             </CardTitle>
           </CardHeader>
-          <CardContent className="space-y-6">
-            {/* Search Bar */}
-            <div className="relative">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-muted-foreground" />
-              <Input
-                placeholder="Search by business name, category, or description..."
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                className="pl-11 h-12 text-base"
-              />
-            </div>
-
-            {/* Filter Toggle and Active Filters */}
-            <div className="flex items-center justify-between">
-              <Button variant="outline" onClick={() => setShowFilters(!showFilters)} className="h-10">
-                <Filter className="h-4 w-4 mr-2" />
-                Advanced Filters
-                <ChevronDown className={`h-4 w-4 ml-2 transition-transform ${showFilters ? "rotate-180" : ""}`} />
-              </Button>
-
-              <div className="flex items-center gap-3">
-                {hasActiveFilters && (
-                  <>
-                    <Badge variant="secondary" className="px-3 py-1">
-                      {
-                        [
-                          searchTerm,
-                          categoryFilter !== "all" ? categoryFilter : null,
-                          locationFilter !== "all" ? locationFilter : null,
-                          websiteFilter !== "all" ? websiteFilter : null,
-                        ].filter(Boolean).length
-                      }{" "}
-                      filters active
-                    </Badge>
-                    <Button variant="ghost" size="sm" onClick={clearFilters}>
-                      <RotateCcw className="h-4 w-4 mr-2" />
-                      Clear All
-                    </Button>
-                  </>
-                )}
+          <CardContent className="space-y-3 pt-0">
+            {/* Search and Filters Row */}
+            <div className="flex gap-3 items-end">
+              <div className="relative flex-1">
+                <Search className="absolute left-2.5 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                <Input
+                  placeholder="Search by business name, category, or description..."
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  className="pl-8 h-9 text-sm"
+                />
               </div>
-            </div>
 
-            {/* Advanced Filters */}
-            {showFilters && (
-              <div className="grid gap-4 md:grid-cols-3 p-6 bg-muted/30 rounded-lg border">
-                <div className="space-y-2">
-                  <label className="text-sm font-medium">Business Category</label>
-                  <Select value={categoryFilter} onValueChange={setCategoryFilter}>
-                    <SelectTrigger className="h-10 mt-2 w-full">
-                      <SelectValue placeholder="All Categories" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="all">All Categories</SelectItem>
-                      {filterOptions.categories.map((category) => (
-                        <SelectItem key={category} value={category}>
-                          {category}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-
-                <div className="space-y-2">
-                  <label className="text-sm font-medium">Location</label>
-                  <Select value={locationFilter} onValueChange={setLocationFilter}>
-                    <SelectTrigger className="h-10 mt-2 w-full">
-                      <SelectValue placeholder="All Locations" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="all">All Locations</SelectItem>
-                      {filterOptions.locations.map((location) => (
-                        <SelectItem key={location} value={location}>
-                          {location}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
+              <div className="space-y-1">
+                <label className="text-xs text-muted-foreground">Category</label>
+                <Select value={categoryFilter} onValueChange={setCategoryFilter}>
+                  <SelectTrigger className="h-9 w-[140px] text-sm">
+                    <SelectValue placeholder="All Categories" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">All Categories</SelectItem>
+                    {filterOptions.categories.map((category) => (
+                      <SelectItem key={category} value={category}>
+                        {category}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
               </div>
-            )}
 
+              <div className="space-y-1">
+                <label className="text-xs text-muted-foreground">Location</label>
+                <Select value={locationFilter} onValueChange={setLocationFilter}>
+                  <SelectTrigger className="h-9 w-[140px] text-sm">
+                    <SelectValue placeholder="All Locations" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">All Locations</SelectItem>
+                    {filterOptions.locations.map((location) => (
+                      <SelectItem key={location} value={location}>
+                        {location}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
 
+              {hasActiveFilters && (
+                <Button variant="ghost" size="sm" className="h-9 px-3">
+                  <RotateCcw className="h-3.5 w-3.5 mr-1.5" />
+                  Clear
+                </Button>
+              )}
+            </div>
           </CardContent>
         </Card>
+
 
         {/* Results Summary and Pagination Controls */}
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-4">
-            <p className="text-sm font-medium">
+            <p className="text-sm text-muted-foreground">
               Showing{" "}
-              <span className="text-primary">
+              <span className="font-medium text-foreground">
                 {startIndex + 1}-{Math.min(endIndex, filteredAndSortedLocations.length)}
               </span>{" "}
-              of <span className="text-primary">{filteredAndSortedLocations.length}</span> locations
+              of{" "}
+              <span className="font-medium text-foreground">
+                {filteredAndSortedLocations.length}
+              </span>{" "}
+              locations
             </p>
           </div>
 
           <div className="flex items-center gap-3">
-            <span className="text-sm font-medium">Show:</span>
+            <span className="text-sm text-muted-foreground">Show:</span>
             <Select value={itemsPerPage.toString()} onValueChange={(value) => setItemsPerPage(Number(value))}>
               <SelectTrigger className="h-9 w-20">
                 <SelectValue />
@@ -449,220 +437,16 @@ export default function LocationsTable() {
           </div>
         </div>
 
-        {/* Data Table */}
-        {filteredAndSortedLocations.length > 0 ? (
-          <div className="overflow-hidden rounded-lg border">
-            <Table>
-              <TableHeader className="bg-muted sticky top-0 z-10">
-                <TableRow className="bg-muted/50">
-                  <TableHead className="w-[350px] py-4">
-                    <Button
-                      variant="ghost"
-                      onClick={() => toggleSort("name")}
-                      className="h-auto p-2 font-semibold text-left justify-start"
-                    >
-                      Business Information
-                      {sortBy === "name" &&
-                        (sortDirection === "asc" ? (
-                          <SortAsc className="h-4 w-4 ml-2" />
-                        ) : (
-                          <SortDesc className="h-4 w-4 ml-2" />
-                        ))}
-                    </Button>
-                  </TableHead>
-                  <TableHead className="py-4">
-                    <Button
-                      variant="ghost"
-                      onClick={() => toggleSort("category")}
-                      className="h-auto p-2 font-semibold text-left justify-start"
-                    >
-                      Category
-                      {sortBy === "category" &&
-                        (sortDirection === "asc" ? (
-                          <SortAsc className="h-4 w-4 ml-2" />
-                        ) : (
-                          <SortDesc className="h-4 w-4 ml-2" />
-                        ))}
-                    </Button>
-                  </TableHead>
-                  <TableHead className="py-4">
-                    <Button
-                      variant="ghost"
-                      onClick={() => toggleSort("location")}
-                      className="h-auto p-2 font-semibold text-left justify-start"
-                    >
-                      Location
-                      {sortBy === "location" &&
-                        (sortDirection === "asc" ? (
-                          <SortAsc className="h-4 w-4 ml-2" />
-                        ) : (
-                          <SortDesc className="h-4 w-4 ml-2" />
-                        ))}
-                    </Button>
-                  </TableHead>
-                  <TableHead className="py-4">
-                    <Button
-                      variant="ghost"
-                      onClick={() => toggleSort("website")}
-                      className="h-auto p-2 font-semibold text-left justify-start"
-                    >
-                      Website
-                      {sortBy === "website" &&
-                        (sortDirection === "asc" ? (
-                          <SortAsc className="h-4 w-4 ml-2" />
-                        ) : (
-                          <SortDesc className="h-4 w-4 ml-2" />
-                        ))}
-                    </Button>
-                  </TableHead>
-                  <TableHead className="text-center py-4 font-semibold">Actions</TableHead>
-                  <TableHead className="text-center py-4 font-semibold"></TableHead>
-                  <TableHead className="text-center py-4 font-semibold"></TableHead>
-                  <TableHead className="text-center py-4 font-semibold"></TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody className="**:data-[slot=table-cell]:first:w-8">
-                {paginatedLocations.map((location) => (
-                  <TableRow key={location.location_id || location.name} className="hover:bg-muted/30">
-
-                    <TableCell className="py-6">
-                      <div className="space-y-2">
-                        <div className="font-semibold">{location.title || "Untitled Location"}</div>
-
-                        {location.profile?.description && (
-                          <div className="text-sm text-muted-foreground line-clamp-2 max-w-[320px] leading-relaxed">
-                            {location.profile.description}
-                          </div>
-                        )}
-                      </div>
-                    </TableCell>
-
-                    <TableCell className="py-6">
-                      {location.categories?.primaryCategory?.displayName ? (
-                        <Badge variant="secondary" className="px-3 py-1">
-                          {location.categories.primaryCategory.displayName}
-                        </Badge>
-                      ) : (
-                        <Badge variant="outline" className="px-3 py-1">
-                          Uncategorized
-                        </Badge>
-                      )}
-                    </TableCell>
-
-                    <TableCell className="py-6">
-                      <div className="flex items-start gap-2">
-                        <MapPin className="h-4 w-4 text-muted-foreground shrink-0" />
-                        <span className="capitalize break-words whitespace-pre-line">
-                          {getPreferredLocality(location) || "Location not specified"}
-                        </span>
-                      </div>
-                    </TableCell>
-
-                    <TableCell className="py-6">
-                      {location.websiteUri ? (
-                        <Button asChild variant="outline" size="sm" className="bg-transparent">
-                          <a
-                            href={location.websiteUri}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="flex items-center gap-2"
-                          >
-                            <Globe className="h-4 w-4" />
-                            <span>Visit Website</span>
-                            <ExternalLink className="h-3 w-3" />
-                          </a>
-                        </Button>
-                      ) : (
-                        <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                          <X className="h-4 w-4" />
-                          <span>No website</span>
-                        </div>
-                      )}
-                    </TableCell>
-
-                    <TableCell className="py-6">
-                      <div className="flex items-center justify-center gap-2">
-                        <Link href={`/app/${location.name}`}>
-                          <Button variant="outline" size="sm">
-                            <Eye className="h-4 w-4 mr-2" />
-                            View Details
-                          </Button>
-                        </Link>
-                      </div>
-                    </TableCell>
-
-                    <TableCell className="py-6">
-                      <div className="flex items-center justify-center gap-2">
-                        <Link href={`/app/${location.name}/manage`}>
-                          <Button variant="outline" size="sm">
-                            <Wrench className="h-4 w-4 mr-2" />
-                            Manage Location
-                          </Button>
-                        </Link>
-                      </div>
-                    </TableCell>
-
-                    <TableCell className="py-6">
-                      <div className="flex items-center justify-center gap-2">
-                        <Link href={`/app/${location.name}/manage?active=posts`}>
-                          <Button variant="ghost" size="sm">
-                            Manage Posts
-                          </Button>
-                        </Link>
-                      </div>
-                    </TableCell>
-
-                    <TableCell className="py-6">
-                      <div className="flex items-center justify-center gap-2">
-                        <Link href={`/app/${location.name}/manage?active=reviews`}>
-                          <Button variant="ghost" size="sm">
-                            Manage Reviews
-                          </Button>
-                        </Link>
-                      </div>
-                    </TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-          </div>
-        ) : (
-          /* Enhanced empty state with better messaging and clearer actions */
-          <Card className="border-dashed border-2">
-            <CardContent className="text-center py-16 space-y-6">
-              <div className="flex justify-center">
-                <div className="rounded-full bg-muted p-4">
-                  <Building2 className="h-12 w-12 text-muted-foreground" />
-                </div>
-              </div>
-              <div className="space-y-2">
-                <h3 className="font-semibold text-xl">
-                  {hasActiveFilters ? "No locations match your filters" : "No locations found"}
-                </h3>
-                <p className="text-muted-foreground max-w-md mx-auto">
-                  {hasActiveFilters
-                    ? "Try adjusting your search terms or filters to find the locations you're looking for."
-                    : "Get started by connecting your first Google Business location to begin managing your online presence."}
-                </p>
-              </div>
-              <div className="flex gap-4 justify-center">
-                {hasActiveFilters ? (
-                  <Button variant="outline" onClick={clearFilters} size="lg">
-                    <RotateCcw className="h-4 w-4 mr-2" />
-                    Clear All Filters
-                  </Button>
-                ) : (
-                  <Button asChild size="lg">
-                    <Link href="/app/locations/add">
-                      <Plus className="h-4 w-4 mr-2" />
-                      Add Your First Location
-                    </Link>
-                  </Button>
-                )}
-              </div>
-            </CardContent>
-          </Card>
-        )}
+        <LocationTable
+          filteredAndSortedLocations={filteredAndSortedLocations}
+          paginatedLocations={paginatedLocations}
+          sortBy={sortBy}
+          sortDirection={sortDirection}
+          toggleSort={toggleSort}
+          hasActiveFilters={hasActiveFilters}
+          clearFilters={clearFilters}
+          getPreferredLocality={getPreferredLocality}
+        />
 
         {totalPages > 1 && (
           <Card>

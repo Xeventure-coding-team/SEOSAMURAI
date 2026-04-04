@@ -36,7 +36,9 @@ import {
   Contact,
   ScanSearch,
   MessageCircle,
-  Headset
+  Headset,
+  ScanLine,
+  Eye
 } from "lucide-react"
 import { useUser } from "@stackframe/stack";
 import { usePathname } from "next/navigation";
@@ -49,58 +51,69 @@ const data = {
     email: "m@example.com",
     avatar: "/avatars/shadcn.jpg",
   },
+
   navMain: [
+    // Core
     {
       title: "Dashboard",
       url: "/app/dashboard",
       icon: LayoutDashboard,
+      group: "Core",
     },
     {
       title: "Locations",
       url: "/app/locations",
       icon: MapPin,
+      group: "Core",
     },
+
+    // Posting & Reputation
     {
       title: "Bulk Posting",
       url: "/app/post/bulk",
-      icon: File,
+      icon: FileText,
+      group: "Posting & Reputation",
     },
     {
       title: "Schedule Posting",
       url: "/app/post/schedule",
       icon: Timer,
-    },
-    {
-      title: "Run a Scan",
-      url: "/app/scan",
-      icon: Radar,
+      group: "Posting & Reputation",
     },
     {
       title: "Reviews",
       url: "/app/reviews",
       icon: Star,
+      group: "Posting & Reputation",
     },
     {
       title: "Review Poster",
       url: "/app/shared-google-review-poster",
       icon: Megaphone,
+      group: "Posting & Reputation",
     },
-     {
+    {
       title: "Tracked Reviews",
       url: "/app/tracked-reviews",
-      icon: ScanSearch,
+      icon: Eye,
+      group: "Posting & Reputation",
     },
-    // {
-    //   title: "Chat",
-    //   url: "/app/new-chat",
-    //   icon: MessageCircle,
-    // },
+
+    // Tools & Support
+    {
+      title: "Run a Scan",
+      url: "/app/scan",
+      icon: ScanLine,
+      group: "Tools & Support",
+    },
     {
       title: "Help Desk",
       url: "/app/help-desk",
       icon: Headset,
+      group: "Tools & Support",
     },
   ],
+
   navClouds: [
     {
       title: "Capture",
@@ -131,6 +144,7 @@ const data = {
       ],
     },
   ],
+
   navSecondary: [
     {
       title: "Back to Home",
@@ -148,6 +162,7 @@ const data = {
       icon: Settings,
     },
   ],
+
   documents: [
     {
       name: "Data Library",
@@ -200,7 +215,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
 
 
   return (
-    <Sidebar collapsible="offcanvas" {...props}>
+    <Sidebar collapsible="offcanvas" {...props} variant="sidebar">
       <SidebarHeader>
         <SidebarMenu>
           <SidebarMenuItem>
@@ -210,7 +225,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
             >
               <a href="#">
                 <Zap className="!size-5" />
-                <span className="text-base font-semibold">SEO Samurai</span>
+                <span className="text-base font-semibold">Rankerly</span>
               </a>
             </SidebarMenuButton>
           </SidebarMenuItem>

@@ -373,8 +373,9 @@ const GoogleBusinessConnect: React.FC = () => {
     return (
         <div className="flex items-center justify-center min-h-[70vh] p-4">
             <div className="max-w-2xl w-full space-y-6">
+
                 {/* Main Connection Card */}
-                <Card className="shadow-lg border-0 bg-card">
+                <Card className="border-0 bg-card">
                     <CardHeader className="text-center space-y-4 pb-6">
                         <div className="flex justify-center">
                             <div className={`w-16 h-16 rounded-full flex items-center justify-center ${state === 'connected'
@@ -555,7 +556,7 @@ const GoogleBusinessConnect: React.FC = () => {
                                 {benefits.map((benefit, index) => (
                                     <div
                                         key={index}
-                                        className="flex items-start gap-3 p-3 bg-card rounded-lg border border-border"
+                                        className="flex items-start gap-4 p-4 rounded-lg border border-border hover:border-primary/20 transition-colors"
                                     >
                                         <div className="text-primary mt-1">{benefit.icon}</div>
                                         <div>

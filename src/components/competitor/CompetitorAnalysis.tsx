@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
-import { RefreshCw, Star, Info, Eye, EyeOff, TrendingUp, AlertCircle, MapPin, Clock, CheckCircle } from "lucide-react"
+import { RefreshCw, Star, Info, Eye, EyeOff, TrendingUp, AlertCircle, MapPin, Clock, CheckCircle, Plus } from "lucide-react"
 import { Loader } from "../Loader/Loader"
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
 import { APIProvider, Map, AdvancedMarker, Pin } from "@vis.gl/react-google-maps"
@@ -94,35 +94,23 @@ export function CompetitorAnalysisWithMap({
     // No keywords tracked state
     if (!hasKeywords || trackedKeywordsCount === 0) {
         return (
-            <TooltipProvider>
-                <div className="space-y-6 max-w-8xl">
-                    <Card>
-                        <CardHeader>
-                            <CardTitle className="text-2xl">Competitor Rankings</CardTitle>
-                        </CardHeader>
-                    </Card>
-
-                    <Card>
-                        <CardContent className="text-center py-16">
-                            <div className="mx-auto mb-6 h-24 w-24 rounded-full bg-muted flex items-center justify-center">
-                                <TrendingUp className="h-12 w-12 text-muted-foreground" />
-                            </div>
-                            <h3 className="text-2xl font-semibold mb-3">No Keywords Tracked Yet</h3>
-                            <p className="text-muted-foreground mb-6 max-w-md mx-auto">
-                                Add keywords to your tracker to see which competitors are ranking for those terms
-                            </p>
-                            <Alert className="max-w-lg mx-auto">
-                                <Info className="h-4 w-4" />
-                                <AlertTitle>How it works</AlertTitle>
-                                <AlertDescription>
-                                    Once you add keywords to track, we'll analyze the search results and show you which
-                                    competitors are ranking for those terms, along with their positions.
-                                </AlertDescription>
-                            </Alert>
-                        </CardContent>
-                    </Card>
+            <div className="flex flex-col items-center justify-center py-16 text-center">
+                <div className="mb-4 rounded-full bg-muted/50 p-3">
+                    <TrendingUp className="h-6 w-6 text-muted-foreground/70" />
                 </div>
-            </TooltipProvider>
+                <h3 className="mb-1 text-sm font-medium">No keywords tracked</h3>
+                <p className="mb-4 text-xs text-muted-foreground max-w-sm">
+                    Add keywords to see competitor rankings
+                </p>
+                <Button
+                    onClick={() => {/* navigate to keyword tracker */ }}
+                    variant="outline"
+                    size="sm"
+                >
+                    <Plus className="mr-1.5 h-3.5 w-3.5" />
+                    Add keywords
+                </Button>
+            </div>
         )
     }
 
@@ -216,6 +204,7 @@ export function CompetitorAnalysisWithMap({
                 </Card>
 
                 <div className={`grid gap-6 ${showMap ? "lg:grid-cols-2" : "grid-cols-1"}`}>
+                    
                     <div className="space-y-4">
                         {competitors.map((competitor) => (
                             <Card
@@ -224,7 +213,7 @@ export function CompetitorAnalysisWithMap({
                                     }`}
                                 onClick={() => selectCompetitor(competitor)}
                             >
-                                <CardContent className="p-6">
+                                <CardContent>
                                     <div className="space-y-4">
                                         <div className="flex justify-between items-start gap-4">
                                             <div className="flex-1 space-y-3">
@@ -432,7 +421,7 @@ export function CompetitorAnalysisWithMap({
                             {/* Enhanced Selected Competitor Panel */}
                             {selectedCompetitor && (
                                 <Card>
-                                    <CardContent className="p-4">
+                                    <CardContent>
                                         <div className="space-y-4">
                                             <div className="flex items-center gap-3">
                                                 <Badge variant="default" className="text-sm font-bold">
@@ -445,7 +434,7 @@ export function CompetitorAnalysisWithMap({
                                                 {selectedCompetitor.address || selectedCompetitor.domain || 'Online competitor'}
                                             </p>
 
-                                            <div className="grid grid-cols-3 gap-4 text-center py-3 bg-muted/50 rounded-lg">
+                                            <div className="grid grid-cols-3 gap-4 text-center py-3 bg-muted/50 rounded-lg border">
                                                 <div>
                                                     <p className="text-xs text-muted-foreground">Best Rank</p>
                                                     <p className="text-2xl font-bold text-green-600">#{selectedCompetitor.bestRank}</p>
