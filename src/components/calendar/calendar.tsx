@@ -20,6 +20,9 @@ export default function Calendar({
   date,
   setDate,
   calendarIconIsToday = true,
+  onPostCreated,
+  openDialog,
+  setOpenDialog,
 }: CalendarProps) {
   return (
     <CalendarProvider
@@ -34,15 +37,18 @@ export default function Calendar({
       date={date}
       setDate={setDate}
       calendarIconIsToday={calendarIconIsToday}
+      onPostCreated={onPostCreated}
+      openDialog={openDialog}       
+      setOpenDialog={setOpenDialog}
     >
       <Card className='p-0 mb-4 bg-none' style={{ backgroundColor: 'transparent' }}>
-      <CalendarHeader>
-        <CalendarHeaderDate />
-        <CalendarHeaderActions>
-          <CalendarHeaderActionsMode selectedLocation={selectedLocation} />
-          <CalendarHeaderActionsAdd selectedLocation={selectedLocation} />
-        </CalendarHeaderActions>
-      </CalendarHeader>
+        <CalendarHeader>
+          <CalendarHeaderDate />
+          <CalendarHeaderActions>
+            <CalendarHeaderActionsMode selectedLocation={selectedLocation} />
+            <CalendarHeaderActionsAdd selectedLocation={selectedLocation} />
+          </CalendarHeaderActions>
+        </CalendarHeader>
       </Card>
       <Card className='p-0 m-0 bg-none' style={{ backgroundColor: 'transparent' }}>
         <CalendarBody />

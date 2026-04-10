@@ -3,7 +3,7 @@ import { zodResolver } from "@hookform/resolvers/zod"
 import { useForm } from "react-hook-form"
 import { z } from "zod"
 import { useEffect, useState, useRef, useCallback } from "react"
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
+import { Dialog, DialogClose, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage, FormDescription } from "@/components/ui/form"
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
@@ -39,6 +39,7 @@ import {
   Wand2,
   Trash2,
   CheckCircle,
+  AlertTriangle,
 } from "lucide-react"
 
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
@@ -50,6 +51,9 @@ import toast from "react-hot-toast"
 import { ScrollArea } from "@/components/ui/scroll-area"
 import { useGmbPostsScheduled } from "@/hooks/useGmbPostsScheduled"
 import PostPublished from "./PostPublished"
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
+import { useGMBStore } from "@/store/gmbStore"
+import axios from "axios"
 
 const MAX_FILE_SIZE = 10 * 1024 * 1024 // 10MB
 const ACCEPTED_IMAGE_TYPES = ["image/jpeg", "image/jpg", "image/png", "image/webp"]
@@ -63,9 +67,17 @@ const postSchema = z.object({
   actionLink: z.string().url("Please enter a valid URL").optional().or(z.literal("")),
   callPhone: z
     .string()
-    .regex(/^[+]?[1-9][\d]{0,15}$/, "Please enter a valid phone number")
     .optional()
-    .or(z.literal("")),
+    .or(z.literal(""))
+    .refine(
+      (value) => {
+        // If empty, that's fine
+        if (!value || value.trim() === "") return true
+        // Allow leading +, then any digits (including leading 0)
+        return /^[+]?[\d]{6,15}$/.test(value)
+      },
+      { message: "Please enter a valid phone number" }
+    ),
   image_url: z.string().url("Please enter a valid image URL").optional().or(z.literal("")),
   scheduled: z.string().optional(),
   viewColor: z.string().optional(),
@@ -82,7 +94,122 @@ const actionButtonOptions = [
   { value: "CALL", label: "Call", icon: Phone },
 ]
 
-export default function CalendarManageEventDialog() {
+interface GmbPostFormProps {
+  selectedLocation?: string | undefined
+  accountId?: string | null
+  locationId?: string | null
+  accessToken?: string | null
+  enableBulkPosting?: boolean
+  onPostCreated?: (post: any) => void
+  businessName: string
+}
+
+interface LocationDetails {
+  phoneNumbers?: {
+    primaryPhone?: null | string
+    additionalPhones?: string[]
+  },
+  data: {
+    name: string
+    storeCode?: string
+    profile?: {
+      description?: string
+    }
+    categories?: {
+      primaryCategory?: {
+        displayName: string
+      }
+      additionalCategories?: Array<{
+        displayName: string
+      }>
+    }
+    metadata?: {
+      placeId?: string
+    }
+    phoneNumbers?: {
+      primaryPhone?: null | string
+    },
+  }
+
+  locationData?: {
+    name: string
+    rating?: number
+    formatted_address?: string
+    geometry?: {
+      location: {
+        lat: number
+        lng: number
+      }
+    }
+    opening_hours?: {
+      weekday_text: string[]
+    }
+    website?: string
+    reviews?: Array<{
+      author_name: string
+      rating: number
+      text: string
+      time: number
+    }>
+  }
+
+  reviews?: {
+    reviews?: Array<{
+      reviewer?: {
+        displayName: string
+      }
+      starRating: string
+      comment: string
+      createTime: string
+    }>
+    totalReviewCount?: number
+    averageRating?: number
+  }
+
+  media?: {
+    mediaItems?: Array<{
+      mediaFormat: string
+      googleUrl: string
+      name: string
+    }>
+  }
+}
+
+
+const convertActionTypeToForm = (actionType: string): string => {
+  switch (actionType) {
+    case "book-a-visit":
+      return "BOOK"
+    case "place-an-order":
+      return "ORDER"
+    case "shop":
+      return "SHOP"
+    case "read-more":
+      return "LEARN_MORE"
+    case "sign-up":
+      return "SIGN_UP"
+    case "call":
+    case "CALL":
+      return "CALL"
+    case "reserve":
+      return "RESERVE"
+    case "get-quote":
+      return "GET_QUOTE"
+    case "appointment":
+      return "APPOINTMENT"
+    default:
+      return "NO_ACTION"
+  }
+}
+
+export default function CalendarManageEventDialog({
+  selectedLocation = "",
+  accountId,
+  locationId,
+  enableBulkPosting = false,
+  onPostCreated,
+  businessName,
+}: GmbPostFormProps) {
   const { manageEventDialogOpen, setManageEventDialogOpen, selectedEvent, setSelectedEvent, events, setEvents } =
     useCalendarContext()
 
@@ -91,11 +218,16 @@ export default function CalendarManageEventDialog() {
   const [previewUrl, setPreviewUrl] = useState<string | null>(null)
   const [isGeneratingImage, setIsGeneratingImage] = useState(false)
   const [isEnhancing, setIsEnhancing] = useState(false)
+  const [isLoading, setLoading] = useState(false)
   const [imagePrompt, setImagePrompt] = useState("")
   const fileInputRef = useRef<HTMLInputElement>(null)
+  const [localLocationDetails, setLocalLocationDetails] = useState<LocationDetails | null>(null);
 
 
-  const { updatePost, deletePost, loading } = useGmbPostsScheduled()
+  const { updatePost, deletePost, loading, refreshPosts } = useGmbPostsScheduled()
+
+  const accessToken = useGMBStore((state) => state.accessToken)
+  const gmbAccountId = useGMBStore((state) => state.accountId)
 
   const form = useForm<PostFormData>({
     resolver: zodResolver(postSchema),
@@ -110,13 +242,31 @@ export default function CalendarManageEventDialog() {
     },
   })
 
+  // Helper to get best phone number
+  const getBestPhoneNumber = (location: LocationDetails | null): string | undefined => {
+    const phones = location?.phoneNumbers
+    if (!phones) return undefined
+
+    return phones.primaryPhone || phones.additionalPhones?.[0]
+  }
+
+  const defaultPhone = getBestPhoneNumber(localLocationDetails)
+
   useEffect(() => {
     if (selectedEvent) {
+      // Extract phone from actionUrl if action is CALL
+      let phoneValue = ""
+      // Check for both "CALL" and "call" (case-insensitive)
+      if (selectedEvent.actionType?.toUpperCase() === "CALL" && selectedEvent.actionUrl) {
+        // Remove "tel:" prefix if it exists
+        phoneValue = selectedEvent.actionUrl.replace(/^tel:/, "")
+      }
+
       form.reset({
         postContent: selectedEvent.summary || "",
-        actionButton: selectedEvent.actionType || "NO_ACTION",
-        actionLink: selectedEvent.actionUrl || "",
-        callPhone: selectedEvent.callPhone || "",
+        actionButton: convertActionTypeToForm(selectedEvent.actionType) || "NO_ACTION",
+        actionLink: selectedEvent.actionUrl && !selectedEvent.actionUrl.startsWith('tel:') ? selectedEvent.actionUrl : "",
+        callPhone: phoneValue,
         image_url: selectedEvent.imageUrl || "",
         scheduled: format(selectedEvent.scheduledAt || new Date(), "yyyy-MM-dd'T'HH:mm"),
         viewColor: selectedEvent.viewColor || "#3b82f6",
@@ -126,14 +276,57 @@ export default function CalendarManageEventDialog() {
 
   const displayImageUrl = previewUrl || form.watch("image_url")
   const watchedImageUrl = form.watch("image_url")
+  const watchedActionButton = form.watch("actionButton")
   const watchedPostContent = form.watch("postContent")
-  const watchedActionButton = form.watch("actionButton")?.toUpperCase()
   const characterCount = form.watch("postContent")?.length || 0
 
   const getActionButtonInfo = (actionType: string) => {
     const option = actionButtonOptions.find((opt) => opt.value === actionType)
     return option || { label: "No Action", icon: Send }
   }
+
+  useEffect(() => {
+    if (!locationId || !accessToken || !gmbAccountId) {
+      return
+    }
+
+    const fetchDetails = async () => {
+      setLoading(true)
+
+      try {
+        const cleanLocationName = locationId.startsWith("locations/")
+          ? locationId.replace("locations/", "")
+          : locationId
+
+        const res = await axios.get(`/api/gmb/location`, {
+          params: {
+            location_name: cleanLocationName,
+            access_token: accessToken,
+            gmb_account_id: gmbAccountId,
+          },
+        })
+
+        if (res.data) {
+          const location = res.data.location.data
+
+          setLocalLocationDetails(location)
+
+          const phone = getBestPhoneNumber(location)
+        } else {
+          toast.error("No location details returned")
+        }
+      } catch (err: any) {
+        console.error("Failed to fetch location details in dialog:", err)
+        const msg = err.response?.data?.error || "Could not load location phone number"
+        toast.error(msg)
+      } finally {
+        setLoading(false) // ✅ always stop loading
+      }
+    }
+
+    fetchDetails()
+  }, [locationId, accessToken, gmbAccountId])
+
 
   const generateImageFromContent = async () => {
     const postContent = form.getValues("postContent")
@@ -294,11 +487,15 @@ export default function CalendarManageEventDialog() {
   }
 
   async function onSubmit(values: PostFormData) {
-    if (!selectedEvent) return
+
+    if (!selectedEvent) {
+      console.log("No selectedEvent, returning")
+      return
+    }
 
     try {
       // Convert form data to backend schema format
-      const convertToSchemaActionType = (actionType: string): string => {
+      const convertToBackendActionType = (actionType: string): string => {
         switch (actionType) {
           case "BOOK":
             return "book-a-visit"
@@ -311,6 +508,7 @@ export default function CalendarManageEventDialog() {
           case "SIGN_UP":
             return "sign-up"
           case "CALL":
+          case "call":
             return "call"
           case "RESERVE":
             return "reserve"
@@ -319,7 +517,7 @@ export default function CalendarManageEventDialog() {
           case "APPOINTMENT":
             return "appointment"
           default:
-            return actionType
+            return "NO_ACTION"
         }
       }
 
@@ -327,12 +525,13 @@ export default function CalendarManageEventDialog() {
       const updateData: any = {
         summary: values.postContent,
         scheduledPublishTime: values.scheduled ? new Date(values.scheduled).toISOString() : undefined,
+        viewColor: values.viewColor, // Use viewColor from form
       }
 
       // Add call to action if specified
       if (values.actionButton && values.actionButton !== "NO_ACTION") {
         updateData.callToAction = {
-          actionType: convertToSchemaActionType(values.actionButton),
+          actionType: convertToBackendActionType(values.actionButton),
         }
 
         if (values.actionButton === "CALL" && values.callPhone) {
@@ -363,19 +562,19 @@ export default function CalendarManageEventDialog() {
         updateData,
       )
 
-      // Update local state
       const updatedEvent = {
         ...selectedEvent,
         summary: values.postContent,
         scheduledAt: new Date(values.scheduled || selectedEvent.scheduledAt),
-        actionType: values.actionButton,
+        actionType: convertToBackendActionType(values.actionButton || "NO_ACTION"), // Convert back to backend format
         actionUrl: values.actionLink,
         callPhone: values.callPhone,
         imageUrl: values.image_url,
-        color: values.color,
+        viewColor: values.viewColor,
       }
-
       setEvents(events.map((event) => (event.id === selectedEvent.id ? updatedEvent : event)))
+      onPostCreated?.(updatedEvent);
+      await refreshPosts(accessToken, accountId, locationId)
       handleClose()
       toast.success("Post updated successfully!")
     } catch (error: any) {
@@ -407,19 +606,40 @@ export default function CalendarManageEventDialog() {
     <Dialog open={manageEventDialogOpen} onOpenChange={handleClose}>
       <DialogContent
         className="min-w-full
-        fixed inset-0 left-0 top-0 translate-x-0 translate-y-0
-        m-0 p-0 w-screen h-screen max-w-none max-h-screen
-        rounded-none overflow-hidden flex flex-col
-      "
-      >
-        
+         fixed inset-0 left-0 top-0 translate-x-0 translate-y-0
+         m-0 p-0 w-screen h-screen max-w-none max-h-screen
+         rounded-none overflow-hidden flex flex-col
+         [&>button]:hidden
+       ">
+
         <DialogHeader className="shrink-0 pl-4 pt-4 hidden">
           <DialogTitle>Manage Scheduled Post</DialogTitle>
         </DialogHeader>
 
-        <Form {...form}>
+        {isLoading ? <div className="flex items-center justify-center h-full">
+          <Loader2 className="animate-spin w-6 h-6" />
+        </div> : <Form {...form}>
           <div className="flex-1 overflow-hidden w-full">
+
+            <DialogClose asChild>
+              <Button className="absolute top-4 right-4 z-50" size="sm" variant="outline">
+                <X className="w-5 h-5" />
+              </Button>
+            </DialogClose>
+
             <ScrollArea className="h-full p-4">
+
+              {Object.keys(form.formState.errors).length > 0 && (
+                <div className="p-3 bg-destructive/10 rounded-lg text-sm text-destructive">
+                  <p className="font-medium mb-2">Form errors:</p>
+                  <ul>
+                    {Object.entries(form.formState.errors).map(([field, error]: any) => (
+                      <li key={field}>- {field}: {error?.message}</li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+
               <div className="w-full max-w-none">
                 <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
                   {/* Post Preview Panel */}
@@ -436,10 +656,10 @@ export default function CalendarManageEventDialog() {
                         {/* Business Header Mockup */}
                         <div className="flex items-center gap-3 mb-4">
                           <div className="w-10 h-10 bg-blue-500 rounded-full flex items-center justify-center text-white font-semibold">
-                            B
+                            {businessName.charAt(0).toUpperCase()}
                           </div>
                           <div>
-                            <h3 className="font-semibold text-gray-900">Business Name</h3>
+                            <h3 className="font-semibold text-gray-900">{businessName}</h3>
                             <p className="text-sm text-gray-500">Updated post</p>
                           </div>
                         </div>
@@ -467,16 +687,17 @@ export default function CalendarManageEventDialog() {
                           )}
 
                           {/* Action Button Preview */}
-                          {watchedActionButton && watchedActionButton !== "NO_ACTION" && (
+                          {form.watch("actionButton") && form.watch("actionButton") !== "NO_ACTION" && (
                             <div className="pt-2">
                               <div className="inline-flex items-center gap-2 bg-blue-600 text-white px-4 py-2 rounded-md text-sm font-medium">
-                                {React.createElement(getActionButtonInfo(watchedActionButton).icon, {
+                                {React.createElement(getActionButtonInfo(form.watch("actionButton")).icon, {
                                   className: "h-4 w-4",
                                 })}
-                                {getActionButtonInfo(watchedActionButton).label}
+                                {getActionButtonInfo(form.watch("actionButton")).label}
                               </div>
                             </div>
                           )}
+
                         </div>
 
 
@@ -499,7 +720,20 @@ export default function CalendarManageEventDialog() {
                             </AlertDialogHeader>
                             <AlertDialogFooter>
                               <AlertDialogCancel>Cancel</AlertDialogCancel>
-                              <AlertDialogAction onClick={handleDelete}>Delete</AlertDialogAction>
+                              <AlertDialogAction
+                                onClick={handleDelete}
+                                disabled={isLoading}
+                                className="flex items-center justify-center gap-2"
+                              >
+                                {isLoading ? (
+                                  <>
+                                    <Loader2 className="h-4 w-4 animate-spin" />
+                                    Deleting...
+                                  </>
+                                ) : (
+                                  "Delete"
+                                )}
+                              </AlertDialogAction>
                             </AlertDialogFooter>
                           </AlertDialogContent>
                         </AlertDialog>
@@ -524,7 +758,7 @@ export default function CalendarManageEventDialog() {
 
                     <CardContent>
                       {selectedEvent?.status == "PUBLISHED" ? <>
-                         <PostPublished />
+                        <PostPublished />
                       </> : <>
                         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
                           {/* Post Content */}
@@ -629,7 +863,7 @@ export default function CalendarManageEventDialog() {
                               name="image_url"
                               render={({ field }) => (
                                 <FormItem>
-                                  <FormLabel>Image (Optional)</FormLabel>
+                                  <FormLabel>Image</FormLabel>
                                   <FormControl>
                                     <div className="space-y-4">
                                       <Tabs defaultValue="upload" className="w-full">
@@ -852,25 +1086,37 @@ export default function CalendarManageEventDialog() {
                               )}
 
                             {watchedActionButton === "CALL" && (
-                              <FormField
-                                control={form.control}
-                                name="callPhone"
-                                render={({ field }) => (
-                                  <FormItem>
-                                    <FormLabel className="flex items-center gap-2">
-                                      <Phone className="h-4 w-4" />
-                                      Phone Number
-                                    </FormLabel>
-                                    <FormControl>
-                                      <Input placeholder="+1234567890" {...field} />
-                                    </FormControl>
-                                    <FormDescription>
-                                      Phone number users can call when they click the action button
-                                    </FormDescription>
-                                    <FormMessage />
-                                  </FormItem>
-                                )}
-                              />
+                              <div>
+                                <FormField
+                                  control={form.control}
+                                  name="callPhone"
+                                  render={({ field }) => (
+                                    <FormItem>
+                                      <FormLabel className="flex items-center gap-2">
+                                        <Phone className="h-4 w-4" />
+                                        Phone Number
+                                      </FormLabel>
+                                      <FormControl>
+                                        <Input placeholder="+1234567890" {...field} disabled />
+                                      </FormControl>
+                                      <FormDescription>
+                                        Phone number users can call when they click the action button
+                                      </FormDescription>
+                                      <FormMessage />
+                                    </FormItem>
+                                  )}
+                                />
+
+                                {/* ⚠️ Warning Alert */}
+                                <Alert className="border-yellow-300 bg-yellow-50 text-yellow-800 mt-4">
+                                  <AlertTriangle className="h-4 w-4 text-yellow-800" />
+                                  <AlertTitle>Heads up!</AlertTitle>
+                                  <AlertDescription>
+                                    The Call button may not appear after publishing your post.
+                                    You may need to verify your phone number in your Google Business Profile.
+                                  </AlertDescription>
+                                </Alert>
+                              </div>
                             )}
                           </div>
 
@@ -900,7 +1146,9 @@ export default function CalendarManageEventDialog() {
               </div>
             </ScrollArea>
           </div>
-        </Form >
+        </Form >}
+
+
       </DialogContent >
     </Dialog >
   )

@@ -10,6 +10,9 @@ export type CalendarProps = {
   date: Date
   setDate: (date: Date) => void
   calendarIconIsToday?: boolean
+  onPostCreated?: (post: any) => void
+  openDialog?: boolean 
+  setOpenDialog?: (open: boolean) => void
 }
 
 export type CalendarContextType = CalendarProps & {
@@ -20,6 +23,7 @@ export type CalendarContextType = CalendarProps & {
   selectedEvent: CalendarEvent | null
   setSelectedEvent: (event: CalendarEvent | null) => void
 }
+
 export type CalendarEvent = {
   id: string;
   summary: string;

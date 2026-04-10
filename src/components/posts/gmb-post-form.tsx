@@ -24,6 +24,7 @@ import {
   Clock,
   FileText,
   CalendarCheck,
+  AlertTriangle,
 } from "lucide-react"
 
 import { Button } from "@/components/ui/button"
@@ -40,6 +41,7 @@ import { Label } from "@/components/ui/label"
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import { ScrollArea } from "../ui/scroll-area"
 import { TooltipContent, TooltipTrigger, Tooltip } from "../ui/tooltip"
+import { Alert, AlertDescription, AlertTitle } from "../ui/alert"
 
 interface GmbPostFormProps {
   isOpen: boolean
@@ -50,6 +52,7 @@ interface GmbPostFormProps {
   enableBulkPosting?: boolean
   onPostCreated?: (post: any) => void
   businessName: string
+  phoneNumber?: string
 }
 
 interface BulkPostData {
@@ -75,7 +78,7 @@ const postSchema = z.object({
   actionLink: z.string().url("Please enter a valid URL").optional().or(z.literal("")),
   callPhone: z
     .string()
-    .regex(/^[+]?[1-9][\d]{0,15}$/, "Please enter a valid phone number")
+    .regex(/^[+]?[0-9][\d]{0,15}$/, "Please enter a valid phone number")
     .optional()
     .or(z.literal("")),
   image_url: z.string().url("Please enter a valid image URL").optional().or(z.literal("")),
@@ -101,6 +104,7 @@ export function GmbPostForm({
   enableBulkPosting = false,
   onPostCreated,
   businessName,
+  phoneNumber
 }: GmbPostFormProps) {
   const [selectedFile, setSelectedFile] = useState<File | null>(null)
   const [dragActive, setDragActive] = useState(false)
@@ -121,7 +125,7 @@ export function GmbPostForm({
       postContent: "",
       actionButton: "NO_ACTION",
       actionLink: "",
-      callPhone: "",
+      callPhone: phoneNumber ? phoneNumber :"",
       image_url: "",
     },
   })
@@ -313,7 +317,7 @@ export function GmbPostForm({
         return
       }
       if (file.size < MIN_FILE_SIZE) {
-          toast.error("File size must be at least 10KB. Please use a higher quality image.");
+        toast.error("File size must be at least 10KB. Please use a higher quality image.");
         return
       }
 
@@ -393,7 +397,7 @@ export function GmbPostForm({
         onPostCreated?.(result.data)
       } else {
         toast.error(result.message || "Failed to create post")
-      }   
+      }
     } catch (error) {
       toast.error("An error occurred while creating the post")
       console.error("Post creation error:", error)
@@ -404,11 +408,14 @@ export function GmbPostForm({
   const characterCount = form.watch("postContent")?.length || 0
   const watchedPostContent = form.watch("postContent")
 
-  const getActionButtonInfo = (actionType: string) => {
-    const option = actionButtonOptions.find((opt) => opt.value === actionType.toLocaleLowerCase())
+ 
+const getActionButtonInfo = (actionType: string) => {
+  const option = actionButtonOptions.find(
+    (opt) => opt.value === actionType
+  )
 
-    return option || { label: "No Action", icon: Send }
-  }
+  return option || { label: "No Action", icon: Send }
+}
 
   const handleBulkSubmit = async () => {
     setIsSubmitting(true)
@@ -482,7 +489,7 @@ export function GmbPostForm({
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <Plus className="h-5 w-5" />
-            Create New GMB Post 
+            Create New GMB Post
           </DialogTitle>
           <DialogDescription>
             Publish updates, offers, or events to your Google Business Profile and engage with customers.
@@ -536,7 +543,7 @@ export function GmbPostForm({
                       )}
 
                       {/* Action Button Preview */}
-                      {watchedActionButton && watchedActionButton !== "NO_ACTION" && (
+                      {watchedActionButton && watchedActionButton !== "no_action" && (
                         <div className="pt-2">
                           <div className="inline-flex items-center gap-2 bg-blue-600 text-white px-4 py-2 rounded-md text-sm font-medium">
                             {React.createElement(getActionButtonInfo(watchedActionButton).icon, { className: "h-4 w-4" })}
@@ -611,7 +618,7 @@ export function GmbPostForm({
                                 </div>
 
                                 <div>
-                                  <Label>Image</Label>
+                                  <Label>Image (Optional)</Label>
                                   <Tabs defaultValue="url" className="w-full">
                                     <TabsList className="grid w-full grid-cols-2">
                                       <TabsTrigger value="upload">Upload</TabsTrigger>
@@ -1009,25 +1016,39 @@ export function GmbPostForm({
                             )}
 
                           {watchedActionButton === "CALL" && (
-                            <FormField
-                              control={form.control}
-                              name="callPhone"
-                              render={({ field }) => (
-                                <FormItem>
-                                  <FormLabel className="flex items-center gap-2">
-                                    <Phone className="h-4 w-4" />
-                                    Phone Number
-                                  </FormLabel>
-                                  <FormControl>
-                                    <Input placeholder="+1234567890" {...field} />
-                                  </FormControl>
-                                  <FormDescription>
-                                    Phone number users can call when they click the action button
-                                  </FormDescription>
-                                  <FormMessage />
-                                </FormItem>
-                              )}
-                            />
+                            <>
+
+                              {/* ⚠️ Warning Alert */}
+                              <Alert className="border-yellow-300 bg-yellow-50 text-yellow-800">
+                                <AlertTriangle className="h-4 w-4 text-yellow-800" />
+                                <AlertTitle>Heads up!</AlertTitle>
+                                <AlertDescription>
+                                  The Call button may not appear after publishing your post.
+                                  You may need to verify your phone number in your Google Business Profile.
+                                </AlertDescription>
+                              </Alert>
+
+
+                              <FormField
+                                control={form.control}
+                                name="callPhone"
+                                render={({ field }) => (
+                                  <FormItem>
+                                    <FormLabel className="flex items-center gap-2">
+                                      <Phone className="h-4 w-4" />
+                                      Phone Number
+                                    </FormLabel>
+                                    <FormControl>
+                                      <Input placeholder="+1234567890" {...field}  disabled/>
+                                    </FormControl>
+                                    <FormDescription>
+                                      Phone number users can call when they click the action button
+                                    </FormDescription>
+                                    <FormMessage />
+                                  </FormItem>
+                                )}
+                              />
+                            </>
                           )}
                         </div>
 

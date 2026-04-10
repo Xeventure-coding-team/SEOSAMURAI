@@ -15,14 +15,12 @@ interface GMBAuthWrapperProps {
 const GMBAuthWrapper: React.FC<GMBAuthWrapperProps> = ({ children }) => {
   const [authState, setAuthState] = useState<'loading' | 'authenticated' | 'unauthenticated' | 'error'>('loading')
   const [error, setError] = useState<string | null>(null)
-  const router = useRouter()
   const user = useUser()
-  const pathname = usePathname()
-  
-  const { 
-    accessToken, 
-    setAccessToken, 
-    setRefreshToken, 
+
+  const {
+    accessToken,
+    setAccessToken,
+    setRefreshToken,
     setTokenExpiry,
     setAccountName,
     setAccountId,
@@ -38,7 +36,7 @@ const GMBAuthWrapper: React.FC<GMBAuthWrapperProps> = ({ children }) => {
   const refreshToken = async (): Promise<string | null> => {
     try {
       console.log("Attempting to refresh token...")
-      
+
       const response = await fetch("/api/gmb/refresh-token", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -78,43 +76,30 @@ const GMBAuthWrapper: React.FC<GMBAuthWrapperProps> = ({ children }) => {
       })
 
       if (!response.ok) {
-        if (response.status === 404) {
-          console.log("No GMB integration found")
-          return false
-        }
+        if (response.status === 404) return false
         throw new Error(`Failed to load tokens: ${response.status}`)
       }
 
       const data = await response.json()
-      
-      // Check if integration is active
-      if (!data.isActive) {
-        console.log("GMB integration is inactive")
-        return false
-      }
 
-      // Update store with current data
+      // Guard: API returned null or empty (backend still processing)
+      if (!data || !data.isActive) return false
+
       if (data.accessToken) setAccessToken(data.accessToken)
       if (data.refreshToken) setRefreshToken(data.refreshToken)
       if (data.tokenExpiry) setTokenExpiry(new Date(data.tokenExpiry))
       if (data.accountName) setAccountName(data.accountName)
       if (data.accountId) setAccountId(data.accountId)
 
-      // Check if token is expired
       if (isTokenExpired(new Date(data.tokenExpiry))) {
-        console.log("Token is expired, attempting refresh...")
-        
         const newToken = await refreshToken()
-        if (!newToken) {
-          console.log("Failed to refresh token")
-          return false
-        }
+        if (!newToken) return false
       }
 
       return true
 
-    } catch (error) {
-      console.error("Error validating tokens:", error)
+    } catch {
+      // Silently fail — caller handles the false return
       return false
     }
   }
@@ -130,7 +115,7 @@ const GMBAuthWrapper: React.FC<GMBAuthWrapperProps> = ({ children }) => {
       // Check if we have OAuth callback parameters - if so, let GoogleBusinessConnect handle everything
       const params = new URLSearchParams(window.location.search)
       const hasOAuthParams = params.has('code') || params.has('error')
-      
+
       if (hasOAuthParams) {
         console.log("OAuth callback detected, delegating to GoogleBusinessConnect")
         setAuthState('unauthenticated')
@@ -139,15 +124,13 @@ const GMBAuthWrapper: React.FC<GMBAuthWrapperProps> = ({ children }) => {
 
       try {
         setError(null)
-        console.log("Checking GMB authentication...")
-
-        const isValid = await validateAndLoadTokens()
         
+        const isValid = await validateAndLoadTokens()
+
         if (isValid) {
           console.log("GMB authentication valid")
           setAuthState('authenticated')
         } else {
-          console.log("GMB authentication invalid or missing")
           clearTokens()
           setAuthState('unauthenticated')
         }
@@ -180,7 +163,7 @@ const GMBAuthWrapper: React.FC<GMBAuthWrapperProps> = ({ children }) => {
   // Show error state with retry option
   if (authState === 'error') {
     return (
-        <ErrorRender error={"We couldn't load this content. You can retry or report the issue."} />
+      <ErrorRender error={"We couldn't load this content. You can retry or report the issue."} />
     )
   }
 

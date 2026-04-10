@@ -132,31 +132,46 @@ export default function GridRankingMap({ data, mapKey, zoomLevel }: GridRankingM
     setIsSheetOpen(true)
   }
 
-  const GridMarker = ({ ranking }: { ranking: RankingData }) => {
-    const isTargetBusinessFound = ranking.businessFound
-    const actualRank = ranking.rank
+ const GridMarker = ({ ranking }: { ranking: RankingData }) => {
+  const isTargetBusinessFound = ranking.businessFound
+  const actualRank = ranking.rank
 
-    // Determine display rank - use the actual rank if business is found, otherwise show 20+
-    const displayRank = isTargetBusinessFound && actualRank ? actualRank : 20
+  const displayRank = isTargetBusinessFound && actualRank ? actualRank : 20
+  const color = isTargetBusinessFound && actualRank ? getRankColor(actualRank) : "#dc2626"
 
-    // Determine color based on the actual rank
-    const color = isTargetBusinessFound && actualRank ? getRankColor(actualRank) : "#ef4444" // red for not found
-
-    return (
+  return (
+    <div
+      className="relative cursor-pointer"
+      onClick={() => handleMarkerClick(ranking)}
+    >
+      {/* Main marker */}
       <div
-        className="w-12 h-12 rounded-full border-4 border-white shadow-lg flex items-center justify-center text-white font-bold text-sm cursor-pointer transform transition-all duration-200 hover:scale-110 relative z-10"
+        className="w-12 h-12 rounded-full border border-gray-200 shadow-sm flex items-center justify-center text-white text-sm font-semibold transition-transform duration-150 hover:scale-105"
         style={{ backgroundColor: color }}
-        onClick={() => handleMarkerClick(ranking)}
       >
         {displayRank >= 20 ? "20+" : displayRank}
-        {displayRank <= 3 && <Trophy className="w-3 h-3 absolute -top-1 -right-1 text-yellow-400" />}
-        {displayRank >= 20 && <X className="w-3 h-3 absolute -top-1 -right-1 text-white" />}
       </div>
-    )
-  }
+
+      {/* Top 3 indicator */}
+      {displayRank <= 3 && (
+        <div className="absolute -top-1 -right-1 bg-yellow-400 text-[10px] font-bold text-black rounded-full w-5 h-5 flex items-center justify-center border border-white">
+          ★
+        </div>
+      )}
+
+      {/* Not found indicator */}
+      {displayRank >= 20 && (
+        <div className="absolute -top-1 -right-1 bg-gray-700 text-[10px] font-bold text-white rounded-full w-5 h-5 flex items-center justify-center border border-white">
+          ×
+        </div>
+      )}
+    </div>
+  )
+}
 
   return (
     <div className="h-full w-full relative" ref={mapRef}>
+      
       <Map
         key={mapKey}
         defaultCenter={center}
@@ -272,10 +287,10 @@ export default function GridRankingMap({ data, mapKey, zoomLevel }: GridRankingM
                       <Card
                         key={result.id}
                         className={`hover:shadow-md transition-all duration-200 border hover:border-primary/20 ${
-                          isTargetBusiness ? "ring-2 ring-primary/20 bg-primary/5" : ""
+                          isTargetBusiness ? "ring-1 ring-primary bg-primary/5" : ""
                         }`}
                       >
-                        <CardContent className="p-5">
+                        <CardContent>
                           <div className="flex items-start justify-between gap-3">
                             <div className="flex items-start gap-3 flex-1">
                               <Badge

@@ -472,6 +472,76 @@ exports.Prisma.MessageScalarFieldEnum = {
   createdAt: 'createdAt'
 };
 
+exports.Prisma.WebsiteScalarFieldEnum = {
+  id: 'id',
+  userId: 'userId',
+  locationId: 'locationId',
+  accountId: 'accountId',
+  subdomain: 'subdomain',
+  title: 'title',
+  description: 'description',
+  logoUrl: 'logoUrl',
+  primaryColor: 'primaryColor',
+  secondaryColor: 'secondaryColor',
+  fontFamily: 'fontFamily',
+  enabledSections: 'enabledSections',
+  googleAnalyticsId: 'googleAnalyticsId',
+  facebookPixelId: 'facebookPixelId',
+  isPublished: 'isPublished',
+  publishedAt: 'publishedAt',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+};
+
+exports.Prisma.WebsiteCachedDataScalarFieldEnum = {
+  id: 'id',
+  websiteId: 'websiteId',
+  businessInfo: 'businessInfo',
+  reviews: 'reviews',
+  photos: 'photos',
+  posts: 'posts',
+  lastSyncedAt: 'lastSyncedAt',
+  nextSyncAt: 'nextSyncAt',
+  syncInterval: 'syncInterval',
+  isSyncing: 'isSyncing',
+  lastSyncError: 'lastSyncError',
+  syncRetryCount: 'syncRetryCount',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+};
+
+exports.Prisma.SyncHistoryScalarFieldEnum = {
+  id: 'id',
+  websiteId: 'websiteId',
+  userId: 'userId',
+  syncType: 'syncType',
+  status: 'status',
+  reviewsCount: 'reviewsCount',
+  photosCount: 'photosCount',
+  postsCount: 'postsCount',
+  errorMessage: 'errorMessage',
+  errorDetails: 'errorDetails',
+  fetchedAt: 'fetchedAt',
+  completedAt: 'completedAt',
+  duration: 'duration',
+  createdAt: 'createdAt'
+};
+
+exports.Prisma.SyncQueueScalarFieldEnum = {
+  id: 'id',
+  websiteId: 'websiteId',
+  userId: 'userId',
+  status: 'status',
+  priority: 'priority',
+  scheduledFor: 'scheduledFor',
+  processedAt: 'processedAt',
+  nextRetry: 'nextRetry',
+  retryCount: 'retryCount',
+  maxRetries: 'maxRetries',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+};
+
 exports.Prisma.SortOrder = {
   asc: 'asc',
   desc: 'desc'
@@ -538,7 +608,11 @@ exports.Prisma.ModelName = {
   GoogleReviewPoster: 'GoogleReviewPoster',
   gmb_reviews: 'gmb_reviews',
   Chat: 'Chat',
-  Message: 'Message'
+  Message: 'Message',
+  Website: 'Website',
+  WebsiteCachedData: 'WebsiteCachedData',
+  SyncHistory: 'SyncHistory',
+  SyncQueue: 'SyncQueue'
 };
 
 /**

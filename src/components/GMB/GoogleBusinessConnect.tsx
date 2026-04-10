@@ -62,9 +62,6 @@ const GoogleBusinessConnect: React.FC = () => {
 
     const initializeComponent = async () => {
         try {
-
-            console.log(window.location.href, "window location href testing!!")
-
             setState('loading')
             setError(null)
 
@@ -81,7 +78,6 @@ const GoogleBusinessConnect: React.FC = () => {
             }
 
             if (code) {
-                console.log("Processing OAuth callback...")
                 await handleOAuthCallback(code)
                 return
             }
@@ -90,47 +86,44 @@ const GoogleBusinessConnect: React.FC = () => {
             await checkExistingConnection()
 
         } catch (error) {
-            console.error("Initialization error:", error)
             setError("Failed to initialize component")
             setState('error')
         }
     }
 
-    const checkExistingConnection = async () => {
-        try {
-            const response = await fetch("/api/gmb/token", {
-                method: "GET",
-                headers: { "Content-Type": "application/json" },
-                cache: "no-store"
-            })
+    const checkExistingConnection = async (retries = 3, delay = 1000) => {
+        for (let attempt = 0; attempt < retries; attempt++) {
+            try {
+                const response = await fetch("/api/gmb/token", {
+                    method: "GET",
+                    headers: { "Content-Type": "application/json" },
+                    cache: "no-store"
+                })
 
-            if (response.ok) {
-
-                const data = await response.json()
-                if (data.accessToken && data.isActive) {
-                    console.log("Existing valid connection found")
-                    setState('connected')
-                    setAccountName(data.accountName || "Google My Business Account")
-
-                    // Redirect to locations after showing success state
-                    setTimeout(() => {
-                        if (!window.location.pathname.includes('/locations')) {
-                            window.location.href = "/app/locations"
-
-                            console.log(window.location.href, "window location href>!!")
-                        }
-                    }, 2000)
-                    return
+                if (response.ok) {
+                    const data = await response.json()
+                    if (data && data.accessToken && data.isActive) {
+                        setState('connected')
+                        setAccountName(data.accountName || "Google My Business Account")
+                        setTimeout(() => {
+                            if (!window.location.pathname.includes('/locations')) {
+                                window.location.href = "/app/locations"
+                            }
+                        }, 2000)
+                        return
+                    }
                 }
+            } catch (error) {
+               
             }
 
-            console.log("No valid connection found")
-            setState('disconnected')
-
-        } catch (error) {
-            console.error("Error checking connection:", error)
-            setState('disconnected') // Default to disconnected on error
+            // Wait before next attempt (skip wait on last attempt)
+            if (attempt < retries - 1) {
+                await new Promise(resolve => setTimeout(resolve, delay))
+            }
         }
+
+        setState('disconnected')
     }
 
     const handleOAuthCallback = async (code: string) => {
@@ -139,8 +132,6 @@ const GoogleBusinessConnect: React.FC = () => {
         setProgress(20)
 
         try {
-            console.log("Exchanging code for tokens...")
-
             // Exchange code for tokens
             const tokenResponse = await fetch("/api/gmb/exchange-token", {
                 method: "POST",
@@ -154,7 +145,6 @@ const GoogleBusinessConnect: React.FC = () => {
             }
 
             const tokenData = await tokenResponse.json()
-            console.log("Token exchange successful")
             setProgress(50)
 
             // Get account information
@@ -176,11 +166,9 @@ const GoogleBusinessConnect: React.FC = () => {
                         const accountData = await accountResponse.json()
                         accountName = accountData.accountName
                         accountId = accountData.accountId
-                        console.log("Account info retrieved:", { accountName, accountId })
                     }
                 }
             } catch (accountError) {
-                console.warn("Failed to get account info:", accountError)
             }
 
             setProgress(75)
@@ -204,7 +192,6 @@ const GoogleBusinessConnect: React.FC = () => {
                 throw new Error(saveError.error || "Failed to save tokens")
             }
 
-            console.log("Connection successful!")
             setProgress(100)
 
             // Success!
@@ -220,13 +207,10 @@ const GoogleBusinessConnect: React.FC = () => {
             }, 2000)
 
         } catch (error: any) {
-            console.error("OAuth callback error:", error)
-
             // Clean up on error
             try {
                 await fetch("/api/gmb/token", { method: "DELETE" })
             } catch (cleanupError) {
-                console.warn("Failed to cleanup tokens:", cleanupError)
             }
 
             setError(error.message || "Failed to connect to Google My Business")
@@ -241,13 +225,10 @@ const GoogleBusinessConnect: React.FC = () => {
             setError(null)
             setProgress(10)
 
-            console.log("Starting OAuth flow...")
-
             // Clear any existing tokens
             try {
                 await fetch("/api/gmb/token", { method: "DELETE" })
             } catch (error) {
-                console.warn("Failed to clear existing tokens:", error)
             }
 
             setProgress(30)
@@ -259,7 +240,6 @@ const GoogleBusinessConnect: React.FC = () => {
             window.location.href = authorizationUrl
 
         } catch (error) {
-            console.error("Connection initiation error:", error)
             setError("Failed to initiate connection. Please try again.")
             setState('disconnected')
         }
@@ -275,12 +255,10 @@ const GoogleBusinessConnect: React.FC = () => {
             if (response.ok) {
                 setState('disconnected')
                 setAccountName(null)
-                console.log("Disconnected successfully")
             } else {
                 throw new Error("Failed to disconnect")
             }
         } catch (error) {
-            console.error("Disconnect error:", error)
             setError("Failed to disconnect. Please try again.")
             setState('connected') // Revert state on error
         }

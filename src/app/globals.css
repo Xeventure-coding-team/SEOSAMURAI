@@ -190,3 +190,7 @@ textarea {
 .custom-map {
   border-radius: 4px !important;
 }
+
+.location_selector {
+  height: 50px !important;
+}

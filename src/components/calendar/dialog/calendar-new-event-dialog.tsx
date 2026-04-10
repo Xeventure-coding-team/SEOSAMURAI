@@ -32,6 +32,7 @@ import {
   Trash2,
   Eye,
   Wand2,
+  AlertTriangle,
 } from "lucide-react"
 import axios from "axios"
 
@@ -52,6 +53,7 @@ import { format } from 'date-fns'
 import { DialogClose } from "@radix-ui/react-dialog"
 import { useGMBStore } from "@/store/gmbStore"
 import useStore from "@/store/CounterField"
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
 
 interface GmbPostFormProps {
   selectedLocation?: string | undefined
@@ -104,6 +106,77 @@ const actionButtonOptions = [
   { value: "CALL", label: "Call", icon: Phone },
 ]
 
+interface LocationDetails {
+  phoneNumbers?: {
+    primaryPhone?: null | string
+    additionalPhones?: string[]
+  },
+  data: {
+    name: string
+    storeCode?: string
+    profile?: {
+      description?: string
+    }
+    categories?: {
+      primaryCategory?: {
+        displayName: string
+      }
+      additionalCategories?: Array<{
+        displayName: string
+      }>
+    }
+    metadata?: {
+      placeId?: string
+    }
+    phoneNumbers?: {
+      primaryPhone?: null | string
+    },
+  }
+
+  locationData?: {
+    name: string
+    rating?: number
+    formatted_address?: string
+    geometry?: {
+      location: {
+        lat: number
+        lng: number
+      }
+    }
+    opening_hours?: {
+      weekday_text: string[]
+    }
+    website?: string
+    reviews?: Array<{
+      author_name: string
+      rating: number
+      text: string
+      time: number
+    }>
+  }
+
+  reviews?: {
+    reviews?: Array<{
+      reviewer?: {
+        displayName: string
+      }
+      starRating: string
+      comment: string
+      createTime: string
+    }>
+    totalReviewCount?: number
+    averageRating?: number
+  }
+
+  media?: {
+    mediaItems?: Array<{
+      mediaFormat: string
+      googleUrl: string
+      name: string
+    }>
+  }
+}
+
 export default function CalendarNewEventDialog({
   selectedLocation = "",
   accountId,
@@ -123,7 +196,9 @@ export default function CalendarNewEventDialog({
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [isLoadingDetails, setIsLoadingDetails] = useState(false)
 
-  const { createPost, loading } = useGmbPostsScheduled()
+  const { createPost, loading, refreshPosts } = useGmbPostsScheduled()
+
+
   const { key, increaseKey } = useStore()
   const { newEventDialogOpen, setNewEventDialogOpen, date, events, setEvents } = useCalendarContext();
   const [localLocationDetails, setLocalLocationDetails] = useState<LocationDetails | null>(null);
@@ -165,27 +240,27 @@ export default function CalendarNewEventDialog({
 
   const defaultPhone = getBestPhoneNumber(localLocationDetails)
 
-  // FIX 2: When user selects "CALL", sync defaultPhone into form value so validation passes.
-  // When they switch away from "CALL", clear callPhone so it doesn't linger.
   useEffect(() => {
     const subscription = form.watch((value, { name }) => {
       if (name === "actionButton") {
         if (value.actionButton === "CALL") {
-          // Set the phone value in the form so schema validation passes
-          form.setValue("callPhone", defaultPhone || "", { shouldValidate: true })
-          if (defaultPhone) {
+          const cleanedPhone = defaultPhone?.replace(/\s+/g, "") || ""
+
+          form.setValue("callPhone", cleanedPhone, { shouldValidate: true })
+
+          if (cleanedPhone) {
             toast.success("Location phone number auto-filled", { duration: 3000 })
           }
         } else {
-          // Clear callPhone when switching away from CALL
           form.setValue("callPhone", "", { shouldValidate: true })
         }
       }
     })
+
     return () => subscription.unsubscribe()
   }, [form, defaultPhone])
 
-  // FIX 3: If defaultPhone loads AFTER the user already selected CALL, sync it in
+  // If defaultPhone loads AFTER the user already selected CALL, sync it in
   useEffect(() => {
     if (defaultPhone && form.getValues("actionButton") === "CALL") {
       form.setValue("callPhone", defaultPhone, { shouldValidate: true })
@@ -306,8 +381,8 @@ export default function CalendarNewEventDialog({
         return
       }
 
-      if(file.size < MIN_FILE_SIZE) {
-          toast.error("File size must be at least 10KB. Please use a higher quality image.");
+      if (file.size < MIN_FILE_SIZE) {
+        toast.error("File size must be at least 10KB. Please use a higher quality image.");
       }
 
       setSelectedFile(file)
@@ -334,7 +409,7 @@ export default function CalendarNewEventDialog({
       try {
         const cleanLocationName = locationId.startsWith("locations/")
           ? locationId.replace("locations/", "")
-          : locationId; 
+          : locationId;
 
         const res = await axios.get(`/api/gmb/location`, {
           params: {
@@ -404,14 +479,10 @@ export default function CalendarNewEventDialog({
     }
 
     try {
-      const isCallAction = data.actionButton?.toUpperCase() === "CALL"
-
       const postData: CreatePostData = {
         selectedLocation: selectedLocation,
         postContent: data.postContent,
         actionButton: data.actionButton || null,
-        // For CALL: actionLink carries the phone so the API can save it as actionUrl
-        // actionLink: isCallAction ? (data.callPhone || defaultPhone || null) : (data.actionLink || null),
         actionLink: data.actionLink || null,
         callPhone: data.callPhone || defaultPhone || null,
         account: accountId,
@@ -430,10 +501,11 @@ export default function CalendarNewEventDialog({
         form.reset()
         removeFile()
         increaseKey()
-        onPostCreated?.(result.data)
+        onPostCreated?.(result.data) // THIS IS THE KEY LINE
       } else {
         toast.error(result.message || "Failed to create post")
       }
+
     } catch (error) {
       toast.error("An error occurred while creating the post")
       console.error("Post creation error:", error)
@@ -459,17 +531,27 @@ export default function CalendarNewEventDialog({
 
   return (
     <Dialog open={newEventDialogOpen} onOpenChange={setNewEventDialogOpen}>
-      <DialogContent className="min-w-full
-        fixed inset-0 left-0 top-0 translate-x-0 translate-y-0
-        m-0 p-0 w-screen h-screen max-w-none max-h-screen
-        rounded-none overflow-hidden flex flex-col
-      ">
+      <DialogContent
+        className="min-w-full
+    fixed inset-0 left-0 top-0 translate-x-0 translate-y-0
+    m-0 p-0 w-screen h-screen max-w-none max-h-screen
+    rounded-none overflow-hidden flex flex-col
+    [&>button]:hidden
+  ">
         <DialogHeader className="shrink-0 pl-4 pt-4 hidden">
-          <DialogTitle>Create Scheduled Post</DialogTitle>
+          <DialogTitle>Create New Scheduled Post</DialogTitle>
         </DialogHeader>
+
 
         <Form {...form}>
           <div className="flex-1 overflow-hidden w-full">
+
+            <DialogClose asChild>
+              <Button className="absolute top-4 right-4 z-50" size="sm" variant="outline">
+                <X className="w-5 h-5" />
+              </Button>
+            </DialogClose>
+
             <ScrollArea className="h-full p-4">
               <div className="w-full max-w-none">
                 <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
@@ -594,23 +676,6 @@ export default function CalendarNewEventDialog({
                         />
 
 
-                        {/* <FormField
-                          control={form.control}
-                          name="scheduled"
-                          render={({ field }) => (
-                            <FormItem>
-                              <FormLabel className="font-bold">Scheduled Date & Time</FormLabel>
-                              <FormControl>
-                                <DateTimePicker field={field} />
-                              </FormControl>
-                              <FormDescription>
-                                When this post should be published to Google My Business
-                              </FormDescription>
-                              <FormMessage />
-                            </FormItem>
-                          )}
-                        /> */}
-
                         {/* Color Field */}
                         <FormField
                           control={form.control}
@@ -654,7 +719,7 @@ export default function CalendarNewEventDialog({
                             name="image_url"
                             render={({ field }) => (
                               <FormItem>
-                                <FormLabel>Image (Optional)</FormLabel>
+                                <FormLabel>Image</FormLabel>
                                 <FormControl>
                                   <div className="space-y-4">
                                     <Tabs defaultValue="upload" className="w-full">
@@ -880,35 +945,48 @@ export default function CalendarNewEventDialog({
 
                           {/* FIX 5: CALL phone — uses react-hook-form field so form value stays in sync */}
                           {watchedActionButton === "CALL" && (
-                            <FormField
-                              control={form.control}
-                              name="callPhone"
-                              render={({ field }) => (
-                                <FormItem>
-                                  <FormLabel className="flex items-center gap-2">
-                                    <Phone className="h-4 w-4" />
-                                    Phone Number (from Google profile)
-                                    {isLoadingDetails && (
-                                      <Loader2 className="h-3 w-3 animate-spin text-muted-foreground" />
-                                    )}
-                                  </FormLabel>
-                                  <FormControl>
-                                    {/* Use {...field} so the form value is properly registered & validated */}
-                                    <Input
-                                      {...field}
-                                      disabled
-                                      className="bg-muted cursor-not-allowed"
-                                    />
-                                  </FormControl>
-                                  <FormDescription className="text-muted-foreground">
-                                    {isLoadingDetails
-                                      ? "Fetching business phone number..."
-                                      : "This number is taken directly from your Google Business Profile and cannot be changed here."}
-                                  </FormDescription>
-                                  <FormMessage />
-                                </FormItem>
-                              )}
-                            />
+                            <>
+                              <FormField
+                                control={form.control}
+                                name="callPhone"
+                                render={({ field }) => (
+                                  <FormItem>
+                                    <FormLabel className="flex items-center gap-2">
+                                      <Phone className="h-4 w-4" />
+                                      Phone Number (from Google profile)
+                                      {isLoadingDetails && (
+                                        <Loader2 className="h-3 w-3 animate-spin text-muted-foreground" />
+                                      )}
+                                    </FormLabel>
+                                    <FormControl>
+                                      {/* Use {...field} so the form value is properly registered & validated */}
+                                      <Input
+                                        {...field}
+                                        disabled
+                                        className="bg-muted cursor-not-allowed"
+                                      />
+                                    </FormControl>
+                                    <FormDescription className="text-muted-foreground">
+                                      {isLoadingDetails
+                                        ? "Fetching business phone number..."
+                                        : "This number is taken directly from your Google Business Profile and cannot be changed here."}
+                                    </FormDescription>
+                                    <FormMessage />
+                                  </FormItem>
+                                )}
+                              />
+
+                              {/* ⚠️ Warning Alert */}
+                              <Alert className="border-yellow-300 bg-yellow-50 text-yellow-800">
+                                <AlertTriangle className="h-4 w-4 text-yellow-800" />
+                                <AlertTitle>Heads up!</AlertTitle>
+                                <AlertDescription>
+                                  The Call button may not appear after publishing your post.
+                                  You may need to verify your phone number in your Google Business Profile.
+                                </AlertDescription>
+                              </Alert>
+
+                            </>
                           )}
                         </div>
 

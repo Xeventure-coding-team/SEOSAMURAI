@@ -10,6 +10,8 @@ import { GmbBulkPostForm } from "./GMBBulkPostForm"
 import { ScrollArea } from "../ui/scroll-area"
 import { useGMBStore } from "@/store/gmbStore"
 import { Loader } from "../Loader/Loader"
+
+
 interface Location {
     name: string
     title: string
@@ -41,6 +43,11 @@ interface LocationDetails {
     data: {
         name: string
         storeCode?: string
+
+        phoneNumbers?: {   
+            primaryPhone?: null | string
+        }
+
         profile?: {
             description?: string
         }
@@ -56,6 +63,7 @@ interface LocationDetails {
             placeId?: string
         }
     }
+
     locationData?: {
         name: string
         rating?: number
@@ -77,6 +85,7 @@ interface LocationDetails {
             time: number
         }>
     }
+
     reviews?: {
         reviews?: Array<{
             reviewer?: {
@@ -89,6 +98,7 @@ interface LocationDetails {
         totalReviewCount?: number
         averageRating?: number
     }
+
     media?: {
         mediaItems?: Array<{
             mediaFormat: string
@@ -244,6 +254,7 @@ export default function GMBLocationSelector() {
         fetchLocations()
     }
 
+
     if (loadingLocations) {
         return (
             <div className="container mx-auto space-y-6">
@@ -261,6 +272,7 @@ export default function GMBLocationSelector() {
             </div>
         )
     }
+
 
     return (
         <div className="container mx-auto space-y-6">
@@ -321,7 +333,7 @@ export default function GMBLocationSelector() {
                                             }
       `}
                                     >
-                                        <CardContent className="p-4">
+                                        <CardContent>
                                             <div className="flex items-center justify-between">
 
                                                 {/* Left */}
@@ -386,6 +398,11 @@ export default function GMBLocationSelector() {
                         const location = locations.find((loc) => loc.name === selectedLocation)
                         return location ? getLocationDisplayName(location) : "Selected Location"
                     })()}
+                    phoneNumber={
+                        locationDetails?.data?.phoneNumbers?.primaryPhone
+                            ? locationDetails.data.phoneNumbers.primaryPhone.replace(/[^\d+]/g, "")
+                            : null
+                    }
                 />
             )}
 

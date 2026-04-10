@@ -1,12 +1,44 @@
 import { NextRequest, NextResponse } from "next/server"
 import { prisma } from "../../../../../lib/prisma"
 import { stackServerApp } from "@/stack";
+import axios from "axios";
+
+// Utility function to validate GMB access token
+async function validateGMBToken(token: string): Promise<boolean> {
+  try {
+    const response = await axios.get(
+      "https://mybusinessaccountmanagement.googleapis.com/v1/accounts",
+      {
+        headers: { Authorization: `Bearer ${token}` },
+        timeout: 10000,
+      },
+    );
+
+    // If we get here, the token is valid AND the user has at least one account
+    return response.status === 200;
+  } catch (error) {
+    if (axios.isAxiosError(error)) {
+      if (error.response?.status === 401) {
+        console.error("Token invalid or expired");
+      } else if (error.response?.status === 403) {
+        console.error("Token lacks required permissions");
+      } else if (error.code === 'ECONNABORTED') {
+        console.error("Request timeout - API may be slow");
+      } else {
+        console.error(`API error: ${error.response?.status}`, error.response?.data);
+      }
+    } else {
+      console.error("Unexpected error:", error);
+    }
+    return false;
+  }
+}
 
 // GET - Retrieve GMB token
 export async function GET(request: NextRequest) {
   try {
     const user = await stackServerApp.getUser();
-    
+
     if (!user?.id) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
     }
@@ -23,9 +55,6 @@ export async function GET(request: NextRequest) {
       },
     })
 
-    if (!integration || !integration.isActive) {
-      return NextResponse.json({ error: "No active GMB integration found" }, { status: 404 })
-    }
 
     return NextResponse.json(integration)
   } catch (error) {
@@ -38,25 +67,33 @@ export async function GET(request: NextRequest) {
 export async function POST(request: NextRequest) {
   try {
     const user = await stackServerApp.getUser();
-    
+
     if (!user?.id) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
     }
 
     const body = await request.json()
-    const { 
-      accessToken, 
-      refreshToken, 
-      expiresIn, 
-      accountName, 
-      accountId, 
-      clientId 
+    const {
+      accessToken,
+      refreshToken,
+      expiresIn,
+      accountName,
+      accountId,
+      clientId
     } = body
-
-    console.log(accountName, 'account name', accountId,'account id..!')
 
     if (!accessToken) {
       return NextResponse.json({ error: "Access token is required" }, { status: 400 })
+    }
+
+    // ✅ VALIDATE TOKEN HERE
+    const isValid = await validateGMBToken(accessToken);
+
+    if (!isValid) {
+      return NextResponse.json(
+        { error: "Session expired. Please log in to Google My Business again." },
+        { status: 401 }
+      );
     }
 
     const tokenExpiry = expiresIn ? new Date(Date.now() + (expiresIn * 1000)) : new Date(Date.now() + (3600 * 1000)) // Default 1 hour
@@ -88,8 +125,8 @@ export async function POST(request: NextRequest) {
 
     console.log('check token from api.!')
 
-    return NextResponse.json({ 
-      success: true, 
+    return NextResponse.json({
+      success: true,
       id: integration.id,
       accessToken: integration.accessToken,
       tokenExpiry: integration.tokenExpiry,
@@ -107,15 +144,15 @@ export async function POST(request: NextRequest) {
 export async function PUT(request: NextRequest) {
   try {
     const user = await stackServerApp.getUser();
-    
+
     if (!user?.id) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
     }
 
     const body = await request.json()
-    const { 
-      accessToken, 
-      refreshToken, 
+    const {
+      accessToken,
+      refreshToken,
       expiresIn
     } = body
 
@@ -136,7 +173,7 @@ export async function PUT(request: NextRequest) {
       },
     })
 
-    return NextResponse.json({ 
+    return NextResponse.json({
       success: true,
       accessToken: integration.accessToken,
       tokenExpiry: integration.tokenExpiry,
@@ -151,7 +188,7 @@ export async function PUT(request: NextRequest) {
 export async function DELETE(request: NextRequest) {
   try {
     const user = await stackServerApp.getUser();
-    
+
     if (!user?.id) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
     }

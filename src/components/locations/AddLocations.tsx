@@ -1,7 +1,7 @@
 "use client"
 
 import type React from "react"
-import { useState, useEffect, useCallback } from "react"
+import { useState, useEffect, useCallback, useRef } from "react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Info, MapPin, Loader2 } from "lucide-react"
@@ -22,11 +22,14 @@ const MapComponent = dynamic(() => import("./MapComponent"), {
 })
 
 const AddLocations: React.FC = () => {
+    // ✅ SEPARATE STATE: Keep viewState independent from position
     const [viewState, setViewState] = useState({
         longitude: -0.09,
         latitude: 51.505,
         zoom: 15,
     })
+
+    // ✅ Marker position (updated from search)
     const [position, setPosition] = useState<[number, number]>([51.505, -0.09])
     const [name, setName] = useState<string>("Default Location")
     const [showPopup, setShowPopup] = useState(false)
@@ -35,6 +38,10 @@ const AddLocations: React.FC = () => {
     const [isClient, setIsClient] = useState(false)
     const [mapKey, setMapKey] = useState(0)
 
+    // ✅ Track previous position to detect actual changes
+    const previousPositionRef = useRef<[number, number]>([51.505, -0.09])
+    const positionUpdateTimeoutRef = useRef<NodeJS.Timeout | undefined>(undefined)
+
     const setPageName = usePageStore((state) => state.setPageName)
 
     useEffect(() => {
@@ -42,13 +49,34 @@ const AddLocations: React.FC = () => {
         setIsClient(true)
     }, [setPageName])
 
+    // ✅ FIX: Only update viewState when position SIGNIFICANTLY changes
+    // NOT on every position change - use debouncing and tolerance
     useEffect(() => {
-        setViewState((prev) => ({
-            ...prev,
-            longitude: position[1],
-            latitude: position[0],
-            zoom: 15,
-        }))
+        // Check if position actually changed
+        const latDiff = Math.abs(position[0] - previousPositionRef.current[0])
+        const lngDiff = Math.abs(position[1] - previousPositionRef.current[1])
+
+        // Tolerance for no update needed
+        const tolerance = 0.0001
+        if (latDiff < tolerance && lngDiff < tolerance) {
+            return // No significant change
+        }
+
+        // Only update after debounce to prevent excessive updates
+        if (positionUpdateTimeoutRef.current) {
+            clearTimeout(positionUpdateTimeoutRef.current)
+        }
+
+        positionUpdateTimeoutRef.current = setTimeout(() => {
+            previousPositionRef.current = position
+
+            // ✅ Update viewState smoothly without resetting zoom
+            setViewState((prev) => ({
+                longitude: position[1],
+                latitude: position[0],
+                zoom: prev.zoom, // ✅ KEEP current zoom - don't reset it
+            }))
+        }, 100) // Small debounce for position updates
     }, [position])
 
     const handleMapLoad = useCallback(() => {
@@ -67,6 +95,25 @@ const AddLocations: React.FC = () => {
         setMapError(null)
         setIsMapLoading(true)
         setMapKey((prev) => prev + 1)
+    }, [])
+
+    // ✅ Handle viewState changes from map (user zooming/panning)
+    const handleViewStateChange = useCallback((newViewState: {
+        latitude: number
+        longitude: number
+        zoom: number
+    }) => {
+        // ✅ Update viewState with user's zoom/pan
+        setViewState(newViewState)
+    }, [])
+
+    // ✅ Cleanup on unmount
+    useEffect(() => {
+        return () => {
+            if (positionUpdateTimeoutRef.current) {
+                clearTimeout(positionUpdateTimeoutRef.current)
+            }
+        }
     }, [])
 
     if (!isClient) {
@@ -116,11 +163,9 @@ const AddLocations: React.FC = () => {
                                 <div className="h-full w-full rounded-lg overflow-hidden">
                                     <MapComponent
                                         key={mapKey}
-                                        viewState={viewState}
                                         position={position}
                                         name={name}
                                         showPopup={showPopup}
-                                        onViewStateChange={setViewState}
                                         onMapLoad={handleMapLoad}
                                         onMapError={handleMapError}
                                         onMarkerClick={() => setShowPopup(true)}
@@ -133,7 +178,7 @@ const AddLocations: React.FC = () => {
                 </div>
 
                 <div className="lg:col-span-1">
-                    <div className="space-y-4">
+                    <div>
                         <Card>
                             <CardHeader>
                                 <CardTitle className="text-lg">Search Locations</CardTitle>

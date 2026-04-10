@@ -1,12 +1,90 @@
 import type { Metadata } from "next";
 import { StackProvider, StackTheme } from "@stackframe/stack";
 import { stackServerApp } from "../stack";
-import { Outfit } from "next/font/google";
+import {
+  Outfit,
+  Inter,
+  Roboto,
+  Open_Sans,
+  Poppins,
+  Montserrat,
+  Lato,
+  Nunito,
+  Playfair_Display,
+  Merriweather,
+  DM_Sans,
+  Plus_Jakarta_Sans,
+  Space_Grotesk
+} from "next/font/google";
 import "./globals.css";
 import { ClientThemeProvider } from "./layouts/ClientThemeProvider";
 
 const outfit = Outfit({
   variable: "--font-outfit",
+  subsets: ["latin"],
+});
+
+const inter = Inter({
+  variable: "--font-inter",
+  subsets: ["latin"],
+});
+
+const roboto = Roboto({
+  variable: "--font-roboto",
+  weight: ['400', '500', '700'],
+  subsets: ["latin"],
+});
+
+const openSans = Open_Sans({
+  variable: "--font-open-sans",
+  subsets: ["latin"],
+});
+
+const poppins = Poppins({
+  variable: "--font-poppins",
+  weight: ['400', '500', '600', '700'],
+  subsets: ["latin"],
+});
+
+const montserrat = Montserrat({
+  variable: "--font-montserrat",
+  subsets: ["latin"],
+});
+
+const lato = Lato({
+  variable: "--font-lato",
+  weight: ['400', '700'],
+  subsets: ["latin"],
+});
+
+const nunito = Nunito({
+  variable: "--font-nunito",
+  subsets: ["latin"],
+});
+
+const playfairDisplay = Playfair_Display({
+  variable: "--font-playfair-display",
+  subsets: ["latin"],
+});
+
+const merriweather = Merriweather({
+  variable: "--font-merriweather",
+  weight: ['400', '700'],
+  subsets: ["latin"],
+});
+
+const dmSans = DM_Sans({
+  variable: "--font-dm-sans",
+  subsets: ["latin"],
+});
+
+const plusJakartaSans = Plus_Jakarta_Sans({
+  variable: "--font-plus-jakarta-sans",
+  subsets: ["latin"],
+});
+
+const spaceGrotesk = Space_Grotesk({
+  variable: "--font-space-grotesk",
   subsets: ["latin"],
 });
 
@@ -24,78 +102,98 @@ const theme = {
     'card-foreground': '#000000',
     popover: '#fdfdfd',
     'popover-foreground': '#000000',
-    primary: '#8b5cf6',
+
+    primary: '#2563eb',
     'primary-foreground': '#ffffff',
-    secondary: '#f3f4f6',
-    'secondary-foreground': '#1f2937',
-    muted: '#f7f7f7',
-    'muted-foreground': '#6b6b6b',
-    accent: '#ede9fe',
-    'accent-foreground': '#7c3aed',
+
+    secondary: '#e0e7ff',
+    'secondary-foreground': '#1e3a8a',
+
+    muted: '#f1f5ff',
+    'muted-foreground': '#6b7280',
+
+    accent: '#dbeafe',
+    'accent-foreground': '#2563eb',
+
     destructive: '#dc2626',
     'destructive-foreground': '#ffffff',
+
     border: '#e5e7eb',
-    input: '#efefef',
-    ring: '#000000',
-    'chart-1': '#10b981',
-    'chart-2': '#8b5cf6',
-    'chart-3': '#f59e0b',
-    'chart-4': '#6366f1',
-    'chart-5': '#8e8e8e',
-    sidebar: '#f9f9f9',
+    input: '#eff6ff',
+    ring: '#2563eb',
+
+    'chart-1': '#2563eb',
+    'chart-2': '#1d4ed8',
+    'chart-3': '#60a5fa',
+    'chart-4': '#93c5fd',
+    'chart-5': '#bfdbfe',
+
+    sidebar: '#f8fafc',
     'sidebar-foreground': '#000000',
-    'sidebar-primary': '#000000',
+    'sidebar-primary': '#2563eb',
     'sidebar-primary-foreground': '#ffffff',
-    'sidebar-accent': '#efefef',
-    'sidebar-accent-foreground': '#000000',
-    'sidebar-border': '#efefef',
-    'sidebar-ring': '#000000',
+    'sidebar-accent': '#eff6ff',
+    'sidebar-accent-foreground': '#2563eb',
+    'sidebar-border': '#e5e7eb',
+    'sidebar-ring': '#2563eb',
   },
+
   dark: {
-    background: '#1a1625',
+    background: '#0f172a',
     foreground: '#f4f4f4',
-    card: '#221d2e',
+    card: '#1e293b',
     'card-foreground': '#f4f4f4',
-    popover: '#221d2e',
+    popover: '#1e293b',
     'popover-foreground': '#f4f4f4',
-    primary: '#a855f7',
+
+    primary: '#2563eb',
     'primary-foreground': '#ffffff',
-    secondary: '#2e2838',
-    'secondary-foreground': '#f4f4f4',
-    muted: '#2e2838',
-    'muted-foreground': '#b4b4b4',
-    accent: '#332d44',
-    'accent-foreground': '#c4b5fd',
+
+    secondary: '#1e293b',
+    'secondary-foreground': '#e0e7ff',
+
+    muted: '#1e293b',
+    'muted-foreground': '#94a3b8',
+
+    accent: '#1d4ed8',
+    'accent-foreground': '#bfdbfe',
+
     destructive: '#ef4444',
     'destructive-foreground': '#ffffff',
-    border: '#3d3750',
-    input: '#3d3750',
-    ring: '#a855f7',
-    'chart-1': '#34d399',
-    'chart-2': '#a855f7',
-    'chart-3': '#fbbf24',
-    'chart-4': '#818cf8',
-    'chart-5': '#b4b4b4',
-    sidebar: '#13101c',
+
+    border: '#334155',
+    input: '#334155',
+    ring: '#2563eb',
+
+    'chart-1': '#2563eb',
+    'chart-2': '#60a5fa',
+    'chart-3': '#93c5fd',
+    'chart-4': '#1d4ed8',
+    'chart-5': '#bfdbfe',
+
+    sidebar: '#020617',
     'sidebar-foreground': '#f4f4f4',
-    'sidebar-primary': '#a855f7',
+    'sidebar-primary': '#2563eb',
     'sidebar-primary-foreground': '#ffffff',
-    'sidebar-accent': '#2e2838',
-    'sidebar-accent-foreground': '#a855f7',
-    'sidebar-border': '#3d3750',
-    'sidebar-ring': '#a855f7',
+    'sidebar-accent': '#1e293b',
+    'sidebar-accent-foreground': '#60a5fa',
+    'sidebar-border': '#334155',
+    'sidebar-ring': '#2563eb',
   },
+
   fontFamily: {
     sans: 'Plus Jakarta Sans, sans-serif',
     serif: 'Lora, serif',
     mono: 'IBM Plex Mono, monospace',
   },
+
   borderRadius: {
     sm: '18.4px',
     md: '20.4px',
     lg: '22.4px',
     xl: '26.4px',
   },
+
   boxShadow: {
     '2xs': '0px 2px 3px 0px rgba(0, 0, 0, 0.08)',
     xs: '0px 2px 3px 0px rgba(0, 0, 0, 0.08)',
@@ -106,6 +204,7 @@ const theme = {
     xl: '0px 2px 3px 0px rgba(0, 0, 0, 0.16), 0px 8px 10px -1px rgba(0, 0, 0, 0.16)',
     '2xl': '0px 2px 3px 0px rgba(0, 0, 0, 0.40)',
   },
+
   letterSpacing: {
     tighter: '-0.075em',
     tight: '-0.05em',
@@ -114,6 +213,7 @@ const theme = {
     wider: '0.025em',
     widest: '0.075em',
   },
+
   spacing: {
     DEFAULT: '0.27rem',
   },
@@ -130,7 +230,7 @@ export default function RootLayout({
         <meta name="referrer" content="no-referrer" />
       </head>
       <body
-        className={`${outfit.variable} font-outfit antialiased`}
+        className={`${outfit.variable} ${inter.variable} ${roboto.variable} ${openSans.variable} ${poppins.variable} ${montserrat.variable} ${lato.variable} ${nunito.variable} ${playfairDisplay.variable} ${merriweather.variable} ${dmSans.variable} ${plusJakartaSans.variable} ${spaceGrotesk.variable} font-outfit antialiased`}
         suppressHydrationWarning
       >
         <ClientThemeProvider>

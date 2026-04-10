@@ -55,6 +55,31 @@ interface EnhancedCompetitor {
   worstRank: number;
 }
 
+
+const BUSINESS_TYPE_MAP: Record<string, string[]> = {
+  "shopping centre": ["shopping_mall", "department_store"],
+  "shopping mall": ["shopping_mall", "department_store"],
+  "restaurant": ["restaurant", "cafe", "food", "meal_takeaway"],
+  "hospital": ["hospital", "doctor", "health"],
+  "hotel": ["lodging"],
+  "gym": ["gym", "health"],
+  "supermarket": ["supermarket", "grocery_or_supermarket"],
+  "school": ["school", "university"],
+  "pharmacy": ["pharmacy", "drugstore"],
+  "bank": ["bank", "finance"],
+};
+
+function isBusinessTypeMatch(placeTypes: string[], businessType: string): boolean {
+  const key = businessType.toLowerCase();
+  const allowed = Object.entries(BUSINESS_TYPE_MAP).find(([k]) =>
+    key.includes(k)
+  )?.[1];
+
+  if (!allowed) return true; // No mapping → don't filter
+  return placeTypes.some((t) => allowed.includes(t));
+}
+
+
 // Helper function to calculate distance between two coordinates
 function calculateDistance(
   lat1: number,
@@ -68,9 +93,9 @@ function calculateDistance(
   const a =
     Math.sin(dLat / 2) * Math.sin(dLat / 2) +
     Math.cos((lat1 * Math.PI) / 180) *
-      Math.cos((lat2 * Math.PI) / 180) *
-      Math.sin(dLon / 2) *
-      Math.sin(dLon / 2);
+    Math.cos((lat2 * Math.PI) / 180) *
+    Math.sin(dLon / 2) *
+    Math.sin(dLon / 2);
   const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
   return R * c;
 }
@@ -109,8 +134,7 @@ async function searchGooglePlaces(
     if (data.status !== "OK" && data.status !== "ZERO_RESULTS") {
       console.error("❌ Google Places API Error:", data);
       throw new Error(
-        `Google Places API returned status: ${data.status} - ${
-          data.error_message || "Unknown error"
+        `Google Places API returned status: ${data.status} - ${data.error_message || "Unknown error"
         }`
       );
     }
@@ -161,59 +185,12 @@ async function searchGooglePlaces(
   }
 }
 
-// Function to enrich competitor with Google Places data
-// async function enrichCompetitor(
-//   competitor: EnhancedCompetitor,
-//   searchLocation: { lat: number; lng: number },
-//   locationString: string,
-//   apiKey: string
-// ): Promise<void> {
-//   try {
-//     const query = `${competitor.name} in ${locationString}`;
-//     const encodedQuery = encodeURIComponent(query);
-//     const url = `https://maps.googleapis.com/maps/api/place/textsearch/json?query=${encodedQuery}&location=${searchLocation.lat},${searchLocation.lng}&radius=10000&key=${apiKey}`;
-
-//     console.log(`🔍 Enriching ${competitor.name} with URL:`, url.replace(apiKey, 'API_KEY_HIDDEN'));
-
-//     const response = await fetch(url);
-//     if (!response.ok) {
-//       throw new Error(`Google Places textsearch error: ${response.status}`);
-//     }
-
-//     const data = await response.json();
-//     if (data.status === 'OK' && data.results?.length > 0) {
-//       const place = data.results[0];
-//       if (place.name.toLowerCase().includes(competitor.name.toLowerCase())) {
-//         competitor.id = place.place_id || competitor.id;
-//         competitor.address = place.formatted_address || competitor.address;
-//         competitor.rating = place.rating;
-//         competitor.reviewCount = place.user_ratings_total;
-//         competitor.googleMapsUri = `https://maps.google.com/maps/place/?q=place_id:${place.place_id}`;
-//         competitor.website = place.website;
-//         if (place.geometry?.location) {
-//           competitor.coordinates = {
-//             lat: place.geometry.location.lat,
-//             lng: place.geometry.location.lng
-//           };
-//           competitor.distance = calculateDistance(
-//             searchLocation.lat,
-//             searchLocation.lng,
-//             place.geometry.location.lat,
-//             place.geometry.location.lng
-//           );
-//         }
-//       }
-//     }
-//   } catch (error) {
-//     console.error(`❌ Error enriching competitor ${competitor.name}:`, error);
-//   }
-// }
-
 async function enrichCompetitor(
   competitor: EnhancedCompetitor,
   searchLocation: { lat: number; lng: number },
   locationString: string,
-  apiKey: string
+  apiKey: string,
+  businessType: string
 ): Promise<void> {
   try {
     const query = `${competitor.name} in ${locationString}`;
@@ -244,7 +221,7 @@ async function enrichCompetitor(
         placeNameLower.includes(competitorNameLower) ||
         competitorNameLower.includes(placeNameLower) ||
         placeNameLower.replace(/[^a-z0-9]/g, "") ===
-          competitorNameLower.replace(/[^a-z0-9]/g, "");
+        competitorNameLower.replace(/[^a-z0-9]/g, "");
 
       if (!isGoodNameMatch) {
         console.log(
@@ -281,21 +258,23 @@ async function enrichCompetitor(
         competitor.googleMapsUri = `https://maps.google.com/maps/place/?q=place_id:${place.place_id}`;
         competitor.website = place.website;
 
+
+        const placeTypes: string[] = place.types || [];
+        if (!isBusinessTypeMatch(placeTypes, businessType)) {
+          competitor.address = undefined; 
+          return;
+        }
+
         competitor.coordinates = {
           lat: place.geometry.location.lat,
           lng: place.geometry.location.lng,
         };
         competitor.distance = dist;
 
-        console.log(
-          `✅ Enriched local competitor: ${competitor.name} (${(
-            dist / 1000
-          ).toFixed(1)}km)`
-        );
+
       }
     }
   } catch (error) {
-    console.error(`❌ Error enriching competitor ${competitor.name}:`, error);
   }
 }
 
@@ -306,7 +285,6 @@ async function getBusinessName(
 ): Promise<string | null> {
   const url = `https://maps.googleapis.com/maps/api/place/details/json?place_id=${placeId}&fields=name&key=${apiKey}`;
 
-  console.log("🔍 Fetching business name for place_id:", placeId);
 
   try {
     const response = await fetch(url);
@@ -319,7 +297,6 @@ async function getBusinessName(
 
     const data = await response.json();
     if (data.status === "OK" && data.result?.name) {
-      console.log(`✅ Fetched business name: ${data.result.name}`);
       return data.result.name;
     }
     return null;
@@ -343,11 +320,7 @@ async function getCompetitors(
   hoursUntilNextUpdate: number;
 }> {
   try {
-    console.log("🎯 Getting competitors for:", {
-      locationId,
-      businessType,
-      currentLocation,
-    });
+
 
     // Get current user
     const user = await stackServerApp.getUser();
@@ -374,12 +347,12 @@ async function getCompetitors(
       !existingAnalysis || now >= existingAnalysis.nextUpdate || forceUpdate;
     const hoursUntilNextUpdate = existingAnalysis
       ? Math.max(
-          0,
-          Math.ceil(
-            (existingAnalysis.nextUpdate.getTime() - now.getTime()) /
-              (1000 * 60 * 60)
-          )
+        0,
+        Math.ceil(
+          (existingAnalysis.nextUpdate.getTime() - now.getTime()) /
+          (1000 * 60 * 60)
         )
+      )
       : 0;
 
     console.log("📊 Analysis status:", {
@@ -539,7 +512,7 @@ async function getCompetitors(
             0,
             Math.ceil(
               (fallbackAnalysis.nextUpdate.getTime() - now.getTime()) /
-                (1000 * 60 * 60)
+              (1000 * 60 * 60)
             )
           );
 
@@ -584,6 +557,7 @@ export async function GET(
     const searchParams = request.nextUrl.searchParams;
     console.log(searchParams, "searchParams..!");
     let businessName = searchParams.get("businessName");
+    const businessType = searchParams.get("businessType") || "";
 
     // Validation
     if (!searchParams.get("lat") || !searchParams.get("lng")) {
@@ -711,7 +685,7 @@ export async function GET(
               ) {
                 isOwnBusiness = true;
               }
-            } catch {}
+            } catch { }
           }
 
           // 2. Title match (fallback, stricter)
@@ -800,7 +774,7 @@ export async function GET(
       const competitorsArray = Array.from(competitorMap.values());
       await Promise.all(
         competitorsArray.map((competitor) =>
-          enrichCompetitor(competitor, searchLocation, locationString, apiKey)
+          enrichCompetitor(competitor, searchLocation, locationString, apiKey, businessType)
         )
       );
     }
@@ -873,10 +847,6 @@ export async function GET(
           competitor.address.trim() !== "" &&
           !competitor.address.includes("No address available") &&
           competitor.address.toLowerCase().includes("kerala"); // Extra safety
-
-        if (!hasAddress) {
-          console.log(`🚫 Excluding non-local competitor: ${competitor.name}`);
-        }
 
         return hasAddress;
       })

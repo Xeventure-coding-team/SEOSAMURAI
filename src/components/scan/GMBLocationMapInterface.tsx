@@ -731,7 +731,7 @@ export default function GMBLocationMapInterface() {
                 "w-full text-white py-3 text-base font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed",
                 gridData
                   ? "bg-red-500 hover:bg-red-600"
-                  : "bg-green-600 hover:bg-green-700"
+                  : ""
               )}
               disabled={isSubmitDisabled && !gridData}
             >

@@ -128,7 +128,7 @@ export default function LocationSelector({
         onValueChange={handleValueChange}
         disabled={loadingLocations || locations.length === 0 || !!error}
       >
-        <SelectTrigger className="w-full">
+        <SelectTrigger className="w-full location_selector">
           <SelectValue 
             placeholder={
               loadingLocations 

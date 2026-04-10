@@ -39,6 +39,7 @@ import {
 } from "lucide-react"
 import BatchProgressModal from "./BatchProgressModal"
 import { LoadingSpinner } from "../Loader/Loader"
+import toast from "react-hot-toast"
 
 interface KeywordData {
   id?: string
@@ -337,38 +338,26 @@ const KeywordTracker: React.FC<KeywordTrackerProps> = ({ location, businessName,
     colors: string
   }
 
-  const RANK_CHANGE_CONFIG: Record<RankChange, RankChangeConfig> = {
-    UP: {
-      text: "Improved",
-      icon: <TrendingUp className="w-3.5 h-3.5" />,
-      colors: "text-emerald-700 bg-emerald-50/80 border border-emerald-200 dark:text-emerald-300 dark:bg-emerald-950/80 dark:border-emerald-800/60"
-    },
-    DOWN: {
-      text: "Declined",
-      icon: <TrendingDown className="w-3.5 h-3.5" />,
-      colors: "text-red-700 bg-red-50/80 border border-red-200 dark:text-red-300 dark:bg-red-950/80 dark:border-red-800/60"
-    },
-    NEW: {
-      text: "New",
-      icon: <Sparkles className="w-3.5 h-3.5" />,
-      colors: "text-blue-700 bg-blue-50/80 border border-blue-200 dark:text-blue-300 dark:bg-blue-950/80 dark:border-blue-800/60"
-    },
-    NOT_FOUND: {
-      text: "Not Ranked",
-      icon: <SearchX className="w-3.5 h-3.5" />,
-      colors: "text-gray-700 bg-gray-50/80 border border-gray-200 dark:text-gray-300 dark:bg-gray-900/80 dark:border-gray-700/60"
-    },
-    SAME: {
-      text: "Ranking Unchanged",
-      icon: <Minus className="w-3.5 h-3.5" />,
-      colors: "text-gray-600 bg-gray-50/80 border border-gray-200 dark:text-gray-400 dark:bg-gray-900/80 dark:border-gray-700/60"
-    },
-    UNKNOWN: {
-      text: "Unknown",
-      icon: <HelpCircle className="w-3.5 h-3.5" />,
-      colors: "text-gray-600 bg-gray-50/80 border border-gray-200 dark:text-gray-400 dark:bg-gray-900/80 dark:border-gray-700/60"
-    }
-  }
+  const iconClass = "w-3.5 h-3.5";
+
+  const createConfig = (
+    text: string,
+    Icon: any,
+    color: string
+  ): RankChangeConfig => ({
+    text,
+    icon: <Icon className={iconClass} />,
+    colors: color
+  });
+
+  const RANK_CHANGE_CONFIG = {
+    UP: createConfig("Improved", TrendingUp, "text-emerald-700 bg-emerald-50/80 border border-emerald-200 dark:text-emerald-300 dark:bg-emerald-950/80 dark:border-emerald-800"),
+    DOWN: createConfig("Declined", TrendingDown, "text-red-700 bg-red-50/80 border border-red-200 dark:text-red-300 dark:bg-red-950/80 dark:border-red-800"),
+    NEW: createConfig("New", Sparkles, "text-blue-700 bg-blue-50/80 border border-blue-200 dark:text-blue-300 dark:bg-blue-950/80 dark:border-blue-800"),
+    NOT_FOUND: createConfig("Not Ranked", SearchX, "text-gray-700 bg-gray-50/80 border border-gray-200 dark:text-gray-300 dark:bg-gray-900/80 dark:border-gray-700"),
+    SAME: createConfig("Unchanged", Minus, "text-gray-600 bg-gray-50/80 border border-gray-200 dark:text-gray-400 dark:bg-gray-900/80 dark:border-gray-700"),
+    UNKNOWN: createConfig("Unknown", HelpCircle, "text-gray-600 bg-gray-50/80 border border-gray-200 dark:text-gray-400 dark:bg-gray-900/80 dark:border-gray-700")
+  } as const;
 
   const getRankChangeText = (change: string, value?: number): string => {
     const changeType = (change as RankChange) || "UNKNOWN"
@@ -426,6 +415,8 @@ const KeywordTracker: React.FC<KeywordTrackerProps> = ({ location, businessName,
   const requestBatchUpdate = async (): Promise<void> => {
     setUpdating("batch")
     try {
+
+
       const response = await fetch("/api/batch-update", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -680,25 +671,49 @@ const KeywordTracker: React.FC<KeywordTrackerProps> = ({ location, businessName,
                 </div>
               </DialogContent>
             </Dialog>
-
             {success && (
-              <Alert className="border-green-200 bg-green-50 dark:border-green-800 dark:bg-green-950">
-                <CheckCircle className="h-4 w-4 text-green-600" />
-                <AlertTitle className="text-green-800 dark:text-green-200">Success!</AlertTitle>
-                <AlertDescription className="text-green-700 dark:text-green-300">{success.message}</AlertDescription>
+              <Alert className="relative flex items-start gap-2 border-green-200 bg-green-50 dark:border-green-800 dark:bg-green-950 px-4 py-3 rounded-md">
+
+                <CheckCircle className="h-4 w-4 text-green-600 mt-0.5" />
+
+                <div className="flex-1">
+                  <AlertTitle className="text-green-800 dark:text-green-200 text-sm font-medium">
+                    Success
+                  </AlertTitle>
+                  <AlertDescription className="text-green-700 dark:text-green-300 text-sm">
+                    {success.message}
+                  </AlertDescription>
+                </div>
+
+                <button
+                  onClick={clearAlerts}
+                  className="text-green-700 dark:text-green-300 text-sm"
+                >
+                  ✕
+                </button>
               </Alert>
             )}
 
             {error && (
-              <Alert className="border-red-200 bg-red-50 dark:border-red-800 dark:bg-red-950">
-                <AlertCircle className="h-4 w-4 text-red-600" />
-                <AlertTitle className="text-red-800 dark:text-red-200">Error</AlertTitle>
-                <AlertDescription className="text-red-700 dark:text-red-300">
-                  <p>{error}</p>
-                  <Button variant="outline" size="sm" onClick={clearAlerts} className="mt-3 bg-transparent">
-                    Dismiss
-                  </Button>
-                </AlertDescription>
+              <Alert className="relative flex items-start gap-2 border-red-200 bg-red-50 dark:border-red-800 dark:bg-red-950 px-4 py-3 rounded-md">
+
+                <AlertCircle className="h-4 w-4 text-red-600 mt-0.5" />
+
+                <div className="flex-1">
+                  <AlertTitle className="text-red-800 dark:text-red-200 text-sm font-medium">
+                    Error
+                  </AlertTitle>
+                  <AlertDescription className="text-red-700 dark:text-red-300 text-sm">
+                    {error}
+                  </AlertDescription>
+                </div>
+
+                <button
+                  onClick={clearAlerts}
+                  className="text-red-700 dark:text-red-300 text-sm"
+                >
+                  ✕
+                </button>
               </Alert>
             )}
 
@@ -706,6 +721,7 @@ const KeywordTracker: React.FC<KeywordTrackerProps> = ({ location, businessName,
               <Card className="border-blue-200 bg-blue-50 dark:border-blue-800 dark:bg-blue-950">
                 <CardContent>
                   <div className="flex flex-col gap-6 sm:flex-row sm:items-center sm:justify-between">
+
                     <div className="flex items-center gap-4">
                       <div className="rounded-full bg-blue-100 p-3 dark:bg-blue-900">
                         <RefreshCw className="h-6 w-6 text-blue-600" />
@@ -725,11 +741,11 @@ const KeywordTracker: React.FC<KeywordTrackerProps> = ({ location, businessName,
                     <Tooltip>
                       <TooltipTrigger asChild>
                         <Button
-                          onClick={requestBatchUpdate}
-                          disabled={!batchUpdateAvailable}
+                          onClick={batchUpdateAvailable ? requestBatchUpdate : undefined}
+                          style={{ cursor: !batchUpdateAvailable ? 'not-allowed' : null }}
                           className={`w-full sm:w-auto h-12 shadow-lg ${batchUpdateAvailable
                             ? "bg-blue-600 hover:bg-blue-700"
-                            : "opacity-50 cursor-not-allowed"
+                            : "bg-blue-600 opacity-50 cursor-not-allowed pointer-events-auto"
                             }`}
                           size="lg"
                         >
@@ -769,7 +785,7 @@ const KeywordTracker: React.FC<KeywordTrackerProps> = ({ location, businessName,
                   </Badge>
                 </CardTitle>
               </CardHeader>
-              <CardContent>
+              <CardContent className="p-0">
                 {fetchingKeywords ? (
                   <div className="p-8">
                     <div className="space-y-6">
@@ -806,16 +822,25 @@ const KeywordTracker: React.FC<KeywordTrackerProps> = ({ location, businessName,
                         <TableRow>
                           <TableHead className="w-[350px]">Keyword</TableHead>
                           <TableHead className="text-center">Position</TableHead>
-                          <TableHead className="text-center">Ranking Change</TableHead>
-                          <TableHead className="text-center">Previous Rank</TableHead>
+                          <TableHead className="text-center">Change</TableHead>
+                          <TableHead className="text-center">Previous</TableHead>
                           <TableHead className="text-right">Actions</TableHead>
                         </TableRow>
                       </TableHeader>
                       <TableBody>
                         {trackedKeywords.map((kw) => (
-                          <TableRow key={kw.id} className="group hover:bg-muted/50 transition-colors">
+                          <TableRow
+                            key={kw.id}
+                            className={`group transition-colors ${kw.rankChange === "UP"
+                                ? "bg-emerald-50/40 hover:bg-emerald-50/60 dark:bg-emerald-950/20 dark:hover:bg-emerald-950/30"
+                                : kw.rankChange === "DOWN"
+                                  ? "bg-red-50/40 hover:bg-red-50/60 dark:bg-red-950/20 dark:hover:bg-red-950/30"
+                                  : "hover:bg-muted/50"
+                              }`}
+                          >
+                            {/* Keyword */}
                             <TableCell className="py-4">
-                              <div className="space-y-2">
+                              <div className="space-y-1">
                                 {editKeywordId === kw.id ? (
                                   <Input
                                     value={editValue}
@@ -824,75 +849,59 @@ const KeywordTracker: React.FC<KeywordTrackerProps> = ({ location, businessName,
                                     className="h-9"
                                   />
                                 ) : (
-                                  <div className="font-semibold text-pretty text-base">{kw.keyword}</div>
+                                  <div className="font-medium text-base text-pretty">{kw.keyword}</div>
                                 )}
-                                {kw.targetDomain && (
-                                  <div className="text-sm text-muted-foreground flex items-center gap-1">
-                                    <MapPin className="h-3 w-3" />
-                                    {kw.targetDomain}
-                                  </div>
-                                )}
+                                 
                               </div>
                             </TableCell>
+
+                            {/* Position */}
                             <TableCell className="text-center">
-                              <Tooltip>
-                                <TooltipTrigger asChild>
-                                  <Badge
-                                    variant="outline"
-                                    className={`font-mono text-xs px-3 py-1 ${getPositionBadgeColor(kw.currentRank)}`}
-                                  >
-                                    {kw.currentRank ? `#${kw.currentRank}` : "#0"}
-                                  </Badge>
-                                </TooltipTrigger>
-                                <TooltipContent>Current search ranking position</TooltipContent>
-                              </Tooltip>
+                              <span
+                                className={`inline-flex items-center justify-center font-mono text-base font-medium rounded-md w-9 h-6 ${kw.currentRank === 1
+                                    ? "bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300"
+                                    : kw.currentRank && kw.currentRank <= 3
+                                      ? "bg-blue-50 text-blue-700 dark:bg-blue-950 dark:text-blue-300"
+                                      : "bg-muted text-muted-foreground"
+                                  }`}
+                              >
+                                {kw.currentRank ? `#${kw.currentRank}` : "—"}
+                              </span>
                             </TableCell>
 
+                            {/* Change */}
                             <TableCell className="text-center">
-                              {kw.rankChange !== "NOT_FOUND" ? (
-                                <Tooltip>
-                                  <div>
-                                    <Badge
-                                      variant="outline"
-                                      className={`${getRankChangeColor(kw.rankChange)} px-3 py-1 text-xs font-medium`}
-                                    >
-                                      <span className="flex items-center gap-1">
-                                        {RANK_CHANGE_CONFIG[kw.rankChange]?.icon}
-                                        {getRankChangeText(kw.rankChange, kw.rankChangeValue)}
-                                      </span>
-                                    </Badge>
-                                  </div>
-                                  <TooltipContent>Ranking change since last update</TooltipContent>
-                                </Tooltip>
-                              ) : (
-                                <Badge
-                                  variant="outline"
-                                  className={`${getRankChangeColor(kw.rankChange)} px-3 py-1`}
-                                >
-                                  <span className="flex items-center gap-1">
-                                    {RANK_CHANGE_CONFIG[kw.rankChange]?.icon}
-                                    No Change
-                                  </span>
-                                </Badge>
+                              {kw.rankChange === "UP" && (
+                                <span className="inline-flex items-center gap-1 text-base font-medium px-2 py-1 rounded-md bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300">
+                                  <TrendingUp className="h-3 w-3" />
+                                  +{kw.rankChangeValue}
+                                </span>
+                              )}
+                              {kw.rankChange === "DOWN" && (
+                                <span className="inline-flex items-center gap-1 text-base font-medium px-2 py-1 rounded-md bg-red-100 text-red-800 dark:bg-red-950 dark:text-red-300">
+                                  <TrendingDown className="h-3 w-3" />
+                                  -{kw.rankChangeValue}
+                                </span>
+                              )}
+                              {kw.rankChange === "NEW" && (
+                                <span className="inline-flex items-center gap-1 text-base font-medium px-2 py-1 rounded-md bg-blue-100 text-blue-800 dark:bg-blue-950 dark:text-blue-300">
+                                  <Sparkles className="h-3 w-3" />
+                                  New
+                                </span>
+                              )}
+                              {(kw.rankChange === "SAME" || kw.rankChange === "NOT_FOUND" || !kw.rankChange) && (
+                                <span className="text-xs text-muted-foreground">—</span>
                               )}
                             </TableCell>
 
+                            {/* Previous */}
                             <TableCell className="text-center">
-                              <Tooltip>
-                                <TooltipTrigger asChild>
-                                  <Badge
-                                    variant="outline"
-                                    className={`font-mono text-xs px-3 py-1 ${getPositionBadgeColor(
-                                      kw.previousRank
-                                    )}`}
-                                  >
-                                    {kw.previousRank ? `#${kw.previousRank}` : "#0"}
-                                  </Badge>
-                                </TooltipTrigger>
-                                <TooltipContent>Previous search ranking position</TooltipContent>
-                              </Tooltip>
+                              <span className="text-base text-muted-foreground font-mono">
+                                {kw.previousRank ? `#${kw.previousRank}` : "—"}
+                              </span>
                             </TableCell>
 
+                            {/* Actions */}
                             <TableCell className="text-right">
                               <div className="flex items-center justify-end gap-2">
                                 {editKeywordId === kw.id ? (
@@ -963,8 +972,13 @@ const KeywordTracker: React.FC<KeywordTrackerProps> = ({ location, businessName,
 
                                 <Tooltip>
                                   <TooltipTrigger asChild>
-                                    <Button variant="ghost" size="sm" onClick={() => deleteKeyword(kw.id!)}>
-                                      <X className="h-6 w-6" />
+                                    <Button
+                                      variant="ghost"
+                                      size="sm"
+                                      onClick={() => deleteKeyword(kw.id!)}
+                                      className="opacity-0 group-hover:opacity-100 transition-opacity h-9 w-9 p-0 hover:bg-destructive/10 hover:text-destructive"
+                                    >
+                                      <X className="h-4 w-4" />
                                     </Button>
                                   </TooltipTrigger>
                                   <TooltipContent>Delete this keyword</TooltipContent>

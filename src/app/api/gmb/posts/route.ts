@@ -1,4 +1,3 @@
-// app/api/gmb/posts/route.ts
 import { NextRequest, NextResponse } from 'next/server';
 import axios from 'axios';
 import { z } from 'zod';
@@ -158,14 +157,46 @@ function getActionType(actionButton: string): string | null {
 }
 
 function validatePhoneNumber(phone: string): string {
-    const cleanPhone = phone.replace(/\D/g, '');
+    const cleaned = phone.replace(/[^\d+]/g, '');
+
+    // Case 1: Already in international format (+91...)
+    if (cleaned.startsWith('+')) {
+        const digits = cleaned.replace(/\D/g, '');
+
+        // 🇮🇳 India
+        if (digits.startsWith('91') && digits.length === 12) {
+            return `tel:+${digits}`;
+        }
+
+        // 🇺🇸 US
+        if (digits.startsWith('1') && digits.length === 11) {
+            return `tel:+${digits}`;
+        }
+
+        throw new Error('Invalid international phone number.');
+    }
+
+    // Remove non-digits
+    let cleanPhone = cleaned.replace(/\D/g, '');
+
+    // 🇮🇳 India (remove leading 0)
+    if (cleanPhone.startsWith('0')) {
+        cleanPhone = cleanPhone.slice(1);
+    }
+
     if (cleanPhone.length === 10) {
-        return `tel:+1${cleanPhone}`;
-    } else if (cleanPhone.length === 11 && cleanPhone.startsWith('1')) {
+        // Assume India by default
+        return `tel:+91${cleanPhone}`;
+    }
+
+    // 🇺🇸 US fallback
+    if (cleanPhone.length === 11 && cleanPhone.startsWith('1')) {
         return `tel:+${cleanPhone}`;
     }
-    throw new Error('Invalid phone number format. Please provide a 10-digit US phone number.');
+
+    throw new Error('Invalid phone number format.');
 }
+
 
 function validateUrl(url: string): string {
     try {
@@ -201,15 +232,12 @@ export async function GET(request: NextRequest) {
         const account = cleanAccountId(rawAccount);
         const location = cleanLocationId(rawLocation);
 
-        console.log('Cleaned IDs:', { account, location });
-
         // Build API URL with pagination
         let apiUrl = `https://mybusiness.googleapis.com/v4/accounts/${account}/locations/${location}/localPosts?pageSize=${pageSize}`;
         if (pageToken) {
             apiUrl += `&pageToken=${pageToken}`;
         }
 
-        console.log('GET API URL:', apiUrl);
 
         const response = await axios.get(apiUrl, {
             headers: {
@@ -310,12 +338,6 @@ export async function POST(request: NextRequest) {
             imageUrl = await downloadAndUploadImage(image_url);
         }
 
-        if (!imageUrl) {
-            return NextResponse.json({
-                success: false,
-                error: 'No image provided. Please upload a file or provide an image URL.'
-            }, { status: 400 });
-        }
 
         const actionButtonConverted = actionButton === "null" ? null : actionButton;
         const actionLinkConverted = actionLink === "null" ? null : actionLink;
@@ -326,18 +348,20 @@ export async function POST(request: NextRequest) {
             actionType = getActionType(actionButtonConverted);
         }
 
-
         const postBody: any = {
             languageCode: "en-US",
             topicType: "STANDARD",
             summary: postContent,
-            media: [
+        };
+
+        if (imageUrl) {
+            postBody.media = [
                 {
                     mediaFormat: 'PHOTO',
                     sourceUrl: imageUrl,
                 },
-            ],
-        };
+            ];
+        }
 
         // Handle call to action
         if (actionButtonConverted && actionButtonConverted !== 'NO_ACTION' && actionType) {
@@ -345,18 +369,8 @@ export async function POST(request: NextRequest) {
                 actionType: actionType
             };
 
-            if (actionType === 'CALL') {
-                if (callPhoneConverted) {
-                    try {
-                        callToAction.url = validatePhoneNumber(callPhoneConverted);
-                    } catch (error: any) {
-                        return NextResponse.json({
-                            success: false,
-                            error: error.message
-                        }, { status: 400 });
-                    }
-                }
-            } else if (actionLinkConverted) {
+            // ✅ ONLY for NON-CALL actions
+            if (actionType !== 'CALL' && actionLinkConverted) {
                 try {
                     callToAction.url = validateUrl(actionLinkConverted);
                 } catch (error: any) {
@@ -366,6 +380,8 @@ export async function POST(request: NextRequest) {
                     }, { status: 400 });
                 }
             }
+
+            // ❌ DO NOTHING for CALL (no url at all)
 
             postBody.callToAction = callToAction;
         }
@@ -571,7 +587,7 @@ export async function PATCH(request: NextRequest) {
 
             if (gmbActionType === 'CALL' && url) {
                 try {
-                    formattedAction.url = validatePhoneNumber(url);
+
                 } catch (error: any) {
                     return NextResponse.json({
                         success: false,

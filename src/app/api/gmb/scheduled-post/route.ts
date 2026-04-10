@@ -32,6 +32,7 @@ const updateScheduledPostSchema = z.object({
     scheduledPublishTime: z.string().optional(),// Accept both formats
     timezone: z.string().optional(),
     status: z.enum(['PENDING', 'PROCESSING', 'PUBLISHED', 'FAILED', 'CANCELLED', 'EXPIRED']).optional(),
+    viewColor: z.string().optional(),
     // Add nested callToAction support
     callToAction: z.object({
         actionType: z.string().optional(),
@@ -256,35 +257,20 @@ export async function POST(request: NextRequest) {
             ? null
             : (body.actionButton || body.actionType || null);
 
-        // FIX: When actionType is CALL, actionUrl must be the phone number.
-        // For all other action types, actionUrl is the link (book/order/shop etc).
-        // callPhone is sent separately from the form — map it here correctly.
-        // const resolvedActionUrl = (() => {
-        //     if (!rawActionType || rawActionType === 'NO_ACTION') return null;
-
-        //     if (rawActionType === 'CALL') {
-        //         // Use callPhone as the actionUrl for CALL actions
-        //         const phone = body.callPhone || body.actionUrl || null;
-        //         return phone === 'null' ? null : phone;
-        //     }
-
-        //     // Non-CALL actions: use actionLink / actionUrl
-        //     const url = body.actionLink || body.actionUrl || null;
-        //     return url === 'null' ? null : url;
-        // })();
 
         const resolvedActionUrl = (() => {
-        if (!rawActionType || rawActionType === 'NO_ACTION') return null;
+            if (!rawActionType || rawActionType === 'NO_ACTION') return null;
 
-        if (rawActionType === 'CALL') {
-            // For CALL actions, actionUrl should be null as per your schema requirement
-            return null;
-        }
+            if (rawActionType === 'CALL') {
+                // For CALL actions, store the phone number with tel: prefix
+                const phone = body.callPhone || null;
+                return phone ? `tel:${phone}` : null;
+            }
 
-        // Non-CALL actions: use actionLink / actionUrl
-        const url = body.actionLink || body.actionUrl || null;
-        return url === 'null' ? null : url;
-    })();
+            // Non-CALL actions: use actionLink / actionUrl
+            const url = body.actionLink || body.actionUrl || null;
+            return url === 'null' ? null : url;
+        })();
 
 
         // Map frontend field names to schema field names
@@ -311,16 +297,12 @@ export async function POST(request: NextRequest) {
         const locationId = cleanId(validatedData.locationId, 'locations/');
 
         // Handle image
-        let imageUrl: string;
+        let imageUrl: string | null = null;
+
         if (file && fileName) {
             imageUrl = await uploadToImgKit(file, fileName);
         } else if (validatedData.image_url) {
             imageUrl = await downloadAndUploadImage(validatedData.image_url);
-        } else {
-            return NextResponse.json({
-                success: false,
-                message: 'Image is required. Please upload a file or provide an image URL.'
-            }, { status: 400 });
         }
 
         // Create scheduled post
@@ -330,11 +312,7 @@ export async function POST(request: NextRequest) {
                 imageUrl,
                 originalImageUrl: validatedData.image_url || null,
                 actionType: validatedData.actionType === 'null' ? null : validatedData.actionType,
-                // FIX: actionUrl now correctly holds the phone number for CALL actions
-
-                // actionUrl: validatedData.actionUrl === 'null' ? null : validatedData.actionUrl,
-                
-                actionUrl: resolvedActionUrl, // This will be null for CALL actions
+                actionUrl: resolvedActionUrl,
                 accountId,
                 locationId,
                 accessToken: validatedData.accessToken,
@@ -441,6 +419,10 @@ export async function PUT(request: NextRequest) {
 
         if (validatedData.summary) updateData.summary = validatedData.summary;
 
+        if (validatedData.viewColor !== undefined) {
+            updateData.viewColor = validatedData.viewColor;
+        }
+
         // Handle scheduling time (accept both formats)
         if (validatedData.scheduledAt) {
             try {
@@ -483,9 +465,8 @@ export async function PUT(request: NextRequest) {
             }
 
             if (putActionType === 'CALL') {
-                // Use callPhone as actionUrl for CALL updates
                 const phone = validatedData.callPhone || validatedData.actionUrl || null;
-                updateData.actionUrl = phone === 'null' ? null : phone;
+                updateData.actionUrl = phone && !phone.startsWith('tel:') ? `tel:${phone}` : phone;
             } else if (validatedData.actionUrl !== undefined) {
                 updateData.actionUrl = validatedData.actionUrl === 'null' ? null : validatedData.actionUrl;
             }

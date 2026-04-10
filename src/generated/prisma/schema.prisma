@@ -48,7 +48,7 @@ model ScheduledPost {
 
   // Media
   mediaFormat      String  @default("PHOTO")
-  imageUrl         String // ImageKit URL
+  imageUrl         String? // ImageKit URL
   originalImageUrl String? // Original image URL if provided
 
   // Call to Action (optional)
@@ -546,4 +546,137 @@ model Message {
 
   @@index([chatId])
   @@map("messages")
+}
+
+model Website {
+  id         String @id @default(auto()) @map("_id") @db.ObjectId
+  userId     String
+  locationId String
+  accountId  String
+
+  // Website Identity
+  subdomain   String  @unique
+  title       String
+  description String?
+  logoUrl     String?
+
+  // Design & Customization
+  primaryColor   String @default("#10b981")
+  secondaryColor String @default("#f59e0b")
+  fontFamily     String @default("Inter")
+
+  // Sections to display
+  enabledSections String[] @default(["hero", "reviews", "gallery", "contact"])
+
+  // Analytics Integration
+  googleAnalyticsId String?
+  facebookPixelId   String?
+
+  // Publishing Status
+  isPublished Boolean   @default(false)
+  publishedAt DateTime?
+
+  // Timestamps
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relations
+  cachedData WebsiteCachedData?
+
+  @@unique([userId, locationId, accountId])
+  @@index([userId])
+  @@index([locationId])
+  @@index([accountId])
+  @@map("websites")
+}
+
+// Store all cached data from GMB as JSON
+model WebsiteCachedData {
+  id        String  @id @default(auto()) @map("_id") @db.ObjectId
+  websiteId String  @unique @db.ObjectId
+  website   Website @relation(fields: [websiteId], references: [id], onDelete: Cascade)
+
+  // Raw JSON from GMB API
+  businessInfo Json? // Business details: name, address, phone, hours, rating
+  reviews      Json? // Array of customer reviews
+  photos       Json? // Array of business photos
+  posts        Json? // Array of GMB posts
+
+  // Sync Metadata
+  lastSyncedAt DateTime?
+  nextSyncAt   DateTime?
+  syncInterval Int       @default(24) // hours between syncs
+
+  // Sync Status
+  isSyncing      Boolean @default(false)
+  lastSyncError  String?
+  syncRetryCount Int     @default(0)
+
+  // Timestamps
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([lastSyncedAt])
+  @@index([nextSyncAt])
+  @@map("website_cached_data")
+}
+
+// Track all sync history
+model SyncHistory {
+  id        String @id @default(auto()) @map("_id") @db.ObjectId
+  websiteId String @db.ObjectId
+  userId    String
+
+  // Sync Details
+  syncType String // "full", "incremental", "manual"
+  status   String // "success", "failed", "partial"
+
+  // What was synced
+  reviewsCount Int?
+  photosCount  Int?
+  postsCount   Int?
+
+  // Error Info
+  errorMessage String?
+  errorDetails Json?
+
+  // Timing
+  fetchedAt   DateTime
+  completedAt DateTime?
+  duration    Int? // milliseconds
+
+  createdAt DateTime @default(now())
+
+  @@index([userId])
+  @@index([fetchedAt])
+  @@index([status])
+  @@map("sync_history")
+}
+
+// Queue for scheduled syncs
+model SyncQueue {
+  id        String @id @default(auto()) @map("_id") @db.ObjectId
+  websiteId String @db.ObjectId
+  userId    String
+
+  // Queue Status
+  status   String @default("pending") // pending, processing, completed, failed
+  priority Int    @default(0)
+
+  // Scheduling
+  scheduledFor DateTime
+  processedAt  DateTime?
+  nextRetry    DateTime?
+
+  // Retries
+  retryCount Int @default(0)
+  maxRetries Int @default(3)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([status])
+  @@index([scheduledFor])
+  @@index([priority])
+  @@map("sync_queue")
 }

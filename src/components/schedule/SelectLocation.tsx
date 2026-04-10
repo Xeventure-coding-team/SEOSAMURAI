@@ -11,6 +11,7 @@ import { CalendarEvent, Mode } from "../calendar/calendar-types"
 import Calendar from "../calendar/calendar"
 import { useGMBStore } from "@/store/gmbStore"
 import { Loader } from "../Loader/Loader"
+import { useCalendarContext } from "../calendar/calendar-context"
 
 interface Location {
     name: string
@@ -114,6 +115,8 @@ export default function SelectLocation() {
 
     const gmbAccountId = useGMBStore((state) => state.accountId)
     const accessToken = useGMBStore((state) => state.accessToken)
+    const [shouldOpenDialog, setShouldOpenDialog] = useState(false)
+    const [openDialog, setOpenDialog] = useState(false)
 
     const hasValidCredentials = gmbAccountId && accessToken
 
@@ -203,13 +206,18 @@ export default function SelectLocation() {
             const response = await axios.get(url)
 
             if (response.data) {
+                console.log("📥 Received location details:", response.data)
                 setLocationDetails(response.data.location)
                 const location = locations.find((loc) => loc.name === locationName)
                 const displayName = location ? getLocationDisplayName(location) : "Location"
-                
-                if(response.data.scheduledPosts) {
-                     setEvents(response.data.scheduledPosts)
+
+                // Update events state - THIS IS IMPORTANT
+                if (response.data.scheduledPosts) {
+                    setEvents(response.data.scheduledPosts)
+                } else {
+                    setEvents([]) // Clear events if none returned
                 }
+
                 toast.success(`${displayName} selected and ready for posting!`, {
                     duration: 3000,
                     position: "top-center",
@@ -232,9 +240,16 @@ export default function SelectLocation() {
         }
     }
 
+    const handlePostCreated = (postData: any) => {
+        if (selectedLocation) {
+            fetchLocationDetails(selectedLocation)
+        }
+    }
+
     const handleLocationSelect = (locationName: string) => {
         setSelectedLocation(locationName)
         setLocationDetails(null)
+        setOpenDialog(true)
         fetchLocationDetails(locationName)
     }
 
@@ -251,6 +266,9 @@ export default function SelectLocation() {
         })
         fetchLocations()
     }
+
+
+
 
     if (loadingLocations) {
         return (
@@ -295,10 +313,8 @@ export default function SelectLocation() {
                     <p className="text-lg text-muted-foreground max-w-2xl">
                         Select a location to start scheduling and managing your posts
                     </p>
-
                 </div>
             </div>
-
 
             <div className="space-y-4">
                 <div className="flex items-center gap-2 mb-4">
@@ -327,26 +343,29 @@ export default function SelectLocation() {
                                         }`}
                                     onClick={() => handleLocationSelect(location.name)}
                                 >
-                                    <CardContent className="">
-                                        <div className="flex items-center justify-between">
-                                            <div className="flex items-center gap-4">
+                                    <CardContent>
+                                        <div className="flex items-start justify-between gap-4">
+                                            <div className="flex items-start gap-4 flex-1 min-w-0">
                                                 <div
-                                                    className={`p-3 rounded-lg ${selectedLocation === location.name ? "bg-primary text-primary-foreground" : "bg-muted"
+                                                    className={`p-3 rounded-lg shrink-0 ${selectedLocation === location.name ? "bg-primary text-primary-foreground" : "bg-muted"
                                                         }`}
                                                 >
                                                     <Building2 className="h-5 w-5" />
                                                 </div>
-                                                <div>
-                                                    <div className="font-semibold text-base">{getLocationDisplayName(location)}</div>
-                                                        {location.storefrontAddress && (
-                                                            <p className="text-xs text-muted-foreground truncate max-w-[240px] line-clamp-4">
-                                                                {location.formattedAddress}
-                                                            </p>
-                                                        )}
-
+                                                <div className="flex-1 min-w-0">
+                                                    <div className="font-semibold text-base break-words">
+                                                        {getLocationDisplayName(location)}
+                                                    </div>
+                                                    {location.storefrontAddress && (
+                                                        <p className="text-xs text-muted-foreground mt-1 break-words">
+                                                            {location.formattedAddress}
+                                                        </p>
+                                                    )}
                                                 </div>
                                             </div>
-                                            {selectedLocation === location.name && <CheckCircle className="h-5 w-5 text-primary" />}
+                                            {selectedLocation === location.name && (
+                                                <CheckCircle className="h-5 w-5 text-primary shrink-0" />
+                                            )}
                                         </div>
                                     </CardContent>
                                 </Card>
@@ -367,6 +386,7 @@ export default function SelectLocation() {
             {locationDetails && selectedLocation && (
                 <>
                     <Calendar
+                        key={events.length}
                         accountId={gmbAccountId}
                         locationId={selectedLocation}
                         businessName={locationDetails.locationData?.name}
@@ -377,6 +397,9 @@ export default function SelectLocation() {
                         setMode={setMode}
                         date={date}
                         setDate={setDate}
+                        onPostCreated={handlePostCreated}
+                        openDialog={openDialog}
+                        setOpenDialog={setOpenDialog}
                     />
                 </>
             )}

@@ -24,11 +24,12 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog"
-import { Loader2, QrCode, Trash2, Edit, Eye, Calendar, ExternalLink, Plus, Download } from "lucide-react"
+import { Loader2, QrCode, Trash2, Edit, Eye, Calendar, ExternalLink, Plus, Download, X, Pencil } from "lucide-react"
 import axios from "axios"
 import toast from "react-hot-toast"
 import Link from "next/link"
 import { downloadPosterAsPDF, SavedPoster } from "@/lib/download/poster-download"
+import ReviewPosterDisplay from "./ReviewPosterDisplay"
 
 interface EditFormData {
   businessName: string
@@ -47,6 +48,7 @@ export default function SharedGoogleReviewPosterList() {
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
   const [posterToDelete, setPosterToDelete] = useState<string | null>(null)
   const [editDialogOpen, setEditDialogOpen] = useState(false)
+  const [previewPoster, setPreviewPoster] = useState<typeof posters[0] | null>(null)
   const [editFormData, setEditFormData] = useState<EditFormData>({
     businessName: "",
     reviewUrl: "",
@@ -109,58 +111,7 @@ export default function SharedGoogleReviewPosterList() {
     window.open(`/app/shared-google-review-poster/view?${params.toString()}`, '_blank')
   }
 
-  const handleEditClick = (poster: SavedPoster) => {
-    setEditing(poster.id)
-    setEditFormData({
-      businessName: poster.businessName,
-      reviewUrl: poster.reviewUrl,
-      bgColor: poster.bgColor,
-      bgPattern: poster.bgPattern || "none",
-      keywords: poster.keywords.join(", "),
-    })
-    setEditDialogOpen(true)
-  }
 
-  const handleEditSave = async () => {
-    if (!editing) return
-
-    if (!editFormData.businessName || !editFormData.reviewUrl) {
-      toast.error("Business name and review URL are required", {
-        duration: 3000,
-        position: "top-right",
-      })
-      return
-    }
-
-    try {
-      const response = await axios.put(`/api/review-poster?id=${editing}`, {
-        businessName: editFormData.businessName,
-        reviewUrl: editFormData.reviewUrl,
-        bgColor: editFormData.bgColor,
-        bgPattern: editFormData.bgPattern,
-        keywords: editFormData.keywords,
-      })
-
-      if (response.data.success) {
-        toast.success("Poster updated successfully", {
-          duration: 2000,
-          position: "top-right",
-        })
-
-        setPosters(posters.map(p =>
-          p.id === editing ? { ...p, ...response.data.poster } : p
-        ))
-
-        setEditDialogOpen(false)
-        setEditing(null)
-      }
-    } catch (error: any) {
-      toast.error(error.response?.data?.error || "Failed to update poster", {
-        duration: 3000,
-        position: "top-right",
-      })
-    }
-  }
 
   const handleDeleteClick = (posterId: string) => {
     setPosterToDelete(posterId)
@@ -196,7 +147,7 @@ export default function SharedGoogleReviewPosterList() {
   const colorOptions = [
     { name: "Green", value: "#10b981" },
     { name: "Blue", value: "#3b82f6" },
-    { name: "Purple", value: "#8b5cf6" },
+    { name: "Purple", value: "#2563eb" },
     { name: "Orange", value: "#f59e0b" },
     { name: "Red", value: "#ef4444" },
   ]
@@ -223,6 +174,10 @@ export default function SharedGoogleReviewPosterList() {
     )
   }
 
+  const handlePreviewClick = (poster: typeof posters[0]) => {
+    setPreviewPoster(poster)
+  }
+
   return (
     <div className="space-y-6">
       {/* Header */}
@@ -232,7 +187,7 @@ export default function SharedGoogleReviewPosterList() {
           <p className="text-muted-foreground mt-1">Manage your Google review poster collection</p>
         </div>
         <div className="flex items-center gap-3">
-          <Badge variant="secondary" className="text-sm px-3 py-1">
+          <Badge variant="secondary">
             {posters.length} {posters.length === 1 ? 'Poster' : 'Posters'}
           </Badge>
           <Button asChild size="lg" className="shrink-0">
@@ -264,201 +219,175 @@ export default function SharedGoogleReviewPosterList() {
           </CardContent>
         </Card>
       ) : (
-        /* Poster Cards Grid */
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+
+        /* Poster Cards Grid - Professional SaaS UI */
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
           {posters.map((poster) => (
-            <Card key={poster.id} className="hover:shadow-lg transition-all duration-200 group">
-              <CardHeader className="pb-3">
-                <div className="flex items-start justify-between gap-3">
+            <div
+              key={poster.id}
+              className="group bg-background border border-border rounded-lg transition-all duration-200 hover:shadow-md hover:border-border/60 flex flex-col"
+            >
+              {/* Content Area */}
+              <div className="p-5 pb-4 flex-1 flex flex-col gap-4">
+                {/* Header with color indicator */}
+                <div className="flex gap-3 items-start">
+                  <div
+                    className="w-10 h-10 rounded-lg flex-shrink-0 border border-border/50"
+                    style={{ backgroundColor: poster.bgColor }}
+                  />
                   <div className="flex-1 min-w-0">
-                    <CardTitle className="text-lg font-semibold truncate mb-1 capitalize">
+
+                    <h3 className="text-sm font-semibold text-foreground leading-tight">
                       {poster.businessName}
-                    </CardTitle>
-                    <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
-                      <Calendar className="h-3 w-3" />
-                      <span>{new Date(poster.createdAt).toLocaleDateString('en-US', {
+                    </h3>
+
+                    <time className="text-xs text-muted-foreground mt-1 block">
+                      {new Date(poster.createdAt).toLocaleDateString('en-US', {
                         month: 'short',
                         day: 'numeric',
                         year: 'numeric'
-                      })}</span>
-                    </div>
+                      })}
+                    </time>
                   </div>
-                  <div
-                    className="w-10 h-10 rounded-lg flex-shrink-0 shadow-sm ring-1 ring-black/5"
-                    style={{ backgroundColor: poster.bgColor }}
-                  />
                 </div>
-              </CardHeader>
 
-              <CardContent className="space-y-4">
-                {/* Keywords */}
+                {/* Keywords as tags */}
                 {poster.keywords && poster.keywords.length > 0 && (
                   <div className="flex flex-wrap gap-1.5">
-                    {poster.keywords.slice(0, 3).map((keyword, index) => (
-                      <Badge key={index} variant="secondary" className="text-xs font-normal">
+                    {poster.keywords.slice(0, 2).map((keyword, index) => (
+                      <span
+                        key={index}
+                        className="text-xs px-2.5 py-1 rounded-md bg-muted text-muted-foreground font-medium"
+                      >
                         {keyword}
-                      </Badge>
+                      </span>
                     ))}
-                    {poster.keywords.length > 3 && (
-                      <Badge variant="outline" className="text-xs font-normal">
-                        +{poster.keywords.length - 3}
-                      </Badge>
+                    {poster.keywords.length > 2 && (
+                      <span className="text-xs px-2.5 py-1 text-muted-foreground font-medium">
+                        +{poster.keywords.length - 2} more
+                      </span>
                     )}
                   </div>
                 )}
 
-                {/* Review URL Preview */}
-                <div className="flex items-start gap-2 p-2.5 bg-muted/50 rounded-md">
-                  <ExternalLink className="h-3.5 w-3.5 text-muted-foreground mt-0.5 flex-shrink-0" />
-                  <span className="text-xs text-muted-foreground truncate flex-1">
-                    {poster.reviewUrl}
-                  </span>
+                {/* URL */}
+                <div className="text-xs text-muted-foreground truncate font-mono">
+                  {poster.reviewUrl}
                 </div>
+              </div>
 
-                {/* Action Buttons */}
-                <div className="flex gap-2 pt-2">
-                  <Button asChild variant="outline" size="sm" className="flex-1">
-                    <Link href={`/review/${poster.id}`} target="_blank" rel="noopener noreferrer">
-                      <Eye className="h-3.5 w-3.5 mr-1.5" />
-                      View
-                    </Link>
-                  </Button>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => handleDownloadClick(poster)}
-                    disabled={downloading === poster.id}
-                  >
-                    {downloading === poster.id ? (
-                      <Loader2 className="h-3.5 w-3.5 animate-spin" />
-                    ) : (
-                      <Download className="h-3.5 w-3.5" />
-                    )}
-                  </Button>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => handleEditClick(poster)}
-                  >
-                    <Edit className="h-3.5 w-3.5" />
-                  </Button>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    disabled={deleting === poster.id}
-                    onClick={() => handleDeleteClick(poster.id)}
-                    className="text-destructive hover:text-destructive"
-                  >
-                    {deleting === poster.id ? (
-                      <Loader2 className="h-3.5 w-3.5 animate-spin" />
-                    ) : (
-                      <Trash2 className="h-3.5 w-3.5" />
-                    )}
-                  </Button>
-                </div>
-              </CardContent>
-            </Card>
+              {/* Action Footer */}
+              <div className="border-t border-border/50 px-5 py-3 flex gap-2">
+                <button
+                  onClick={() => handleDownloadClick(poster)}
+                  disabled={downloading === poster.id}
+                  className="flex-1 text-xs font-medium px-3 py-2 rounded-md text-foreground hover:bg-muted transition-colors disabled:opacity-50"
+                  title="Download"
+                >
+                  {downloading === poster.id ? '⋯' : 'Download'}
+                </button>
+                <button
+                  onClick={() => handlePreviewClick(poster)}
+                  className="flex-1 text-xs font-medium px-3 py-2 rounded-md text-foreground hover:bg-muted transition-colors"
+                  title="Preview"
+                >
+                  Preview
+                </button>
+                <button
+                  onClick={() => handleDeleteClick(poster.id)}
+                  disabled={deleting === poster.id}
+                  className="flex-1 text-xs font-medium px-3 py-2 rounded-md text-destructive hover:bg-destructive/10 transition-colors disabled:opacity-50"
+                >
+                  {deleting === poster.id ? '⋯' : 'Delete'}
+                </button>
+              </div>
+            </div>
           ))}
         </div>
+
       )}
 
-      {/* Edit Dialog */}
-      <Dialog open={editDialogOpen} onOpenChange={setEditDialogOpen}>
-        <DialogContent className="sm:max-w-[500px]">
-          <DialogHeader>
-            <DialogTitle>Edit Review Poster</DialogTitle>
-            <DialogDescription>
-              Update your review poster details below
-            </DialogDescription>
+
+      {/* Preview Modal - Modern shadcn Dialog */}
+      <Dialog open={!!previewPoster} onOpenChange={(open) => !open && setPreviewPoster(null)}>
+        <DialogContent className="sm:max-w-[1000px] w-full p-0 gap-0 bg-background border-0 shadow-2xl rounded-2xl overflow-hidden">
+          <DialogHeader className="sr-only">
+            <DialogTitle>Poster Preview</DialogTitle>
+            <DialogDescription>Preview of your review poster</DialogDescription>
           </DialogHeader>
 
-          <div className="space-y-4 py-4">
-            <div className="space-y-2">
-              <label className="text-sm font-medium">Business Name</label>
-              <Input
-                value={editFormData.businessName}
-                onChange={(e) => setEditFormData({ ...editFormData, businessName: e.target.value })}
-                placeholder="e.g. GloPar Travels"
+          {/* Modern Close Button */}
+          <button
+            onClick={() => setPreviewPoster(null)}
+            className="absolute right-4 top-4 z-50 rounded-full bg-black/60 backdrop-blur-sm p-2 text-white hover:bg-black/80 transition-all duration-200 hover:scale-110 focus:outline-none focus:ring-2 focus:ring-white/50"
+          >
+            <X className="h-4 w-4" />
+            <span className="sr-only">Close</span>
+          </button>
+
+          {/* Poster Content */}
+          {previewPoster && (
+            <div className="overflow-auto max-h-[85vh]">
+              <ReviewPosterDisplay
+                businessName={previewPoster.businessName}
+                reviewUrl={previewPoster.reviewUrl}
+                bgColor={previewPoster.bgColor}
+                bgPattern={previewPoster.bgPattern}
+                keywords={previewPoster.keywords?.join(', ') || ''}
+                fullWidth={false}
               />
             </div>
+          )}
 
-            <div className="space-y-2">
-              <label className="text-sm font-medium">Google Review Link</label>
-              <Input
-                type="url"
-                value={editFormData.reviewUrl}
-                onChange={(e) => setEditFormData({ ...editFormData, reviewUrl: e.target.value })}
-                placeholder="https://g.page/r/your-business/review"
-              />
+          {/* Modern Footer Actions - No Edit Button */}
+          <div className="flex justify-between items-center gap-3 p-5 bg-gradient-to-r from-gray-50 to-white dark:from-gray-900 dark:to-gray-950 border-t">
+            <div className="text-xs text-muted-foreground">
+              {previewPoster && (
+                <span className="flex items-center gap-1">
+                  <span className="inline-block w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse" />
+                  Ready to download
+                </span>
+              )}
             </div>
 
-            <div className="space-y-2">
-              <label className="text-sm font-medium">Background Color</label>
-              <div className="flex gap-2 mb-3">
-                <Input
-                  type="color"
-                  value={editFormData.bgColor}
-                  onChange={(e) => setEditFormData({ ...editFormData, bgColor: e.target.value })}
-                  className="w-16 h-10 p-1 cursor-pointer"
-                />
-                <span className="text-sm text-muted-foreground pt-2">{editFormData.bgColor}</span>
-              </div>
-              <div className="grid grid-cols-5 gap-2">
-                {colorOptions.map((color) => (
-                  <button
-                    key={color.value}
-                    onClick={() => setEditFormData({ ...editFormData, bgColor: color.value })}
-                    className={`w-full h-10 rounded-md border-2 transition-colors ${editFormData.bgColor === color.value ? 'border-primary' : 'border-border hover:border-primary'
-                      }`}
-                    style={{ backgroundColor: color.value }}
-                    title={color.name}
-                  />
-                ))}
-              </div>
-            </div>
+            <div className="flex gap-3">
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => setPreviewPoster(null)}
+                className="rounded-full px-5"
+              >
+                Close
+              </Button>
 
-            {/* Pattern Selector */}
-            <div className="space-y-2">
-              <label className="text-sm font-medium">Background Pattern</label>
-              <div className="grid grid-cols-3 gap-2">
-                {patternOptions.map((pattern) => (
-                  <button
-                    key={pattern.value}
-                    onClick={() => setEditFormData({ ...editFormData, bgPattern: pattern.value })}
-                    className={`px-3 py-2 rounded-md border-2 text-sm font-medium transition-colors ${editFormData.bgPattern === pattern.value
-                        ? "border-primary bg-primary/10 text-primary"
-                        : "border-border hover:border-primary"
-                      }`}
-                  >
-                    {pattern.name}
-                  </button>
-                ))}
-              </div>
-            </div>
-
-            <div className="space-y-2">
-              <label className="text-sm font-medium">Keywords / Review Hints</label>
-              <Textarea
-                value={editFormData.keywords}
-                onChange={(e) => setEditFormData({ ...editFormData, keywords: e.target.value })}
-                placeholder="great service, friendly staff, quick delivery..."
-                rows={3}
-                className="resize-none"
-              />
-              <p className="text-xs text-muted-foreground">Separate keywords with commas</p>
+              {previewPoster && (
+                <Button
+                  size="sm"
+                  onClick={() => {
+                    handleDownloadClick(previewPoster)
+                    setPreviewPoster(null)
+                  }}
+                  disabled={downloading === previewPoster.id}
+                  className="rounded-full px-6 gap-2 bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 shadow-lg hover:shadow-xl transition-all duration-200"
+                >
+                  {downloading === previewPoster.id ? (
+                    <>
+                      <div className="h-3.5 w-3.5 animate-spin rounded-full border-2 border-white border-t-transparent" />
+                      Downloading...
+                    </>
+                  ) : (
+                    <>
+                      <Download className="h-3.5 w-3.5" />
+                      Download
+                    </>
+                  )}
+                </Button>
+              )}
             </div>
           </div>
-
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setEditDialogOpen(false)}>
-              Cancel
-            </Button>
-            <Button onClick={handleEditSave}>
-              Save Changes
-            </Button>
-          </DialogFooter>
         </DialogContent>
       </Dialog>
+
 
       {/* Delete Confirmation Dialog */}
       <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>

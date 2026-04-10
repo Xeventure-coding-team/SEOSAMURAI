@@ -285,7 +285,8 @@ export default function DashboardStats() {
                       </p>
                     </div>
 
-                    {kw.rank ? (
+                    <Badge>
+                      {kw.rank ? (
                       <span className="text-sm font-medium">
                         #{kw.rank}
                       </span>
@@ -294,6 +295,8 @@ export default function DashboardStats() {
                         —
                       </span>
                     )}
+                    </Badge>
+
                   </div>
                 ))}
               </div>

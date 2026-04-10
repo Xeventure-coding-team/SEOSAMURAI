@@ -133,6 +133,26 @@ export type Chat = $Result.DefaultSelection<Prisma.$ChatPayload>
  * 
  */
 export type Message = $Result.DefaultSelection<Prisma.$MessagePayload>
+/**
+ * Model Website
+ * 
+ */
+export type Website = $Result.DefaultSelection<Prisma.$WebsitePayload>
+/**
+ * Model WebsiteCachedData
+ * 
+ */
+export type WebsiteCachedData = $Result.DefaultSelection<Prisma.$WebsiteCachedDataPayload>
+/**
+ * Model SyncHistory
+ * 
+ */
+export type SyncHistory = $Result.DefaultSelection<Prisma.$SyncHistoryPayload>
+/**
+ * Model SyncQueue
+ * 
+ */
+export type SyncQueue = $Result.DefaultSelection<Prisma.$SyncQueuePayload>
 
 /**
  * Enums
@@ -524,6 +544,46 @@ export class PrismaClient<
     * ```
     */
   get message(): Prisma.MessageDelegate<ExtArgs, ClientOptions>;
+
+  /**
+   * `prisma.website`: Exposes CRUD operations for the **Website** model.
+    * Example usage:
+    * ```ts
+    * // Fetch zero or more Websites
+    * const websites = await prisma.website.findMany()
+    * ```
+    */
+  get website(): Prisma.WebsiteDelegate<ExtArgs, ClientOptions>;
+
+  /**
+   * `prisma.websiteCachedData`: Exposes CRUD operations for the **WebsiteCachedData** model.
+    * Example usage:
+    * ```ts
+    * // Fetch zero or more WebsiteCachedData
+    * const websiteCachedData = await prisma.websiteCachedData.findMany()
+    * ```
+    */
+  get websiteCachedData(): Prisma.WebsiteCachedDataDelegate<ExtArgs, ClientOptions>;
+
+  /**
+   * `prisma.syncHistory`: Exposes CRUD operations for the **SyncHistory** model.
+    * Example usage:
+    * ```ts
+    * // Fetch zero or more SyncHistories
+    * const syncHistories = await prisma.syncHistory.findMany()
+    * ```
+    */
+  get syncHistory(): Prisma.SyncHistoryDelegate<ExtArgs, ClientOptions>;
+
+  /**
+   * `prisma.syncQueue`: Exposes CRUD operations for the **SyncQueue** model.
+    * Example usage:
+    * ```ts
+    * // Fetch zero or more SyncQueues
+    * const syncQueues = await prisma.syncQueue.findMany()
+    * ```
+    */
+  get syncQueue(): Prisma.SyncQueueDelegate<ExtArgs, ClientOptions>;
 }
 
 export namespace Prisma {
@@ -987,7 +1047,11 @@ export namespace Prisma {
     GoogleReviewPoster: 'GoogleReviewPoster',
     gmb_reviews: 'gmb_reviews',
     Chat: 'Chat',
-    Message: 'Message'
+    Message: 'Message',
+    Website: 'Website',
+    WebsiteCachedData: 'WebsiteCachedData',
+    SyncHistory: 'SyncHistory',
+    SyncQueue: 'SyncQueue'
   };
 
   export type ModelName = (typeof ModelName)[keyof typeof ModelName]
@@ -1006,7 +1070,7 @@ export namespace Prisma {
       omit: GlobalOmitOptions
     }
     meta: {
-      modelProps: "version" | "locations" | "scheduledPost" | "gmbIntegration" | "competitorAnalysis" | "keywords" | "keywordRank" | "keywordTracking" | "batchUpdate" | "userSettings" | "rankAlert" | "task" | "completedTask" | "taskExclusion" | "userProgress" | "locationProgress" | "milestone" | "locationMilestone" | "locationAchievement" | "userTaskRefresh" | "googleReviewPoster" | "gmb_reviews" | "chat" | "message"
+      modelProps: "version" | "locations" | "scheduledPost" | "gmbIntegration" | "competitorAnalysis" | "keywords" | "keywordRank" | "keywordTracking" | "batchUpdate" | "userSettings" | "rankAlert" | "task" | "completedTask" | "taskExclusion" | "userProgress" | "locationProgress" | "milestone" | "locationMilestone" | "locationAchievement" | "userTaskRefresh" | "googleReviewPoster" | "gmb_reviews" | "chat" | "message" | "website" | "websiteCachedData" | "syncHistory" | "syncQueue"
       txIsolationLevel: never
     }
     model: {
@@ -2786,6 +2850,302 @@ export namespace Prisma {
           }
         }
       }
+      Website: {
+        payload: Prisma.$WebsitePayload<ExtArgs>
+        fields: Prisma.WebsiteFieldRefs
+        operations: {
+          findUnique: {
+            args: Prisma.WebsiteFindUniqueArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$WebsitePayload> | null
+          }
+          findUniqueOrThrow: {
+            args: Prisma.WebsiteFindUniqueOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$WebsitePayload>
+          }
+          findFirst: {
+            args: Prisma.WebsiteFindFirstArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$WebsitePayload> | null
+          }
+          findFirstOrThrow: {
+            args: Prisma.WebsiteFindFirstOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$WebsitePayload>
+          }
+          findMany: {
+            args: Prisma.WebsiteFindManyArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$WebsitePayload>[]
+          }
+          create: {
+            args: Prisma.WebsiteCreateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$WebsitePayload>
+          }
+          createMany: {
+            args: Prisma.WebsiteCreateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          delete: {
+            args: Prisma.WebsiteDeleteArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$WebsitePayload>
+          }
+          update: {
+            args: Prisma.WebsiteUpdateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$WebsitePayload>
+          }
+          deleteMany: {
+            args: Prisma.WebsiteDeleteManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          updateMany: {
+            args: Prisma.WebsiteUpdateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          upsert: {
+            args: Prisma.WebsiteUpsertArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$WebsitePayload>
+          }
+          aggregate: {
+            args: Prisma.WebsiteAggregateArgs<ExtArgs>
+            result: $Utils.Optional<AggregateWebsite>
+          }
+          groupBy: {
+            args: Prisma.WebsiteGroupByArgs<ExtArgs>
+            result: $Utils.Optional<WebsiteGroupByOutputType>[]
+          }
+          findRaw: {
+            args: Prisma.WebsiteFindRawArgs<ExtArgs>
+            result: JsonObject
+          }
+          aggregateRaw: {
+            args: Prisma.WebsiteAggregateRawArgs<ExtArgs>
+            result: JsonObject
+          }
+          count: {
+            args: Prisma.WebsiteCountArgs<ExtArgs>
+            result: $Utils.Optional<WebsiteCountAggregateOutputType> | number
+          }
+        }
+      }
+      WebsiteCachedData: {
+        payload: Prisma.$WebsiteCachedDataPayload<ExtArgs>
+        fields: Prisma.WebsiteCachedDataFieldRefs
+        operations: {
+          findUnique: {
+            args: Prisma.WebsiteCachedDataFindUniqueArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$WebsiteCachedDataPayload> | null
+          }
+          findUniqueOrThrow: {
+            args: Prisma.WebsiteCachedDataFindUniqueOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$WebsiteCachedDataPayload>
+          }
+          findFirst: {
+            args: Prisma.WebsiteCachedDataFindFirstArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$WebsiteCachedDataPayload> | null
+          }
+          findFirstOrThrow: {
+            args: Prisma.WebsiteCachedDataFindFirstOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$WebsiteCachedDataPayload>
+          }
+          findMany: {
+            args: Prisma.WebsiteCachedDataFindManyArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$WebsiteCachedDataPayload>[]
+          }
+          create: {
+            args: Prisma.WebsiteCachedDataCreateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$WebsiteCachedDataPayload>
+          }
+          createMany: {
+            args: Prisma.WebsiteCachedDataCreateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          delete: {
+            args: Prisma.WebsiteCachedDataDeleteArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$WebsiteCachedDataPayload>
+          }
+          update: {
+            args: Prisma.WebsiteCachedDataUpdateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$WebsiteCachedDataPayload>
+          }
+          deleteMany: {
+            args: Prisma.WebsiteCachedDataDeleteManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          updateMany: {
+            args: Prisma.WebsiteCachedDataUpdateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          upsert: {
+            args: Prisma.WebsiteCachedDataUpsertArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$WebsiteCachedDataPayload>
+          }
+          aggregate: {
+            args: Prisma.WebsiteCachedDataAggregateArgs<ExtArgs>
+            result: $Utils.Optional<AggregateWebsiteCachedData>
+          }
+          groupBy: {
+            args: Prisma.WebsiteCachedDataGroupByArgs<ExtArgs>
+            result: $Utils.Optional<WebsiteCachedDataGroupByOutputType>[]
+          }
+          findRaw: {
+            args: Prisma.WebsiteCachedDataFindRawArgs<ExtArgs>
+            result: JsonObject
+          }
+          aggregateRaw: {
+            args: Prisma.WebsiteCachedDataAggregateRawArgs<ExtArgs>
+            result: JsonObject
+          }
+          count: {
+            args: Prisma.WebsiteCachedDataCountArgs<ExtArgs>
+            result: $Utils.Optional<WebsiteCachedDataCountAggregateOutputType> | number
+          }
+        }
+      }
+      SyncHistory: {
+        payload: Prisma.$SyncHistoryPayload<ExtArgs>
+        fields: Prisma.SyncHistoryFieldRefs
+        operations: {
+          findUnique: {
+            args: Prisma.SyncHistoryFindUniqueArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$SyncHistoryPayload> | null
+          }
+          findUniqueOrThrow: {
+            args: Prisma.SyncHistoryFindUniqueOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$SyncHistoryPayload>
+          }
+          findFirst: {
+            args: Prisma.SyncHistoryFindFirstArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$SyncHistoryPayload> | null
+          }
+          findFirstOrThrow: {
+            args: Prisma.SyncHistoryFindFirstOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$SyncHistoryPayload>
+          }
+          findMany: {
+            args: Prisma.SyncHistoryFindManyArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$SyncHistoryPayload>[]
+          }
+          create: {
+            args: Prisma.SyncHistoryCreateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$SyncHistoryPayload>
+          }
+          createMany: {
+            args: Prisma.SyncHistoryCreateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          delete: {
+            args: Prisma.SyncHistoryDeleteArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$SyncHistoryPayload>
+          }
+          update: {
+            args: Prisma.SyncHistoryUpdateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$SyncHistoryPayload>
+          }
+          deleteMany: {
+            args: Prisma.SyncHistoryDeleteManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          updateMany: {
+            args: Prisma.SyncHistoryUpdateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          upsert: {
+            args: Prisma.SyncHistoryUpsertArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$SyncHistoryPayload>
+          }
+          aggregate: {
+            args: Prisma.SyncHistoryAggregateArgs<ExtArgs>
+            result: $Utils.Optional<AggregateSyncHistory>
+          }
+          groupBy: {
+            args: Prisma.SyncHistoryGroupByArgs<ExtArgs>
+            result: $Utils.Optional<SyncHistoryGroupByOutputType>[]
+          }
+          findRaw: {
+            args: Prisma.SyncHistoryFindRawArgs<ExtArgs>
+            result: JsonObject
+          }
+          aggregateRaw: {
+            args: Prisma.SyncHistoryAggregateRawArgs<ExtArgs>
+            result: JsonObject
+          }
+          count: {
+            args: Prisma.SyncHistoryCountArgs<ExtArgs>
+            result: $Utils.Optional<SyncHistoryCountAggregateOutputType> | number
+          }
+        }
+      }
+      SyncQueue: {
+        payload: Prisma.$SyncQueuePayload<ExtArgs>
+        fields: Prisma.SyncQueueFieldRefs
+        operations: {
+          findUnique: {
+            args: Prisma.SyncQueueFindUniqueArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$SyncQueuePayload> | null
+          }
+          findUniqueOrThrow: {
+            args: Prisma.SyncQueueFindUniqueOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$SyncQueuePayload>
+          }
+          findFirst: {
+            args: Prisma.SyncQueueFindFirstArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$SyncQueuePayload> | null
+          }
+          findFirstOrThrow: {
+            args: Prisma.SyncQueueFindFirstOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$SyncQueuePayload>
+          }
+          findMany: {
+            args: Prisma.SyncQueueFindManyArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$SyncQueuePayload>[]
+          }
+          create: {
+            args: Prisma.SyncQueueCreateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$SyncQueuePayload>
+          }
+          createMany: {
+            args: Prisma.SyncQueueCreateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          delete: {
+            args: Prisma.SyncQueueDeleteArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$SyncQueuePayload>
+          }
+          update: {
+            args: Prisma.SyncQueueUpdateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$SyncQueuePayload>
+          }
+          deleteMany: {
+            args: Prisma.SyncQueueDeleteManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          updateMany: {
+            args: Prisma.SyncQueueUpdateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          upsert: {
+            args: Prisma.SyncQueueUpsertArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$SyncQueuePayload>
+          }
+          aggregate: {
+            args: Prisma.SyncQueueAggregateArgs<ExtArgs>
+            result: $Utils.Optional<AggregateSyncQueue>
+          }
+          groupBy: {
+            args: Prisma.SyncQueueGroupByArgs<ExtArgs>
+            result: $Utils.Optional<SyncQueueGroupByOutputType>[]
+          }
+          findRaw: {
+            args: Prisma.SyncQueueFindRawArgs<ExtArgs>
+            result: JsonObject
+          }
+          aggregateRaw: {
+            args: Prisma.SyncQueueAggregateRawArgs<ExtArgs>
+            result: JsonObject
+          }
+          count: {
+            args: Prisma.SyncQueueCountArgs<ExtArgs>
+            result: $Utils.Optional<SyncQueueCountAggregateOutputType> | number
+          }
+        }
+      }
     }
   } & {
     other: {
@@ -2889,6 +3249,10 @@ export namespace Prisma {
     gmb_reviews?: gmb_reviewsOmit
     chat?: ChatOmit
     message?: MessageOmit
+    website?: WebsiteOmit
+    websiteCachedData?: WebsiteCachedDataOmit
+    syncHistory?: SyncHistoryOmit
+    syncQueue?: SyncQueueOmit
   }
 
   /* Types for Logging */
@@ -5247,7 +5611,7 @@ export namespace Prisma {
     languageCode: string
     topicType: string
     mediaFormat: string
-    imageUrl: string
+    imageUrl: string | null
     originalImageUrl: string | null
     actionType: string | null
     actionUrl: string | null
@@ -5357,7 +5721,7 @@ export namespace Prisma {
       languageCode: string
       topicType: string
       mediaFormat: string
-      imageUrl: string
+      imageUrl: string | null
       originalImageUrl: string | null
       actionType: string | null
       actionUrl: string | null
@@ -27915,6 +28279,4367 @@ export namespace Prisma {
 
 
   /**
+   * Model Website
+   */
+
+  export type AggregateWebsite = {
+    _count: WebsiteCountAggregateOutputType | null
+    _min: WebsiteMinAggregateOutputType | null
+    _max: WebsiteMaxAggregateOutputType | null
+  }
+
+  export type WebsiteMinAggregateOutputType = {
+    id: string | null
+    userId: string | null
+    locationId: string | null
+    accountId: string | null
+    subdomain: string | null
+    title: string | null
+    description: string | null
+    logoUrl: string | null
+    primaryColor: string | null
+    secondaryColor: string | null
+    fontFamily: string | null
+    googleAnalyticsId: string | null
+    facebookPixelId: string | null
+    isPublished: boolean | null
+    publishedAt: Date | null
+    createdAt: Date | null
+    updatedAt: Date | null
+  }
+
+  export type WebsiteMaxAggregateOutputType = {
+    id: string | null
+    userId: string | null
+    locationId: string | null
+    accountId: string | null
+    subdomain: string | null
+    title: string | null
+    description: string | null
+    logoUrl: string | null
+    primaryColor: string | null
+    secondaryColor: string | null
+    fontFamily: string | null
+    googleAnalyticsId: string | null
+    facebookPixelId: string | null
+    isPublished: boolean | null
+    publishedAt: Date | null
+    createdAt: Date | null
+    updatedAt: Date | null
+  }
+
+  export type WebsiteCountAggregateOutputType = {
+    id: number
+    userId: number
+    locationId: number
+    accountId: number
+    subdomain: number
+    title: number
+    description: number
+    logoUrl: number
+    primaryColor: number
+    secondaryColor: number
+    fontFamily: number
+    enabledSections: number
+    googleAnalyticsId: number
+    facebookPixelId: number
+    isPublished: number
+    publishedAt: number
+    createdAt: number
+    updatedAt: number
+    _all: number
+  }
+
+
+  export type WebsiteMinAggregateInputType = {
+    id?: true
+    userId?: true
+    locationId?: true
+    accountId?: true
+    subdomain?: true
+    title?: true
+    description?: true
+    logoUrl?: true
+    primaryColor?: true
+    secondaryColor?: true
+    fontFamily?: true
+    googleAnalyticsId?: true
+    facebookPixelId?: true
+    isPublished?: true
+    publishedAt?: true
+    createdAt?: true
+    updatedAt?: true
+  }
+
+  export type WebsiteMaxAggregateInputType = {
+    id?: true
+    userId?: true
+    locationId?: true
+    accountId?: true
+    subdomain?: true
+    title?: true
+    description?: true
+    logoUrl?: true
+    primaryColor?: true
+    secondaryColor?: true
+    fontFamily?: true
+    googleAnalyticsId?: true
+    facebookPixelId?: true
+    isPublished?: true
+    publishedAt?: true
+    createdAt?: true
+    updatedAt?: true
+  }
+
+  export type WebsiteCountAggregateInputType = {
+    id?: true
+    userId?: true
+    locationId?: true
+    accountId?: true
+    subdomain?: true
+    title?: true
+    description?: true
+    logoUrl?: true
+    primaryColor?: true
+    secondaryColor?: true
+    fontFamily?: true
+    enabledSections?: true
+    googleAnalyticsId?: true
+    facebookPixelId?: true
+    isPublished?: true
+    publishedAt?: true
+    createdAt?: true
+    updatedAt?: true
+    _all?: true
+  }
+
+  export type WebsiteAggregateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which Website to aggregate.
+     */
+    where?: WebsiteWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of Websites to fetch.
+     */
+    orderBy?: WebsiteOrderByWithRelationInput | WebsiteOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the start position
+     */
+    cursor?: WebsiteWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` Websites from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` Websites.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Count returned Websites
+    **/
+    _count?: true | WebsiteCountAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the minimum value
+    **/
+    _min?: WebsiteMinAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the maximum value
+    **/
+    _max?: WebsiteMaxAggregateInputType
+  }
+
+  export type GetWebsiteAggregateType<T extends WebsiteAggregateArgs> = {
+        [P in keyof T & keyof AggregateWebsite]: P extends '_count' | 'count'
+      ? T[P] extends true
+        ? number
+        : GetScalarType<T[P], AggregateWebsite[P]>
+      : GetScalarType<T[P], AggregateWebsite[P]>
+  }
+
+
+
+
+  export type WebsiteGroupByArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: WebsiteWhereInput
+    orderBy?: WebsiteOrderByWithAggregationInput | WebsiteOrderByWithAggregationInput[]
+    by: WebsiteScalarFieldEnum[] | WebsiteScalarFieldEnum
+    having?: WebsiteScalarWhereWithAggregatesInput
+    take?: number
+    skip?: number
+    _count?: WebsiteCountAggregateInputType | true
+    _min?: WebsiteMinAggregateInputType
+    _max?: WebsiteMaxAggregateInputType
+  }
+
+  export type WebsiteGroupByOutputType = {
+    id: string
+    userId: string
+    locationId: string
+    accountId: string
+    subdomain: string
+    title: string
+    description: string | null
+    logoUrl: string | null
+    primaryColor: string
+    secondaryColor: string
+    fontFamily: string
+    enabledSections: string[]
+    googleAnalyticsId: string | null
+    facebookPixelId: string | null
+    isPublished: boolean
+    publishedAt: Date | null
+    createdAt: Date
+    updatedAt: Date
+    _count: WebsiteCountAggregateOutputType | null
+    _min: WebsiteMinAggregateOutputType | null
+    _max: WebsiteMaxAggregateOutputType | null
+  }
+
+  type GetWebsiteGroupByPayload<T extends WebsiteGroupByArgs> = Prisma.PrismaPromise<
+    Array<
+      PickEnumerable<WebsiteGroupByOutputType, T['by']> &
+        {
+          [P in ((keyof T) & (keyof WebsiteGroupByOutputType))]: P extends '_count'
+            ? T[P] extends boolean
+              ? number
+              : GetScalarType<T[P], WebsiteGroupByOutputType[P]>
+            : GetScalarType<T[P], WebsiteGroupByOutputType[P]>
+        }
+      >
+    >
+
+
+  export type WebsiteSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    userId?: boolean
+    locationId?: boolean
+    accountId?: boolean
+    subdomain?: boolean
+    title?: boolean
+    description?: boolean
+    logoUrl?: boolean
+    primaryColor?: boolean
+    secondaryColor?: boolean
+    fontFamily?: boolean
+    enabledSections?: boolean
+    googleAnalyticsId?: boolean
+    facebookPixelId?: boolean
+    isPublished?: boolean
+    publishedAt?: boolean
+    createdAt?: boolean
+    updatedAt?: boolean
+    cachedData?: boolean | Website$cachedDataArgs<ExtArgs>
+  }, ExtArgs["result"]["website"]>
+
+
+
+  export type WebsiteSelectScalar = {
+    id?: boolean
+    userId?: boolean
+    locationId?: boolean
+    accountId?: boolean
+    subdomain?: boolean
+    title?: boolean
+    description?: boolean
+    logoUrl?: boolean
+    primaryColor?: boolean
+    secondaryColor?: boolean
+    fontFamily?: boolean
+    enabledSections?: boolean
+    googleAnalyticsId?: boolean
+    facebookPixelId?: boolean
+    isPublished?: boolean
+    publishedAt?: boolean
+    createdAt?: boolean
+    updatedAt?: boolean
+  }
+
+  export type WebsiteOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "userId" | "locationId" | "accountId" | "subdomain" | "title" | "description" | "logoUrl" | "primaryColor" | "secondaryColor" | "fontFamily" | "enabledSections" | "googleAnalyticsId" | "facebookPixelId" | "isPublished" | "publishedAt" | "createdAt" | "updatedAt", ExtArgs["result"]["website"]>
+  export type WebsiteInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    cachedData?: boolean | Website$cachedDataArgs<ExtArgs>
+  }
+
+  export type $WebsitePayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    name: "Website"
+    objects: {
+      cachedData: Prisma.$WebsiteCachedDataPayload<ExtArgs> | null
+    }
+    scalars: $Extensions.GetPayloadResult<{
+      id: string
+      userId: string
+      locationId: string
+      accountId: string
+      subdomain: string
+      title: string
+      description: string | null
+      logoUrl: string | null
+      primaryColor: string
+      secondaryColor: string
+      fontFamily: string
+      enabledSections: string[]
+      googleAnalyticsId: string | null
+      facebookPixelId: string | null
+      isPublished: boolean
+      publishedAt: Date | null
+      createdAt: Date
+      updatedAt: Date
+    }, ExtArgs["result"]["website"]>
+    composites: {}
+  }
+
+  type WebsiteGetPayload<S extends boolean | null | undefined | WebsiteDefaultArgs> = $Result.GetResult<Prisma.$WebsitePayload, S>
+
+  type WebsiteCountArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> =
+    Omit<WebsiteFindManyArgs, 'select' | 'include' | 'distinct' | 'omit'> & {
+      select?: WebsiteCountAggregateInputType | true
+    }
+
+  export interface WebsiteDelegate<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> {
+    [K: symbol]: { types: Prisma.TypeMap<ExtArgs>['model']['Website'], meta: { name: 'Website' } }
+    /**
+     * Find zero or one Website that matches the filter.
+     * @param {WebsiteFindUniqueArgs} args - Arguments to find a Website
+     * @example
+     * // Get one Website
+     * const website = await prisma.website.findUnique({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUnique<T extends WebsiteFindUniqueArgs>(args: SelectSubset<T, WebsiteFindUniqueArgs<ExtArgs>>): Prisma__WebsiteClient<$Result.GetResult<Prisma.$WebsitePayload<ExtArgs>, T, "findUnique", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find one Website that matches the filter or throw an error with `error.code='P2025'`
+     * if no matches were found.
+     * @param {WebsiteFindUniqueOrThrowArgs} args - Arguments to find a Website
+     * @example
+     * // Get one Website
+     * const website = await prisma.website.findUniqueOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUniqueOrThrow<T extends WebsiteFindUniqueOrThrowArgs>(args: SelectSubset<T, WebsiteFindUniqueOrThrowArgs<ExtArgs>>): Prisma__WebsiteClient<$Result.GetResult<Prisma.$WebsitePayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find the first Website that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {WebsiteFindFirstArgs} args - Arguments to find a Website
+     * @example
+     * // Get one Website
+     * const website = await prisma.website.findFirst({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirst<T extends WebsiteFindFirstArgs>(args?: SelectSubset<T, WebsiteFindFirstArgs<ExtArgs>>): Prisma__WebsiteClient<$Result.GetResult<Prisma.$WebsitePayload<ExtArgs>, T, "findFirst", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find the first Website that matches the filter or
+     * throw `PrismaKnownClientError` with `P2025` code if no matches were found.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {WebsiteFindFirstOrThrowArgs} args - Arguments to find a Website
+     * @example
+     * // Get one Website
+     * const website = await prisma.website.findFirstOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirstOrThrow<T extends WebsiteFindFirstOrThrowArgs>(args?: SelectSubset<T, WebsiteFindFirstOrThrowArgs<ExtArgs>>): Prisma__WebsiteClient<$Result.GetResult<Prisma.$WebsitePayload<ExtArgs>, T, "findFirstOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find zero or more Websites that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {WebsiteFindManyArgs} args - Arguments to filter and select certain fields only.
+     * @example
+     * // Get all Websites
+     * const websites = await prisma.website.findMany()
+     * 
+     * // Get first 10 Websites
+     * const websites = await prisma.website.findMany({ take: 10 })
+     * 
+     * // Only select the `id`
+     * const websiteWithIdOnly = await prisma.website.findMany({ select: { id: true } })
+     * 
+     */
+    findMany<T extends WebsiteFindManyArgs>(args?: SelectSubset<T, WebsiteFindManyArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$WebsitePayload<ExtArgs>, T, "findMany", GlobalOmitOptions>>
+
+    /**
+     * Create a Website.
+     * @param {WebsiteCreateArgs} args - Arguments to create a Website.
+     * @example
+     * // Create one Website
+     * const Website = await prisma.website.create({
+     *   data: {
+     *     // ... data to create a Website
+     *   }
+     * })
+     * 
+     */
+    create<T extends WebsiteCreateArgs>(args: SelectSubset<T, WebsiteCreateArgs<ExtArgs>>): Prisma__WebsiteClient<$Result.GetResult<Prisma.$WebsitePayload<ExtArgs>, T, "create", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Create many Websites.
+     * @param {WebsiteCreateManyArgs} args - Arguments to create many Websites.
+     * @example
+     * // Create many Websites
+     * const website = await prisma.website.createMany({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     *     
+     */
+    createMany<T extends WebsiteCreateManyArgs>(args?: SelectSubset<T, WebsiteCreateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Delete a Website.
+     * @param {WebsiteDeleteArgs} args - Arguments to delete one Website.
+     * @example
+     * // Delete one Website
+     * const Website = await prisma.website.delete({
+     *   where: {
+     *     // ... filter to delete one Website
+     *   }
+     * })
+     * 
+     */
+    delete<T extends WebsiteDeleteArgs>(args: SelectSubset<T, WebsiteDeleteArgs<ExtArgs>>): Prisma__WebsiteClient<$Result.GetResult<Prisma.$WebsitePayload<ExtArgs>, T, "delete", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Update one Website.
+     * @param {WebsiteUpdateArgs} args - Arguments to update one Website.
+     * @example
+     * // Update one Website
+     * const website = await prisma.website.update({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    update<T extends WebsiteUpdateArgs>(args: SelectSubset<T, WebsiteUpdateArgs<ExtArgs>>): Prisma__WebsiteClient<$Result.GetResult<Prisma.$WebsitePayload<ExtArgs>, T, "update", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Delete zero or more Websites.
+     * @param {WebsiteDeleteManyArgs} args - Arguments to filter Websites to delete.
+     * @example
+     * // Delete a few Websites
+     * const { count } = await prisma.website.deleteMany({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     * 
+     */
+    deleteMany<T extends WebsiteDeleteManyArgs>(args?: SelectSubset<T, WebsiteDeleteManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Update zero or more Websites.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {WebsiteUpdateManyArgs} args - Arguments to update one or more rows.
+     * @example
+     * // Update many Websites
+     * const website = await prisma.website.updateMany({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    updateMany<T extends WebsiteUpdateManyArgs>(args: SelectSubset<T, WebsiteUpdateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Create or update one Website.
+     * @param {WebsiteUpsertArgs} args - Arguments to update or create a Website.
+     * @example
+     * // Update or create a Website
+     * const website = await prisma.website.upsert({
+     *   create: {
+     *     // ... data to create a Website
+     *   },
+     *   update: {
+     *     // ... in case it already exists, update
+     *   },
+     *   where: {
+     *     // ... the filter for the Website we want to update
+     *   }
+     * })
+     */
+    upsert<T extends WebsiteUpsertArgs>(args: SelectSubset<T, WebsiteUpsertArgs<ExtArgs>>): Prisma__WebsiteClient<$Result.GetResult<Prisma.$WebsitePayload<ExtArgs>, T, "upsert", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find zero or more Websites that matches the filter.
+     * @param {WebsiteFindRawArgs} args - Select which filters you would like to apply.
+     * @example
+     * const website = await prisma.website.findRaw({
+     *   filter: { age: { $gt: 25 } }
+     * })
+     */
+    findRaw(args?: WebsiteFindRawArgs): Prisma.PrismaPromise<JsonObject>
+
+    /**
+     * Perform aggregation operations on a Website.
+     * @param {WebsiteAggregateRawArgs} args - Select which aggregations you would like to apply.
+     * @example
+     * const website = await prisma.website.aggregateRaw({
+     *   pipeline: [
+     *     { $match: { status: "registered" } },
+     *     { $group: { _id: "$country", total: { $sum: 1 } } }
+     *   ]
+     * })
+     */
+    aggregateRaw(args?: WebsiteAggregateRawArgs): Prisma.PrismaPromise<JsonObject>
+
+
+    /**
+     * Count the number of Websites.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {WebsiteCountArgs} args - Arguments to filter Websites to count.
+     * @example
+     * // Count the number of Websites
+     * const count = await prisma.website.count({
+     *   where: {
+     *     // ... the filter for the Websites we want to count
+     *   }
+     * })
+    **/
+    count<T extends WebsiteCountArgs>(
+      args?: Subset<T, WebsiteCountArgs>,
+    ): Prisma.PrismaPromise<
+      T extends $Utils.Record<'select', any>
+        ? T['select'] extends true
+          ? number
+          : GetScalarType<T['select'], WebsiteCountAggregateOutputType>
+        : number
+    >
+
+    /**
+     * Allows you to perform aggregations operations on a Website.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {WebsiteAggregateArgs} args - Select which aggregations you would like to apply and on what fields.
+     * @example
+     * // Ordered by age ascending
+     * // Where email contains prisma.io
+     * // Limited to the 10 users
+     * const aggregations = await prisma.user.aggregate({
+     *   _avg: {
+     *     age: true,
+     *   },
+     *   where: {
+     *     email: {
+     *       contains: "prisma.io",
+     *     },
+     *   },
+     *   orderBy: {
+     *     age: "asc",
+     *   },
+     *   take: 10,
+     * })
+    **/
+    aggregate<T extends WebsiteAggregateArgs>(args: Subset<T, WebsiteAggregateArgs>): Prisma.PrismaPromise<GetWebsiteAggregateType<T>>
+
+    /**
+     * Group by Website.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {WebsiteGroupByArgs} args - Group by arguments.
+     * @example
+     * // Group by city, order by createdAt, get count
+     * const result = await prisma.user.groupBy({
+     *   by: ['city', 'createdAt'],
+     *   orderBy: {
+     *     createdAt: true
+     *   },
+     *   _count: {
+     *     _all: true
+     *   },
+     * })
+     * 
+    **/
+    groupBy<
+      T extends WebsiteGroupByArgs,
+      HasSelectOrTake extends Or<
+        Extends<'skip', Keys<T>>,
+        Extends<'take', Keys<T>>
+      >,
+      OrderByArg extends True extends HasSelectOrTake
+        ? { orderBy: WebsiteGroupByArgs['orderBy'] }
+        : { orderBy?: WebsiteGroupByArgs['orderBy'] },
+      OrderFields extends ExcludeUnderscoreKeys<Keys<MaybeTupleToUnion<T['orderBy']>>>,
+      ByFields extends MaybeTupleToUnion<T['by']>,
+      ByValid extends Has<ByFields, OrderFields>,
+      HavingFields extends GetHavingFields<T['having']>,
+      HavingValid extends Has<ByFields, HavingFields>,
+      ByEmpty extends T['by'] extends never[] ? True : False,
+      InputErrors extends ByEmpty extends True
+      ? `Error: "by" must not be empty.`
+      : HavingValid extends False
+      ? {
+          [P in HavingFields]: P extends ByFields
+            ? never
+            : P extends string
+            ? `Error: Field "${P}" used in "having" needs to be provided in "by".`
+            : [
+                Error,
+                'Field ',
+                P,
+                ` in "having" needs to be provided in "by"`,
+              ]
+        }[HavingFields]
+      : 'take' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "take", you also need to provide "orderBy"'
+      : 'skip' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "skip", you also need to provide "orderBy"'
+      : ByValid extends True
+      ? {}
+      : {
+          [P in OrderFields]: P extends ByFields
+            ? never
+            : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+        }[OrderFields]
+    >(args: SubsetIntersection<T, WebsiteGroupByArgs, OrderByArg> & InputErrors): {} extends InputErrors ? GetWebsiteGroupByPayload<T> : Prisma.PrismaPromise<InputErrors>
+  /**
+   * Fields of the Website model
+   */
+  readonly fields: WebsiteFieldRefs;
+  }
+
+  /**
+   * The delegate class that acts as a "Promise-like" for Website.
+   * Why is this prefixed with `Prisma__`?
+   * Because we want to prevent naming conflicts as mentioned in
+   * https://github.com/prisma/prisma-client-js/issues/707
+   */
+  export interface Prisma__WebsiteClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
+    readonly [Symbol.toStringTag]: "PrismaPromise"
+    cachedData<T extends Website$cachedDataArgs<ExtArgs> = {}>(args?: Subset<T, Website$cachedDataArgs<ExtArgs>>): Prisma__WebsiteCachedDataClient<$Result.GetResult<Prisma.$WebsiteCachedDataPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+    /**
+     * Attaches callbacks for the resolution and/or rejection of the Promise.
+     * @param onfulfilled The callback to execute when the Promise is resolved.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of which ever callback is executed.
+     */
+    then<TResult1 = T, TResult2 = never>(onfulfilled?: ((value: T) => TResult1 | PromiseLike<TResult1>) | undefined | null, onrejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>) | undefined | null): $Utils.JsPromise<TResult1 | TResult2>
+    /**
+     * Attaches a callback for only the rejection of the Promise.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of the callback.
+     */
+    catch<TResult = never>(onrejected?: ((reason: any) => TResult | PromiseLike<TResult>) | undefined | null): $Utils.JsPromise<T | TResult>
+    /**
+     * Attaches a callback that is invoked when the Promise is settled (fulfilled or rejected). The
+     * resolved value cannot be modified from the callback.
+     * @param onfinally The callback to execute when the Promise is settled (fulfilled or rejected).
+     * @returns A Promise for the completion of the callback.
+     */
+    finally(onfinally?: (() => void) | undefined | null): $Utils.JsPromise<T>
+  }
+
+
+
+
+  /**
+   * Fields of the Website model
+   */
+  interface WebsiteFieldRefs {
+    readonly id: FieldRef<"Website", 'String'>
+    readonly userId: FieldRef<"Website", 'String'>
+    readonly locationId: FieldRef<"Website", 'String'>
+    readonly accountId: FieldRef<"Website", 'String'>
+    readonly subdomain: FieldRef<"Website", 'String'>
+    readonly title: FieldRef<"Website", 'String'>
+    readonly description: FieldRef<"Website", 'String'>
+    readonly logoUrl: FieldRef<"Website", 'String'>
+    readonly primaryColor: FieldRef<"Website", 'String'>
+    readonly secondaryColor: FieldRef<"Website", 'String'>
+    readonly fontFamily: FieldRef<"Website", 'String'>
+    readonly enabledSections: FieldRef<"Website", 'String[]'>
+    readonly googleAnalyticsId: FieldRef<"Website", 'String'>
+    readonly facebookPixelId: FieldRef<"Website", 'String'>
+    readonly isPublished: FieldRef<"Website", 'Boolean'>
+    readonly publishedAt: FieldRef<"Website", 'DateTime'>
+    readonly createdAt: FieldRef<"Website", 'DateTime'>
+    readonly updatedAt: FieldRef<"Website", 'DateTime'>
+  }
+    
+
+  // Custom InputTypes
+  /**
+   * Website findUnique
+   */
+  export type WebsiteFindUniqueArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Website
+     */
+    select?: WebsiteSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the Website
+     */
+    omit?: WebsiteOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: WebsiteInclude<ExtArgs> | null
+    /**
+     * Filter, which Website to fetch.
+     */
+    where: WebsiteWhereUniqueInput
+  }
+
+  /**
+   * Website findUniqueOrThrow
+   */
+  export type WebsiteFindUniqueOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Website
+     */
+    select?: WebsiteSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the Website
+     */
+    omit?: WebsiteOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: WebsiteInclude<ExtArgs> | null
+    /**
+     * Filter, which Website to fetch.
+     */
+    where: WebsiteWhereUniqueInput
+  }
+
+  /**
+   * Website findFirst
+   */
+  export type WebsiteFindFirstArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Website
+     */
+    select?: WebsiteSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the Website
+     */
+    omit?: WebsiteOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: WebsiteInclude<ExtArgs> | null
+    /**
+     * Filter, which Website to fetch.
+     */
+    where?: WebsiteWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of Websites to fetch.
+     */
+    orderBy?: WebsiteOrderByWithRelationInput | WebsiteOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for Websites.
+     */
+    cursor?: WebsiteWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` Websites from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` Websites.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of Websites.
+     */
+    distinct?: WebsiteScalarFieldEnum | WebsiteScalarFieldEnum[]
+  }
+
+  /**
+   * Website findFirstOrThrow
+   */
+  export type WebsiteFindFirstOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Website
+     */
+    select?: WebsiteSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the Website
+     */
+    omit?: WebsiteOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: WebsiteInclude<ExtArgs> | null
+    /**
+     * Filter, which Website to fetch.
+     */
+    where?: WebsiteWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of Websites to fetch.
+     */
+    orderBy?: WebsiteOrderByWithRelationInput | WebsiteOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for Websites.
+     */
+    cursor?: WebsiteWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` Websites from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` Websites.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of Websites.
+     */
+    distinct?: WebsiteScalarFieldEnum | WebsiteScalarFieldEnum[]
+  }
+
+  /**
+   * Website findMany
+   */
+  export type WebsiteFindManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Website
+     */
+    select?: WebsiteSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the Website
+     */
+    omit?: WebsiteOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: WebsiteInclude<ExtArgs> | null
+    /**
+     * Filter, which Websites to fetch.
+     */
+    where?: WebsiteWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of Websites to fetch.
+     */
+    orderBy?: WebsiteOrderByWithRelationInput | WebsiteOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for listing Websites.
+     */
+    cursor?: WebsiteWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` Websites from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` Websites.
+     */
+    skip?: number
+    distinct?: WebsiteScalarFieldEnum | WebsiteScalarFieldEnum[]
+  }
+
+  /**
+   * Website create
+   */
+  export type WebsiteCreateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Website
+     */
+    select?: WebsiteSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the Website
+     */
+    omit?: WebsiteOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: WebsiteInclude<ExtArgs> | null
+    /**
+     * The data needed to create a Website.
+     */
+    data: XOR<WebsiteCreateInput, WebsiteUncheckedCreateInput>
+  }
+
+  /**
+   * Website createMany
+   */
+  export type WebsiteCreateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to create many Websites.
+     */
+    data: WebsiteCreateManyInput | WebsiteCreateManyInput[]
+  }
+
+  /**
+   * Website update
+   */
+  export type WebsiteUpdateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Website
+     */
+    select?: WebsiteSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the Website
+     */
+    omit?: WebsiteOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: WebsiteInclude<ExtArgs> | null
+    /**
+     * The data needed to update a Website.
+     */
+    data: XOR<WebsiteUpdateInput, WebsiteUncheckedUpdateInput>
+    /**
+     * Choose, which Website to update.
+     */
+    where: WebsiteWhereUniqueInput
+  }
+
+  /**
+   * Website updateMany
+   */
+  export type WebsiteUpdateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to update Websites.
+     */
+    data: XOR<WebsiteUpdateManyMutationInput, WebsiteUncheckedUpdateManyInput>
+    /**
+     * Filter which Websites to update
+     */
+    where?: WebsiteWhereInput
+    /**
+     * Limit how many Websites to update.
+     */
+    limit?: number
+  }
+
+  /**
+   * Website upsert
+   */
+  export type WebsiteUpsertArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Website
+     */
+    select?: WebsiteSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the Website
+     */
+    omit?: WebsiteOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: WebsiteInclude<ExtArgs> | null
+    /**
+     * The filter to search for the Website to update in case it exists.
+     */
+    where: WebsiteWhereUniqueInput
+    /**
+     * In case the Website found by the `where` argument doesn't exist, create a new Website with this data.
+     */
+    create: XOR<WebsiteCreateInput, WebsiteUncheckedCreateInput>
+    /**
+     * In case the Website was found with the provided `where` argument, update it with this data.
+     */
+    update: XOR<WebsiteUpdateInput, WebsiteUncheckedUpdateInput>
+  }
+
+  /**
+   * Website delete
+   */
+  export type WebsiteDeleteArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Website
+     */
+    select?: WebsiteSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the Website
+     */
+    omit?: WebsiteOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: WebsiteInclude<ExtArgs> | null
+    /**
+     * Filter which Website to delete.
+     */
+    where: WebsiteWhereUniqueInput
+  }
+
+  /**
+   * Website deleteMany
+   */
+  export type WebsiteDeleteManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which Websites to delete
+     */
+    where?: WebsiteWhereInput
+    /**
+     * Limit how many Websites to delete.
+     */
+    limit?: number
+  }
+
+  /**
+   * Website findRaw
+   */
+  export type WebsiteFindRawArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The query predicate filter. If unspecified, then all documents in the collection will match the predicate. ${@link https://docs.mongodb.com/manual/reference/operator/query MongoDB Docs}.
+     */
+    filter?: InputJsonValue
+    /**
+     * Additional options to pass to the `find` command ${@link https://docs.mongodb.com/manual/reference/command/find/#command-fields MongoDB Docs}.
+     */
+    options?: InputJsonValue
+  }
+
+  /**
+   * Website aggregateRaw
+   */
+  export type WebsiteAggregateRawArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * An array of aggregation stages to process and transform the document stream via the aggregation pipeline. ${@link https://docs.mongodb.com/manual/reference/operator/aggregation-pipeline MongoDB Docs}.
+     */
+    pipeline?: InputJsonValue[]
+    /**
+     * Additional options to pass to the `aggregate` command ${@link https://docs.mongodb.com/manual/reference/command/aggregate/#command-fields MongoDB Docs}.
+     */
+    options?: InputJsonValue
+  }
+
+  /**
+   * Website.cachedData
+   */
+  export type Website$cachedDataArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the WebsiteCachedData
+     */
+    select?: WebsiteCachedDataSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the WebsiteCachedData
+     */
+    omit?: WebsiteCachedDataOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: WebsiteCachedDataInclude<ExtArgs> | null
+    where?: WebsiteCachedDataWhereInput
+  }
+
+  /**
+   * Website without action
+   */
+  export type WebsiteDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Website
+     */
+    select?: WebsiteSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the Website
+     */
+    omit?: WebsiteOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: WebsiteInclude<ExtArgs> | null
+  }
+
+
+  /**
+   * Model WebsiteCachedData
+   */
+
+  export type AggregateWebsiteCachedData = {
+    _count: WebsiteCachedDataCountAggregateOutputType | null
+    _avg: WebsiteCachedDataAvgAggregateOutputType | null
+    _sum: WebsiteCachedDataSumAggregateOutputType | null
+    _min: WebsiteCachedDataMinAggregateOutputType | null
+    _max: WebsiteCachedDataMaxAggregateOutputType | null
+  }
+
+  export type WebsiteCachedDataAvgAggregateOutputType = {
+    syncInterval: number | null
+    syncRetryCount: number | null
+  }
+
+  export type WebsiteCachedDataSumAggregateOutputType = {
+    syncInterval: number | null
+    syncRetryCount: number | null
+  }
+
+  export type WebsiteCachedDataMinAggregateOutputType = {
+    id: string | null
+    websiteId: string | null
+    lastSyncedAt: Date | null
+    nextSyncAt: Date | null
+    syncInterval: number | null
+    isSyncing: boolean | null
+    lastSyncError: string | null
+    syncRetryCount: number | null
+    createdAt: Date | null
+    updatedAt: Date | null
+  }
+
+  export type WebsiteCachedDataMaxAggregateOutputType = {
+    id: string | null
+    websiteId: string | null
+    lastSyncedAt: Date | null
+    nextSyncAt: Date | null
+    syncInterval: number | null
+    isSyncing: boolean | null
+    lastSyncError: string | null
+    syncRetryCount: number | null
+    createdAt: Date | null
+    updatedAt: Date | null
+  }
+
+  export type WebsiteCachedDataCountAggregateOutputType = {
+    id: number
+    websiteId: number
+    businessInfo: number
+    reviews: number
+    photos: number
+    posts: number
+    lastSyncedAt: number
+    nextSyncAt: number
+    syncInterval: number
+    isSyncing: number
+    lastSyncError: number
+    syncRetryCount: number
+    createdAt: number
+    updatedAt: number
+    _all: number
+  }
+
+
+  export type WebsiteCachedDataAvgAggregateInputType = {
+    syncInterval?: true
+    syncRetryCount?: true
+  }
+
+  export type WebsiteCachedDataSumAggregateInputType = {
+    syncInterval?: true
+    syncRetryCount?: true
+  }
+
+  export type WebsiteCachedDataMinAggregateInputType = {
+    id?: true
+    websiteId?: true
+    lastSyncedAt?: true
+    nextSyncAt?: true
+    syncInterval?: true
+    isSyncing?: true
+    lastSyncError?: true
+    syncRetryCount?: true
+    createdAt?: true
+    updatedAt?: true
+  }
+
+  export type WebsiteCachedDataMaxAggregateInputType = {
+    id?: true
+    websiteId?: true
+    lastSyncedAt?: true
+    nextSyncAt?: true
+    syncInterval?: true
+    isSyncing?: true
+    lastSyncError?: true
+    syncRetryCount?: true
+    createdAt?: true
+    updatedAt?: true
+  }
+
+  export type WebsiteCachedDataCountAggregateInputType = {
+    id?: true
+    websiteId?: true
+    businessInfo?: true
+    reviews?: true
+    photos?: true
+    posts?: true
+    lastSyncedAt?: true
+    nextSyncAt?: true
+    syncInterval?: true
+    isSyncing?: true
+    lastSyncError?: true
+    syncRetryCount?: true
+    createdAt?: true
+    updatedAt?: true
+    _all?: true
+  }
+
+  export type WebsiteCachedDataAggregateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which WebsiteCachedData to aggregate.
+     */
+    where?: WebsiteCachedDataWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of WebsiteCachedData to fetch.
+     */
+    orderBy?: WebsiteCachedDataOrderByWithRelationInput | WebsiteCachedDataOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the start position
+     */
+    cursor?: WebsiteCachedDataWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` WebsiteCachedData from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` WebsiteCachedData.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Count returned WebsiteCachedData
+    **/
+    _count?: true | WebsiteCachedDataCountAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to average
+    **/
+    _avg?: WebsiteCachedDataAvgAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to sum
+    **/
+    _sum?: WebsiteCachedDataSumAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the minimum value
+    **/
+    _min?: WebsiteCachedDataMinAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the maximum value
+    **/
+    _max?: WebsiteCachedDataMaxAggregateInputType
+  }
+
+  export type GetWebsiteCachedDataAggregateType<T extends WebsiteCachedDataAggregateArgs> = {
+        [P in keyof T & keyof AggregateWebsiteCachedData]: P extends '_count' | 'count'
+      ? T[P] extends true
+        ? number
+        : GetScalarType<T[P], AggregateWebsiteCachedData[P]>
+      : GetScalarType<T[P], AggregateWebsiteCachedData[P]>
+  }
+
+
+
+
+  export type WebsiteCachedDataGroupByArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: WebsiteCachedDataWhereInput
+    orderBy?: WebsiteCachedDataOrderByWithAggregationInput | WebsiteCachedDataOrderByWithAggregationInput[]
+    by: WebsiteCachedDataScalarFieldEnum[] | WebsiteCachedDataScalarFieldEnum
+    having?: WebsiteCachedDataScalarWhereWithAggregatesInput
+    take?: number
+    skip?: number
+    _count?: WebsiteCachedDataCountAggregateInputType | true
+    _avg?: WebsiteCachedDataAvgAggregateInputType
+    _sum?: WebsiteCachedDataSumAggregateInputType
+    _min?: WebsiteCachedDataMinAggregateInputType
+    _max?: WebsiteCachedDataMaxAggregateInputType
+  }
+
+  export type WebsiteCachedDataGroupByOutputType = {
+    id: string
+    websiteId: string
+    businessInfo: JsonValue | null
+    reviews: JsonValue | null
+    photos: JsonValue | null
+    posts: JsonValue | null
+    lastSyncedAt: Date | null
+    nextSyncAt: Date | null
+    syncInterval: number
+    isSyncing: boolean
+    lastSyncError: string | null
+    syncRetryCount: number
+    createdAt: Date
+    updatedAt: Date
+    _count: WebsiteCachedDataCountAggregateOutputType | null
+    _avg: WebsiteCachedDataAvgAggregateOutputType | null
+    _sum: WebsiteCachedDataSumAggregateOutputType | null
+    _min: WebsiteCachedDataMinAggregateOutputType | null
+    _max: WebsiteCachedDataMaxAggregateOutputType | null
+  }
+
+  type GetWebsiteCachedDataGroupByPayload<T extends WebsiteCachedDataGroupByArgs> = Prisma.PrismaPromise<
+    Array<
+      PickEnumerable<WebsiteCachedDataGroupByOutputType, T['by']> &
+        {
+          [P in ((keyof T) & (keyof WebsiteCachedDataGroupByOutputType))]: P extends '_count'
+            ? T[P] extends boolean
+              ? number
+              : GetScalarType<T[P], WebsiteCachedDataGroupByOutputType[P]>
+            : GetScalarType<T[P], WebsiteCachedDataGroupByOutputType[P]>
+        }
+      >
+    >
+
+
+  export type WebsiteCachedDataSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    websiteId?: boolean
+    businessInfo?: boolean
+    reviews?: boolean
+    photos?: boolean
+    posts?: boolean
+    lastSyncedAt?: boolean
+    nextSyncAt?: boolean
+    syncInterval?: boolean
+    isSyncing?: boolean
+    lastSyncError?: boolean
+    syncRetryCount?: boolean
+    createdAt?: boolean
+    updatedAt?: boolean
+    website?: boolean | WebsiteDefaultArgs<ExtArgs>
+  }, ExtArgs["result"]["websiteCachedData"]>
+
+
+
+  export type WebsiteCachedDataSelectScalar = {
+    id?: boolean
+    websiteId?: boolean
+    businessInfo?: boolean
+    reviews?: boolean
+    photos?: boolean
+    posts?: boolean
+    lastSyncedAt?: boolean
+    nextSyncAt?: boolean
+    syncInterval?: boolean
+    isSyncing?: boolean
+    lastSyncError?: boolean
+    syncRetryCount?: boolean
+    createdAt?: boolean
+    updatedAt?: boolean
+  }
+
+  export type WebsiteCachedDataOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "websiteId" | "businessInfo" | "reviews" | "photos" | "posts" | "lastSyncedAt" | "nextSyncAt" | "syncInterval" | "isSyncing" | "lastSyncError" | "syncRetryCount" | "createdAt" | "updatedAt", ExtArgs["result"]["websiteCachedData"]>
+  export type WebsiteCachedDataInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    website?: boolean | WebsiteDefaultArgs<ExtArgs>
+  }
+
+  export type $WebsiteCachedDataPayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    name: "WebsiteCachedData"
+    objects: {
+      website: Prisma.$WebsitePayload<ExtArgs>
+    }
+    scalars: $Extensions.GetPayloadResult<{
+      id: string
+      websiteId: string
+      businessInfo: Prisma.JsonValue | null
+      reviews: Prisma.JsonValue | null
+      photos: Prisma.JsonValue | null
+      posts: Prisma.JsonValue | null
+      lastSyncedAt: Date | null
+      nextSyncAt: Date | null
+      syncInterval: number
+      isSyncing: boolean
+      lastSyncError: string | null
+      syncRetryCount: number
+      createdAt: Date
+      updatedAt: Date
+    }, ExtArgs["result"]["websiteCachedData"]>
+    composites: {}
+  }
+
+  type WebsiteCachedDataGetPayload<S extends boolean | null | undefined | WebsiteCachedDataDefaultArgs> = $Result.GetResult<Prisma.$WebsiteCachedDataPayload, S>
+
+  type WebsiteCachedDataCountArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> =
+    Omit<WebsiteCachedDataFindManyArgs, 'select' | 'include' | 'distinct' | 'omit'> & {
+      select?: WebsiteCachedDataCountAggregateInputType | true
+    }
+
+  export interface WebsiteCachedDataDelegate<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> {
+    [K: symbol]: { types: Prisma.TypeMap<ExtArgs>['model']['WebsiteCachedData'], meta: { name: 'WebsiteCachedData' } }
+    /**
+     * Find zero or one WebsiteCachedData that matches the filter.
+     * @param {WebsiteCachedDataFindUniqueArgs} args - Arguments to find a WebsiteCachedData
+     * @example
+     * // Get one WebsiteCachedData
+     * const websiteCachedData = await prisma.websiteCachedData.findUnique({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUnique<T extends WebsiteCachedDataFindUniqueArgs>(args: SelectSubset<T, WebsiteCachedDataFindUniqueArgs<ExtArgs>>): Prisma__WebsiteCachedDataClient<$Result.GetResult<Prisma.$WebsiteCachedDataPayload<ExtArgs>, T, "findUnique", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find one WebsiteCachedData that matches the filter or throw an error with `error.code='P2025'`
+     * if no matches were found.
+     * @param {WebsiteCachedDataFindUniqueOrThrowArgs} args - Arguments to find a WebsiteCachedData
+     * @example
+     * // Get one WebsiteCachedData
+     * const websiteCachedData = await prisma.websiteCachedData.findUniqueOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUniqueOrThrow<T extends WebsiteCachedDataFindUniqueOrThrowArgs>(args: SelectSubset<T, WebsiteCachedDataFindUniqueOrThrowArgs<ExtArgs>>): Prisma__WebsiteCachedDataClient<$Result.GetResult<Prisma.$WebsiteCachedDataPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find the first WebsiteCachedData that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {WebsiteCachedDataFindFirstArgs} args - Arguments to find a WebsiteCachedData
+     * @example
+     * // Get one WebsiteCachedData
+     * const websiteCachedData = await prisma.websiteCachedData.findFirst({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirst<T extends WebsiteCachedDataFindFirstArgs>(args?: SelectSubset<T, WebsiteCachedDataFindFirstArgs<ExtArgs>>): Prisma__WebsiteCachedDataClient<$Result.GetResult<Prisma.$WebsiteCachedDataPayload<ExtArgs>, T, "findFirst", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find the first WebsiteCachedData that matches the filter or
+     * throw `PrismaKnownClientError` with `P2025` code if no matches were found.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {WebsiteCachedDataFindFirstOrThrowArgs} args - Arguments to find a WebsiteCachedData
+     * @example
+     * // Get one WebsiteCachedData
+     * const websiteCachedData = await prisma.websiteCachedData.findFirstOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirstOrThrow<T extends WebsiteCachedDataFindFirstOrThrowArgs>(args?: SelectSubset<T, WebsiteCachedDataFindFirstOrThrowArgs<ExtArgs>>): Prisma__WebsiteCachedDataClient<$Result.GetResult<Prisma.$WebsiteCachedDataPayload<ExtArgs>, T, "findFirstOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find zero or more WebsiteCachedData that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {WebsiteCachedDataFindManyArgs} args - Arguments to filter and select certain fields only.
+     * @example
+     * // Get all WebsiteCachedData
+     * const websiteCachedData = await prisma.websiteCachedData.findMany()
+     * 
+     * // Get first 10 WebsiteCachedData
+     * const websiteCachedData = await prisma.websiteCachedData.findMany({ take: 10 })
+     * 
+     * // Only select the `id`
+     * const websiteCachedDataWithIdOnly = await prisma.websiteCachedData.findMany({ select: { id: true } })
+     * 
+     */
+    findMany<T extends WebsiteCachedDataFindManyArgs>(args?: SelectSubset<T, WebsiteCachedDataFindManyArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$WebsiteCachedDataPayload<ExtArgs>, T, "findMany", GlobalOmitOptions>>
+
+    /**
+     * Create a WebsiteCachedData.
+     * @param {WebsiteCachedDataCreateArgs} args - Arguments to create a WebsiteCachedData.
+     * @example
+     * // Create one WebsiteCachedData
+     * const WebsiteCachedData = await prisma.websiteCachedData.create({
+     *   data: {
+     *     // ... data to create a WebsiteCachedData
+     *   }
+     * })
+     * 
+     */
+    create<T extends WebsiteCachedDataCreateArgs>(args: SelectSubset<T, WebsiteCachedDataCreateArgs<ExtArgs>>): Prisma__WebsiteCachedDataClient<$Result.GetResult<Prisma.$WebsiteCachedDataPayload<ExtArgs>, T, "create", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Create many WebsiteCachedData.
+     * @param {WebsiteCachedDataCreateManyArgs} args - Arguments to create many WebsiteCachedData.
+     * @example
+     * // Create many WebsiteCachedData
+     * const websiteCachedData = await prisma.websiteCachedData.createMany({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     *     
+     */
+    createMany<T extends WebsiteCachedDataCreateManyArgs>(args?: SelectSubset<T, WebsiteCachedDataCreateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Delete a WebsiteCachedData.
+     * @param {WebsiteCachedDataDeleteArgs} args - Arguments to delete one WebsiteCachedData.
+     * @example
+     * // Delete one WebsiteCachedData
+     * const WebsiteCachedData = await prisma.websiteCachedData.delete({
+     *   where: {
+     *     // ... filter to delete one WebsiteCachedData
+     *   }
+     * })
+     * 
+     */
+    delete<T extends WebsiteCachedDataDeleteArgs>(args: SelectSubset<T, WebsiteCachedDataDeleteArgs<ExtArgs>>): Prisma__WebsiteCachedDataClient<$Result.GetResult<Prisma.$WebsiteCachedDataPayload<ExtArgs>, T, "delete", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Update one WebsiteCachedData.
+     * @param {WebsiteCachedDataUpdateArgs} args - Arguments to update one WebsiteCachedData.
+     * @example
+     * // Update one WebsiteCachedData
+     * const websiteCachedData = await prisma.websiteCachedData.update({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    update<T extends WebsiteCachedDataUpdateArgs>(args: SelectSubset<T, WebsiteCachedDataUpdateArgs<ExtArgs>>): Prisma__WebsiteCachedDataClient<$Result.GetResult<Prisma.$WebsiteCachedDataPayload<ExtArgs>, T, "update", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Delete zero or more WebsiteCachedData.
+     * @param {WebsiteCachedDataDeleteManyArgs} args - Arguments to filter WebsiteCachedData to delete.
+     * @example
+     * // Delete a few WebsiteCachedData
+     * const { count } = await prisma.websiteCachedData.deleteMany({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     * 
+     */
+    deleteMany<T extends WebsiteCachedDataDeleteManyArgs>(args?: SelectSubset<T, WebsiteCachedDataDeleteManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Update zero or more WebsiteCachedData.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {WebsiteCachedDataUpdateManyArgs} args - Arguments to update one or more rows.
+     * @example
+     * // Update many WebsiteCachedData
+     * const websiteCachedData = await prisma.websiteCachedData.updateMany({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    updateMany<T extends WebsiteCachedDataUpdateManyArgs>(args: SelectSubset<T, WebsiteCachedDataUpdateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Create or update one WebsiteCachedData.
+     * @param {WebsiteCachedDataUpsertArgs} args - Arguments to update or create a WebsiteCachedData.
+     * @example
+     * // Update or create a WebsiteCachedData
+     * const websiteCachedData = await prisma.websiteCachedData.upsert({
+     *   create: {
+     *     // ... data to create a WebsiteCachedData
+     *   },
+     *   update: {
+     *     // ... in case it already exists, update
+     *   },
+     *   where: {
+     *     // ... the filter for the WebsiteCachedData we want to update
+     *   }
+     * })
+     */
+    upsert<T extends WebsiteCachedDataUpsertArgs>(args: SelectSubset<T, WebsiteCachedDataUpsertArgs<ExtArgs>>): Prisma__WebsiteCachedDataClient<$Result.GetResult<Prisma.$WebsiteCachedDataPayload<ExtArgs>, T, "upsert", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find zero or more WebsiteCachedData that matches the filter.
+     * @param {WebsiteCachedDataFindRawArgs} args - Select which filters you would like to apply.
+     * @example
+     * const websiteCachedData = await prisma.websiteCachedData.findRaw({
+     *   filter: { age: { $gt: 25 } }
+     * })
+     */
+    findRaw(args?: WebsiteCachedDataFindRawArgs): Prisma.PrismaPromise<JsonObject>
+
+    /**
+     * Perform aggregation operations on a WebsiteCachedData.
+     * @param {WebsiteCachedDataAggregateRawArgs} args - Select which aggregations you would like to apply.
+     * @example
+     * const websiteCachedData = await prisma.websiteCachedData.aggregateRaw({
+     *   pipeline: [
+     *     { $match: { status: "registered" } },
+     *     { $group: { _id: "$country", total: { $sum: 1 } } }
+     *   ]
+     * })
+     */
+    aggregateRaw(args?: WebsiteCachedDataAggregateRawArgs): Prisma.PrismaPromise<JsonObject>
+
+
+    /**
+     * Count the number of WebsiteCachedData.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {WebsiteCachedDataCountArgs} args - Arguments to filter WebsiteCachedData to count.
+     * @example
+     * // Count the number of WebsiteCachedData
+     * const count = await prisma.websiteCachedData.count({
+     *   where: {
+     *     // ... the filter for the WebsiteCachedData we want to count
+     *   }
+     * })
+    **/
+    count<T extends WebsiteCachedDataCountArgs>(
+      args?: Subset<T, WebsiteCachedDataCountArgs>,
+    ): Prisma.PrismaPromise<
+      T extends $Utils.Record<'select', any>
+        ? T['select'] extends true
+          ? number
+          : GetScalarType<T['select'], WebsiteCachedDataCountAggregateOutputType>
+        : number
+    >
+
+    /**
+     * Allows you to perform aggregations operations on a WebsiteCachedData.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {WebsiteCachedDataAggregateArgs} args - Select which aggregations you would like to apply and on what fields.
+     * @example
+     * // Ordered by age ascending
+     * // Where email contains prisma.io
+     * // Limited to the 10 users
+     * const aggregations = await prisma.user.aggregate({
+     *   _avg: {
+     *     age: true,
+     *   },
+     *   where: {
+     *     email: {
+     *       contains: "prisma.io",
+     *     },
+     *   },
+     *   orderBy: {
+     *     age: "asc",
+     *   },
+     *   take: 10,
+     * })
+    **/
+    aggregate<T extends WebsiteCachedDataAggregateArgs>(args: Subset<T, WebsiteCachedDataAggregateArgs>): Prisma.PrismaPromise<GetWebsiteCachedDataAggregateType<T>>
+
+    /**
+     * Group by WebsiteCachedData.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {WebsiteCachedDataGroupByArgs} args - Group by arguments.
+     * @example
+     * // Group by city, order by createdAt, get count
+     * const result = await prisma.user.groupBy({
+     *   by: ['city', 'createdAt'],
+     *   orderBy: {
+     *     createdAt: true
+     *   },
+     *   _count: {
+     *     _all: true
+     *   },
+     * })
+     * 
+    **/
+    groupBy<
+      T extends WebsiteCachedDataGroupByArgs,
+      HasSelectOrTake extends Or<
+        Extends<'skip', Keys<T>>,
+        Extends<'take', Keys<T>>
+      >,
+      OrderByArg extends True extends HasSelectOrTake
+        ? { orderBy: WebsiteCachedDataGroupByArgs['orderBy'] }
+        : { orderBy?: WebsiteCachedDataGroupByArgs['orderBy'] },
+      OrderFields extends ExcludeUnderscoreKeys<Keys<MaybeTupleToUnion<T['orderBy']>>>,
+      ByFields extends MaybeTupleToUnion<T['by']>,
+      ByValid extends Has<ByFields, OrderFields>,
+      HavingFields extends GetHavingFields<T['having']>,
+      HavingValid extends Has<ByFields, HavingFields>,
+      ByEmpty extends T['by'] extends never[] ? True : False,
+      InputErrors extends ByEmpty extends True
+      ? `Error: "by" must not be empty.`
+      : HavingValid extends False
+      ? {
+          [P in HavingFields]: P extends ByFields
+            ? never
+            : P extends string
+            ? `Error: Field "${P}" used in "having" needs to be provided in "by".`
+            : [
+                Error,
+                'Field ',
+                P,
+                ` in "having" needs to be provided in "by"`,
+              ]
+        }[HavingFields]
+      : 'take' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "take", you also need to provide "orderBy"'
+      : 'skip' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "skip", you also need to provide "orderBy"'
+      : ByValid extends True
+      ? {}
+      : {
+          [P in OrderFields]: P extends ByFields
+            ? never
+            : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+        }[OrderFields]
+    >(args: SubsetIntersection<T, WebsiteCachedDataGroupByArgs, OrderByArg> & InputErrors): {} extends InputErrors ? GetWebsiteCachedDataGroupByPayload<T> : Prisma.PrismaPromise<InputErrors>
+  /**
+   * Fields of the WebsiteCachedData model
+   */
+  readonly fields: WebsiteCachedDataFieldRefs;
+  }
+
+  /**
+   * The delegate class that acts as a "Promise-like" for WebsiteCachedData.
+   * Why is this prefixed with `Prisma__`?
+   * Because we want to prevent naming conflicts as mentioned in
+   * https://github.com/prisma/prisma-client-js/issues/707
+   */
+  export interface Prisma__WebsiteCachedDataClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
+    readonly [Symbol.toStringTag]: "PrismaPromise"
+    website<T extends WebsiteDefaultArgs<ExtArgs> = {}>(args?: Subset<T, WebsiteDefaultArgs<ExtArgs>>): Prisma__WebsiteClient<$Result.GetResult<Prisma.$WebsitePayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
+    /**
+     * Attaches callbacks for the resolution and/or rejection of the Promise.
+     * @param onfulfilled The callback to execute when the Promise is resolved.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of which ever callback is executed.
+     */
+    then<TResult1 = T, TResult2 = never>(onfulfilled?: ((value: T) => TResult1 | PromiseLike<TResult1>) | undefined | null, onrejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>) | undefined | null): $Utils.JsPromise<TResult1 | TResult2>
+    /**
+     * Attaches a callback for only the rejection of the Promise.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of the callback.
+     */
+    catch<TResult = never>(onrejected?: ((reason: any) => TResult | PromiseLike<TResult>) | undefined | null): $Utils.JsPromise<T | TResult>
+    /**
+     * Attaches a callback that is invoked when the Promise is settled (fulfilled or rejected). The
+     * resolved value cannot be modified from the callback.
+     * @param onfinally The callback to execute when the Promise is settled (fulfilled or rejected).
+     * @returns A Promise for the completion of the callback.
+     */
+    finally(onfinally?: (() => void) | undefined | null): $Utils.JsPromise<T>
+  }
+
+
+
+
+  /**
+   * Fields of the WebsiteCachedData model
+   */
+  interface WebsiteCachedDataFieldRefs {
+    readonly id: FieldRef<"WebsiteCachedData", 'String'>
+    readonly websiteId: FieldRef<"WebsiteCachedData", 'String'>
+    readonly businessInfo: FieldRef<"WebsiteCachedData", 'Json'>
+    readonly reviews: FieldRef<"WebsiteCachedData", 'Json'>
+    readonly photos: FieldRef<"WebsiteCachedData", 'Json'>
+    readonly posts: FieldRef<"WebsiteCachedData", 'Json'>
+    readonly lastSyncedAt: FieldRef<"WebsiteCachedData", 'DateTime'>
+    readonly nextSyncAt: FieldRef<"WebsiteCachedData", 'DateTime'>
+    readonly syncInterval: FieldRef<"WebsiteCachedData", 'Int'>
+    readonly isSyncing: FieldRef<"WebsiteCachedData", 'Boolean'>
+    readonly lastSyncError: FieldRef<"WebsiteCachedData", 'String'>
+    readonly syncRetryCount: FieldRef<"WebsiteCachedData", 'Int'>
+    readonly createdAt: FieldRef<"WebsiteCachedData", 'DateTime'>
+    readonly updatedAt: FieldRef<"WebsiteCachedData", 'DateTime'>
+  }
+    
+
+  // Custom InputTypes
+  /**
+   * WebsiteCachedData findUnique
+   */
+  export type WebsiteCachedDataFindUniqueArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the WebsiteCachedData
+     */
+    select?: WebsiteCachedDataSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the WebsiteCachedData
+     */
+    omit?: WebsiteCachedDataOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: WebsiteCachedDataInclude<ExtArgs> | null
+    /**
+     * Filter, which WebsiteCachedData to fetch.
+     */
+    where: WebsiteCachedDataWhereUniqueInput
+  }
+
+  /**
+   * WebsiteCachedData findUniqueOrThrow
+   */
+  export type WebsiteCachedDataFindUniqueOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the WebsiteCachedData
+     */
+    select?: WebsiteCachedDataSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the WebsiteCachedData
+     */
+    omit?: WebsiteCachedDataOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: WebsiteCachedDataInclude<ExtArgs> | null
+    /**
+     * Filter, which WebsiteCachedData to fetch.
+     */
+    where: WebsiteCachedDataWhereUniqueInput
+  }
+
+  /**
+   * WebsiteCachedData findFirst
+   */
+  export type WebsiteCachedDataFindFirstArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the WebsiteCachedData
+     */
+    select?: WebsiteCachedDataSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the WebsiteCachedData
+     */
+    omit?: WebsiteCachedDataOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: WebsiteCachedDataInclude<ExtArgs> | null
+    /**
+     * Filter, which WebsiteCachedData to fetch.
+     */
+    where?: WebsiteCachedDataWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of WebsiteCachedData to fetch.
+     */
+    orderBy?: WebsiteCachedDataOrderByWithRelationInput | WebsiteCachedDataOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for WebsiteCachedData.
+     */
+    cursor?: WebsiteCachedDataWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` WebsiteCachedData from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` WebsiteCachedData.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of WebsiteCachedData.
+     */
+    distinct?: WebsiteCachedDataScalarFieldEnum | WebsiteCachedDataScalarFieldEnum[]
+  }
+
+  /**
+   * WebsiteCachedData findFirstOrThrow
+   */
+  export type WebsiteCachedDataFindFirstOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the WebsiteCachedData
+     */
+    select?: WebsiteCachedDataSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the WebsiteCachedData
+     */
+    omit?: WebsiteCachedDataOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: WebsiteCachedDataInclude<ExtArgs> | null
+    /**
+     * Filter, which WebsiteCachedData to fetch.
+     */
+    where?: WebsiteCachedDataWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of WebsiteCachedData to fetch.
+     */
+    orderBy?: WebsiteCachedDataOrderByWithRelationInput | WebsiteCachedDataOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for WebsiteCachedData.
+     */
+    cursor?: WebsiteCachedDataWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` WebsiteCachedData from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` WebsiteCachedData.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of WebsiteCachedData.
+     */
+    distinct?: WebsiteCachedDataScalarFieldEnum | WebsiteCachedDataScalarFieldEnum[]
+  }
+
+  /**
+   * WebsiteCachedData findMany
+   */
+  export type WebsiteCachedDataFindManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the WebsiteCachedData
+     */
+    select?: WebsiteCachedDataSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the WebsiteCachedData
+     */
+    omit?: WebsiteCachedDataOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: WebsiteCachedDataInclude<ExtArgs> | null
+    /**
+     * Filter, which WebsiteCachedData to fetch.
+     */
+    where?: WebsiteCachedDataWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of WebsiteCachedData to fetch.
+     */
+    orderBy?: WebsiteCachedDataOrderByWithRelationInput | WebsiteCachedDataOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for listing WebsiteCachedData.
+     */
+    cursor?: WebsiteCachedDataWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` WebsiteCachedData from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` WebsiteCachedData.
+     */
+    skip?: number
+    distinct?: WebsiteCachedDataScalarFieldEnum | WebsiteCachedDataScalarFieldEnum[]
+  }
+
+  /**
+   * WebsiteCachedData create
+   */
+  export type WebsiteCachedDataCreateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the WebsiteCachedData
+     */
+    select?: WebsiteCachedDataSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the WebsiteCachedData
+     */
+    omit?: WebsiteCachedDataOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: WebsiteCachedDataInclude<ExtArgs> | null
+    /**
+     * The data needed to create a WebsiteCachedData.
+     */
+    data: XOR<WebsiteCachedDataCreateInput, WebsiteCachedDataUncheckedCreateInput>
+  }
+
+  /**
+   * WebsiteCachedData createMany
+   */
+  export type WebsiteCachedDataCreateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to create many WebsiteCachedData.
+     */
+    data: WebsiteCachedDataCreateManyInput | WebsiteCachedDataCreateManyInput[]
+  }
+
+  /**
+   * WebsiteCachedData update
+   */
+  export type WebsiteCachedDataUpdateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the WebsiteCachedData
+     */
+    select?: WebsiteCachedDataSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the WebsiteCachedData
+     */
+    omit?: WebsiteCachedDataOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: WebsiteCachedDataInclude<ExtArgs> | null
+    /**
+     * The data needed to update a WebsiteCachedData.
+     */
+    data: XOR<WebsiteCachedDataUpdateInput, WebsiteCachedDataUncheckedUpdateInput>
+    /**
+     * Choose, which WebsiteCachedData to update.
+     */
+    where: WebsiteCachedDataWhereUniqueInput
+  }
+
+  /**
+   * WebsiteCachedData updateMany
+   */
+  export type WebsiteCachedDataUpdateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to update WebsiteCachedData.
+     */
+    data: XOR<WebsiteCachedDataUpdateManyMutationInput, WebsiteCachedDataUncheckedUpdateManyInput>
+    /**
+     * Filter which WebsiteCachedData to update
+     */
+    where?: WebsiteCachedDataWhereInput
+    /**
+     * Limit how many WebsiteCachedData to update.
+     */
+    limit?: number
+  }
+
+  /**
+   * WebsiteCachedData upsert
+   */
+  export type WebsiteCachedDataUpsertArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the WebsiteCachedData
+     */
+    select?: WebsiteCachedDataSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the WebsiteCachedData
+     */
+    omit?: WebsiteCachedDataOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: WebsiteCachedDataInclude<ExtArgs> | null
+    /**
+     * The filter to search for the WebsiteCachedData to update in case it exists.
+     */
+    where: WebsiteCachedDataWhereUniqueInput
+    /**
+     * In case the WebsiteCachedData found by the `where` argument doesn't exist, create a new WebsiteCachedData with this data.
+     */
+    create: XOR<WebsiteCachedDataCreateInput, WebsiteCachedDataUncheckedCreateInput>
+    /**
+     * In case the WebsiteCachedData was found with the provided `where` argument, update it with this data.
+     */
+    update: XOR<WebsiteCachedDataUpdateInput, WebsiteCachedDataUncheckedUpdateInput>
+  }
+
+  /**
+   * WebsiteCachedData delete
+   */
+  export type WebsiteCachedDataDeleteArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the WebsiteCachedData
+     */
+    select?: WebsiteCachedDataSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the WebsiteCachedData
+     */
+    omit?: WebsiteCachedDataOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: WebsiteCachedDataInclude<ExtArgs> | null
+    /**
+     * Filter which WebsiteCachedData to delete.
+     */
+    where: WebsiteCachedDataWhereUniqueInput
+  }
+
+  /**
+   * WebsiteCachedData deleteMany
+   */
+  export type WebsiteCachedDataDeleteManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which WebsiteCachedData to delete
+     */
+    where?: WebsiteCachedDataWhereInput
+    /**
+     * Limit how many WebsiteCachedData to delete.
+     */
+    limit?: number
+  }
+
+  /**
+   * WebsiteCachedData findRaw
+   */
+  export type WebsiteCachedDataFindRawArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The query predicate filter. If unspecified, then all documents in the collection will match the predicate. ${@link https://docs.mongodb.com/manual/reference/operator/query MongoDB Docs}.
+     */
+    filter?: InputJsonValue
+    /**
+     * Additional options to pass to the `find` command ${@link https://docs.mongodb.com/manual/reference/command/find/#command-fields MongoDB Docs}.
+     */
+    options?: InputJsonValue
+  }
+
+  /**
+   * WebsiteCachedData aggregateRaw
+   */
+  export type WebsiteCachedDataAggregateRawArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * An array of aggregation stages to process and transform the document stream via the aggregation pipeline. ${@link https://docs.mongodb.com/manual/reference/operator/aggregation-pipeline MongoDB Docs}.
+     */
+    pipeline?: InputJsonValue[]
+    /**
+     * Additional options to pass to the `aggregate` command ${@link https://docs.mongodb.com/manual/reference/command/aggregate/#command-fields MongoDB Docs}.
+     */
+    options?: InputJsonValue
+  }
+
+  /**
+   * WebsiteCachedData without action
+   */
+  export type WebsiteCachedDataDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the WebsiteCachedData
+     */
+    select?: WebsiteCachedDataSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the WebsiteCachedData
+     */
+    omit?: WebsiteCachedDataOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: WebsiteCachedDataInclude<ExtArgs> | null
+  }
+
+
+  /**
+   * Model SyncHistory
+   */
+
+  export type AggregateSyncHistory = {
+    _count: SyncHistoryCountAggregateOutputType | null
+    _avg: SyncHistoryAvgAggregateOutputType | null
+    _sum: SyncHistorySumAggregateOutputType | null
+    _min: SyncHistoryMinAggregateOutputType | null
+    _max: SyncHistoryMaxAggregateOutputType | null
+  }
+
+  export type SyncHistoryAvgAggregateOutputType = {
+    reviewsCount: number | null
+    photosCount: number | null
+    postsCount: number | null
+    duration: number | null
+  }
+
+  export type SyncHistorySumAggregateOutputType = {
+    reviewsCount: number | null
+    photosCount: number | null
+    postsCount: number | null
+    duration: number | null
+  }
+
+  export type SyncHistoryMinAggregateOutputType = {
+    id: string | null
+    websiteId: string | null
+    userId: string | null
+    syncType: string | null
+    status: string | null
+    reviewsCount: number | null
+    photosCount: number | null
+    postsCount: number | null
+    errorMessage: string | null
+    fetchedAt: Date | null
+    completedAt: Date | null
+    duration: number | null
+    createdAt: Date | null
+  }
+
+  export type SyncHistoryMaxAggregateOutputType = {
+    id: string | null
+    websiteId: string | null
+    userId: string | null
+    syncType: string | null
+    status: string | null
+    reviewsCount: number | null
+    photosCount: number | null
+    postsCount: number | null
+    errorMessage: string | null
+    fetchedAt: Date | null
+    completedAt: Date | null
+    duration: number | null
+    createdAt: Date | null
+  }
+
+  export type SyncHistoryCountAggregateOutputType = {
+    id: number
+    websiteId: number
+    userId: number
+    syncType: number
+    status: number
+    reviewsCount: number
+    photosCount: number
+    postsCount: number
+    errorMessage: number
+    errorDetails: number
+    fetchedAt: number
+    completedAt: number
+    duration: number
+    createdAt: number
+    _all: number
+  }
+
+
+  export type SyncHistoryAvgAggregateInputType = {
+    reviewsCount?: true
+    photosCount?: true
+    postsCount?: true
+    duration?: true
+  }
+
+  export type SyncHistorySumAggregateInputType = {
+    reviewsCount?: true
+    photosCount?: true
+    postsCount?: true
+    duration?: true
+  }
+
+  export type SyncHistoryMinAggregateInputType = {
+    id?: true
+    websiteId?: true
+    userId?: true
+    syncType?: true
+    status?: true
+    reviewsCount?: true
+    photosCount?: true
+    postsCount?: true
+    errorMessage?: true
+    fetchedAt?: true
+    completedAt?: true
+    duration?: true
+    createdAt?: true
+  }
+
+  export type SyncHistoryMaxAggregateInputType = {
+    id?: true
+    websiteId?: true
+    userId?: true
+    syncType?: true
+    status?: true
+    reviewsCount?: true
+    photosCount?: true
+    postsCount?: true
+    errorMessage?: true
+    fetchedAt?: true
+    completedAt?: true
+    duration?: true
+    createdAt?: true
+  }
+
+  export type SyncHistoryCountAggregateInputType = {
+    id?: true
+    websiteId?: true
+    userId?: true
+    syncType?: true
+    status?: true
+    reviewsCount?: true
+    photosCount?: true
+    postsCount?: true
+    errorMessage?: true
+    errorDetails?: true
+    fetchedAt?: true
+    completedAt?: true
+    duration?: true
+    createdAt?: true
+    _all?: true
+  }
+
+  export type SyncHistoryAggregateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which SyncHistory to aggregate.
+     */
+    where?: SyncHistoryWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of SyncHistories to fetch.
+     */
+    orderBy?: SyncHistoryOrderByWithRelationInput | SyncHistoryOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the start position
+     */
+    cursor?: SyncHistoryWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` SyncHistories from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` SyncHistories.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Count returned SyncHistories
+    **/
+    _count?: true | SyncHistoryCountAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to average
+    **/
+    _avg?: SyncHistoryAvgAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to sum
+    **/
+    _sum?: SyncHistorySumAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the minimum value
+    **/
+    _min?: SyncHistoryMinAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the maximum value
+    **/
+    _max?: SyncHistoryMaxAggregateInputType
+  }
+
+  export type GetSyncHistoryAggregateType<T extends SyncHistoryAggregateArgs> = {
+        [P in keyof T & keyof AggregateSyncHistory]: P extends '_count' | 'count'
+      ? T[P] extends true
+        ? number
+        : GetScalarType<T[P], AggregateSyncHistory[P]>
+      : GetScalarType<T[P], AggregateSyncHistory[P]>
+  }
+
+
+
+
+  export type SyncHistoryGroupByArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: SyncHistoryWhereInput
+    orderBy?: SyncHistoryOrderByWithAggregationInput | SyncHistoryOrderByWithAggregationInput[]
+    by: SyncHistoryScalarFieldEnum[] | SyncHistoryScalarFieldEnum
+    having?: SyncHistoryScalarWhereWithAggregatesInput
+    take?: number
+    skip?: number
+    _count?: SyncHistoryCountAggregateInputType | true
+    _avg?: SyncHistoryAvgAggregateInputType
+    _sum?: SyncHistorySumAggregateInputType
+    _min?: SyncHistoryMinAggregateInputType
+    _max?: SyncHistoryMaxAggregateInputType
+  }
+
+  export type SyncHistoryGroupByOutputType = {
+    id: string
+    websiteId: string
+    userId: string
+    syncType: string
+    status: string
+    reviewsCount: number | null
+    photosCount: number | null
+    postsCount: number | null
+    errorMessage: string | null
+    errorDetails: JsonValue | null
+    fetchedAt: Date
+    completedAt: Date | null
+    duration: number | null
+    createdAt: Date
+    _count: SyncHistoryCountAggregateOutputType | null
+    _avg: SyncHistoryAvgAggregateOutputType | null
+    _sum: SyncHistorySumAggregateOutputType | null
+    _min: SyncHistoryMinAggregateOutputType | null
+    _max: SyncHistoryMaxAggregateOutputType | null
+  }
+
+  type GetSyncHistoryGroupByPayload<T extends SyncHistoryGroupByArgs> = Prisma.PrismaPromise<
+    Array<
+      PickEnumerable<SyncHistoryGroupByOutputType, T['by']> &
+        {
+          [P in ((keyof T) & (keyof SyncHistoryGroupByOutputType))]: P extends '_count'
+            ? T[P] extends boolean
+              ? number
+              : GetScalarType<T[P], SyncHistoryGroupByOutputType[P]>
+            : GetScalarType<T[P], SyncHistoryGroupByOutputType[P]>
+        }
+      >
+    >
+
+
+  export type SyncHistorySelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    websiteId?: boolean
+    userId?: boolean
+    syncType?: boolean
+    status?: boolean
+    reviewsCount?: boolean
+    photosCount?: boolean
+    postsCount?: boolean
+    errorMessage?: boolean
+    errorDetails?: boolean
+    fetchedAt?: boolean
+    completedAt?: boolean
+    duration?: boolean
+    createdAt?: boolean
+  }, ExtArgs["result"]["syncHistory"]>
+
+
+
+  export type SyncHistorySelectScalar = {
+    id?: boolean
+    websiteId?: boolean
+    userId?: boolean
+    syncType?: boolean
+    status?: boolean
+    reviewsCount?: boolean
+    photosCount?: boolean
+    postsCount?: boolean
+    errorMessage?: boolean
+    errorDetails?: boolean
+    fetchedAt?: boolean
+    completedAt?: boolean
+    duration?: boolean
+    createdAt?: boolean
+  }
+
+  export type SyncHistoryOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "websiteId" | "userId" | "syncType" | "status" | "reviewsCount" | "photosCount" | "postsCount" | "errorMessage" | "errorDetails" | "fetchedAt" | "completedAt" | "duration" | "createdAt", ExtArgs["result"]["syncHistory"]>
+
+  export type $SyncHistoryPayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    name: "SyncHistory"
+    objects: {}
+    scalars: $Extensions.GetPayloadResult<{
+      id: string
+      websiteId: string
+      userId: string
+      syncType: string
+      status: string
+      reviewsCount: number | null
+      photosCount: number | null
+      postsCount: number | null
+      errorMessage: string | null
+      errorDetails: Prisma.JsonValue | null
+      fetchedAt: Date
+      completedAt: Date | null
+      duration: number | null
+      createdAt: Date
+    }, ExtArgs["result"]["syncHistory"]>
+    composites: {}
+  }
+
+  type SyncHistoryGetPayload<S extends boolean | null | undefined | SyncHistoryDefaultArgs> = $Result.GetResult<Prisma.$SyncHistoryPayload, S>
+
+  type SyncHistoryCountArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> =
+    Omit<SyncHistoryFindManyArgs, 'select' | 'include' | 'distinct' | 'omit'> & {
+      select?: SyncHistoryCountAggregateInputType | true
+    }
+
+  export interface SyncHistoryDelegate<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> {
+    [K: symbol]: { types: Prisma.TypeMap<ExtArgs>['model']['SyncHistory'], meta: { name: 'SyncHistory' } }
+    /**
+     * Find zero or one SyncHistory that matches the filter.
+     * @param {SyncHistoryFindUniqueArgs} args - Arguments to find a SyncHistory
+     * @example
+     * // Get one SyncHistory
+     * const syncHistory = await prisma.syncHistory.findUnique({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUnique<T extends SyncHistoryFindUniqueArgs>(args: SelectSubset<T, SyncHistoryFindUniqueArgs<ExtArgs>>): Prisma__SyncHistoryClient<$Result.GetResult<Prisma.$SyncHistoryPayload<ExtArgs>, T, "findUnique", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find one SyncHistory that matches the filter or throw an error with `error.code='P2025'`
+     * if no matches were found.
+     * @param {SyncHistoryFindUniqueOrThrowArgs} args - Arguments to find a SyncHistory
+     * @example
+     * // Get one SyncHistory
+     * const syncHistory = await prisma.syncHistory.findUniqueOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUniqueOrThrow<T extends SyncHistoryFindUniqueOrThrowArgs>(args: SelectSubset<T, SyncHistoryFindUniqueOrThrowArgs<ExtArgs>>): Prisma__SyncHistoryClient<$Result.GetResult<Prisma.$SyncHistoryPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find the first SyncHistory that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {SyncHistoryFindFirstArgs} args - Arguments to find a SyncHistory
+     * @example
+     * // Get one SyncHistory
+     * const syncHistory = await prisma.syncHistory.findFirst({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirst<T extends SyncHistoryFindFirstArgs>(args?: SelectSubset<T, SyncHistoryFindFirstArgs<ExtArgs>>): Prisma__SyncHistoryClient<$Result.GetResult<Prisma.$SyncHistoryPayload<ExtArgs>, T, "findFirst", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find the first SyncHistory that matches the filter or
+     * throw `PrismaKnownClientError` with `P2025` code if no matches were found.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {SyncHistoryFindFirstOrThrowArgs} args - Arguments to find a SyncHistory
+     * @example
+     * // Get one SyncHistory
+     * const syncHistory = await prisma.syncHistory.findFirstOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirstOrThrow<T extends SyncHistoryFindFirstOrThrowArgs>(args?: SelectSubset<T, SyncHistoryFindFirstOrThrowArgs<ExtArgs>>): Prisma__SyncHistoryClient<$Result.GetResult<Prisma.$SyncHistoryPayload<ExtArgs>, T, "findFirstOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find zero or more SyncHistories that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {SyncHistoryFindManyArgs} args - Arguments to filter and select certain fields only.
+     * @example
+     * // Get all SyncHistories
+     * const syncHistories = await prisma.syncHistory.findMany()
+     * 
+     * // Get first 10 SyncHistories
+     * const syncHistories = await prisma.syncHistory.findMany({ take: 10 })
+     * 
+     * // Only select the `id`
+     * const syncHistoryWithIdOnly = await prisma.syncHistory.findMany({ select: { id: true } })
+     * 
+     */
+    findMany<T extends SyncHistoryFindManyArgs>(args?: SelectSubset<T, SyncHistoryFindManyArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$SyncHistoryPayload<ExtArgs>, T, "findMany", GlobalOmitOptions>>
+
+    /**
+     * Create a SyncHistory.
+     * @param {SyncHistoryCreateArgs} args - Arguments to create a SyncHistory.
+     * @example
+     * // Create one SyncHistory
+     * const SyncHistory = await prisma.syncHistory.create({
+     *   data: {
+     *     // ... data to create a SyncHistory
+     *   }
+     * })
+     * 
+     */
+    create<T extends SyncHistoryCreateArgs>(args: SelectSubset<T, SyncHistoryCreateArgs<ExtArgs>>): Prisma__SyncHistoryClient<$Result.GetResult<Prisma.$SyncHistoryPayload<ExtArgs>, T, "create", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Create many SyncHistories.
+     * @param {SyncHistoryCreateManyArgs} args - Arguments to create many SyncHistories.
+     * @example
+     * // Create many SyncHistories
+     * const syncHistory = await prisma.syncHistory.createMany({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     *     
+     */
+    createMany<T extends SyncHistoryCreateManyArgs>(args?: SelectSubset<T, SyncHistoryCreateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Delete a SyncHistory.
+     * @param {SyncHistoryDeleteArgs} args - Arguments to delete one SyncHistory.
+     * @example
+     * // Delete one SyncHistory
+     * const SyncHistory = await prisma.syncHistory.delete({
+     *   where: {
+     *     // ... filter to delete one SyncHistory
+     *   }
+     * })
+     * 
+     */
+    delete<T extends SyncHistoryDeleteArgs>(args: SelectSubset<T, SyncHistoryDeleteArgs<ExtArgs>>): Prisma__SyncHistoryClient<$Result.GetResult<Prisma.$SyncHistoryPayload<ExtArgs>, T, "delete", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Update one SyncHistory.
+     * @param {SyncHistoryUpdateArgs} args - Arguments to update one SyncHistory.
+     * @example
+     * // Update one SyncHistory
+     * const syncHistory = await prisma.syncHistory.update({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    update<T extends SyncHistoryUpdateArgs>(args: SelectSubset<T, SyncHistoryUpdateArgs<ExtArgs>>): Prisma__SyncHistoryClient<$Result.GetResult<Prisma.$SyncHistoryPayload<ExtArgs>, T, "update", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Delete zero or more SyncHistories.
+     * @param {SyncHistoryDeleteManyArgs} args - Arguments to filter SyncHistories to delete.
+     * @example
+     * // Delete a few SyncHistories
+     * const { count } = await prisma.syncHistory.deleteMany({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     * 
+     */
+    deleteMany<T extends SyncHistoryDeleteManyArgs>(args?: SelectSubset<T, SyncHistoryDeleteManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Update zero or more SyncHistories.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {SyncHistoryUpdateManyArgs} args - Arguments to update one or more rows.
+     * @example
+     * // Update many SyncHistories
+     * const syncHistory = await prisma.syncHistory.updateMany({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    updateMany<T extends SyncHistoryUpdateManyArgs>(args: SelectSubset<T, SyncHistoryUpdateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Create or update one SyncHistory.
+     * @param {SyncHistoryUpsertArgs} args - Arguments to update or create a SyncHistory.
+     * @example
+     * // Update or create a SyncHistory
+     * const syncHistory = await prisma.syncHistory.upsert({
+     *   create: {
+     *     // ... data to create a SyncHistory
+     *   },
+     *   update: {
+     *     // ... in case it already exists, update
+     *   },
+     *   where: {
+     *     // ... the filter for the SyncHistory we want to update
+     *   }
+     * })
+     */
+    upsert<T extends SyncHistoryUpsertArgs>(args: SelectSubset<T, SyncHistoryUpsertArgs<ExtArgs>>): Prisma__SyncHistoryClient<$Result.GetResult<Prisma.$SyncHistoryPayload<ExtArgs>, T, "upsert", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find zero or more SyncHistories that matches the filter.
+     * @param {SyncHistoryFindRawArgs} args - Select which filters you would like to apply.
+     * @example
+     * const syncHistory = await prisma.syncHistory.findRaw({
+     *   filter: { age: { $gt: 25 } }
+     * })
+     */
+    findRaw(args?: SyncHistoryFindRawArgs): Prisma.PrismaPromise<JsonObject>
+
+    /**
+     * Perform aggregation operations on a SyncHistory.
+     * @param {SyncHistoryAggregateRawArgs} args - Select which aggregations you would like to apply.
+     * @example
+     * const syncHistory = await prisma.syncHistory.aggregateRaw({
+     *   pipeline: [
+     *     { $match: { status: "registered" } },
+     *     { $group: { _id: "$country", total: { $sum: 1 } } }
+     *   ]
+     * })
+     */
+    aggregateRaw(args?: SyncHistoryAggregateRawArgs): Prisma.PrismaPromise<JsonObject>
+
+
+    /**
+     * Count the number of SyncHistories.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {SyncHistoryCountArgs} args - Arguments to filter SyncHistories to count.
+     * @example
+     * // Count the number of SyncHistories
+     * const count = await prisma.syncHistory.count({
+     *   where: {
+     *     // ... the filter for the SyncHistories we want to count
+     *   }
+     * })
+    **/
+    count<T extends SyncHistoryCountArgs>(
+      args?: Subset<T, SyncHistoryCountArgs>,
+    ): Prisma.PrismaPromise<
+      T extends $Utils.Record<'select', any>
+        ? T['select'] extends true
+          ? number
+          : GetScalarType<T['select'], SyncHistoryCountAggregateOutputType>
+        : number
+    >
+
+    /**
+     * Allows you to perform aggregations operations on a SyncHistory.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {SyncHistoryAggregateArgs} args - Select which aggregations you would like to apply and on what fields.
+     * @example
+     * // Ordered by age ascending
+     * // Where email contains prisma.io
+     * // Limited to the 10 users
+     * const aggregations = await prisma.user.aggregate({
+     *   _avg: {
+     *     age: true,
+     *   },
+     *   where: {
+     *     email: {
+     *       contains: "prisma.io",
+     *     },
+     *   },
+     *   orderBy: {
+     *     age: "asc",
+     *   },
+     *   take: 10,
+     * })
+    **/
+    aggregate<T extends SyncHistoryAggregateArgs>(args: Subset<T, SyncHistoryAggregateArgs>): Prisma.PrismaPromise<GetSyncHistoryAggregateType<T>>
+
+    /**
+     * Group by SyncHistory.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {SyncHistoryGroupByArgs} args - Group by arguments.
+     * @example
+     * // Group by city, order by createdAt, get count
+     * const result = await prisma.user.groupBy({
+     *   by: ['city', 'createdAt'],
+     *   orderBy: {
+     *     createdAt: true
+     *   },
+     *   _count: {
+     *     _all: true
+     *   },
+     * })
+     * 
+    **/
+    groupBy<
+      T extends SyncHistoryGroupByArgs,
+      HasSelectOrTake extends Or<
+        Extends<'skip', Keys<T>>,
+        Extends<'take', Keys<T>>
+      >,
+      OrderByArg extends True extends HasSelectOrTake
+        ? { orderBy: SyncHistoryGroupByArgs['orderBy'] }
+        : { orderBy?: SyncHistoryGroupByArgs['orderBy'] },
+      OrderFields extends ExcludeUnderscoreKeys<Keys<MaybeTupleToUnion<T['orderBy']>>>,
+      ByFields extends MaybeTupleToUnion<T['by']>,
+      ByValid extends Has<ByFields, OrderFields>,
+      HavingFields extends GetHavingFields<T['having']>,
+      HavingValid extends Has<ByFields, HavingFields>,
+      ByEmpty extends T['by'] extends never[] ? True : False,
+      InputErrors extends ByEmpty extends True
+      ? `Error: "by" must not be empty.`
+      : HavingValid extends False
+      ? {
+          [P in HavingFields]: P extends ByFields
+            ? never
+            : P extends string
+            ? `Error: Field "${P}" used in "having" needs to be provided in "by".`
+            : [
+                Error,
+                'Field ',
+                P,
+                ` in "having" needs to be provided in "by"`,
+              ]
+        }[HavingFields]
+      : 'take' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "take", you also need to provide "orderBy"'
+      : 'skip' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "skip", you also need to provide "orderBy"'
+      : ByValid extends True
+      ? {}
+      : {
+          [P in OrderFields]: P extends ByFields
+            ? never
+            : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+        }[OrderFields]
+    >(args: SubsetIntersection<T, SyncHistoryGroupByArgs, OrderByArg> & InputErrors): {} extends InputErrors ? GetSyncHistoryGroupByPayload<T> : Prisma.PrismaPromise<InputErrors>
+  /**
+   * Fields of the SyncHistory model
+   */
+  readonly fields: SyncHistoryFieldRefs;
+  }
+
+  /**
+   * The delegate class that acts as a "Promise-like" for SyncHistory.
+   * Why is this prefixed with `Prisma__`?
+   * Because we want to prevent naming conflicts as mentioned in
+   * https://github.com/prisma/prisma-client-js/issues/707
+   */
+  export interface Prisma__SyncHistoryClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
+    readonly [Symbol.toStringTag]: "PrismaPromise"
+    /**
+     * Attaches callbacks for the resolution and/or rejection of the Promise.
+     * @param onfulfilled The callback to execute when the Promise is resolved.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of which ever callback is executed.
+     */
+    then<TResult1 = T, TResult2 = never>(onfulfilled?: ((value: T) => TResult1 | PromiseLike<TResult1>) | undefined | null, onrejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>) | undefined | null): $Utils.JsPromise<TResult1 | TResult2>
+    /**
+     * Attaches a callback for only the rejection of the Promise.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of the callback.
+     */
+    catch<TResult = never>(onrejected?: ((reason: any) => TResult | PromiseLike<TResult>) | undefined | null): $Utils.JsPromise<T | TResult>
+    /**
+     * Attaches a callback that is invoked when the Promise is settled (fulfilled or rejected). The
+     * resolved value cannot be modified from the callback.
+     * @param onfinally The callback to execute when the Promise is settled (fulfilled or rejected).
+     * @returns A Promise for the completion of the callback.
+     */
+    finally(onfinally?: (() => void) | undefined | null): $Utils.JsPromise<T>
+  }
+
+
+
+
+  /**
+   * Fields of the SyncHistory model
+   */
+  interface SyncHistoryFieldRefs {
+    readonly id: FieldRef<"SyncHistory", 'String'>
+    readonly websiteId: FieldRef<"SyncHistory", 'String'>
+    readonly userId: FieldRef<"SyncHistory", 'String'>
+    readonly syncType: FieldRef<"SyncHistory", 'String'>
+    readonly status: FieldRef<"SyncHistory", 'String'>
+    readonly reviewsCount: FieldRef<"SyncHistory", 'Int'>
+    readonly photosCount: FieldRef<"SyncHistory", 'Int'>
+    readonly postsCount: FieldRef<"SyncHistory", 'Int'>
+    readonly errorMessage: FieldRef<"SyncHistory", 'String'>
+    readonly errorDetails: FieldRef<"SyncHistory", 'Json'>
+    readonly fetchedAt: FieldRef<"SyncHistory", 'DateTime'>
+    readonly completedAt: FieldRef<"SyncHistory", 'DateTime'>
+    readonly duration: FieldRef<"SyncHistory", 'Int'>
+    readonly createdAt: FieldRef<"SyncHistory", 'DateTime'>
+  }
+    
+
+  // Custom InputTypes
+  /**
+   * SyncHistory findUnique
+   */
+  export type SyncHistoryFindUniqueArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the SyncHistory
+     */
+    select?: SyncHistorySelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the SyncHistory
+     */
+    omit?: SyncHistoryOmit<ExtArgs> | null
+    /**
+     * Filter, which SyncHistory to fetch.
+     */
+    where: SyncHistoryWhereUniqueInput
+  }
+
+  /**
+   * SyncHistory findUniqueOrThrow
+   */
+  export type SyncHistoryFindUniqueOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the SyncHistory
+     */
+    select?: SyncHistorySelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the SyncHistory
+     */
+    omit?: SyncHistoryOmit<ExtArgs> | null
+    /**
+     * Filter, which SyncHistory to fetch.
+     */
+    where: SyncHistoryWhereUniqueInput
+  }
+
+  /**
+   * SyncHistory findFirst
+   */
+  export type SyncHistoryFindFirstArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the SyncHistory
+     */
+    select?: SyncHistorySelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the SyncHistory
+     */
+    omit?: SyncHistoryOmit<ExtArgs> | null
+    /**
+     * Filter, which SyncHistory to fetch.
+     */
+    where?: SyncHistoryWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of SyncHistories to fetch.
+     */
+    orderBy?: SyncHistoryOrderByWithRelationInput | SyncHistoryOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for SyncHistories.
+     */
+    cursor?: SyncHistoryWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` SyncHistories from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` SyncHistories.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of SyncHistories.
+     */
+    distinct?: SyncHistoryScalarFieldEnum | SyncHistoryScalarFieldEnum[]
+  }
+
+  /**
+   * SyncHistory findFirstOrThrow
+   */
+  export type SyncHistoryFindFirstOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the SyncHistory
+     */
+    select?: SyncHistorySelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the SyncHistory
+     */
+    omit?: SyncHistoryOmit<ExtArgs> | null
+    /**
+     * Filter, which SyncHistory to fetch.
+     */
+    where?: SyncHistoryWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of SyncHistories to fetch.
+     */
+    orderBy?: SyncHistoryOrderByWithRelationInput | SyncHistoryOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for SyncHistories.
+     */
+    cursor?: SyncHistoryWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` SyncHistories from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` SyncHistories.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of SyncHistories.
+     */
+    distinct?: SyncHistoryScalarFieldEnum | SyncHistoryScalarFieldEnum[]
+  }
+
+  /**
+   * SyncHistory findMany
+   */
+  export type SyncHistoryFindManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the SyncHistory
+     */
+    select?: SyncHistorySelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the SyncHistory
+     */
+    omit?: SyncHistoryOmit<ExtArgs> | null
+    /**
+     * Filter, which SyncHistories to fetch.
+     */
+    where?: SyncHistoryWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of SyncHistories to fetch.
+     */
+    orderBy?: SyncHistoryOrderByWithRelationInput | SyncHistoryOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for listing SyncHistories.
+     */
+    cursor?: SyncHistoryWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` SyncHistories from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` SyncHistories.
+     */
+    skip?: number
+    distinct?: SyncHistoryScalarFieldEnum | SyncHistoryScalarFieldEnum[]
+  }
+
+  /**
+   * SyncHistory create
+   */
+  export type SyncHistoryCreateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the SyncHistory
+     */
+    select?: SyncHistorySelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the SyncHistory
+     */
+    omit?: SyncHistoryOmit<ExtArgs> | null
+    /**
+     * The data needed to create a SyncHistory.
+     */
+    data: XOR<SyncHistoryCreateInput, SyncHistoryUncheckedCreateInput>
+  }
+
+  /**
+   * SyncHistory createMany
+   */
+  export type SyncHistoryCreateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to create many SyncHistories.
+     */
+    data: SyncHistoryCreateManyInput | SyncHistoryCreateManyInput[]
+  }
+
+  /**
+   * SyncHistory update
+   */
+  export type SyncHistoryUpdateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the SyncHistory
+     */
+    select?: SyncHistorySelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the SyncHistory
+     */
+    omit?: SyncHistoryOmit<ExtArgs> | null
+    /**
+     * The data needed to update a SyncHistory.
+     */
+    data: XOR<SyncHistoryUpdateInput, SyncHistoryUncheckedUpdateInput>
+    /**
+     * Choose, which SyncHistory to update.
+     */
+    where: SyncHistoryWhereUniqueInput
+  }
+
+  /**
+   * SyncHistory updateMany
+   */
+  export type SyncHistoryUpdateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to update SyncHistories.
+     */
+    data: XOR<SyncHistoryUpdateManyMutationInput, SyncHistoryUncheckedUpdateManyInput>
+    /**
+     * Filter which SyncHistories to update
+     */
+    where?: SyncHistoryWhereInput
+    /**
+     * Limit how many SyncHistories to update.
+     */
+    limit?: number
+  }
+
+  /**
+   * SyncHistory upsert
+   */
+  export type SyncHistoryUpsertArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the SyncHistory
+     */
+    select?: SyncHistorySelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the SyncHistory
+     */
+    omit?: SyncHistoryOmit<ExtArgs> | null
+    /**
+     * The filter to search for the SyncHistory to update in case it exists.
+     */
+    where: SyncHistoryWhereUniqueInput
+    /**
+     * In case the SyncHistory found by the `where` argument doesn't exist, create a new SyncHistory with this data.
+     */
+    create: XOR<SyncHistoryCreateInput, SyncHistoryUncheckedCreateInput>
+    /**
+     * In case the SyncHistory was found with the provided `where` argument, update it with this data.
+     */
+    update: XOR<SyncHistoryUpdateInput, SyncHistoryUncheckedUpdateInput>
+  }
+
+  /**
+   * SyncHistory delete
+   */
+  export type SyncHistoryDeleteArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the SyncHistory
+     */
+    select?: SyncHistorySelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the SyncHistory
+     */
+    omit?: SyncHistoryOmit<ExtArgs> | null
+    /**
+     * Filter which SyncHistory to delete.
+     */
+    where: SyncHistoryWhereUniqueInput
+  }
+
+  /**
+   * SyncHistory deleteMany
+   */
+  export type SyncHistoryDeleteManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which SyncHistories to delete
+     */
+    where?: SyncHistoryWhereInput
+    /**
+     * Limit how many SyncHistories to delete.
+     */
+    limit?: number
+  }
+
+  /**
+   * SyncHistory findRaw
+   */
+  export type SyncHistoryFindRawArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The query predicate filter. If unspecified, then all documents in the collection will match the predicate. ${@link https://docs.mongodb.com/manual/reference/operator/query MongoDB Docs}.
+     */
+    filter?: InputJsonValue
+    /**
+     * Additional options to pass to the `find` command ${@link https://docs.mongodb.com/manual/reference/command/find/#command-fields MongoDB Docs}.
+     */
+    options?: InputJsonValue
+  }
+
+  /**
+   * SyncHistory aggregateRaw
+   */
+  export type SyncHistoryAggregateRawArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * An array of aggregation stages to process and transform the document stream via the aggregation pipeline. ${@link https://docs.mongodb.com/manual/reference/operator/aggregation-pipeline MongoDB Docs}.
+     */
+    pipeline?: InputJsonValue[]
+    /**
+     * Additional options to pass to the `aggregate` command ${@link https://docs.mongodb.com/manual/reference/command/aggregate/#command-fields MongoDB Docs}.
+     */
+    options?: InputJsonValue
+  }
+
+  /**
+   * SyncHistory without action
+   */
+  export type SyncHistoryDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the SyncHistory
+     */
+    select?: SyncHistorySelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the SyncHistory
+     */
+    omit?: SyncHistoryOmit<ExtArgs> | null
+  }
+
+
+  /**
+   * Model SyncQueue
+   */
+
+  export type AggregateSyncQueue = {
+    _count: SyncQueueCountAggregateOutputType | null
+    _avg: SyncQueueAvgAggregateOutputType | null
+    _sum: SyncQueueSumAggregateOutputType | null
+    _min: SyncQueueMinAggregateOutputType | null
+    _max: SyncQueueMaxAggregateOutputType | null
+  }
+
+  export type SyncQueueAvgAggregateOutputType = {
+    priority: number | null
+    retryCount: number | null
+    maxRetries: number | null
+  }
+
+  export type SyncQueueSumAggregateOutputType = {
+    priority: number | null
+    retryCount: number | null
+    maxRetries: number | null
+  }
+
+  export type SyncQueueMinAggregateOutputType = {
+    id: string | null
+    websiteId: string | null
+    userId: string | null
+    status: string | null
+    priority: number | null
+    scheduledFor: Date | null
+    processedAt: Date | null
+    nextRetry: Date | null
+    retryCount: number | null
+    maxRetries: number | null
+    createdAt: Date | null
+    updatedAt: Date | null
+  }
+
+  export type SyncQueueMaxAggregateOutputType = {
+    id: string | null
+    websiteId: string | null
+    userId: string | null
+    status: string | null
+    priority: number | null
+    scheduledFor: Date | null
+    processedAt: Date | null
+    nextRetry: Date | null
+    retryCount: number | null
+    maxRetries: number | null
+    createdAt: Date | null
+    updatedAt: Date | null
+  }
+
+  export type SyncQueueCountAggregateOutputType = {
+    id: number
+    websiteId: number
+    userId: number
+    status: number
+    priority: number
+    scheduledFor: number
+    processedAt: number
+    nextRetry: number
+    retryCount: number
+    maxRetries: number
+    createdAt: number
+    updatedAt: number
+    _all: number
+  }
+
+
+  export type SyncQueueAvgAggregateInputType = {
+    priority?: true
+    retryCount?: true
+    maxRetries?: true
+  }
+
+  export type SyncQueueSumAggregateInputType = {
+    priority?: true
+    retryCount?: true
+    maxRetries?: true
+  }
+
+  export type SyncQueueMinAggregateInputType = {
+    id?: true
+    websiteId?: true
+    userId?: true
+    status?: true
+    priority?: true
+    scheduledFor?: true
+    processedAt?: true
+    nextRetry?: true
+    retryCount?: true
+    maxRetries?: true
+    createdAt?: true
+    updatedAt?: true
+  }
+
+  export type SyncQueueMaxAggregateInputType = {
+    id?: true
+    websiteId?: true
+    userId?: true
+    status?: true
+    priority?: true
+    scheduledFor?: true
+    processedAt?: true
+    nextRetry?: true
+    retryCount?: true
+    maxRetries?: true
+    createdAt?: true
+    updatedAt?: true
+  }
+
+  export type SyncQueueCountAggregateInputType = {
+    id?: true
+    websiteId?: true
+    userId?: true
+    status?: true
+    priority?: true
+    scheduledFor?: true
+    processedAt?: true
+    nextRetry?: true
+    retryCount?: true
+    maxRetries?: true
+    createdAt?: true
+    updatedAt?: true
+    _all?: true
+  }
+
+  export type SyncQueueAggregateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which SyncQueue to aggregate.
+     */
+    where?: SyncQueueWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of SyncQueues to fetch.
+     */
+    orderBy?: SyncQueueOrderByWithRelationInput | SyncQueueOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the start position
+     */
+    cursor?: SyncQueueWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` SyncQueues from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` SyncQueues.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Count returned SyncQueues
+    **/
+    _count?: true | SyncQueueCountAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to average
+    **/
+    _avg?: SyncQueueAvgAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to sum
+    **/
+    _sum?: SyncQueueSumAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the minimum value
+    **/
+    _min?: SyncQueueMinAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the maximum value
+    **/
+    _max?: SyncQueueMaxAggregateInputType
+  }
+
+  export type GetSyncQueueAggregateType<T extends SyncQueueAggregateArgs> = {
+        [P in keyof T & keyof AggregateSyncQueue]: P extends '_count' | 'count'
+      ? T[P] extends true
+        ? number
+        : GetScalarType<T[P], AggregateSyncQueue[P]>
+      : GetScalarType<T[P], AggregateSyncQueue[P]>
+  }
+
+
+
+
+  export type SyncQueueGroupByArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: SyncQueueWhereInput
+    orderBy?: SyncQueueOrderByWithAggregationInput | SyncQueueOrderByWithAggregationInput[]
+    by: SyncQueueScalarFieldEnum[] | SyncQueueScalarFieldEnum
+    having?: SyncQueueScalarWhereWithAggregatesInput
+    take?: number
+    skip?: number
+    _count?: SyncQueueCountAggregateInputType | true
+    _avg?: SyncQueueAvgAggregateInputType
+    _sum?: SyncQueueSumAggregateInputType
+    _min?: SyncQueueMinAggregateInputType
+    _max?: SyncQueueMaxAggregateInputType
+  }
+
+  export type SyncQueueGroupByOutputType = {
+    id: string
+    websiteId: string
+    userId: string
+    status: string
+    priority: number
+    scheduledFor: Date
+    processedAt: Date | null
+    nextRetry: Date | null
+    retryCount: number
+    maxRetries: number
+    createdAt: Date
+    updatedAt: Date
+    _count: SyncQueueCountAggregateOutputType | null
+    _avg: SyncQueueAvgAggregateOutputType | null
+    _sum: SyncQueueSumAggregateOutputType | null
+    _min: SyncQueueMinAggregateOutputType | null
+    _max: SyncQueueMaxAggregateOutputType | null
+  }
+
+  type GetSyncQueueGroupByPayload<T extends SyncQueueGroupByArgs> = Prisma.PrismaPromise<
+    Array<
+      PickEnumerable<SyncQueueGroupByOutputType, T['by']> &
+        {
+          [P in ((keyof T) & (keyof SyncQueueGroupByOutputType))]: P extends '_count'
+            ? T[P] extends boolean
+              ? number
+              : GetScalarType<T[P], SyncQueueGroupByOutputType[P]>
+            : GetScalarType<T[P], SyncQueueGroupByOutputType[P]>
+        }
+      >
+    >
+
+
+  export type SyncQueueSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    websiteId?: boolean
+    userId?: boolean
+    status?: boolean
+    priority?: boolean
+    scheduledFor?: boolean
+    processedAt?: boolean
+    nextRetry?: boolean
+    retryCount?: boolean
+    maxRetries?: boolean
+    createdAt?: boolean
+    updatedAt?: boolean
+  }, ExtArgs["result"]["syncQueue"]>
+
+
+
+  export type SyncQueueSelectScalar = {
+    id?: boolean
+    websiteId?: boolean
+    userId?: boolean
+    status?: boolean
+    priority?: boolean
+    scheduledFor?: boolean
+    processedAt?: boolean
+    nextRetry?: boolean
+    retryCount?: boolean
+    maxRetries?: boolean
+    createdAt?: boolean
+    updatedAt?: boolean
+  }
+
+  export type SyncQueueOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "websiteId" | "userId" | "status" | "priority" | "scheduledFor" | "processedAt" | "nextRetry" | "retryCount" | "maxRetries" | "createdAt" | "updatedAt", ExtArgs["result"]["syncQueue"]>
+
+  export type $SyncQueuePayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    name: "SyncQueue"
+    objects: {}
+    scalars: $Extensions.GetPayloadResult<{
+      id: string
+      websiteId: string
+      userId: string
+      status: string
+      priority: number
+      scheduledFor: Date
+      processedAt: Date | null
+      nextRetry: Date | null
+      retryCount: number
+      maxRetries: number
+      createdAt: Date
+      updatedAt: Date
+    }, ExtArgs["result"]["syncQueue"]>
+    composites: {}
+  }
+
+  type SyncQueueGetPayload<S extends boolean | null | undefined | SyncQueueDefaultArgs> = $Result.GetResult<Prisma.$SyncQueuePayload, S>
+
+  type SyncQueueCountArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> =
+    Omit<SyncQueueFindManyArgs, 'select' | 'include' | 'distinct' | 'omit'> & {
+      select?: SyncQueueCountAggregateInputType | true
+    }
+
+  export interface SyncQueueDelegate<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> {
+    [K: symbol]: { types: Prisma.TypeMap<ExtArgs>['model']['SyncQueue'], meta: { name: 'SyncQueue' } }
+    /**
+     * Find zero or one SyncQueue that matches the filter.
+     * @param {SyncQueueFindUniqueArgs} args - Arguments to find a SyncQueue
+     * @example
+     * // Get one SyncQueue
+     * const syncQueue = await prisma.syncQueue.findUnique({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUnique<T extends SyncQueueFindUniqueArgs>(args: SelectSubset<T, SyncQueueFindUniqueArgs<ExtArgs>>): Prisma__SyncQueueClient<$Result.GetResult<Prisma.$SyncQueuePayload<ExtArgs>, T, "findUnique", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find one SyncQueue that matches the filter or throw an error with `error.code='P2025'`
+     * if no matches were found.
+     * @param {SyncQueueFindUniqueOrThrowArgs} args - Arguments to find a SyncQueue
+     * @example
+     * // Get one SyncQueue
+     * const syncQueue = await prisma.syncQueue.findUniqueOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUniqueOrThrow<T extends SyncQueueFindUniqueOrThrowArgs>(args: SelectSubset<T, SyncQueueFindUniqueOrThrowArgs<ExtArgs>>): Prisma__SyncQueueClient<$Result.GetResult<Prisma.$SyncQueuePayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find the first SyncQueue that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {SyncQueueFindFirstArgs} args - Arguments to find a SyncQueue
+     * @example
+     * // Get one SyncQueue
+     * const syncQueue = await prisma.syncQueue.findFirst({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirst<T extends SyncQueueFindFirstArgs>(args?: SelectSubset<T, SyncQueueFindFirstArgs<ExtArgs>>): Prisma__SyncQueueClient<$Result.GetResult<Prisma.$SyncQueuePayload<ExtArgs>, T, "findFirst", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find the first SyncQueue that matches the filter or
+     * throw `PrismaKnownClientError` with `P2025` code if no matches were found.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {SyncQueueFindFirstOrThrowArgs} args - Arguments to find a SyncQueue
+     * @example
+     * // Get one SyncQueue
+     * const syncQueue = await prisma.syncQueue.findFirstOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirstOrThrow<T extends SyncQueueFindFirstOrThrowArgs>(args?: SelectSubset<T, SyncQueueFindFirstOrThrowArgs<ExtArgs>>): Prisma__SyncQueueClient<$Result.GetResult<Prisma.$SyncQueuePayload<ExtArgs>, T, "findFirstOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find zero or more SyncQueues that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {SyncQueueFindManyArgs} args - Arguments to filter and select certain fields only.
+     * @example
+     * // Get all SyncQueues
+     * const syncQueues = await prisma.syncQueue.findMany()
+     * 
+     * // Get first 10 SyncQueues
+     * const syncQueues = await prisma.syncQueue.findMany({ take: 10 })
+     * 
+     * // Only select the `id`
+     * const syncQueueWithIdOnly = await prisma.syncQueue.findMany({ select: { id: true } })
+     * 
+     */
+    findMany<T extends SyncQueueFindManyArgs>(args?: SelectSubset<T, SyncQueueFindManyArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$SyncQueuePayload<ExtArgs>, T, "findMany", GlobalOmitOptions>>
+
+    /**
+     * Create a SyncQueue.
+     * @param {SyncQueueCreateArgs} args - Arguments to create a SyncQueue.
+     * @example
+     * // Create one SyncQueue
+     * const SyncQueue = await prisma.syncQueue.create({
+     *   data: {
+     *     // ... data to create a SyncQueue
+     *   }
+     * })
+     * 
+     */
+    create<T extends SyncQueueCreateArgs>(args: SelectSubset<T, SyncQueueCreateArgs<ExtArgs>>): Prisma__SyncQueueClient<$Result.GetResult<Prisma.$SyncQueuePayload<ExtArgs>, T, "create", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Create many SyncQueues.
+     * @param {SyncQueueCreateManyArgs} args - Arguments to create many SyncQueues.
+     * @example
+     * // Create many SyncQueues
+     * const syncQueue = await prisma.syncQueue.createMany({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     *     
+     */
+    createMany<T extends SyncQueueCreateManyArgs>(args?: SelectSubset<T, SyncQueueCreateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Delete a SyncQueue.
+     * @param {SyncQueueDeleteArgs} args - Arguments to delete one SyncQueue.
+     * @example
+     * // Delete one SyncQueue
+     * const SyncQueue = await prisma.syncQueue.delete({
+     *   where: {
+     *     // ... filter to delete one SyncQueue
+     *   }
+     * })
+     * 
+     */
+    delete<T extends SyncQueueDeleteArgs>(args: SelectSubset<T, SyncQueueDeleteArgs<ExtArgs>>): Prisma__SyncQueueClient<$Result.GetResult<Prisma.$SyncQueuePayload<ExtArgs>, T, "delete", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Update one SyncQueue.
+     * @param {SyncQueueUpdateArgs} args - Arguments to update one SyncQueue.
+     * @example
+     * // Update one SyncQueue
+     * const syncQueue = await prisma.syncQueue.update({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    update<T extends SyncQueueUpdateArgs>(args: SelectSubset<T, SyncQueueUpdateArgs<ExtArgs>>): Prisma__SyncQueueClient<$Result.GetResult<Prisma.$SyncQueuePayload<ExtArgs>, T, "update", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Delete zero or more SyncQueues.
+     * @param {SyncQueueDeleteManyArgs} args - Arguments to filter SyncQueues to delete.
+     * @example
+     * // Delete a few SyncQueues
+     * const { count } = await prisma.syncQueue.deleteMany({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     * 
+     */
+    deleteMany<T extends SyncQueueDeleteManyArgs>(args?: SelectSubset<T, SyncQueueDeleteManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Update zero or more SyncQueues.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {SyncQueueUpdateManyArgs} args - Arguments to update one or more rows.
+     * @example
+     * // Update many SyncQueues
+     * const syncQueue = await prisma.syncQueue.updateMany({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    updateMany<T extends SyncQueueUpdateManyArgs>(args: SelectSubset<T, SyncQueueUpdateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Create or update one SyncQueue.
+     * @param {SyncQueueUpsertArgs} args - Arguments to update or create a SyncQueue.
+     * @example
+     * // Update or create a SyncQueue
+     * const syncQueue = await prisma.syncQueue.upsert({
+     *   create: {
+     *     // ... data to create a SyncQueue
+     *   },
+     *   update: {
+     *     // ... in case it already exists, update
+     *   },
+     *   where: {
+     *     // ... the filter for the SyncQueue we want to update
+     *   }
+     * })
+     */
+    upsert<T extends SyncQueueUpsertArgs>(args: SelectSubset<T, SyncQueueUpsertArgs<ExtArgs>>): Prisma__SyncQueueClient<$Result.GetResult<Prisma.$SyncQueuePayload<ExtArgs>, T, "upsert", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find zero or more SyncQueues that matches the filter.
+     * @param {SyncQueueFindRawArgs} args - Select which filters you would like to apply.
+     * @example
+     * const syncQueue = await prisma.syncQueue.findRaw({
+     *   filter: { age: { $gt: 25 } }
+     * })
+     */
+    findRaw(args?: SyncQueueFindRawArgs): Prisma.PrismaPromise<JsonObject>
+
+    /**
+     * Perform aggregation operations on a SyncQueue.
+     * @param {SyncQueueAggregateRawArgs} args - Select which aggregations you would like to apply.
+     * @example
+     * const syncQueue = await prisma.syncQueue.aggregateRaw({
+     *   pipeline: [
+     *     { $match: { status: "registered" } },
+     *     { $group: { _id: "$country", total: { $sum: 1 } } }
+     *   ]
+     * })
+     */
+    aggregateRaw(args?: SyncQueueAggregateRawArgs): Prisma.PrismaPromise<JsonObject>
+
+
+    /**
+     * Count the number of SyncQueues.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {SyncQueueCountArgs} args - Arguments to filter SyncQueues to count.
+     * @example
+     * // Count the number of SyncQueues
+     * const count = await prisma.syncQueue.count({
+     *   where: {
+     *     // ... the filter for the SyncQueues we want to count
+     *   }
+     * })
+    **/
+    count<T extends SyncQueueCountArgs>(
+      args?: Subset<T, SyncQueueCountArgs>,
+    ): Prisma.PrismaPromise<
+      T extends $Utils.Record<'select', any>
+        ? T['select'] extends true
+          ? number
+          : GetScalarType<T['select'], SyncQueueCountAggregateOutputType>
+        : number
+    >
+
+    /**
+     * Allows you to perform aggregations operations on a SyncQueue.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {SyncQueueAggregateArgs} args - Select which aggregations you would like to apply and on what fields.
+     * @example
+     * // Ordered by age ascending
+     * // Where email contains prisma.io
+     * // Limited to the 10 users
+     * const aggregations = await prisma.user.aggregate({
+     *   _avg: {
+     *     age: true,
+     *   },
+     *   where: {
+     *     email: {
+     *       contains: "prisma.io",
+     *     },
+     *   },
+     *   orderBy: {
+     *     age: "asc",
+     *   },
+     *   take: 10,
+     * })
+    **/
+    aggregate<T extends SyncQueueAggregateArgs>(args: Subset<T, SyncQueueAggregateArgs>): Prisma.PrismaPromise<GetSyncQueueAggregateType<T>>
+
+    /**
+     * Group by SyncQueue.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {SyncQueueGroupByArgs} args - Group by arguments.
+     * @example
+     * // Group by city, order by createdAt, get count
+     * const result = await prisma.user.groupBy({
+     *   by: ['city', 'createdAt'],
+     *   orderBy: {
+     *     createdAt: true
+     *   },
+     *   _count: {
+     *     _all: true
+     *   },
+     * })
+     * 
+    **/
+    groupBy<
+      T extends SyncQueueGroupByArgs,
+      HasSelectOrTake extends Or<
+        Extends<'skip', Keys<T>>,
+        Extends<'take', Keys<T>>
+      >,
+      OrderByArg extends True extends HasSelectOrTake
+        ? { orderBy: SyncQueueGroupByArgs['orderBy'] }
+        : { orderBy?: SyncQueueGroupByArgs['orderBy'] },
+      OrderFields extends ExcludeUnderscoreKeys<Keys<MaybeTupleToUnion<T['orderBy']>>>,
+      ByFields extends MaybeTupleToUnion<T['by']>,
+      ByValid extends Has<ByFields, OrderFields>,
+      HavingFields extends GetHavingFields<T['having']>,
+      HavingValid extends Has<ByFields, HavingFields>,
+      ByEmpty extends T['by'] extends never[] ? True : False,
+      InputErrors extends ByEmpty extends True
+      ? `Error: "by" must not be empty.`
+      : HavingValid extends False
+      ? {
+          [P in HavingFields]: P extends ByFields
+            ? never
+            : P extends string
+            ? `Error: Field "${P}" used in "having" needs to be provided in "by".`
+            : [
+                Error,
+                'Field ',
+                P,
+                ` in "having" needs to be provided in "by"`,
+              ]
+        }[HavingFields]
+      : 'take' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "take", you also need to provide "orderBy"'
+      : 'skip' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "skip", you also need to provide "orderBy"'
+      : ByValid extends True
+      ? {}
+      : {
+          [P in OrderFields]: P extends ByFields
+            ? never
+            : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+        }[OrderFields]
+    >(args: SubsetIntersection<T, SyncQueueGroupByArgs, OrderByArg> & InputErrors): {} extends InputErrors ? GetSyncQueueGroupByPayload<T> : Prisma.PrismaPromise<InputErrors>
+  /**
+   * Fields of the SyncQueue model
+   */
+  readonly fields: SyncQueueFieldRefs;
+  }
+
+  /**
+   * The delegate class that acts as a "Promise-like" for SyncQueue.
+   * Why is this prefixed with `Prisma__`?
+   * Because we want to prevent naming conflicts as mentioned in
+   * https://github.com/prisma/prisma-client-js/issues/707
+   */
+  export interface Prisma__SyncQueueClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
+    readonly [Symbol.toStringTag]: "PrismaPromise"
+    /**
+     * Attaches callbacks for the resolution and/or rejection of the Promise.
+     * @param onfulfilled The callback to execute when the Promise is resolved.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of which ever callback is executed.
+     */
+    then<TResult1 = T, TResult2 = never>(onfulfilled?: ((value: T) => TResult1 | PromiseLike<TResult1>) | undefined | null, onrejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>) | undefined | null): $Utils.JsPromise<TResult1 | TResult2>
+    /**
+     * Attaches a callback for only the rejection of the Promise.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of the callback.
+     */
+    catch<TResult = never>(onrejected?: ((reason: any) => TResult | PromiseLike<TResult>) | undefined | null): $Utils.JsPromise<T | TResult>
+    /**
+     * Attaches a callback that is invoked when the Promise is settled (fulfilled or rejected). The
+     * resolved value cannot be modified from the callback.
+     * @param onfinally The callback to execute when the Promise is settled (fulfilled or rejected).
+     * @returns A Promise for the completion of the callback.
+     */
+    finally(onfinally?: (() => void) | undefined | null): $Utils.JsPromise<T>
+  }
+
+
+
+
+  /**
+   * Fields of the SyncQueue model
+   */
+  interface SyncQueueFieldRefs {
+    readonly id: FieldRef<"SyncQueue", 'String'>
+    readonly websiteId: FieldRef<"SyncQueue", 'String'>
+    readonly userId: FieldRef<"SyncQueue", 'String'>
+    readonly status: FieldRef<"SyncQueue", 'String'>
+    readonly priority: FieldRef<"SyncQueue", 'Int'>
+    readonly scheduledFor: FieldRef<"SyncQueue", 'DateTime'>
+    readonly processedAt: FieldRef<"SyncQueue", 'DateTime'>
+    readonly nextRetry: FieldRef<"SyncQueue", 'DateTime'>
+    readonly retryCount: FieldRef<"SyncQueue", 'Int'>
+    readonly maxRetries: FieldRef<"SyncQueue", 'Int'>
+    readonly createdAt: FieldRef<"SyncQueue", 'DateTime'>
+    readonly updatedAt: FieldRef<"SyncQueue", 'DateTime'>
+  }
+    
+
+  // Custom InputTypes
+  /**
+   * SyncQueue findUnique
+   */
+  export type SyncQueueFindUniqueArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the SyncQueue
+     */
+    select?: SyncQueueSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the SyncQueue
+     */
+    omit?: SyncQueueOmit<ExtArgs> | null
+    /**
+     * Filter, which SyncQueue to fetch.
+     */
+    where: SyncQueueWhereUniqueInput
+  }
+
+  /**
+   * SyncQueue findUniqueOrThrow
+   */
+  export type SyncQueueFindUniqueOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the SyncQueue
+     */
+    select?: SyncQueueSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the SyncQueue
+     */
+    omit?: SyncQueueOmit<ExtArgs> | null
+    /**
+     * Filter, which SyncQueue to fetch.
+     */
+    where: SyncQueueWhereUniqueInput
+  }
+
+  /**
+   * SyncQueue findFirst
+   */
+  export type SyncQueueFindFirstArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the SyncQueue
+     */
+    select?: SyncQueueSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the SyncQueue
+     */
+    omit?: SyncQueueOmit<ExtArgs> | null
+    /**
+     * Filter, which SyncQueue to fetch.
+     */
+    where?: SyncQueueWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of SyncQueues to fetch.
+     */
+    orderBy?: SyncQueueOrderByWithRelationInput | SyncQueueOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for SyncQueues.
+     */
+    cursor?: SyncQueueWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` SyncQueues from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` SyncQueues.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of SyncQueues.
+     */
+    distinct?: SyncQueueScalarFieldEnum | SyncQueueScalarFieldEnum[]
+  }
+
+  /**
+   * SyncQueue findFirstOrThrow
+   */
+  export type SyncQueueFindFirstOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the SyncQueue
+     */
+    select?: SyncQueueSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the SyncQueue
+     */
+    omit?: SyncQueueOmit<ExtArgs> | null
+    /**
+     * Filter, which SyncQueue to fetch.
+     */
+    where?: SyncQueueWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of SyncQueues to fetch.
+     */
+    orderBy?: SyncQueueOrderByWithRelationInput | SyncQueueOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for SyncQueues.
+     */
+    cursor?: SyncQueueWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` SyncQueues from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` SyncQueues.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of SyncQueues.
+     */
+    distinct?: SyncQueueScalarFieldEnum | SyncQueueScalarFieldEnum[]
+  }
+
+  /**
+   * SyncQueue findMany
+   */
+  export type SyncQueueFindManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the SyncQueue
+     */
+    select?: SyncQueueSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the SyncQueue
+     */
+    omit?: SyncQueueOmit<ExtArgs> | null
+    /**
+     * Filter, which SyncQueues to fetch.
+     */
+    where?: SyncQueueWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of SyncQueues to fetch.
+     */
+    orderBy?: SyncQueueOrderByWithRelationInput | SyncQueueOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for listing SyncQueues.
+     */
+    cursor?: SyncQueueWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` SyncQueues from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` SyncQueues.
+     */
+    skip?: number
+    distinct?: SyncQueueScalarFieldEnum | SyncQueueScalarFieldEnum[]
+  }
+
+  /**
+   * SyncQueue create
+   */
+  export type SyncQueueCreateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the SyncQueue
+     */
+    select?: SyncQueueSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the SyncQueue
+     */
+    omit?: SyncQueueOmit<ExtArgs> | null
+    /**
+     * The data needed to create a SyncQueue.
+     */
+    data: XOR<SyncQueueCreateInput, SyncQueueUncheckedCreateInput>
+  }
+
+  /**
+   * SyncQueue createMany
+   */
+  export type SyncQueueCreateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to create many SyncQueues.
+     */
+    data: SyncQueueCreateManyInput | SyncQueueCreateManyInput[]
+  }
+
+  /**
+   * SyncQueue update
+   */
+  export type SyncQueueUpdateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the SyncQueue
+     */
+    select?: SyncQueueSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the SyncQueue
+     */
+    omit?: SyncQueueOmit<ExtArgs> | null
+    /**
+     * The data needed to update a SyncQueue.
+     */
+    data: XOR<SyncQueueUpdateInput, SyncQueueUncheckedUpdateInput>
+    /**
+     * Choose, which SyncQueue to update.
+     */
+    where: SyncQueueWhereUniqueInput
+  }
+
+  /**
+   * SyncQueue updateMany
+   */
+  export type SyncQueueUpdateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to update SyncQueues.
+     */
+    data: XOR<SyncQueueUpdateManyMutationInput, SyncQueueUncheckedUpdateManyInput>
+    /**
+     * Filter which SyncQueues to update
+     */
+    where?: SyncQueueWhereInput
+    /**
+     * Limit how many SyncQueues to update.
+     */
+    limit?: number
+  }
+
+  /**
+   * SyncQueue upsert
+   */
+  export type SyncQueueUpsertArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the SyncQueue
+     */
+    select?: SyncQueueSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the SyncQueue
+     */
+    omit?: SyncQueueOmit<ExtArgs> | null
+    /**
+     * The filter to search for the SyncQueue to update in case it exists.
+     */
+    where: SyncQueueWhereUniqueInput
+    /**
+     * In case the SyncQueue found by the `where` argument doesn't exist, create a new SyncQueue with this data.
+     */
+    create: XOR<SyncQueueCreateInput, SyncQueueUncheckedCreateInput>
+    /**
+     * In case the SyncQueue was found with the provided `where` argument, update it with this data.
+     */
+    update: XOR<SyncQueueUpdateInput, SyncQueueUncheckedUpdateInput>
+  }
+
+  /**
+   * SyncQueue delete
+   */
+  export type SyncQueueDeleteArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the SyncQueue
+     */
+    select?: SyncQueueSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the SyncQueue
+     */
+    omit?: SyncQueueOmit<ExtArgs> | null
+    /**
+     * Filter which SyncQueue to delete.
+     */
+    where: SyncQueueWhereUniqueInput
+  }
+
+  /**
+   * SyncQueue deleteMany
+   */
+  export type SyncQueueDeleteManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which SyncQueues to delete
+     */
+    where?: SyncQueueWhereInput
+    /**
+     * Limit how many SyncQueues to delete.
+     */
+    limit?: number
+  }
+
+  /**
+   * SyncQueue findRaw
+   */
+  export type SyncQueueFindRawArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The query predicate filter. If unspecified, then all documents in the collection will match the predicate. ${@link https://docs.mongodb.com/manual/reference/operator/query MongoDB Docs}.
+     */
+    filter?: InputJsonValue
+    /**
+     * Additional options to pass to the `find` command ${@link https://docs.mongodb.com/manual/reference/command/find/#command-fields MongoDB Docs}.
+     */
+    options?: InputJsonValue
+  }
+
+  /**
+   * SyncQueue aggregateRaw
+   */
+  export type SyncQueueAggregateRawArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * An array of aggregation stages to process and transform the document stream via the aggregation pipeline. ${@link https://docs.mongodb.com/manual/reference/operator/aggregation-pipeline MongoDB Docs}.
+     */
+    pipeline?: InputJsonValue[]
+    /**
+     * Additional options to pass to the `aggregate` command ${@link https://docs.mongodb.com/manual/reference/command/aggregate/#command-fields MongoDB Docs}.
+     */
+    options?: InputJsonValue
+  }
+
+  /**
+   * SyncQueue without action
+   */
+  export type SyncQueueDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the SyncQueue
+     */
+    select?: SyncQueueSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the SyncQueue
+     */
+    omit?: SyncQueueOmit<ExtArgs> | null
+  }
+
+
+  /**
    * Enums
    */
 
@@ -28349,6 +33074,88 @@ export namespace Prisma {
   export type MessageScalarFieldEnum = (typeof MessageScalarFieldEnum)[keyof typeof MessageScalarFieldEnum]
 
 
+  export const WebsiteScalarFieldEnum: {
+    id: 'id',
+    userId: 'userId',
+    locationId: 'locationId',
+    accountId: 'accountId',
+    subdomain: 'subdomain',
+    title: 'title',
+    description: 'description',
+    logoUrl: 'logoUrl',
+    primaryColor: 'primaryColor',
+    secondaryColor: 'secondaryColor',
+    fontFamily: 'fontFamily',
+    enabledSections: 'enabledSections',
+    googleAnalyticsId: 'googleAnalyticsId',
+    facebookPixelId: 'facebookPixelId',
+    isPublished: 'isPublished',
+    publishedAt: 'publishedAt',
+    createdAt: 'createdAt',
+    updatedAt: 'updatedAt'
+  };
+
+  export type WebsiteScalarFieldEnum = (typeof WebsiteScalarFieldEnum)[keyof typeof WebsiteScalarFieldEnum]
+
+
+  export const WebsiteCachedDataScalarFieldEnum: {
+    id: 'id',
+    websiteId: 'websiteId',
+    businessInfo: 'businessInfo',
+    reviews: 'reviews',
+    photos: 'photos',
+    posts: 'posts',
+    lastSyncedAt: 'lastSyncedAt',
+    nextSyncAt: 'nextSyncAt',
+    syncInterval: 'syncInterval',
+    isSyncing: 'isSyncing',
+    lastSyncError: 'lastSyncError',
+    syncRetryCount: 'syncRetryCount',
+    createdAt: 'createdAt',
+    updatedAt: 'updatedAt'
+  };
+
+  export type WebsiteCachedDataScalarFieldEnum = (typeof WebsiteCachedDataScalarFieldEnum)[keyof typeof WebsiteCachedDataScalarFieldEnum]
+
+
+  export const SyncHistoryScalarFieldEnum: {
+    id: 'id',
+    websiteId: 'websiteId',
+    userId: 'userId',
+    syncType: 'syncType',
+    status: 'status',
+    reviewsCount: 'reviewsCount',
+    photosCount: 'photosCount',
+    postsCount: 'postsCount',
+    errorMessage: 'errorMessage',
+    errorDetails: 'errorDetails',
+    fetchedAt: 'fetchedAt',
+    completedAt: 'completedAt',
+    duration: 'duration',
+    createdAt: 'createdAt'
+  };
+
+  export type SyncHistoryScalarFieldEnum = (typeof SyncHistoryScalarFieldEnum)[keyof typeof SyncHistoryScalarFieldEnum]
+
+
+  export const SyncQueueScalarFieldEnum: {
+    id: 'id',
+    websiteId: 'websiteId',
+    userId: 'userId',
+    status: 'status',
+    priority: 'priority',
+    scheduledFor: 'scheduledFor',
+    processedAt: 'processedAt',
+    nextRetry: 'nextRetry',
+    retryCount: 'retryCount',
+    maxRetries: 'maxRetries',
+    createdAt: 'createdAt',
+    updatedAt: 'updatedAt'
+  };
+
+  export type SyncQueueScalarFieldEnum = (typeof SyncQueueScalarFieldEnum)[keyof typeof SyncQueueScalarFieldEnum]
+
+
   export const SortOrder: {
     asc: 'asc',
     desc: 'desc'
@@ -28667,7 +33474,7 @@ export namespace Prisma {
     languageCode?: StringFilter<"ScheduledPost"> | string
     topicType?: StringFilter<"ScheduledPost"> | string
     mediaFormat?: StringFilter<"ScheduledPost"> | string
-    imageUrl?: StringFilter<"ScheduledPost"> | string
+    imageUrl?: StringNullableFilter<"ScheduledPost"> | string | null
     originalImageUrl?: StringNullableFilter<"ScheduledPost"> | string | null
     actionType?: StringNullableFilter<"ScheduledPost"> | string | null
     actionUrl?: StringNullableFilter<"ScheduledPost"> | string | null
@@ -28726,7 +33533,7 @@ export namespace Prisma {
     languageCode?: StringFilter<"ScheduledPost"> | string
     topicType?: StringFilter<"ScheduledPost"> | string
     mediaFormat?: StringFilter<"ScheduledPost"> | string
-    imageUrl?: StringFilter<"ScheduledPost"> | string
+    imageUrl?: StringNullableFilter<"ScheduledPost"> | string | null
     originalImageUrl?: StringNullableFilter<"ScheduledPost"> | string | null
     actionType?: StringNullableFilter<"ScheduledPost"> | string | null
     actionUrl?: StringNullableFilter<"ScheduledPost"> | string | null
@@ -28790,7 +33597,7 @@ export namespace Prisma {
     languageCode?: StringWithAggregatesFilter<"ScheduledPost"> | string
     topicType?: StringWithAggregatesFilter<"ScheduledPost"> | string
     mediaFormat?: StringWithAggregatesFilter<"ScheduledPost"> | string
-    imageUrl?: StringWithAggregatesFilter<"ScheduledPost"> | string
+    imageUrl?: StringNullableWithAggregatesFilter<"ScheduledPost"> | string | null
     originalImageUrl?: StringNullableWithAggregatesFilter<"ScheduledPost"> | string | null
     actionType?: StringNullableWithAggregatesFilter<"ScheduledPost"> | string | null
     actionUrl?: StringNullableWithAggregatesFilter<"ScheduledPost"> | string | null
@@ -30639,6 +35446,417 @@ export namespace Prisma {
     createdAt?: DateTimeWithAggregatesFilter<"Message"> | Date | string
   }
 
+  export type WebsiteWhereInput = {
+    AND?: WebsiteWhereInput | WebsiteWhereInput[]
+    OR?: WebsiteWhereInput[]
+    NOT?: WebsiteWhereInput | WebsiteWhereInput[]
+    id?: StringFilter<"Website"> | string
+    userId?: StringFilter<"Website"> | string
+    locationId?: StringFilter<"Website"> | string
+    accountId?: StringFilter<"Website"> | string
+    subdomain?: StringFilter<"Website"> | string
+    title?: StringFilter<"Website"> | string
+    description?: StringNullableFilter<"Website"> | string | null
+    logoUrl?: StringNullableFilter<"Website"> | string | null
+    primaryColor?: StringFilter<"Website"> | string
+    secondaryColor?: StringFilter<"Website"> | string
+    fontFamily?: StringFilter<"Website"> | string
+    enabledSections?: StringNullableListFilter<"Website">
+    googleAnalyticsId?: StringNullableFilter<"Website"> | string | null
+    facebookPixelId?: StringNullableFilter<"Website"> | string | null
+    isPublished?: BoolFilter<"Website"> | boolean
+    publishedAt?: DateTimeNullableFilter<"Website"> | Date | string | null
+    createdAt?: DateTimeFilter<"Website"> | Date | string
+    updatedAt?: DateTimeFilter<"Website"> | Date | string
+    cachedData?: XOR<WebsiteCachedDataNullableScalarRelationFilter, WebsiteCachedDataWhereInput> | null
+  }
+
+  export type WebsiteOrderByWithRelationInput = {
+    id?: SortOrder
+    userId?: SortOrder
+    locationId?: SortOrder
+    accountId?: SortOrder
+    subdomain?: SortOrder
+    title?: SortOrder
+    description?: SortOrder
+    logoUrl?: SortOrder
+    primaryColor?: SortOrder
+    secondaryColor?: SortOrder
+    fontFamily?: SortOrder
+    enabledSections?: SortOrder
+    googleAnalyticsId?: SortOrder
+    facebookPixelId?: SortOrder
+    isPublished?: SortOrder
+    publishedAt?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+    cachedData?: WebsiteCachedDataOrderByWithRelationInput
+  }
+
+  export type WebsiteWhereUniqueInput = Prisma.AtLeast<{
+    id?: string
+    subdomain?: string
+    userId_locationId_accountId?: WebsiteUserIdLocationIdAccountIdCompoundUniqueInput
+    AND?: WebsiteWhereInput | WebsiteWhereInput[]
+    OR?: WebsiteWhereInput[]
+    NOT?: WebsiteWhereInput | WebsiteWhereInput[]
+    userId?: StringFilter<"Website"> | string
+    locationId?: StringFilter<"Website"> | string
+    accountId?: StringFilter<"Website"> | string
+    title?: StringFilter<"Website"> | string
+    description?: StringNullableFilter<"Website"> | string | null
+    logoUrl?: StringNullableFilter<"Website"> | string | null
+    primaryColor?: StringFilter<"Website"> | string
+    secondaryColor?: StringFilter<"Website"> | string
+    fontFamily?: StringFilter<"Website"> | string
+    enabledSections?: StringNullableListFilter<"Website">
+    googleAnalyticsId?: StringNullableFilter<"Website"> | string | null
+    facebookPixelId?: StringNullableFilter<"Website"> | string | null
+    isPublished?: BoolFilter<"Website"> | boolean
+    publishedAt?: DateTimeNullableFilter<"Website"> | Date | string | null
+    createdAt?: DateTimeFilter<"Website"> | Date | string
+    updatedAt?: DateTimeFilter<"Website"> | Date | string
+    cachedData?: XOR<WebsiteCachedDataNullableScalarRelationFilter, WebsiteCachedDataWhereInput> | null
+  }, "id" | "subdomain" | "userId_locationId_accountId">
+
+  export type WebsiteOrderByWithAggregationInput = {
+    id?: SortOrder
+    userId?: SortOrder
+    locationId?: SortOrder
+    accountId?: SortOrder
+    subdomain?: SortOrder
+    title?: SortOrder
+    description?: SortOrder
+    logoUrl?: SortOrder
+    primaryColor?: SortOrder
+    secondaryColor?: SortOrder
+    fontFamily?: SortOrder
+    enabledSections?: SortOrder
+    googleAnalyticsId?: SortOrder
+    facebookPixelId?: SortOrder
+    isPublished?: SortOrder
+    publishedAt?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+    _count?: WebsiteCountOrderByAggregateInput
+    _max?: WebsiteMaxOrderByAggregateInput
+    _min?: WebsiteMinOrderByAggregateInput
+  }
+
+  export type WebsiteScalarWhereWithAggregatesInput = {
+    AND?: WebsiteScalarWhereWithAggregatesInput | WebsiteScalarWhereWithAggregatesInput[]
+    OR?: WebsiteScalarWhereWithAggregatesInput[]
+    NOT?: WebsiteScalarWhereWithAggregatesInput | WebsiteScalarWhereWithAggregatesInput[]
+    id?: StringWithAggregatesFilter<"Website"> | string
+    userId?: StringWithAggregatesFilter<"Website"> | string
+    locationId?: StringWithAggregatesFilter<"Website"> | string
+    accountId?: StringWithAggregatesFilter<"Website"> | string
+    subdomain?: StringWithAggregatesFilter<"Website"> | string
+    title?: StringWithAggregatesFilter<"Website"> | string
+    description?: StringNullableWithAggregatesFilter<"Website"> | string | null
+    logoUrl?: StringNullableWithAggregatesFilter<"Website"> | string | null
+    primaryColor?: StringWithAggregatesFilter<"Website"> | string
+    secondaryColor?: StringWithAggregatesFilter<"Website"> | string
+    fontFamily?: StringWithAggregatesFilter<"Website"> | string
+    enabledSections?: StringNullableListFilter<"Website">
+    googleAnalyticsId?: StringNullableWithAggregatesFilter<"Website"> | string | null
+    facebookPixelId?: StringNullableWithAggregatesFilter<"Website"> | string | null
+    isPublished?: BoolWithAggregatesFilter<"Website"> | boolean
+    publishedAt?: DateTimeNullableWithAggregatesFilter<"Website"> | Date | string | null
+    createdAt?: DateTimeWithAggregatesFilter<"Website"> | Date | string
+    updatedAt?: DateTimeWithAggregatesFilter<"Website"> | Date | string
+  }
+
+  export type WebsiteCachedDataWhereInput = {
+    AND?: WebsiteCachedDataWhereInput | WebsiteCachedDataWhereInput[]
+    OR?: WebsiteCachedDataWhereInput[]
+    NOT?: WebsiteCachedDataWhereInput | WebsiteCachedDataWhereInput[]
+    id?: StringFilter<"WebsiteCachedData"> | string
+    websiteId?: StringFilter<"WebsiteCachedData"> | string
+    businessInfo?: JsonNullableFilter<"WebsiteCachedData">
+    reviews?: JsonNullableFilter<"WebsiteCachedData">
+    photos?: JsonNullableFilter<"WebsiteCachedData">
+    posts?: JsonNullableFilter<"WebsiteCachedData">
+    lastSyncedAt?: DateTimeNullableFilter<"WebsiteCachedData"> | Date | string | null
+    nextSyncAt?: DateTimeNullableFilter<"WebsiteCachedData"> | Date | string | null
+    syncInterval?: IntFilter<"WebsiteCachedData"> | number
+    isSyncing?: BoolFilter<"WebsiteCachedData"> | boolean
+    lastSyncError?: StringNullableFilter<"WebsiteCachedData"> | string | null
+    syncRetryCount?: IntFilter<"WebsiteCachedData"> | number
+    createdAt?: DateTimeFilter<"WebsiteCachedData"> | Date | string
+    updatedAt?: DateTimeFilter<"WebsiteCachedData"> | Date | string
+    website?: XOR<WebsiteScalarRelationFilter, WebsiteWhereInput>
+  }
+
+  export type WebsiteCachedDataOrderByWithRelationInput = {
+    id?: SortOrder
+    websiteId?: SortOrder
+    businessInfo?: SortOrder
+    reviews?: SortOrder
+    photos?: SortOrder
+    posts?: SortOrder
+    lastSyncedAt?: SortOrder
+    nextSyncAt?: SortOrder
+    syncInterval?: SortOrder
+    isSyncing?: SortOrder
+    lastSyncError?: SortOrder
+    syncRetryCount?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+    website?: WebsiteOrderByWithRelationInput
+  }
+
+  export type WebsiteCachedDataWhereUniqueInput = Prisma.AtLeast<{
+    id?: string
+    websiteId?: string
+    AND?: WebsiteCachedDataWhereInput | WebsiteCachedDataWhereInput[]
+    OR?: WebsiteCachedDataWhereInput[]
+    NOT?: WebsiteCachedDataWhereInput | WebsiteCachedDataWhereInput[]
+    businessInfo?: JsonNullableFilter<"WebsiteCachedData">
+    reviews?: JsonNullableFilter<"WebsiteCachedData">
+    photos?: JsonNullableFilter<"WebsiteCachedData">
+    posts?: JsonNullableFilter<"WebsiteCachedData">
+    lastSyncedAt?: DateTimeNullableFilter<"WebsiteCachedData"> | Date | string | null
+    nextSyncAt?: DateTimeNullableFilter<"WebsiteCachedData"> | Date | string | null
+    syncInterval?: IntFilter<"WebsiteCachedData"> | number
+    isSyncing?: BoolFilter<"WebsiteCachedData"> | boolean
+    lastSyncError?: StringNullableFilter<"WebsiteCachedData"> | string | null
+    syncRetryCount?: IntFilter<"WebsiteCachedData"> | number
+    createdAt?: DateTimeFilter<"WebsiteCachedData"> | Date | string
+    updatedAt?: DateTimeFilter<"WebsiteCachedData"> | Date | string
+    website?: XOR<WebsiteScalarRelationFilter, WebsiteWhereInput>
+  }, "id" | "websiteId">
+
+  export type WebsiteCachedDataOrderByWithAggregationInput = {
+    id?: SortOrder
+    websiteId?: SortOrder
+    businessInfo?: SortOrder
+    reviews?: SortOrder
+    photos?: SortOrder
+    posts?: SortOrder
+    lastSyncedAt?: SortOrder
+    nextSyncAt?: SortOrder
+    syncInterval?: SortOrder
+    isSyncing?: SortOrder
+    lastSyncError?: SortOrder
+    syncRetryCount?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+    _count?: WebsiteCachedDataCountOrderByAggregateInput
+    _avg?: WebsiteCachedDataAvgOrderByAggregateInput
+    _max?: WebsiteCachedDataMaxOrderByAggregateInput
+    _min?: WebsiteCachedDataMinOrderByAggregateInput
+    _sum?: WebsiteCachedDataSumOrderByAggregateInput
+  }
+
+  export type WebsiteCachedDataScalarWhereWithAggregatesInput = {
+    AND?: WebsiteCachedDataScalarWhereWithAggregatesInput | WebsiteCachedDataScalarWhereWithAggregatesInput[]
+    OR?: WebsiteCachedDataScalarWhereWithAggregatesInput[]
+    NOT?: WebsiteCachedDataScalarWhereWithAggregatesInput | WebsiteCachedDataScalarWhereWithAggregatesInput[]
+    id?: StringWithAggregatesFilter<"WebsiteCachedData"> | string
+    websiteId?: StringWithAggregatesFilter<"WebsiteCachedData"> | string
+    businessInfo?: JsonNullableWithAggregatesFilter<"WebsiteCachedData">
+    reviews?: JsonNullableWithAggregatesFilter<"WebsiteCachedData">
+    photos?: JsonNullableWithAggregatesFilter<"WebsiteCachedData">
+    posts?: JsonNullableWithAggregatesFilter<"WebsiteCachedData">
+    lastSyncedAt?: DateTimeNullableWithAggregatesFilter<"WebsiteCachedData"> | Date | string | null
+    nextSyncAt?: DateTimeNullableWithAggregatesFilter<"WebsiteCachedData"> | Date | string | null
+    syncInterval?: IntWithAggregatesFilter<"WebsiteCachedData"> | number
+    isSyncing?: BoolWithAggregatesFilter<"WebsiteCachedData"> | boolean
+    lastSyncError?: StringNullableWithAggregatesFilter<"WebsiteCachedData"> | string | null
+    syncRetryCount?: IntWithAggregatesFilter<"WebsiteCachedData"> | number
+    createdAt?: DateTimeWithAggregatesFilter<"WebsiteCachedData"> | Date | string
+    updatedAt?: DateTimeWithAggregatesFilter<"WebsiteCachedData"> | Date | string
+  }
+
+  export type SyncHistoryWhereInput = {
+    AND?: SyncHistoryWhereInput | SyncHistoryWhereInput[]
+    OR?: SyncHistoryWhereInput[]
+    NOT?: SyncHistoryWhereInput | SyncHistoryWhereInput[]
+    id?: StringFilter<"SyncHistory"> | string
+    websiteId?: StringFilter<"SyncHistory"> | string
+    userId?: StringFilter<"SyncHistory"> | string
+    syncType?: StringFilter<"SyncHistory"> | string
+    status?: StringFilter<"SyncHistory"> | string
+    reviewsCount?: IntNullableFilter<"SyncHistory"> | number | null
+    photosCount?: IntNullableFilter<"SyncHistory"> | number | null
+    postsCount?: IntNullableFilter<"SyncHistory"> | number | null
+    errorMessage?: StringNullableFilter<"SyncHistory"> | string | null
+    errorDetails?: JsonNullableFilter<"SyncHistory">
+    fetchedAt?: DateTimeFilter<"SyncHistory"> | Date | string
+    completedAt?: DateTimeNullableFilter<"SyncHistory"> | Date | string | null
+    duration?: IntNullableFilter<"SyncHistory"> | number | null
+    createdAt?: DateTimeFilter<"SyncHistory"> | Date | string
+  }
+
+  export type SyncHistoryOrderByWithRelationInput = {
+    id?: SortOrder
+    websiteId?: SortOrder
+    userId?: SortOrder
+    syncType?: SortOrder
+    status?: SortOrder
+    reviewsCount?: SortOrder
+    photosCount?: SortOrder
+    postsCount?: SortOrder
+    errorMessage?: SortOrder
+    errorDetails?: SortOrder
+    fetchedAt?: SortOrder
+    completedAt?: SortOrder
+    duration?: SortOrder
+    createdAt?: SortOrder
+  }
+
+  export type SyncHistoryWhereUniqueInput = Prisma.AtLeast<{
+    id?: string
+    AND?: SyncHistoryWhereInput | SyncHistoryWhereInput[]
+    OR?: SyncHistoryWhereInput[]
+    NOT?: SyncHistoryWhereInput | SyncHistoryWhereInput[]
+    websiteId?: StringFilter<"SyncHistory"> | string
+    userId?: StringFilter<"SyncHistory"> | string
+    syncType?: StringFilter<"SyncHistory"> | string
+    status?: StringFilter<"SyncHistory"> | string
+    reviewsCount?: IntNullableFilter<"SyncHistory"> | number | null
+    photosCount?: IntNullableFilter<"SyncHistory"> | number | null
+    postsCount?: IntNullableFilter<"SyncHistory"> | number | null
+    errorMessage?: StringNullableFilter<"SyncHistory"> | string | null
+    errorDetails?: JsonNullableFilter<"SyncHistory">
+    fetchedAt?: DateTimeFilter<"SyncHistory"> | Date | string
+    completedAt?: DateTimeNullableFilter<"SyncHistory"> | Date | string | null
+    duration?: IntNullableFilter<"SyncHistory"> | number | null
+    createdAt?: DateTimeFilter<"SyncHistory"> | Date | string
+  }, "id">
+
+  export type SyncHistoryOrderByWithAggregationInput = {
+    id?: SortOrder
+    websiteId?: SortOrder
+    userId?: SortOrder
+    syncType?: SortOrder
+    status?: SortOrder
+    reviewsCount?: SortOrder
+    photosCount?: SortOrder
+    postsCount?: SortOrder
+    errorMessage?: SortOrder
+    errorDetails?: SortOrder
+    fetchedAt?: SortOrder
+    completedAt?: SortOrder
+    duration?: SortOrder
+    createdAt?: SortOrder
+    _count?: SyncHistoryCountOrderByAggregateInput
+    _avg?: SyncHistoryAvgOrderByAggregateInput
+    _max?: SyncHistoryMaxOrderByAggregateInput
+    _min?: SyncHistoryMinOrderByAggregateInput
+    _sum?: SyncHistorySumOrderByAggregateInput
+  }
+
+  export type SyncHistoryScalarWhereWithAggregatesInput = {
+    AND?: SyncHistoryScalarWhereWithAggregatesInput | SyncHistoryScalarWhereWithAggregatesInput[]
+    OR?: SyncHistoryScalarWhereWithAggregatesInput[]
+    NOT?: SyncHistoryScalarWhereWithAggregatesInput | SyncHistoryScalarWhereWithAggregatesInput[]
+    id?: StringWithAggregatesFilter<"SyncHistory"> | string
+    websiteId?: StringWithAggregatesFilter<"SyncHistory"> | string
+    userId?: StringWithAggregatesFilter<"SyncHistory"> | string
+    syncType?: StringWithAggregatesFilter<"SyncHistory"> | string
+    status?: StringWithAggregatesFilter<"SyncHistory"> | string
+    reviewsCount?: IntNullableWithAggregatesFilter<"SyncHistory"> | number | null
+    photosCount?: IntNullableWithAggregatesFilter<"SyncHistory"> | number | null
+    postsCount?: IntNullableWithAggregatesFilter<"SyncHistory"> | number | null
+    errorMessage?: StringNullableWithAggregatesFilter<"SyncHistory"> | string | null
+    errorDetails?: JsonNullableWithAggregatesFilter<"SyncHistory">
+    fetchedAt?: DateTimeWithAggregatesFilter<"SyncHistory"> | Date | string
+    completedAt?: DateTimeNullableWithAggregatesFilter<"SyncHistory"> | Date | string | null
+    duration?: IntNullableWithAggregatesFilter<"SyncHistory"> | number | null
+    createdAt?: DateTimeWithAggregatesFilter<"SyncHistory"> | Date | string
+  }
+
+  export type SyncQueueWhereInput = {
+    AND?: SyncQueueWhereInput | SyncQueueWhereInput[]
+    OR?: SyncQueueWhereInput[]
+    NOT?: SyncQueueWhereInput | SyncQueueWhereInput[]
+    id?: StringFilter<"SyncQueue"> | string
+    websiteId?: StringFilter<"SyncQueue"> | string
+    userId?: StringFilter<"SyncQueue"> | string
+    status?: StringFilter<"SyncQueue"> | string
+    priority?: IntFilter<"SyncQueue"> | number
+    scheduledFor?: DateTimeFilter<"SyncQueue"> | Date | string
+    processedAt?: DateTimeNullableFilter<"SyncQueue"> | Date | string | null
+    nextRetry?: DateTimeNullableFilter<"SyncQueue"> | Date | string | null
+    retryCount?: IntFilter<"SyncQueue"> | number
+    maxRetries?: IntFilter<"SyncQueue"> | number
+    createdAt?: DateTimeFilter<"SyncQueue"> | Date | string
+    updatedAt?: DateTimeFilter<"SyncQueue"> | Date | string
+  }
+
+  export type SyncQueueOrderByWithRelationInput = {
+    id?: SortOrder
+    websiteId?: SortOrder
+    userId?: SortOrder
+    status?: SortOrder
+    priority?: SortOrder
+    scheduledFor?: SortOrder
+    processedAt?: SortOrder
+    nextRetry?: SortOrder
+    retryCount?: SortOrder
+    maxRetries?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+  }
+
+  export type SyncQueueWhereUniqueInput = Prisma.AtLeast<{
+    id?: string
+    AND?: SyncQueueWhereInput | SyncQueueWhereInput[]
+    OR?: SyncQueueWhereInput[]
+    NOT?: SyncQueueWhereInput | SyncQueueWhereInput[]
+    websiteId?: StringFilter<"SyncQueue"> | string
+    userId?: StringFilter<"SyncQueue"> | string
+    status?: StringFilter<"SyncQueue"> | string
+    priority?: IntFilter<"SyncQueue"> | number
+    scheduledFor?: DateTimeFilter<"SyncQueue"> | Date | string
+    processedAt?: DateTimeNullableFilter<"SyncQueue"> | Date | string | null
+    nextRetry?: DateTimeNullableFilter<"SyncQueue"> | Date | string | null
+    retryCount?: IntFilter<"SyncQueue"> | number
+    maxRetries?: IntFilter<"SyncQueue"> | number
+    createdAt?: DateTimeFilter<"SyncQueue"> | Date | string
+    updatedAt?: DateTimeFilter<"SyncQueue"> | Date | string
+  }, "id">
+
+  export type SyncQueueOrderByWithAggregationInput = {
+    id?: SortOrder
+    websiteId?: SortOrder
+    userId?: SortOrder
+    status?: SortOrder
+    priority?: SortOrder
+    scheduledFor?: SortOrder
+    processedAt?: SortOrder
+    nextRetry?: SortOrder
+    retryCount?: SortOrder
+    maxRetries?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+    _count?: SyncQueueCountOrderByAggregateInput
+    _avg?: SyncQueueAvgOrderByAggregateInput
+    _max?: SyncQueueMaxOrderByAggregateInput
+    _min?: SyncQueueMinOrderByAggregateInput
+    _sum?: SyncQueueSumOrderByAggregateInput
+  }
+
+  export type SyncQueueScalarWhereWithAggregatesInput = {
+    AND?: SyncQueueScalarWhereWithAggregatesInput | SyncQueueScalarWhereWithAggregatesInput[]
+    OR?: SyncQueueScalarWhereWithAggregatesInput[]
+    NOT?: SyncQueueScalarWhereWithAggregatesInput | SyncQueueScalarWhereWithAggregatesInput[]
+    id?: StringWithAggregatesFilter<"SyncQueue"> | string
+    websiteId?: StringWithAggregatesFilter<"SyncQueue"> | string
+    userId?: StringWithAggregatesFilter<"SyncQueue"> | string
+    status?: StringWithAggregatesFilter<"SyncQueue"> | string
+    priority?: IntWithAggregatesFilter<"SyncQueue"> | number
+    scheduledFor?: DateTimeWithAggregatesFilter<"SyncQueue"> | Date | string
+    processedAt?: DateTimeNullableWithAggregatesFilter<"SyncQueue"> | Date | string | null
+    nextRetry?: DateTimeNullableWithAggregatesFilter<"SyncQueue"> | Date | string | null
+    retryCount?: IntWithAggregatesFilter<"SyncQueue"> | number
+    maxRetries?: IntWithAggregatesFilter<"SyncQueue"> | number
+    createdAt?: DateTimeWithAggregatesFilter<"SyncQueue"> | Date | string
+    updatedAt?: DateTimeWithAggregatesFilter<"SyncQueue"> | Date | string
+  }
+
   export type VersionCreateInput = {
     id?: string
     name: string
@@ -30806,7 +36024,7 @@ export namespace Prisma {
     languageCode?: string
     topicType?: string
     mediaFormat?: string
-    imageUrl: string
+    imageUrl?: string | null
     originalImageUrl?: string | null
     actionType?: string | null
     actionUrl?: string | null
@@ -30834,7 +36052,7 @@ export namespace Prisma {
     languageCode?: string
     topicType?: string
     mediaFormat?: string
-    imageUrl: string
+    imageUrl?: string | null
     originalImageUrl?: string | null
     actionType?: string | null
     actionUrl?: string | null
@@ -30861,7 +36079,7 @@ export namespace Prisma {
     languageCode?: StringFieldUpdateOperationsInput | string
     topicType?: StringFieldUpdateOperationsInput | string
     mediaFormat?: StringFieldUpdateOperationsInput | string
-    imageUrl?: StringFieldUpdateOperationsInput | string
+    imageUrl?: NullableStringFieldUpdateOperationsInput | string | null
     originalImageUrl?: NullableStringFieldUpdateOperationsInput | string | null
     actionType?: NullableStringFieldUpdateOperationsInput | string | null
     actionUrl?: NullableStringFieldUpdateOperationsInput | string | null
@@ -30888,7 +36106,7 @@ export namespace Prisma {
     languageCode?: StringFieldUpdateOperationsInput | string
     topicType?: StringFieldUpdateOperationsInput | string
     mediaFormat?: StringFieldUpdateOperationsInput | string
-    imageUrl?: StringFieldUpdateOperationsInput | string
+    imageUrl?: NullableStringFieldUpdateOperationsInput | string | null
     originalImageUrl?: NullableStringFieldUpdateOperationsInput | string | null
     actionType?: NullableStringFieldUpdateOperationsInput | string | null
     actionUrl?: NullableStringFieldUpdateOperationsInput | string | null
@@ -30916,7 +36134,7 @@ export namespace Prisma {
     languageCode?: string
     topicType?: string
     mediaFormat?: string
-    imageUrl: string
+    imageUrl?: string | null
     originalImageUrl?: string | null
     actionType?: string | null
     actionUrl?: string | null
@@ -30943,7 +36161,7 @@ export namespace Prisma {
     languageCode?: StringFieldUpdateOperationsInput | string
     topicType?: StringFieldUpdateOperationsInput | string
     mediaFormat?: StringFieldUpdateOperationsInput | string
-    imageUrl?: StringFieldUpdateOperationsInput | string
+    imageUrl?: NullableStringFieldUpdateOperationsInput | string | null
     originalImageUrl?: NullableStringFieldUpdateOperationsInput | string | null
     actionType?: NullableStringFieldUpdateOperationsInput | string | null
     actionUrl?: NullableStringFieldUpdateOperationsInput | string | null
@@ -30970,7 +36188,7 @@ export namespace Prisma {
     languageCode?: StringFieldUpdateOperationsInput | string
     topicType?: StringFieldUpdateOperationsInput | string
     mediaFormat?: StringFieldUpdateOperationsInput | string
-    imageUrl?: StringFieldUpdateOperationsInput | string
+    imageUrl?: NullableStringFieldUpdateOperationsInput | string | null
     originalImageUrl?: NullableStringFieldUpdateOperationsInput | string | null
     actionType?: NullableStringFieldUpdateOperationsInput | string | null
     actionUrl?: NullableStringFieldUpdateOperationsInput | string | null
@@ -33059,6 +38277,483 @@ export namespace Prisma {
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
+  export type WebsiteCreateInput = {
+    id?: string
+    userId: string
+    locationId: string
+    accountId: string
+    subdomain: string
+    title: string
+    description?: string | null
+    logoUrl?: string | null
+    primaryColor?: string
+    secondaryColor?: string
+    fontFamily?: string
+    enabledSections?: WebsiteCreateenabledSectionsInput | string[]
+    googleAnalyticsId?: string | null
+    facebookPixelId?: string | null
+    isPublished?: boolean
+    publishedAt?: Date | string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    cachedData?: WebsiteCachedDataCreateNestedOneWithoutWebsiteInput
+  }
+
+  export type WebsiteUncheckedCreateInput = {
+    id?: string
+    userId: string
+    locationId: string
+    accountId: string
+    subdomain: string
+    title: string
+    description?: string | null
+    logoUrl?: string | null
+    primaryColor?: string
+    secondaryColor?: string
+    fontFamily?: string
+    enabledSections?: WebsiteCreateenabledSectionsInput | string[]
+    googleAnalyticsId?: string | null
+    facebookPixelId?: string | null
+    isPublished?: boolean
+    publishedAt?: Date | string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    cachedData?: WebsiteCachedDataUncheckedCreateNestedOneWithoutWebsiteInput
+  }
+
+  export type WebsiteUpdateInput = {
+    userId?: StringFieldUpdateOperationsInput | string
+    locationId?: StringFieldUpdateOperationsInput | string
+    accountId?: StringFieldUpdateOperationsInput | string
+    subdomain?: StringFieldUpdateOperationsInput | string
+    title?: StringFieldUpdateOperationsInput | string
+    description?: NullableStringFieldUpdateOperationsInput | string | null
+    logoUrl?: NullableStringFieldUpdateOperationsInput | string | null
+    primaryColor?: StringFieldUpdateOperationsInput | string
+    secondaryColor?: StringFieldUpdateOperationsInput | string
+    fontFamily?: StringFieldUpdateOperationsInput | string
+    enabledSections?: WebsiteUpdateenabledSectionsInput | string[]
+    googleAnalyticsId?: NullableStringFieldUpdateOperationsInput | string | null
+    facebookPixelId?: NullableStringFieldUpdateOperationsInput | string | null
+    isPublished?: BoolFieldUpdateOperationsInput | boolean
+    publishedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    cachedData?: WebsiteCachedDataUpdateOneWithoutWebsiteNestedInput
+  }
+
+  export type WebsiteUncheckedUpdateInput = {
+    userId?: StringFieldUpdateOperationsInput | string
+    locationId?: StringFieldUpdateOperationsInput | string
+    accountId?: StringFieldUpdateOperationsInput | string
+    subdomain?: StringFieldUpdateOperationsInput | string
+    title?: StringFieldUpdateOperationsInput | string
+    description?: NullableStringFieldUpdateOperationsInput | string | null
+    logoUrl?: NullableStringFieldUpdateOperationsInput | string | null
+    primaryColor?: StringFieldUpdateOperationsInput | string
+    secondaryColor?: StringFieldUpdateOperationsInput | string
+    fontFamily?: StringFieldUpdateOperationsInput | string
+    enabledSections?: WebsiteUpdateenabledSectionsInput | string[]
+    googleAnalyticsId?: NullableStringFieldUpdateOperationsInput | string | null
+    facebookPixelId?: NullableStringFieldUpdateOperationsInput | string | null
+    isPublished?: BoolFieldUpdateOperationsInput | boolean
+    publishedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    cachedData?: WebsiteCachedDataUncheckedUpdateOneWithoutWebsiteNestedInput
+  }
+
+  export type WebsiteCreateManyInput = {
+    id?: string
+    userId: string
+    locationId: string
+    accountId: string
+    subdomain: string
+    title: string
+    description?: string | null
+    logoUrl?: string | null
+    primaryColor?: string
+    secondaryColor?: string
+    fontFamily?: string
+    enabledSections?: WebsiteCreateenabledSectionsInput | string[]
+    googleAnalyticsId?: string | null
+    facebookPixelId?: string | null
+    isPublished?: boolean
+    publishedAt?: Date | string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
+  export type WebsiteUpdateManyMutationInput = {
+    userId?: StringFieldUpdateOperationsInput | string
+    locationId?: StringFieldUpdateOperationsInput | string
+    accountId?: StringFieldUpdateOperationsInput | string
+    subdomain?: StringFieldUpdateOperationsInput | string
+    title?: StringFieldUpdateOperationsInput | string
+    description?: NullableStringFieldUpdateOperationsInput | string | null
+    logoUrl?: NullableStringFieldUpdateOperationsInput | string | null
+    primaryColor?: StringFieldUpdateOperationsInput | string
+    secondaryColor?: StringFieldUpdateOperationsInput | string
+    fontFamily?: StringFieldUpdateOperationsInput | string
+    enabledSections?: WebsiteUpdateenabledSectionsInput | string[]
+    googleAnalyticsId?: NullableStringFieldUpdateOperationsInput | string | null
+    facebookPixelId?: NullableStringFieldUpdateOperationsInput | string | null
+    isPublished?: BoolFieldUpdateOperationsInput | boolean
+    publishedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type WebsiteUncheckedUpdateManyInput = {
+    userId?: StringFieldUpdateOperationsInput | string
+    locationId?: StringFieldUpdateOperationsInput | string
+    accountId?: StringFieldUpdateOperationsInput | string
+    subdomain?: StringFieldUpdateOperationsInput | string
+    title?: StringFieldUpdateOperationsInput | string
+    description?: NullableStringFieldUpdateOperationsInput | string | null
+    logoUrl?: NullableStringFieldUpdateOperationsInput | string | null
+    primaryColor?: StringFieldUpdateOperationsInput | string
+    secondaryColor?: StringFieldUpdateOperationsInput | string
+    fontFamily?: StringFieldUpdateOperationsInput | string
+    enabledSections?: WebsiteUpdateenabledSectionsInput | string[]
+    googleAnalyticsId?: NullableStringFieldUpdateOperationsInput | string | null
+    facebookPixelId?: NullableStringFieldUpdateOperationsInput | string | null
+    isPublished?: BoolFieldUpdateOperationsInput | boolean
+    publishedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type WebsiteCachedDataCreateInput = {
+    id?: string
+    businessInfo?: InputJsonValue | null
+    reviews?: InputJsonValue | null
+    photos?: InputJsonValue | null
+    posts?: InputJsonValue | null
+    lastSyncedAt?: Date | string | null
+    nextSyncAt?: Date | string | null
+    syncInterval?: number
+    isSyncing?: boolean
+    lastSyncError?: string | null
+    syncRetryCount?: number
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    website: WebsiteCreateNestedOneWithoutCachedDataInput
+  }
+
+  export type WebsiteCachedDataUncheckedCreateInput = {
+    id?: string
+    websiteId: string
+    businessInfo?: InputJsonValue | null
+    reviews?: InputJsonValue | null
+    photos?: InputJsonValue | null
+    posts?: InputJsonValue | null
+    lastSyncedAt?: Date | string | null
+    nextSyncAt?: Date | string | null
+    syncInterval?: number
+    isSyncing?: boolean
+    lastSyncError?: string | null
+    syncRetryCount?: number
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
+  export type WebsiteCachedDataUpdateInput = {
+    businessInfo?: InputJsonValue | InputJsonValue | null
+    reviews?: InputJsonValue | InputJsonValue | null
+    photos?: InputJsonValue | InputJsonValue | null
+    posts?: InputJsonValue | InputJsonValue | null
+    lastSyncedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    nextSyncAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    syncInterval?: IntFieldUpdateOperationsInput | number
+    isSyncing?: BoolFieldUpdateOperationsInput | boolean
+    lastSyncError?: NullableStringFieldUpdateOperationsInput | string | null
+    syncRetryCount?: IntFieldUpdateOperationsInput | number
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    website?: WebsiteUpdateOneRequiredWithoutCachedDataNestedInput
+  }
+
+  export type WebsiteCachedDataUncheckedUpdateInput = {
+    websiteId?: StringFieldUpdateOperationsInput | string
+    businessInfo?: InputJsonValue | InputJsonValue | null
+    reviews?: InputJsonValue | InputJsonValue | null
+    photos?: InputJsonValue | InputJsonValue | null
+    posts?: InputJsonValue | InputJsonValue | null
+    lastSyncedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    nextSyncAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    syncInterval?: IntFieldUpdateOperationsInput | number
+    isSyncing?: BoolFieldUpdateOperationsInput | boolean
+    lastSyncError?: NullableStringFieldUpdateOperationsInput | string | null
+    syncRetryCount?: IntFieldUpdateOperationsInput | number
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type WebsiteCachedDataCreateManyInput = {
+    id?: string
+    websiteId: string
+    businessInfo?: InputJsonValue | null
+    reviews?: InputJsonValue | null
+    photos?: InputJsonValue | null
+    posts?: InputJsonValue | null
+    lastSyncedAt?: Date | string | null
+    nextSyncAt?: Date | string | null
+    syncInterval?: number
+    isSyncing?: boolean
+    lastSyncError?: string | null
+    syncRetryCount?: number
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
+  export type WebsiteCachedDataUpdateManyMutationInput = {
+    businessInfo?: InputJsonValue | InputJsonValue | null
+    reviews?: InputJsonValue | InputJsonValue | null
+    photos?: InputJsonValue | InputJsonValue | null
+    posts?: InputJsonValue | InputJsonValue | null
+    lastSyncedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    nextSyncAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    syncInterval?: IntFieldUpdateOperationsInput | number
+    isSyncing?: BoolFieldUpdateOperationsInput | boolean
+    lastSyncError?: NullableStringFieldUpdateOperationsInput | string | null
+    syncRetryCount?: IntFieldUpdateOperationsInput | number
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type WebsiteCachedDataUncheckedUpdateManyInput = {
+    websiteId?: StringFieldUpdateOperationsInput | string
+    businessInfo?: InputJsonValue | InputJsonValue | null
+    reviews?: InputJsonValue | InputJsonValue | null
+    photos?: InputJsonValue | InputJsonValue | null
+    posts?: InputJsonValue | InputJsonValue | null
+    lastSyncedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    nextSyncAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    syncInterval?: IntFieldUpdateOperationsInput | number
+    isSyncing?: BoolFieldUpdateOperationsInput | boolean
+    lastSyncError?: NullableStringFieldUpdateOperationsInput | string | null
+    syncRetryCount?: IntFieldUpdateOperationsInput | number
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type SyncHistoryCreateInput = {
+    id?: string
+    websiteId: string
+    userId: string
+    syncType: string
+    status: string
+    reviewsCount?: number | null
+    photosCount?: number | null
+    postsCount?: number | null
+    errorMessage?: string | null
+    errorDetails?: InputJsonValue | null
+    fetchedAt: Date | string
+    completedAt?: Date | string | null
+    duration?: number | null
+    createdAt?: Date | string
+  }
+
+  export type SyncHistoryUncheckedCreateInput = {
+    id?: string
+    websiteId: string
+    userId: string
+    syncType: string
+    status: string
+    reviewsCount?: number | null
+    photosCount?: number | null
+    postsCount?: number | null
+    errorMessage?: string | null
+    errorDetails?: InputJsonValue | null
+    fetchedAt: Date | string
+    completedAt?: Date | string | null
+    duration?: number | null
+    createdAt?: Date | string
+  }
+
+  export type SyncHistoryUpdateInput = {
+    websiteId?: StringFieldUpdateOperationsInput | string
+    userId?: StringFieldUpdateOperationsInput | string
+    syncType?: StringFieldUpdateOperationsInput | string
+    status?: StringFieldUpdateOperationsInput | string
+    reviewsCount?: NullableIntFieldUpdateOperationsInput | number | null
+    photosCount?: NullableIntFieldUpdateOperationsInput | number | null
+    postsCount?: NullableIntFieldUpdateOperationsInput | number | null
+    errorMessage?: NullableStringFieldUpdateOperationsInput | string | null
+    errorDetails?: InputJsonValue | InputJsonValue | null
+    fetchedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    completedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    duration?: NullableIntFieldUpdateOperationsInput | number | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type SyncHistoryUncheckedUpdateInput = {
+    websiteId?: StringFieldUpdateOperationsInput | string
+    userId?: StringFieldUpdateOperationsInput | string
+    syncType?: StringFieldUpdateOperationsInput | string
+    status?: StringFieldUpdateOperationsInput | string
+    reviewsCount?: NullableIntFieldUpdateOperationsInput | number | null
+    photosCount?: NullableIntFieldUpdateOperationsInput | number | null
+    postsCount?: NullableIntFieldUpdateOperationsInput | number | null
+    errorMessage?: NullableStringFieldUpdateOperationsInput | string | null
+    errorDetails?: InputJsonValue | InputJsonValue | null
+    fetchedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    completedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    duration?: NullableIntFieldUpdateOperationsInput | number | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type SyncHistoryCreateManyInput = {
+    id?: string
+    websiteId: string
+    userId: string
+    syncType: string
+    status: string
+    reviewsCount?: number | null
+    photosCount?: number | null
+    postsCount?: number | null
+    errorMessage?: string | null
+    errorDetails?: InputJsonValue | null
+    fetchedAt: Date | string
+    completedAt?: Date | string | null
+    duration?: number | null
+    createdAt?: Date | string
+  }
+
+  export type SyncHistoryUpdateManyMutationInput = {
+    websiteId?: StringFieldUpdateOperationsInput | string
+    userId?: StringFieldUpdateOperationsInput | string
+    syncType?: StringFieldUpdateOperationsInput | string
+    status?: StringFieldUpdateOperationsInput | string
+    reviewsCount?: NullableIntFieldUpdateOperationsInput | number | null
+    photosCount?: NullableIntFieldUpdateOperationsInput | number | null
+    postsCount?: NullableIntFieldUpdateOperationsInput | number | null
+    errorMessage?: NullableStringFieldUpdateOperationsInput | string | null
+    errorDetails?: InputJsonValue | InputJsonValue | null
+    fetchedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    completedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    duration?: NullableIntFieldUpdateOperationsInput | number | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type SyncHistoryUncheckedUpdateManyInput = {
+    websiteId?: StringFieldUpdateOperationsInput | string
+    userId?: StringFieldUpdateOperationsInput | string
+    syncType?: StringFieldUpdateOperationsInput | string
+    status?: StringFieldUpdateOperationsInput | string
+    reviewsCount?: NullableIntFieldUpdateOperationsInput | number | null
+    photosCount?: NullableIntFieldUpdateOperationsInput | number | null
+    postsCount?: NullableIntFieldUpdateOperationsInput | number | null
+    errorMessage?: NullableStringFieldUpdateOperationsInput | string | null
+    errorDetails?: InputJsonValue | InputJsonValue | null
+    fetchedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    completedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    duration?: NullableIntFieldUpdateOperationsInput | number | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type SyncQueueCreateInput = {
+    id?: string
+    websiteId: string
+    userId: string
+    status?: string
+    priority?: number
+    scheduledFor: Date | string
+    processedAt?: Date | string | null
+    nextRetry?: Date | string | null
+    retryCount?: number
+    maxRetries?: number
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
+  export type SyncQueueUncheckedCreateInput = {
+    id?: string
+    websiteId: string
+    userId: string
+    status?: string
+    priority?: number
+    scheduledFor: Date | string
+    processedAt?: Date | string | null
+    nextRetry?: Date | string | null
+    retryCount?: number
+    maxRetries?: number
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
+  export type SyncQueueUpdateInput = {
+    websiteId?: StringFieldUpdateOperationsInput | string
+    userId?: StringFieldUpdateOperationsInput | string
+    status?: StringFieldUpdateOperationsInput | string
+    priority?: IntFieldUpdateOperationsInput | number
+    scheduledFor?: DateTimeFieldUpdateOperationsInput | Date | string
+    processedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    nextRetry?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    retryCount?: IntFieldUpdateOperationsInput | number
+    maxRetries?: IntFieldUpdateOperationsInput | number
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type SyncQueueUncheckedUpdateInput = {
+    websiteId?: StringFieldUpdateOperationsInput | string
+    userId?: StringFieldUpdateOperationsInput | string
+    status?: StringFieldUpdateOperationsInput | string
+    priority?: IntFieldUpdateOperationsInput | number
+    scheduledFor?: DateTimeFieldUpdateOperationsInput | Date | string
+    processedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    nextRetry?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    retryCount?: IntFieldUpdateOperationsInput | number
+    maxRetries?: IntFieldUpdateOperationsInput | number
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type SyncQueueCreateManyInput = {
+    id?: string
+    websiteId: string
+    userId: string
+    status?: string
+    priority?: number
+    scheduledFor: Date | string
+    processedAt?: Date | string | null
+    nextRetry?: Date | string | null
+    retryCount?: number
+    maxRetries?: number
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
+  export type SyncQueueUpdateManyMutationInput = {
+    websiteId?: StringFieldUpdateOperationsInput | string
+    userId?: StringFieldUpdateOperationsInput | string
+    status?: StringFieldUpdateOperationsInput | string
+    priority?: IntFieldUpdateOperationsInput | number
+    scheduledFor?: DateTimeFieldUpdateOperationsInput | Date | string
+    processedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    nextRetry?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    retryCount?: IntFieldUpdateOperationsInput | number
+    maxRetries?: IntFieldUpdateOperationsInput | number
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type SyncQueueUncheckedUpdateManyInput = {
+    websiteId?: StringFieldUpdateOperationsInput | string
+    userId?: StringFieldUpdateOperationsInput | string
+    status?: StringFieldUpdateOperationsInput | string
+    priority?: IntFieldUpdateOperationsInput | number
+    scheduledFor?: DateTimeFieldUpdateOperationsInput | Date | string
+    processedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    nextRetry?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    retryCount?: IntFieldUpdateOperationsInput | number
+    maxRetries?: IntFieldUpdateOperationsInput | number
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
   export type StringFilter<$PrismaModel = never> = {
     equals?: string | StringFieldRefInput<$PrismaModel>
     in?: string[] | ListStringFieldRefInput<$PrismaModel>
@@ -34724,6 +40419,256 @@ export namespace Prisma {
     createdAt?: SortOrder
   }
 
+  export type WebsiteCachedDataNullableScalarRelationFilter = {
+    is?: WebsiteCachedDataWhereInput | null
+    isNot?: WebsiteCachedDataWhereInput | null
+  }
+
+  export type WebsiteUserIdLocationIdAccountIdCompoundUniqueInput = {
+    userId: string
+    locationId: string
+    accountId: string
+  }
+
+  export type WebsiteCountOrderByAggregateInput = {
+    id?: SortOrder
+    userId?: SortOrder
+    locationId?: SortOrder
+    accountId?: SortOrder
+    subdomain?: SortOrder
+    title?: SortOrder
+    description?: SortOrder
+    logoUrl?: SortOrder
+    primaryColor?: SortOrder
+    secondaryColor?: SortOrder
+    fontFamily?: SortOrder
+    enabledSections?: SortOrder
+    googleAnalyticsId?: SortOrder
+    facebookPixelId?: SortOrder
+    isPublished?: SortOrder
+    publishedAt?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+  }
+
+  export type WebsiteMaxOrderByAggregateInput = {
+    id?: SortOrder
+    userId?: SortOrder
+    locationId?: SortOrder
+    accountId?: SortOrder
+    subdomain?: SortOrder
+    title?: SortOrder
+    description?: SortOrder
+    logoUrl?: SortOrder
+    primaryColor?: SortOrder
+    secondaryColor?: SortOrder
+    fontFamily?: SortOrder
+    googleAnalyticsId?: SortOrder
+    facebookPixelId?: SortOrder
+    isPublished?: SortOrder
+    publishedAt?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+  }
+
+  export type WebsiteMinOrderByAggregateInput = {
+    id?: SortOrder
+    userId?: SortOrder
+    locationId?: SortOrder
+    accountId?: SortOrder
+    subdomain?: SortOrder
+    title?: SortOrder
+    description?: SortOrder
+    logoUrl?: SortOrder
+    primaryColor?: SortOrder
+    secondaryColor?: SortOrder
+    fontFamily?: SortOrder
+    googleAnalyticsId?: SortOrder
+    facebookPixelId?: SortOrder
+    isPublished?: SortOrder
+    publishedAt?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+  }
+
+  export type WebsiteScalarRelationFilter = {
+    is?: WebsiteWhereInput
+    isNot?: WebsiteWhereInput
+  }
+
+  export type WebsiteCachedDataCountOrderByAggregateInput = {
+    id?: SortOrder
+    websiteId?: SortOrder
+    businessInfo?: SortOrder
+    reviews?: SortOrder
+    photos?: SortOrder
+    posts?: SortOrder
+    lastSyncedAt?: SortOrder
+    nextSyncAt?: SortOrder
+    syncInterval?: SortOrder
+    isSyncing?: SortOrder
+    lastSyncError?: SortOrder
+    syncRetryCount?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+  }
+
+  export type WebsiteCachedDataAvgOrderByAggregateInput = {
+    syncInterval?: SortOrder
+    syncRetryCount?: SortOrder
+  }
+
+  export type WebsiteCachedDataMaxOrderByAggregateInput = {
+    id?: SortOrder
+    websiteId?: SortOrder
+    lastSyncedAt?: SortOrder
+    nextSyncAt?: SortOrder
+    syncInterval?: SortOrder
+    isSyncing?: SortOrder
+    lastSyncError?: SortOrder
+    syncRetryCount?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+  }
+
+  export type WebsiteCachedDataMinOrderByAggregateInput = {
+    id?: SortOrder
+    websiteId?: SortOrder
+    lastSyncedAt?: SortOrder
+    nextSyncAt?: SortOrder
+    syncInterval?: SortOrder
+    isSyncing?: SortOrder
+    lastSyncError?: SortOrder
+    syncRetryCount?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+  }
+
+  export type WebsiteCachedDataSumOrderByAggregateInput = {
+    syncInterval?: SortOrder
+    syncRetryCount?: SortOrder
+  }
+
+  export type SyncHistoryCountOrderByAggregateInput = {
+    id?: SortOrder
+    websiteId?: SortOrder
+    userId?: SortOrder
+    syncType?: SortOrder
+    status?: SortOrder
+    reviewsCount?: SortOrder
+    photosCount?: SortOrder
+    postsCount?: SortOrder
+    errorMessage?: SortOrder
+    errorDetails?: SortOrder
+    fetchedAt?: SortOrder
+    completedAt?: SortOrder
+    duration?: SortOrder
+    createdAt?: SortOrder
+  }
+
+  export type SyncHistoryAvgOrderByAggregateInput = {
+    reviewsCount?: SortOrder
+    photosCount?: SortOrder
+    postsCount?: SortOrder
+    duration?: SortOrder
+  }
+
+  export type SyncHistoryMaxOrderByAggregateInput = {
+    id?: SortOrder
+    websiteId?: SortOrder
+    userId?: SortOrder
+    syncType?: SortOrder
+    status?: SortOrder
+    reviewsCount?: SortOrder
+    photosCount?: SortOrder
+    postsCount?: SortOrder
+    errorMessage?: SortOrder
+    fetchedAt?: SortOrder
+    completedAt?: SortOrder
+    duration?: SortOrder
+    createdAt?: SortOrder
+  }
+
+  export type SyncHistoryMinOrderByAggregateInput = {
+    id?: SortOrder
+    websiteId?: SortOrder
+    userId?: SortOrder
+    syncType?: SortOrder
+    status?: SortOrder
+    reviewsCount?: SortOrder
+    photosCount?: SortOrder
+    postsCount?: SortOrder
+    errorMessage?: SortOrder
+    fetchedAt?: SortOrder
+    completedAt?: SortOrder
+    duration?: SortOrder
+    createdAt?: SortOrder
+  }
+
+  export type SyncHistorySumOrderByAggregateInput = {
+    reviewsCount?: SortOrder
+    photosCount?: SortOrder
+    postsCount?: SortOrder
+    duration?: SortOrder
+  }
+
+  export type SyncQueueCountOrderByAggregateInput = {
+    id?: SortOrder
+    websiteId?: SortOrder
+    userId?: SortOrder
+    status?: SortOrder
+    priority?: SortOrder
+    scheduledFor?: SortOrder
+    processedAt?: SortOrder
+    nextRetry?: SortOrder
+    retryCount?: SortOrder
+    maxRetries?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+  }
+
+  export type SyncQueueAvgOrderByAggregateInput = {
+    priority?: SortOrder
+    retryCount?: SortOrder
+    maxRetries?: SortOrder
+  }
+
+  export type SyncQueueMaxOrderByAggregateInput = {
+    id?: SortOrder
+    websiteId?: SortOrder
+    userId?: SortOrder
+    status?: SortOrder
+    priority?: SortOrder
+    scheduledFor?: SortOrder
+    processedAt?: SortOrder
+    nextRetry?: SortOrder
+    retryCount?: SortOrder
+    maxRetries?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+  }
+
+  export type SyncQueueMinOrderByAggregateInput = {
+    id?: SortOrder
+    websiteId?: SortOrder
+    userId?: SortOrder
+    status?: SortOrder
+    priority?: SortOrder
+    scheduledFor?: SortOrder
+    processedAt?: SortOrder
+    nextRetry?: SortOrder
+    retryCount?: SortOrder
+    maxRetries?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+  }
+
+  export type SyncQueueSumOrderByAggregateInput = {
+    priority?: SortOrder
+    retryCount?: SortOrder
+    maxRetries?: SortOrder
+  }
+
   export type StringFieldUpdateOperationsInput = {
     set?: string
   }
@@ -34867,6 +40812,61 @@ export namespace Prisma {
     upsert?: ChatUpsertWithoutMessagesInput
     connect?: ChatWhereUniqueInput
     update?: XOR<XOR<ChatUpdateToOneWithWhereWithoutMessagesInput, ChatUpdateWithoutMessagesInput>, ChatUncheckedUpdateWithoutMessagesInput>
+  }
+
+  export type WebsiteCreateenabledSectionsInput = {
+    set: string[]
+  }
+
+  export type WebsiteCachedDataCreateNestedOneWithoutWebsiteInput = {
+    create?: XOR<WebsiteCachedDataCreateWithoutWebsiteInput, WebsiteCachedDataUncheckedCreateWithoutWebsiteInput>
+    connectOrCreate?: WebsiteCachedDataCreateOrConnectWithoutWebsiteInput
+    connect?: WebsiteCachedDataWhereUniqueInput
+  }
+
+  export type WebsiteCachedDataUncheckedCreateNestedOneWithoutWebsiteInput = {
+    create?: XOR<WebsiteCachedDataCreateWithoutWebsiteInput, WebsiteCachedDataUncheckedCreateWithoutWebsiteInput>
+    connectOrCreate?: WebsiteCachedDataCreateOrConnectWithoutWebsiteInput
+    connect?: WebsiteCachedDataWhereUniqueInput
+  }
+
+  export type WebsiteUpdateenabledSectionsInput = {
+    set?: string[]
+    push?: string | string[]
+  }
+
+  export type WebsiteCachedDataUpdateOneWithoutWebsiteNestedInput = {
+    create?: XOR<WebsiteCachedDataCreateWithoutWebsiteInput, WebsiteCachedDataUncheckedCreateWithoutWebsiteInput>
+    connectOrCreate?: WebsiteCachedDataCreateOrConnectWithoutWebsiteInput
+    upsert?: WebsiteCachedDataUpsertWithoutWebsiteInput
+    disconnect?: WebsiteCachedDataWhereInput | boolean
+    delete?: WebsiteCachedDataWhereInput | boolean
+    connect?: WebsiteCachedDataWhereUniqueInput
+    update?: XOR<XOR<WebsiteCachedDataUpdateToOneWithWhereWithoutWebsiteInput, WebsiteCachedDataUpdateWithoutWebsiteInput>, WebsiteCachedDataUncheckedUpdateWithoutWebsiteInput>
+  }
+
+  export type WebsiteCachedDataUncheckedUpdateOneWithoutWebsiteNestedInput = {
+    create?: XOR<WebsiteCachedDataCreateWithoutWebsiteInput, WebsiteCachedDataUncheckedCreateWithoutWebsiteInput>
+    connectOrCreate?: WebsiteCachedDataCreateOrConnectWithoutWebsiteInput
+    upsert?: WebsiteCachedDataUpsertWithoutWebsiteInput
+    disconnect?: WebsiteCachedDataWhereInput | boolean
+    delete?: WebsiteCachedDataWhereInput | boolean
+    connect?: WebsiteCachedDataWhereUniqueInput
+    update?: XOR<XOR<WebsiteCachedDataUpdateToOneWithWhereWithoutWebsiteInput, WebsiteCachedDataUpdateWithoutWebsiteInput>, WebsiteCachedDataUncheckedUpdateWithoutWebsiteInput>
+  }
+
+  export type WebsiteCreateNestedOneWithoutCachedDataInput = {
+    create?: XOR<WebsiteCreateWithoutCachedDataInput, WebsiteUncheckedCreateWithoutCachedDataInput>
+    connectOrCreate?: WebsiteCreateOrConnectWithoutCachedDataInput
+    connect?: WebsiteWhereUniqueInput
+  }
+
+  export type WebsiteUpdateOneRequiredWithoutCachedDataNestedInput = {
+    create?: XOR<WebsiteCreateWithoutCachedDataInput, WebsiteUncheckedCreateWithoutCachedDataInput>
+    connectOrCreate?: WebsiteCreateOrConnectWithoutCachedDataInput
+    upsert?: WebsiteUpsertWithoutCachedDataInput
+    connect?: WebsiteWhereUniqueInput
+    update?: XOR<XOR<WebsiteUpdateToOneWithWhereWithoutCachedDataInput, WebsiteUpdateWithoutCachedDataInput>, WebsiteUncheckedUpdateWithoutCachedDataInput>
   }
 
   export type NestedStringFilter<$PrismaModel = never> = {
@@ -35295,6 +41295,182 @@ export namespace Prisma {
   }
 
   export type ChatUncheckedUpdateWithoutMessagesInput = {
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type WebsiteCachedDataCreateWithoutWebsiteInput = {
+    id?: string
+    businessInfo?: InputJsonValue | null
+    reviews?: InputJsonValue | null
+    photos?: InputJsonValue | null
+    posts?: InputJsonValue | null
+    lastSyncedAt?: Date | string | null
+    nextSyncAt?: Date | string | null
+    syncInterval?: number
+    isSyncing?: boolean
+    lastSyncError?: string | null
+    syncRetryCount?: number
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
+  export type WebsiteCachedDataUncheckedCreateWithoutWebsiteInput = {
+    id?: string
+    businessInfo?: InputJsonValue | null
+    reviews?: InputJsonValue | null
+    photos?: InputJsonValue | null
+    posts?: InputJsonValue | null
+    lastSyncedAt?: Date | string | null
+    nextSyncAt?: Date | string | null
+    syncInterval?: number
+    isSyncing?: boolean
+    lastSyncError?: string | null
+    syncRetryCount?: number
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
+  export type WebsiteCachedDataCreateOrConnectWithoutWebsiteInput = {
+    where: WebsiteCachedDataWhereUniqueInput
+    create: XOR<WebsiteCachedDataCreateWithoutWebsiteInput, WebsiteCachedDataUncheckedCreateWithoutWebsiteInput>
+  }
+
+  export type WebsiteCachedDataUpsertWithoutWebsiteInput = {
+    update: XOR<WebsiteCachedDataUpdateWithoutWebsiteInput, WebsiteCachedDataUncheckedUpdateWithoutWebsiteInput>
+    create: XOR<WebsiteCachedDataCreateWithoutWebsiteInput, WebsiteCachedDataUncheckedCreateWithoutWebsiteInput>
+    where?: WebsiteCachedDataWhereInput
+  }
+
+  export type WebsiteCachedDataUpdateToOneWithWhereWithoutWebsiteInput = {
+    where?: WebsiteCachedDataWhereInput
+    data: XOR<WebsiteCachedDataUpdateWithoutWebsiteInput, WebsiteCachedDataUncheckedUpdateWithoutWebsiteInput>
+  }
+
+  export type WebsiteCachedDataUpdateWithoutWebsiteInput = {
+    businessInfo?: InputJsonValue | InputJsonValue | null
+    reviews?: InputJsonValue | InputJsonValue | null
+    photos?: InputJsonValue | InputJsonValue | null
+    posts?: InputJsonValue | InputJsonValue | null
+    lastSyncedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    nextSyncAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    syncInterval?: IntFieldUpdateOperationsInput | number
+    isSyncing?: BoolFieldUpdateOperationsInput | boolean
+    lastSyncError?: NullableStringFieldUpdateOperationsInput | string | null
+    syncRetryCount?: IntFieldUpdateOperationsInput | number
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type WebsiteCachedDataUncheckedUpdateWithoutWebsiteInput = {
+    businessInfo?: InputJsonValue | InputJsonValue | null
+    reviews?: InputJsonValue | InputJsonValue | null
+    photos?: InputJsonValue | InputJsonValue | null
+    posts?: InputJsonValue | InputJsonValue | null
+    lastSyncedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    nextSyncAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    syncInterval?: IntFieldUpdateOperationsInput | number
+    isSyncing?: BoolFieldUpdateOperationsInput | boolean
+    lastSyncError?: NullableStringFieldUpdateOperationsInput | string | null
+    syncRetryCount?: IntFieldUpdateOperationsInput | number
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type WebsiteCreateWithoutCachedDataInput = {
+    id?: string
+    userId: string
+    locationId: string
+    accountId: string
+    subdomain: string
+    title: string
+    description?: string | null
+    logoUrl?: string | null
+    primaryColor?: string
+    secondaryColor?: string
+    fontFamily?: string
+    enabledSections?: WebsiteCreateenabledSectionsInput | string[]
+    googleAnalyticsId?: string | null
+    facebookPixelId?: string | null
+    isPublished?: boolean
+    publishedAt?: Date | string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
+  export type WebsiteUncheckedCreateWithoutCachedDataInput = {
+    id?: string
+    userId: string
+    locationId: string
+    accountId: string
+    subdomain: string
+    title: string
+    description?: string | null
+    logoUrl?: string | null
+    primaryColor?: string
+    secondaryColor?: string
+    fontFamily?: string
+    enabledSections?: WebsiteCreateenabledSectionsInput | string[]
+    googleAnalyticsId?: string | null
+    facebookPixelId?: string | null
+    isPublished?: boolean
+    publishedAt?: Date | string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
+  export type WebsiteCreateOrConnectWithoutCachedDataInput = {
+    where: WebsiteWhereUniqueInput
+    create: XOR<WebsiteCreateWithoutCachedDataInput, WebsiteUncheckedCreateWithoutCachedDataInput>
+  }
+
+  export type WebsiteUpsertWithoutCachedDataInput = {
+    update: XOR<WebsiteUpdateWithoutCachedDataInput, WebsiteUncheckedUpdateWithoutCachedDataInput>
+    create: XOR<WebsiteCreateWithoutCachedDataInput, WebsiteUncheckedCreateWithoutCachedDataInput>
+    where?: WebsiteWhereInput
+  }
+
+  export type WebsiteUpdateToOneWithWhereWithoutCachedDataInput = {
+    where?: WebsiteWhereInput
+    data: XOR<WebsiteUpdateWithoutCachedDataInput, WebsiteUncheckedUpdateWithoutCachedDataInput>
+  }
+
+  export type WebsiteUpdateWithoutCachedDataInput = {
+    userId?: StringFieldUpdateOperationsInput | string
+    locationId?: StringFieldUpdateOperationsInput | string
+    accountId?: StringFieldUpdateOperationsInput | string
+    subdomain?: StringFieldUpdateOperationsInput | string
+    title?: StringFieldUpdateOperationsInput | string
+    description?: NullableStringFieldUpdateOperationsInput | string | null
+    logoUrl?: NullableStringFieldUpdateOperationsInput | string | null
+    primaryColor?: StringFieldUpdateOperationsInput | string
+    secondaryColor?: StringFieldUpdateOperationsInput | string
+    fontFamily?: StringFieldUpdateOperationsInput | string
+    enabledSections?: WebsiteUpdateenabledSectionsInput | string[]
+    googleAnalyticsId?: NullableStringFieldUpdateOperationsInput | string | null
+    facebookPixelId?: NullableStringFieldUpdateOperationsInput | string | null
+    isPublished?: BoolFieldUpdateOperationsInput | boolean
+    publishedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type WebsiteUncheckedUpdateWithoutCachedDataInput = {
+    userId?: StringFieldUpdateOperationsInput | string
+    locationId?: StringFieldUpdateOperationsInput | string
+    accountId?: StringFieldUpdateOperationsInput | string
+    subdomain?: StringFieldUpdateOperationsInput | string
+    title?: StringFieldUpdateOperationsInput | string
+    description?: NullableStringFieldUpdateOperationsInput | string | null
+    logoUrl?: NullableStringFieldUpdateOperationsInput | string | null
+    primaryColor?: StringFieldUpdateOperationsInput | string
+    secondaryColor?: StringFieldUpdateOperationsInput | string
+    fontFamily?: StringFieldUpdateOperationsInput | string
+    enabledSections?: WebsiteUpdateenabledSectionsInput | string[]
+    googleAnalyticsId?: NullableStringFieldUpdateOperationsInput | string | null
+    facebookPixelId?: NullableStringFieldUpdateOperationsInput | string | null
+    isPublished?: BoolFieldUpdateOperationsInput | boolean
+    publishedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }

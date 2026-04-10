@@ -20,6 +20,7 @@ import {
   Copy,
   Sparkles,
   X,
+  AlertTriangle,
 } from "lucide-react"
 
 import { Button } from "@/components/ui/button"
@@ -32,6 +33,7 @@ import toast from "react-hot-toast"
 import { Label } from "@/components/ui/label"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Badge } from "@/components/ui/badge"
+import { Alert, AlertDescription, AlertTitle } from "../ui/alert"
 
 interface GmbPostFormProps {
   accountId?: string | null
@@ -40,6 +42,7 @@ interface GmbPostFormProps {
   enableBulkPosting?: boolean
   onPostCreated?: (post: any) => void
   businessName: string
+  phoneNumber?: string | null
 }
 
 interface BulkPostData {
@@ -67,7 +70,7 @@ const postSchema = z.object({
   actionLink: z.string().url("Please enter a valid URL").optional().or(z.literal("")),
   callPhone: z
     .string()
-    .regex(/^[+]?[1-9][\d]{0,15}$/, "Please enter a valid phone number")
+    .regex(/^[+]?[0-9][\d]{0,15}$/, "Please enter a valid phone number")
     .optional()
     .or(z.literal("")),
   image_url: z.string().url("Please enter a valid image URL").optional().or(z.literal("")),
@@ -91,6 +94,7 @@ export function GmbBulkPostForm({
   enableBulkPosting = false,
   onPostCreated,
   businessName,
+  phoneNumber
 }: GmbPostFormProps) {
   const [selectedFile, setSelectedFile] = useState<File | null>(null)
   const [dragActive, setDragActive] = useState(false)
@@ -105,7 +109,6 @@ export function GmbBulkPostForm({
   const [postingProgress, setPostingProgress] = useState<{
     current: number
     total: number
-    currentPostContent: string
     errors?: string[]
   } | null>(null)
 
@@ -117,7 +120,7 @@ export function GmbBulkPostForm({
       postContent: "",
       actionButton: "NO_ACTION",
       actionLink: "",
-      callPhone: "",
+      callPhone: phoneNumber ? phoneNumber : '',
       image_url: "",
     },
   })
@@ -163,6 +166,7 @@ export function GmbBulkPostForm({
       id: `post-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
       postContent: "",
       actionButton: "NO_ACTION",
+      callPhone: phoneNumber || "",
     }
     setBulkPosts([...bulkPosts, newPost])
     setActiveForm(bulkPosts.length)
@@ -245,7 +249,7 @@ export function GmbBulkPostForm({
       return
     }
     if (file.size < MIN_FILE_SIZE) {
-        toast.error("File size must be at least 10KB. Please use a higher quality image.");
+      toast.error("File size must be at least 10KB. Please use a higher quality image.");
       return
     }
 
@@ -395,28 +399,23 @@ export function GmbBulkPostForm({
         return
       }
 
-      // Create posts with progress tracking
       let successCount = 0
       let failCount = 0
       const totalPosts = validPosts.length
       const errors: string[] = []
 
+      // Show modal immediately
       setPostingProgress({
         current: 0,
         total: totalPosts,
-        currentPostContent: validPosts[0]?.postContent.slice(0, 50) + "..." || "",
         errors: [],
       })
 
+      // Force React to render the modal before the loop starts
+      await new Promise((resolve) => setTimeout(resolve, 0))
+
       for (let i = 0; i < validPosts.length; i++) {
         const post = validPosts[i]
-
-        setPostingProgress({
-          current: i + 1,
-          total: totalPosts,
-          currentPostContent: post.postContent.slice(0, 50) + (post.postContent.length > 50 ? "..." : ""),
-          errors: errors,
-        })
 
         try {
           const postData: CreatePostData = {
@@ -437,35 +436,34 @@ export function GmbBulkPostForm({
             onPostCreated?.(result.data)
           } else {
             failCount++
-            const errorMsg = `Post ${i + 1}: ${result.message || "Failed to create"}`
-            errors.push(errorMsg)
-            console.error(`Failed to create post ${i + 1}:`, result.message)
+            errors.push(`Post ${i + 1}: ${result.message || "Failed to create"}`)
           }
         } catch (error) {
           failCount++
-          const errorMsg = `Post ${i + 1}: Network error`
-          errors.push(errorMsg)
-          console.error(`Error creating post ${i + 1}:`, error)
+          errors.push(`Post ${i + 1}: Network error`)
         }
 
+        // Update progress after each post completes
+        const newProgress = {
+          current: i + 1,
+          total: totalPosts,
+          errors: [...errors], // Spread errors to create new array reference
+        }
+        setPostingProgress(newProgress)
+
+        // Delay between posts
         if (i < validPosts.length - 1) {
           await new Promise((resolve) => setTimeout(resolve, 500))
         }
       }
 
-      setPostingProgress({
-        current: totalPosts,
-        total: totalPosts,
-        currentPostContent: "Completed",
-        errors: errors,
-      })
+      // Show completion state
+      await new Promise((resolve) => setTimeout(resolve, 1500))
 
-      // Wait a moment to show final state
-      await new Promise((resolve) => setTimeout(resolve, 2000))
-
+      // Close modal
       setPostingProgress(null)
 
-      // Show final results
+      // Show results
       if (successCount > 0) {
         toast.success(`Successfully created ${successCount} post${successCount > 1 ? "s" : ""}`)
         setBulkPosts([])
@@ -499,92 +497,76 @@ export function GmbBulkPostForm({
 
   return (
     <div className="w-full mx-auto">
+
       {postingProgress && (
-        <div className="fixed inset-0 bg-black/80 backdrop-blur-md z-50 flex items-center justify-center">
-          <div className="bg-white/10 backdrop-blur-xl rounded-3xl p-8 max-w-md w-full mx-4 border border-white/20 shadow-2xl">
-            <div className="text-center space-y-6">
-              {/* Progress Circle */}
-              <div className="relative w-24 h-24 mx-auto">
-                <svg className="w-24 h-24 transform -rotate-90" viewBox="0 0 100 100">
-                  <circle cx="50" cy="50" r="45" stroke="rgba(255,255,255,0.1)" strokeWidth="8" fill="none" />
-                  <circle
-                    cx="50"
-                    cy="50"
-                    r="45"
-                    stroke="url(#progressGradient)"
-                    strokeWidth="8"
-                    fill="none"
-                    strokeLinecap="round"
-                    strokeDasharray={`${(postingProgress.current / postingProgress.total) * 283} 283`}
-                    className="transition-all duration-500 ease-out"
+        <div className="fixed inset-0 bg-background/80 backdrop-blur-sm z-50 flex items-center justify-center">
+          <div className="bg-card rounded-lg shadow-lg p-8 max-w-sm w-full mx-4 border border-border">
+            <div className="flex flex-col items-center space-y-6">
+              {/* Animated Spinner */}
+              <div className="relative">
+                <svg className="w-10 h-10 text-primary animate-spin" fill="none" viewBox="0 0 24 24">
+                  <circle className="opacity-20" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="3" />
+                  <path
+                    className="opacity-100"
+                    fill="currentColor"
+                    d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
                   />
-                  <defs>
-                    <linearGradient id="progressGradient" x1="0%" y1="0%" x2="100%" y2="0%">
-                      <stop offset="0%" stopColor="#3b82f6" />
-                      <stop offset="100%" stopColor="#8b5cf6" />
-                    </linearGradient>
-                  </defs>
                 </svg>
-                <div className="absolute inset-0 flex items-center justify-center">
-                  <span className="text-2xl font-bold text-white">
-                    {postingProgress.current}/{postingProgress.total}
-                  </span>
-                </div>
               </div>
 
-              {/* Status Text */}
-              <div className="space-y-2">
-                <h3 className="text-xl font-semibold text-white">
-                  {postingProgress.current === postingProgress.total ? "Completed!" : "Creating Posts..."}
+              {/* Status Section */}
+              <div className="text-center space-y-2 w-full">
+                <h3 className="text-lg font-medium text-foreground">
+                  {postingProgress?.current !== undefined &&
+                    postingProgress?.total !== undefined &&
+                    postingProgress?.current === postingProgress?.total
+                    ? "Complete"
+                    : "Creating posts"}
                 </h3>
-                <p className="text-white/80 text-sm">
-                  {postingProgress.current === postingProgress.total
-                    ? "All posts processed"
-                    : `Processing: ${postingProgress.currentPostContent}`}
-                </p>
+                {postingProgress?.current !== undefined &&
+                  postingProgress?.total !== undefined &&
+                  postingProgress?.current !== postingProgress?.total && (
+                    <p className="text-sm text-muted-foreground">
+                      {postingProgress?.current ?? 0} of {postingProgress?.total ?? 0}
+                    </p>
+                  )}
               </div>
 
               {/* Progress Bar */}
-              <div className="w-full bg-white/10 rounded-full h-2 overflow-hidden">
-                <div
-                  className="h-full bg-gradient-to-r from-blue-500 to-purple-500 rounded-full transition-all duration-500 ease-out relative"
-                  style={{ width: `${(postingProgress.current / postingProgress.total) * 100}%` }}
-                >
-                  <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/30 to-transparent animate-shimmer"></div>
-                </div>
-              </div>
-
-              {/* Error Display */}
-              {postingProgress.errors && postingProgress.errors.length > 0 && (
-                <div className="mt-4 p-4 bg-red-500/20 border border-red-500/30 rounded-lg">
-                  <h4 className="text-red-200 font-medium mb-2 flex items-center">
-                    <svg className="w-4 h-4 mr-2" fill="currentColor" viewBox="0 0 20 20">
-                      <path
-                        fillRule="evenodd"
-                        d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z"
-                        clipRule="evenodd"
-                      />
-                    </svg>
-                    Failed Posts ({postingProgress.errors.length})
-                  </h4>
-                  <div className="max-h-32 overflow-y-auto space-y-1">
-                    {postingProgress.errors.map((error, index) => (
-                      <p key={index} className="text-red-200/80 text-xs">
-                        {error}
-                      </p>
-                    ))}
+              {postingProgress?.total !== undefined && postingProgress?.total > 0 && (
+                <div className="w-full space-y-2">
+                  <div className="w-full h-2 bg-secondary rounded-full overflow-hidden">
+                    <div
+                      className="h-full bg-primary rounded-full transition-all duration-300 ease-out"
+                      style={{
+                        width: `${((postingProgress?.current ?? 0) / (postingProgress?.total ?? 1)) * 100}%`,
+                      }}
+                    />
                   </div>
+                  <p className="text-xs text-muted-foreground text-right">
+                    {Math.round(((postingProgress?.current ?? 0) / (postingProgress?.total ?? 1)) * 100)}%
+                  </p>
                 </div>
               )}
 
-              {/* Success/Completion Message */}
-              {postingProgress.current === postingProgress.total && (
-                <div className="mt-4 p-3 bg-green-500/20 border border-green-500/30 rounded-lg">
-                  <p className="text-green-200 text-sm">
-                    {postingProgress.errors && postingProgress.errors.length > 0
-                      ? `Completed with ${postingProgress.total - postingProgress.errors.length} successful posts`
-                      : "All posts created successfully!"}
+              {/* Error Alert */}
+              {postingProgress?.errors && postingProgress?.errors?.length > 0 && (
+                <div className="w-full p-4 bg-destructive/5 rounded-lg border border-destructive/20 mt-2">
+                  <p className="text-destructive font-medium text-sm mb-2.5">
+                    {postingProgress?.errors?.length} failed
                   </p>
+                  <div className="space-y-1.5 max-h-20 overflow-y-auto">
+                    {postingProgress?.errors?.slice(0, 2).map((error, index) => (
+                      <p key={index} className="text-xs text-destructive/75 leading-snug">
+                        {error}
+                      </p>
+                    ))}
+                    {postingProgress?.errors?.length > 2 && (
+                      <p className="text-xs text-muted-foreground">
+                        +{(postingProgress?.errors?.length ?? 0) - 2} more error{(postingProgress?.errors?.length ?? 0) - 2 !== 1 ? 's' : ''}
+                      </p>
+                    )}
+                  </div>
                 </div>
               )}
             </div>
@@ -830,11 +812,11 @@ export function GmbBulkPostForm({
                                       prevPosts.map((p) =>
                                         p.id === post.id
                                           ? {
-                                              ...p,
-                                              actionButton: value,
-                                              // Clear related fields when NO_ACTION is selected
-                                              ...(value === "NO_ACTION" ? { actionLink: "", callPhone: "" } : {}),
-                                            }
+                                            ...p,
+                                            actionButton: value,
+                                            // Clear related fields when NO_ACTION is selected
+                                            ...(value === "NO_ACTION" ? { actionLink: "", callPhone: "" } : {}),
+                                          }
                                           : p,
                                       ),
                                     )
@@ -863,7 +845,7 @@ export function GmbBulkPostForm({
                                   <Input
                                     placeholder="+1234567890"
                                     value={post.callPhone || ""}
-                                    onChange={(e) => updateBulkPost(post.id, "callPhone", e.target.value)}
+                                    disabled
                                   />
                                 </div>
                               )}
@@ -882,8 +864,22 @@ export function GmbBulkPostForm({
                                 )}
                             </div>
 
+                            {post.actionButton === "CALL" && (
+                              <>
+                                {/* ⚠️ Warning Alert */}
+                                <Alert className="border-yellow-300 bg-yellow-50 text-yellow-800">
+                                  <AlertTriangle className="h-4 w-4 text-yellow-800" />
+                                  <AlertTitle>Heads up!</AlertTitle>
+                                  <AlertDescription>
+                                    The Call button may not appear after publishing your post.
+                                    You may need to verify your phone number in your Google Business Profile.
+                                  </AlertDescription>
+                                </Alert>
+                              </>
+                            )}
+
                             <div className="space-y-3">
-                              <Label>Image</Label>
+                              <Label>Image (Optional)</Label>
                               <Tabs defaultValue="url" className="w-full">
                                 <TabsList className="grid w-full grid-cols-2">
                                   <TabsTrigger value="upload">Upload File</TabsTrigger>
@@ -954,11 +950,11 @@ export function GmbBulkPostForm({
                                         prevPosts.map((p) =>
                                           p.id === post.id
                                             ? {
-                                                ...p,
-                                                image_url: url,
-                                                // Clear file and preview URL when entering image URL
-                                                ...(url ? { file: undefined, previewUrl: undefined } : {}),
-                                              }
+                                              ...p,
+                                              image_url: url,
+                                              // Clear file and preview URL when entering image URL
+                                              ...(url ? { file: undefined, previewUrl: undefined } : {}),
+                                            }
                                             : p,
                                         ),
                                       )
@@ -1033,6 +1029,6 @@ export function GmbBulkPostForm({
           </CardContent>
         </Card>
       </div>
-    </div>
+    </div >
   )
 }

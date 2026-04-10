@@ -99,6 +99,13 @@ const data = {
       group: "Posting & Reputation",
     },
 
+    {
+      title: "Websites",
+      url: "/app/websites",
+      icon: LayoutDashboard,
+      group: "Posting & Reputation",
+    },
+
     // Tools & Support
     {
       title: "Run a Scan",

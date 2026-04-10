@@ -38,7 +38,8 @@ interface UseCompetitorsReturn {
 export function useCompetitors(
     locationId: string,
     businessName: string | null,
-    coordinates: { lat: number; lng: number } | null
+    coordinates: { lat: number; lng: number } | null,
+    businessType
     
 ): UseCompetitorsReturn {
     const [competitors, setCompetitors] = useState<EnhancedCompetitor[]>([]);
@@ -63,13 +64,12 @@ export function useCompetitors(
             const params = new URLSearchParams({
                 lat: coordinates.lat.toString(),
                 lng: coordinates.lng.toString(),
+                businessType: businessType
             });
 
             if (businessName) {
                 params.append('businessName', businessName);
             }
-
-            console.log('🔍 Fetching competitors:', `/api/competitors/${locationId}?${params}`);
 
             const response = await fetch(`/api/competitors/${locationId}?${params}`);
             
@@ -78,7 +78,6 @@ export function useCompetitors(
             }
 
             const result = await response.json();
-            console.log('📦 Competitor API Response:', result);
 
             if (result.success) {
                 setCompetitors(result.data.competitors || []);

@@ -3,7 +3,7 @@ import SharedGoogleReviewPosterCreate from "@/components/shared-google-review-po
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "Create Review Poster | GMB Samurai",
+  title: "Create Review Poster | Rankerly",
 };
 
 export default function SharedGoogleReviewPosterCreatePage() {

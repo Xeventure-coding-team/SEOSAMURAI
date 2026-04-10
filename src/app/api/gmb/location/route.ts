@@ -2,7 +2,7 @@ import { NextResponse } from "next/server"
 import { stackServerApp } from "@/stack"
 import { prisma } from "../../../../../lib/prisma"
 
-// Add this helper function at the top
+
 function extractCleanLocation(placesData: any): string {
   if (!placesData?.address_components) {
     // Fallback: parse from formatted_address
@@ -52,9 +52,111 @@ function extractCleanLocation(placesData: any): string {
   return result
 }
 
+// Function to refresh GMB access token
+async function refreshGMBToken(userId: string): Promise<string | null> {
+  try {
+    if (!userId) {
+      return null;
+    }
+
+    // Get the GMB integration record for the user
+    const gmbIntegration = await prisma.gmbIntegration.findUnique({
+      where: { userId: userId },
+    });
+
+    if (!gmbIntegration) {
+      return null;
+    }
+
+    if (!gmbIntegration.refreshToken) {
+      return null;
+    }
+
+    // Check if token is still valid (5 minute buffer)
+    if (gmbIntegration.tokenExpiry) {
+      const bufferTime = 5 * 60 * 1000; // 5 minutes buffer
+      if (new Date().getTime() + bufferTime < gmbIntegration.tokenExpiry.getTime()) {
+        // Token is still valid, return existing access token
+        return gmbIntegration.accessToken;
+      }
+    }
+
+    // Refresh the token using Google OAuth endpoint
+    const response = await fetch("https://oauth2.googleapis.com/token", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/x-www-form-urlencoded",
+      },
+      body: new URLSearchParams({
+        client_id: process.env.GOOGLE_CLIENT_ID!,
+        client_secret: process.env.GOOGLE_CLIENT_SECRET!,
+        refresh_token: gmbIntegration.refreshToken,
+        grant_type: "refresh_token",
+      }),
+    });
+
+    if (!response.ok) {
+      return null;
+    }
+
+    const data = await response.json();
+    const { access_token, expires_in } = data;
+
+    // Calculate new expiry date
+    const tokenExpiry = new Date();
+    tokenExpiry.setSeconds(tokenExpiry.getSeconds() + expires_in);
+
+    // Update the access token in database
+    await prisma.gmbIntegration.update({
+      where: { id: gmbIntegration.id },
+      data: {
+        accessToken: access_token,
+        tokenExpiry: tokenExpiry,
+        updatedAt: new Date(),
+      },
+    });
+
+    return access_token;
+  } catch (error) {
+    return null;
+  }
+}
+
+// Function to get valid token (refreshes if needed)
+async function getValidAccessToken(userId: string, currentToken: string): Promise<string | null> {
+  try {
+    // First, try to use the current token
+    const testResponse = await fetch(
+      "https://mybusinessaccountmanagement.googleapis.com/v1/accounts",
+      {
+        headers: {
+          Authorization: `Bearer ${currentToken}`,
+        },
+      }
+    );
+
+    // If token is valid, return it
+    if (testResponse.ok) {
+      return currentToken;
+    }
+
+    // If token is expired (401), try to refresh
+    if (testResponse.status === 401) {
+      const newToken = await refreshGMBToken(userId);
+      if (newToken) {
+        return newToken;
+      }
+    }
+
+    // If other error or refresh failed
+    return null;
+  } catch (error) {
+    return null;
+  }
+}
+
 async function fetchLocationDetails(locationId: string, gmbAccountId: string, accessToken: string, apiKey: string | undefined) {
   try {
-
     // 1. Get basic location data from GMB Account Management API
     const locationResponse = await fetch(
       `https://mybusinessaccountmanagement.googleapis.com/v1/locations/${locationId}?readMask=name,storeCode,profile,labels,metadata,categories,phoneNumbers`,
@@ -65,7 +167,6 @@ async function fetchLocationDetails(locationId: string, gmbAccountId: string, ac
         }
       }
     )
-
 
     if (!locationResponse.ok) {
       const errorText = await locationResponse.text()
@@ -90,13 +191,11 @@ async function fetchLocationDetails(locationId: string, gmbAccountId: string, ac
       mediaData = await mediaResponse.json()
     }
 
-
     // 3. Get Google Places data (if we have a place ID)
     let placesData = null;
     let cleanLocation = '';
 
     if (locationData?.metadata?.placeId && apiKey) {
-
       const placesResponse = await fetch(
         `https://maps.googleapis.com/maps/api/place/details/json?place_id=${locationData.metadata.placeId}&fields=name,rating,formatted_address,address_components,geometry,opening_hours,reviews,website&key=${apiKey}`
       );
@@ -105,8 +204,6 @@ async function fetchLocationDetails(locationId: string, gmbAccountId: string, ac
         const placesResult = await placesResponse.json();
         placesData = placesResult.result;
         cleanLocation = extractCleanLocation(placesData);
-      } else {
-        console.log('Places API failed:', await placesResponse.text()) // DEBUG LOG
       }
     }
 
@@ -136,7 +233,6 @@ async function fetchLocationDetails(locationId: string, gmbAccountId: string, ac
     }
 
   } catch (error) {
-    console.error('Error in fetchLocationDetails:', error)
     throw error
   }
 }
@@ -145,25 +241,43 @@ export async function GET(req: Request) {
   try {
     const { searchParams } = new URL(req.url)
     const locationId = searchParams.get("location_name") || searchParams.get("place_id")
-    const accessToken = searchParams.get("access_token")
+    const accessTokenParam = searchParams.get("access_token")
     const gmbAccountId = searchParams.get("gmb_account_id")
     const withPosts = searchParams.get("with_posts") === "true"
     const apiKey = process.env.PLACES_KEY
     const user = await stackServerApp.getUser();
 
-    if (!locationId || !accessToken || !gmbAccountId) {
+    // Check authentication
+    if (!user?.id) {
+      return NextResponse.json(
+        { error: "User authentication required" },
+        { status: 401 }
+      );
+    }
+
+    if (!locationId || !accessTokenParam || !gmbAccountId) {
       return NextResponse.json(
         {
           error: "Missing required parameters",
           required: ["location_name (or place_id)", "access_token", "gmb_account_id"],
-          received: { locationId: !!locationId, accessToken: !!accessToken, gmbAccountId: !!gmbAccountId },
+          received: { locationId: !!locationId, accessToken: !!accessTokenParam, gmbAccountId: !!gmbAccountId },
         },
         { status: 400 }
       )
     }
 
-    // Fetch GMB location details
-    const locationData = await fetchLocationDetails(locationId, gmbAccountId, accessToken, apiKey)
+    // Get valid token (auto-refreshes if needed)
+    const validAccessToken = await getValidAccessToken(user.id, accessTokenParam);
+    
+    if (!validAccessToken) {
+      return NextResponse.json(
+        { error: "Session expired. Please log in to Google My Business again." },
+        { status: 401 }
+      );
+    }
+
+    // Fetch GMB location details with the valid token
+    const locationData = await fetchLocationDetails(locationId, gmbAccountId, validAccessToken, apiKey)
 
     const cleanLocationId = locationId.replace(/^locations\//, "");
     const cleanAccountId = gmbAccountId.replace(/^accounts\//, "");
@@ -172,7 +286,7 @@ export async function GET(req: Request) {
     let scheduledPosts: any[] = []
     if (withPosts) {
       scheduledPosts = await prisma.scheduledPost.findMany({
-        where: { locationId: cleanLocationId, accountId: cleanAccountId, user_id: user?.id },
+        where: { locationId: cleanLocationId, accountId: cleanAccountId, user_id: user.id },
         orderBy: { scheduledAt: "desc" },
       })
     }

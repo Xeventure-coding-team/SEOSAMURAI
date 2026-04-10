@@ -51,7 +51,7 @@ export default function TrackedReviewsPage() {
 
     const loadDeletedReviews = async () => {
         if (!accountId) return;
-        
+
         setIsLoading(true);
         try {
             const response = await fetch(`/api/tracked-review/deleted?accountId=${accountId}`);
@@ -91,7 +91,7 @@ export default function TrackedReviewsPage() {
 
             const result = await response.json();
             setTrackingResult(result);
-            
+
             // Reload deleted reviews after tracking to get fresh data
             await loadDeletedReviews();
         } catch (err) {
@@ -132,7 +132,7 @@ export default function TrackedReviewsPage() {
     };
 
     return (
-        <div className="container mx-auto py-8 px-4 max-w-6xl">
+        <div className="container mx-auto">
             <div className="mb-6">
                 <h1 className="text-3xl font-bold mb-2">Tracked Reviews</h1>
                 <p className="text-muted-foreground">
@@ -167,7 +167,7 @@ export default function TrackedReviewsPage() {
                     </Button>
 
                     {trackingResult && !error && (
-                        <Alert className="mt-4">
+                        <Alert className="mt-4" >
                             <AlertDescription>
                                 <div className="space-y-1">
                                     <p><strong>Total Reviews Fetched:</strong> {trackingResult.totalFetched}</p>
@@ -195,7 +195,7 @@ export default function TrackedReviewsPage() {
                                 Reviews that have been removed from Google My Business
                             </CardDescription>
                         </div>
-                        <Badge variant="secondary" className="text-lg">
+                        <Badge className="text-lg">
                             {deletedReviews.length}
                         </Badge>
                     </div>
@@ -212,63 +212,69 @@ export default function TrackedReviewsPage() {
                             <p>No deleted reviews found</p>
                         </div>
                     ) : (
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                             {deletedReviews.map((review) => (
-                                <Card key={review.id} className="border-destructive/50 bg-destructive/5">
-                                    <CardContent>
-                                        <div className="flex items-start gap-3">
-                                            <Avatar className="h-10 w-10 flex-shrink-0">
-                                                <AvatarImage 
-                                                    src={getProfileImage(review)} 
-                                                    alt={review.reviewerName || 'Anonymous'} 
+                                <div
+                                    key={review.id}
+                                    className="group bg-background border border-border rounded-lg transition-all duration-200 hover:shadow-md hover:border-border/60 flex flex-col"
+                                >
+                                    {/* Content */}
+                                    <div className="p-5 flex-1 flex flex-col gap-3">
+                                        {/* Header with avatar and status */}
+                                        <div className="flex gap-3 items-start">
+                                            <Avatar className="h-9 w-9 flex-shrink-0">
+                                                <AvatarImage
+                                                    src={getProfileImage(review)}
+                                                    alt={review.reviewerName || 'Anonymous'}
                                                 />
-                                                <AvatarFallback className="bg-primary/10 text-primary text-sm ">
+                                                <AvatarFallback className="text-xs">
                                                     {getInitials(review.reviewerName)}
                                                 </AvatarFallback>
                                             </Avatar>
-                                            
+
                                             <div className="flex-1 min-w-0">
-                                                <div className="flex items-start justify-between gap-2 mb-2">
-                                                    <div className="flex-1 min-w-0">
-                                                        <h3 className="font-semibold text-sm truncate capitalize">
-                                                            {review.reviewerName || 'Anonymous'}
-                                                        </h3>
-                                                        <div className="flex items-center gap-2 mt-1">
-                                                            {renderStars(review.rating)}
-                                                        </div>
-                                                        {review.locationName && (
-                                                            <p className="text-xs text-muted-foreground mt-1">
-                                                                {review.locationName}
-                                                            </p>
-                                                        )}
-                                                    </div>
-                                                    <Badge variant="destructive" className="text-xs flex-shrink-0">
+                                                <div className="flex items-center justify-between gap-2">
+                                                    <h3 className="text-sm font-semibold text-foreground truncate capitalize">
+                                                        {review.reviewerName || 'Anonymous'}
+                                                    </h3>
+                                                    <Badge variant="outline" className="text-xs flex-shrink-0 bg-destructive/10 text-destructive border-destructive/20">
                                                         Deleted
                                                     </Badge>
                                                 </div>
-                                                
-                                                {review.comment && (
-                                                    <p className="text-sm text-muted-foreground line-clamp-3 mb-2">
-                                                        {review.comment}
+
+                                                {/* Rating */}
+                                                <div className="flex items-center gap-1 mt-1">
+                                                    {renderStars(review.rating)}
+                                                </div>
+
+                                                {review.locationName && (
+                                                    <p className="text-xs text-muted-foreground mt-1">
+                                                        {review.locationName}
                                                     </p>
                                                 )}
-                                                
-                                                <div className="flex flex-wrap gap-x-3 gap-y-1 text-xs text-muted-foreground">
-                                                    {review.createTime && (
-                                                        <span>
-                                                            Posted: {new Date(review.createTime).toLocaleDateString()}
-                                                        </span>
-                                                    )}
-                                                    {review.deletedAt && (
-                                                        <span className="text-destructive">
-                                                            Deleted: {new Date(review.deletedAt).toLocaleDateString()}
-                                                        </span>
-                                                    )}
-                                                </div>
                                             </div>
                                         </div>
-                                    </CardContent>
-                                </Card>
+
+                                        {/* Comment */}
+                                        {review.comment && (
+                                            <p className="text-sm text-muted-foreground line-clamp-3">
+                                                {review.comment}
+                                            </p>
+                                        )}
+
+                                        {/* Dates */}
+                                        <div className="flex flex-col gap-0.5 text-xs text-muted-foreground">
+                                            {review.createTime && (
+                                                <span>Posted {new Date(review.createTime).toLocaleDateString()}</span>
+                                            )}
+                                            {review.deletedAt && (
+                                                <span className="text-destructive/80">
+                                                    Deleted {new Date(review.deletedAt).toLocaleDateString()}
+                                                </span>
+                                            )}
+                                        </div>
+                                    </div>
+                                </div>
                             ))}
                         </div>
                     )}

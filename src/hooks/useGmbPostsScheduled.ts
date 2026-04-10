@@ -66,6 +66,7 @@ export interface GmbPostsResponse {
 export function useGmbPostsScheduled() {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [refreshCount, setRefreshCount] = useState(0)
 
   const fetchPosts = useCallback(
     async (
@@ -308,6 +309,19 @@ export function useGmbPostsScheduled() {
     [],
   )
 
+  const refreshPosts = useCallback(
+    async (
+      accessToken: string,
+      account: string,
+      location: string,
+      pageSize = 10,
+    ): Promise<GmbPostsResponse> => {
+      setRefreshCount(prev => prev + 1) // Increment BEFORE fetching
+      return fetchPosts(accessToken, account, location, pageSize)
+    },
+    [fetchPosts],
+  )
+
   return {
     loading,
     error,
@@ -315,5 +329,7 @@ export function useGmbPostsScheduled() {
     createPost,
     updatePost,
     deletePost,
+    refreshPosts,
+    refreshCount
   }
 }

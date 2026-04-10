@@ -502,7 +502,7 @@ export default function ManageLocation() {
     !payload?.location ||
     !payload?.location?.data?.metadata?.placeId ||
     !pageName ||
-    !payload?.location?.locationData?.name
+    !payload?.location?.locationData?.name || !pageName
   ) {
     return (
       <div className="mt-4">
@@ -827,31 +827,39 @@ export default function ManageLocation() {
         </div>
       </div>
 
-      <GmbPostForm
-        isOpen={isCreatePostModalOpen}
-        onClose={() => setIsCreatePostModalOpen(false)}
-        accessToken={accessToken}
-        locationId={locationId}
-        accountId={accountId}
-        businessName={pageName}
-        onPostCreated={handlePostCreated}
-      />
+<GmbPostForm
+  isOpen={isCreatePostModalOpen}
+  onClose={() => setIsCreatePostModalOpen(false)}
+  accessToken={accessToken}
+  locationId={locationId}
+  accountId={accountId}
+  businessName={pageName}
+  onPostCreated={handlePostCreated}
+  phoneNumber={
+    payload?.location?.data?.phoneNumbers?.primaryPhone
+      ?.replace(/[^\d+]/g, "")
+  }
+/>
 
-      {editingPost && (
-        <GmbEditPostForm
-          isOpen={isEditPostModalOpen}
-          onClose={() => {
-            setIsEditPostModalOpen(false)
-            setEditingPost(null)
-          }}
-          accessToken={accessToken}
-          locationId={locationId}
-          accountId={accountId}
-          businessName={pageName}
-          onPostUpdated={handlePostUpdated}
-          editPost={editingPost}
-        />
-      )}
+{editingPost && (
+  <GmbEditPostForm
+    isOpen={isEditPostModalOpen}
+    onClose={() => {
+      setIsEditPostModalOpen(false)
+      setEditingPost(null)
+    }}
+    accessToken={accessToken}
+    locationId={locationId}
+    accountId={accountId}
+    businessName={pageName}
+    onPostUpdated={handlePostUpdated}
+    editPost={editingPost}
+    phoneNumber={
+      payload?.location?.data?.phoneNumbers?.primaryPhone
+        ?.replace(/[^\d+]/g, "")
+    }
+  />
+)}
 
       <Dialog
         open={isDeleteDialogOpen}

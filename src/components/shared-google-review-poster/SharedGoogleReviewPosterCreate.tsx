@@ -5,11 +5,12 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
 import { Card, CardHeader, CardContent, CardTitle } from "@/components/ui/card"
-import { QrCode, Save, Loader2, Palette } from "lucide-react"
+import { QrCode, Save, Loader2, Palette, ChevronLeft } from "lucide-react"
 import ReviewPosterDisplay from "./ReviewPosterDisplay"
 import LocationSelector from "./LocationSelector"
 import toast from "react-hot-toast"
 import axios from "axios"
+import Link from "next/link"
 
 interface Location {
   name: string
@@ -28,103 +29,103 @@ interface Location {
 
 // Background pattern options
 const patternOptions = [
-  { 
-    id: "none", 
-    name: "None", 
-    component: null 
+  {
+    id: "none",
+    name: "None",
+    component: null
   },
-  { 
-    id: "dots", 
-    name: "Dots", 
+  {
+    id: "dots",
+    name: "Dots",
     component: (
       <svg width="100%" height="100%" xmlns="http://www.w3.org/2000/svg">
         <defs>
           <pattern id="dots" x="0" y="0" width="20" height="20" patternUnits="userSpaceOnUse">
-            <circle cx="2" cy="2" r="1" fill="currentColor" opacity="0.1"/>
+            <circle cx="2" cy="2" r="1" fill="currentColor" opacity="0.1" />
           </pattern>
         </defs>
         <rect width="100%" height="100%" fill="url(#dots)" />
       </svg>
     )
   },
-  { 
-    id: "grid", 
-    name: "Grid", 
+  {
+    id: "grid",
+    name: "Grid",
     component: (
       <svg width="100%" height="100%" xmlns="http://www.w3.org/2000/svg">
         <defs>
           <pattern id="grid" width="20" height="20" patternUnits="userSpaceOnUse">
-            <path d="M 20 0 L 0 0 0 20" fill="none" stroke="currentColor" strokeWidth="1" opacity="0.1"/>
+            <path d="M 20 0 L 0 0 0 20" fill="none" stroke="currentColor" strokeWidth="1" opacity="0.1" />
           </pattern>
         </defs>
         <rect width="100%" height="100%" fill="url(#grid)" />
       </svg>
     )
   },
-  { 
-    id: "lines", 
-    name: "Lines", 
+  {
+    id: "lines",
+    name: "Lines",
     component: (
       <svg width="100%" height="100%" xmlns="http://www.w3.org/2000/svg">
         <defs>
           <pattern id="lines" width="10" height="10" patternUnits="userSpaceOnUse">
-            <path d="M 0 10 L 10 0" stroke="currentColor" strokeWidth="1" opacity="0.1"/>
+            <path d="M 0 10 L 10 0" stroke="currentColor" strokeWidth="1" opacity="0.1" />
           </pattern>
         </defs>
         <rect width="100%" height="100%" fill="url(#lines)" />
       </svg>
     )
   },
-  { 
-    id: "zigzag", 
-    name: "Zigzag", 
+  {
+    id: "zigzag",
+    name: "Zigzag",
     component: (
       <svg width="100%" height="100%" xmlns="http://www.w3.org/2000/svg">
         <defs>
           <pattern id="zigzag" width="20" height="20" patternUnits="userSpaceOnUse">
-            <path d="M 0 10 L 10 0 L 20 10 L 30 0" stroke="currentColor" strokeWidth="2" opacity="0.1" fill="none"/>
+            <path d="M 0 10 L 10 0 L 20 10 L 30 0" stroke="currentColor" strokeWidth="2" opacity="0.1" fill="none" />
           </pattern>
         </defs>
         <rect width="100%" height="100%" fill="url(#zigzag)" />
       </svg>
     )
   },
-  { 
-    id: "circles", 
-    name: "Circles", 
+  {
+    id: "circles",
+    name: "Circles",
     component: (
       <svg width="100%" height="100%" xmlns="http://www.w3.org/2000/svg">
         <defs>
           <pattern id="circles" width="40" height="40" patternUnits="userSpaceOnUse">
-            <circle cx="20" cy="20" r="15" fill="none" stroke="currentColor" strokeWidth="1" opacity="0.1"/>
+            <circle cx="20" cy="20" r="15" fill="none" stroke="currentColor" strokeWidth="1" opacity="0.1" />
           </pattern>
         </defs>
         <rect width="100%" height="100%" fill="url(#circles)" />
       </svg>
     )
   },
-  { 
-    id: "diagonal", 
-    name: "Diagonal", 
+  {
+    id: "diagonal",
+    name: "Diagonal",
     component: (
       <svg width="100%" height="100%" xmlns="http://www.w3.org/2000/svg">
         <defs>
           <pattern id="diagonal" width="10" height="10" patternUnits="userSpaceOnUse">
-            <line x1="0" y1="0" x2="10" y2="10" stroke="currentColor" strokeWidth="1" opacity="0.1"/>
+            <line x1="0" y1="0" x2="10" y2="10" stroke="currentColor" strokeWidth="1" opacity="0.1" />
           </pattern>
         </defs>
         <rect width="100%" height="100%" fill="url(#diagonal)" />
       </svg>
     )
   },
-  { 
-    id: "waves", 
-    name: "Waves", 
+  {
+    id: "waves",
+    name: "Waves",
     component: (
       <svg width="100%" height="100%" xmlns="http://www.w3.org/2000/svg">
         <defs>
           <pattern id="waves" width="40" height="20" patternUnits="userSpaceOnUse">
-            <path d="M 0 10 Q 10 5, 20 10 T 40 10" stroke="currentColor" strokeWidth="1" opacity="0.1" fill="none"/>
+            <path d="M 0 10 Q 10 5, 20 10 T 40 10" stroke="currentColor" strokeWidth="1" opacity="0.1" fill="none" />
           </pattern>
         </defs>
         <rect width="100%" height="100%" fill="url(#waves)" />
@@ -188,7 +189,7 @@ export default function GoogleReviewPosterCreate() {
         businessName,
         reviewUrl,
         bgColor,
-        bgPattern, 
+        bgPattern,
         keywords: keywords || null,
         placeId: selectedLocationData?.metadata?.placeId || null,
       }
@@ -215,16 +216,28 @@ export default function GoogleReviewPosterCreate() {
   const colorOptions = [
     { name: "Green", value: "#10b981" },
     { name: "Blue", value: "#3b82f6" },
-    { name: "Purple", value: "#8b5cf6" },
+    { name: "Purple", value: "#2563eb" },
     { name: "Orange", value: "#f59e0b" },
     { name: "Red", value: "#ef4444" },
   ]
 
   return (
-    <div className="min-h-screen bg-background">
-      <div className="container mx-auto p-6 space-y-8">
+    <div className="min-h-screen">
+      <div className="container mx-auto space-y-8">
+
         {/* Header */}
-        <div className="space-y-2">
+        <div className="space-y-4">
+          <Button
+            variant="ghost"
+            size="sm"
+            asChild
+            className="gap-1.5"
+          >
+            <Link href="/app/shared-google-review-poster">
+              <ChevronLeft className="w-4 h-4" />
+              Back
+            </Link>
+          </Button>
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 bg-primary rounded-lg flex items-center justify-center">
               <QrCode className="w-6 h-6 text-primary-foreground" />
@@ -315,11 +328,10 @@ export default function GoogleReviewPosterCreate() {
                       <button
                         key={pattern.id}
                         onClick={() => setBgPattern(pattern.id)}
-                        className={`relative aspect-square rounded-md border-2 overflow-hidden transition-all ${
-                          bgPattern === pattern.id 
-                            ? "border-primary ring-2 ring-primary/20" 
+                        className={`relative aspect-square rounded-md border-2 overflow-hidden transition-all ${bgPattern === pattern.id
+                            ? "border-primary ring-2 ring-primary/20"
                             : "border-border hover:border-primary/50"
-                        }`}
+                          }`}
                         title={pattern.name}
                       >
                         {pattern.id === "none" ? (
@@ -327,7 +339,7 @@ export default function GoogleReviewPosterCreate() {
                             <span className="text-xs font-medium">None</span>
                           </div>
                         ) : (
-                          <div 
+                          <div
                             className="w-full h-full text-white"
                             style={{ color: bgColor }}
                           >
@@ -395,7 +407,7 @@ export default function GoogleReviewPosterCreate() {
                       businessName={businessName}
                       reviewUrl={reviewUrl}
                       bgColor={bgColor}
-                      bgPattern={bgPattern} 
+                      bgPattern={bgPattern}
                       keywords={keywords}
                     />
                   </div>

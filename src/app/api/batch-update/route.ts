@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { stackServerApp } from "@/stack";
 import { prisma } from "../../../../lib/prisma";
+import { getLocalRank } from "@/lib/serpHelper";
 
 // Types
 interface KeywordRankData {
@@ -491,33 +492,8 @@ async function performSerpUpdate(
   const timeoutId = setTimeout(() => controller.abort(), 45000); // 45 second timeout
 
   try {
-    const response = await fetch(url, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'X-API-KEY': process.env.X_API_KEY!,
-      },
-      body: JSON.stringify(requestBody),
-      cache: "no-store",
-      signal: controller.signal
-    });
-
-    clearTimeout(timeoutId);
-
-    if (!response.ok) {
-      const errorText = await response.text();
-      throw new Error(`SERP API request failed: ${response.status} ${response.statusText} - ${errorText}`);
-    }
-
-    const contentType = response.headers.get("content-type") || "";
-
-    if (!contentType.includes("application/json")) {
-      const errorText = await response.text();
-      console.error("❌ API returned non-JSON response:", errorText);
-      throw new Error("SERP API returned invalid response");
-    }
-
-    const data = await response.json();
+     
+    const data = await getLocalRank(query, formattedLocation, businessName);
 
     if (!data.success) {
         throw new Error(`SERP API error: ${data.message || 'Unknown API error'}`);

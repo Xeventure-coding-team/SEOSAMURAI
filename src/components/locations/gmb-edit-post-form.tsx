@@ -24,6 +24,7 @@ import {
   FileText,
   CalendarCheck,
   ImageOff,
+  AlertTriangle,
 } from "lucide-react"
 
 import { Button } from "@/components/ui/button"
@@ -39,6 +40,7 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } f
 import { useGmbPosts } from "@/hooks/useGmbPosts"
 import { ScrollArea } from "../ui/scroll-area"
 import { Tooltip, TooltipContent, TooltipTrigger } from "../ui/tooltip"
+import { Alert, AlertDescription, AlertTitle } from "../ui/alert"
 
 interface GMBPost {
   name: string
@@ -82,6 +84,7 @@ interface GmbEditPostFormProps {
   onPostUpdated?: (post: any) => void
   businessName: string
   editPost?: GMBPost | null
+  phoneNumber?: null
 }
 
 const MAX_FILE_SIZE = 10 * 1024 * 1024 // 10MB
@@ -96,7 +99,7 @@ const postSchema = z.object({
   actionLink: z.string().url("Please enter a valid URL").optional().or(z.literal("")),
   callPhone: z
     .string()
-    .regex(/^[+]?[1-9][\d]{0,15}$/, "Please enter a valid phone number")
+    .regex(/^[+]?[0-9][\d]{0,15}$/, "Please enter a valid phone number")
     .optional()
     .or(z.literal("")),
   image_url: z.string().url("Please enter a valid image URL").optional().or(z.literal("")),
@@ -122,6 +125,7 @@ export function GmbEditPostForm({
   onPostUpdated,
   businessName,
   editPost,
+  phoneNumber
 }: GmbEditPostFormProps) {
   const [selectedFile, setSelectedFile] = useState<File | null>(null)
   const [dragActive, setDragActive] = useState(false)
@@ -138,7 +142,7 @@ export function GmbEditPostForm({
       postContent: "",
       actionButton: "NO_ACTION",
       actionLink: "",
-      callPhone: "",
+      callPhone: phoneNumber ? phoneNumber : '',
       image_url: "",
     },
   })
@@ -149,7 +153,7 @@ export function GmbEditPostForm({
         postContent: editPost.summary || "",
         actionButton: editPost.callToAction?.actionType.toUpperCase() || "NO_ACTION",
         actionLink: editPost.callToAction?.url || "",
-        callPhone: editPost.callToAction?.actionType.toUpperCase() === "CALL" ? editPost.callToAction?.url || "" : "",
+        callPhone: phoneNumber ? phoneNumber : '',
         image_url: editPost.media?.[0]?.googleUrl || "",
       })
 
@@ -849,25 +853,38 @@ export function GmbEditPostForm({
                         )}
 
                         {watchedActionButton === "CALL" && (
-                          <FormField
-                            control={form.control}
-                            name="callPhone"
-                            render={({ field }) => (
-                              <FormItem>
-                                <FormLabel className="flex items-center gap-2">
-                                  <Phone className="h-4 w-4" />
-                                  Phone Number
-                                </FormLabel>
-                                <FormControl>
-                                  <Input placeholder="+1234567890" {...field} />
-                                </FormControl>
-                                <FormDescription>
-                                  Phone number users can call when they click the action button
-                                </FormDescription>
-                                <FormMessage />
-                              </FormItem>
-                            )}
-                          />
+                          <>
+
+                            {/* ⚠️ Warning Alert */}
+                            <Alert className="border-yellow-300 bg-yellow-50 text-yellow-800">
+                              <AlertTriangle className="h-4 w-4 text-yellow-800" />
+                              <AlertTitle>Heads up!</AlertTitle>
+                              <AlertDescription>
+                                The Call button may not appear after publishing your post.
+                                You may need to verify your phone number in your Google Business Profile.
+                              </AlertDescription>
+                            </Alert>
+
+                            <FormField
+                              control={form.control}
+                              name="callPhone"
+                              render={({ field }) => (
+                                <FormItem>
+                                  <FormLabel className="flex items-center gap-2">
+                                    <Phone className="h-4 w-4" />
+                                    Phone Number
+                                  </FormLabel>
+                                  <FormControl>
+                                    <Input placeholder="+1234567890" {...field} disabled/>
+                                  </FormControl>
+                                  <FormDescription>
+                                    Phone number users can call when they click the action button
+                                  </FormDescription>
+                                  <FormMessage />
+                                </FormItem>
+                              )}
+                            />
+                          </>
                         )}
                       </div>
 

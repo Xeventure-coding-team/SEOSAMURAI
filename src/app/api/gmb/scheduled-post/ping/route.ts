@@ -39,13 +39,44 @@ function getActionType(actionType: string): string | null {
 }
 
 function validatePhoneNumber(phone: string): string {
-  const cleanPhone = phone.replace(/\D/g, '');
-  if (cleanPhone.length === 10) {
-    return `tel:+1${cleanPhone}`;
-  } else if (cleanPhone.length === 11 && cleanPhone.startsWith('1')) {
-    return `tel:+${cleanPhone}`;
-  }
-  throw new Error('Invalid phone number format. Please provide a 10-digit US phone number.');
+    const cleaned = phone.replace(/[^\d+]/g, '');
+
+    // Case 1: Already in international format (+91...)
+    if (cleaned.startsWith('+')) {
+        const digits = cleaned.replace(/\D/g, '');
+
+        // 🇮🇳 India
+        if (digits.startsWith('91') && digits.length === 12) {
+            return `tel:+${digits}`;
+        }
+
+        // 🇺🇸 US
+        if (digits.startsWith('1') && digits.length === 11) {
+            return `tel:+${digits}`;
+        }
+
+        throw new Error('Invalid international phone number.');
+    }
+
+    // Remove non-digits
+    let cleanPhone = cleaned.replace(/\D/g, '');
+
+    // 🇮🇳 India (remove leading 0)
+    if (cleanPhone.startsWith('0')) {
+        cleanPhone = cleanPhone.slice(1);
+    }
+
+    if (cleanPhone.length === 10) {
+        // Assume India by default
+        return `tel:+91${cleanPhone}`;
+    }
+
+    // 🇺🇸 US fallback
+    if (cleanPhone.length === 11 && cleanPhone.startsWith('1')) {
+        return `tel:+${cleanPhone}`;
+    }
+
+    throw new Error('Invalid phone number format.');
 }
 
 function validateUrl(url: string): string {

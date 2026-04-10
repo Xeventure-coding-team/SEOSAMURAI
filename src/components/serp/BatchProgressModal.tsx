@@ -230,7 +230,7 @@ const BatchProgressModal: React.FC<BatchProgressModalProps> = ({
 
   return (
     <Dialog open={isOpen} onOpenChange={() => isCompleted && onClose()}>
-      <DialogContent className="min-w-full w-full max-h-[90vh]">
+      <DialogContent className="min-w-full w-full max-h-[90vh] overflow-y-scroll">
         <DialogHeader className="pb-4">
           <DialogTitle className="flex items-center justify-between">
             <div className="min-w-0 flex-1">

@@ -1,6 +1,6 @@
 import { CalendarContext } from './calendar-context'
 import { CalendarEvent, Mode } from './calendar-types'
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import CalendarNewEventDialog from './dialog/calendar-new-event-dialog'
 import CalendarManageEventDialog from './dialog/calendar-manage-event-dialog'
 
@@ -16,7 +16,10 @@ export default function CalendarProvider({
   date,
   setDate,
   calendarIconIsToday = true,
+  onPostCreated,
   children,
+  openDialog,
+  setOpenDialog,
 }: {
   businessName: string | null
   accountId: string | null
@@ -29,12 +32,23 @@ export default function CalendarProvider({
   date: Date
   setDate: (date: Date) => void
   calendarIconIsToday: boolean
+  onPostCreated?: (post: any) => void
   children: React.ReactNode
+  openDialog?: boolean
+  setOpenDialog?: (open: boolean) => void
 }) {
   const [newEventDialogOpen, setNewEventDialogOpen] = useState(false)
   const [manageEventDialogOpen, setManageEventDialogOpen] = useState(false)
   const [selectedEvent, setSelectedEvent] = useState<CalendarEvent | null>(null)
-  
+
+
+  useEffect(() => {
+    if (openDialog) {
+      setNewEventDialogOpen(true)
+      setOpenDialog(false)
+    }
+  }, [openDialog, setOpenDialog])
+
   return (
     <CalendarContext.Provider
       value={{
@@ -53,6 +67,7 @@ export default function CalendarProvider({
         setManageEventDialogOpen,
         selectedEvent,
         setSelectedEvent,
+        onPostCreated,
       }}
     >
       <CalendarNewEventDialog accountId={accountId} locationId={locationId} businessName={businessName ?? ''} selectedLocation={selectedLocation ?? undefined} />
@@ -61,7 +76,3 @@ export default function CalendarProvider({
     </CalendarContext.Provider>
   )
 }
-
-
-
-

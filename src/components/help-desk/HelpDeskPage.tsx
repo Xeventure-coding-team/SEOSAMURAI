@@ -18,6 +18,9 @@ import {
   CheckCircle,
   XCircle,
 } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { Card } from '@/components/ui/card';
+import markdownToTxt from 'markdown-to-txt';
 
 interface Message {
   role: 'assistant' | 'user';
@@ -40,11 +43,6 @@ const TOOLS = {
     icon: BellRing,
     desc: 'Detect and permanently save deleted reviews — never lose proof again.',
   },
-  // chat: {
-  //   title: 'Help Chat',
-  //   icon: MessageCircle,
-  //   desc: "You're here! Ask anything about the app.", // Fixed: proper closing quote
-  // },
 };
 
 const LOCATIONS_SUGGESTIONS = [
@@ -78,9 +76,9 @@ const SCHEDULE_POSTING_SUGGESTIONS = [
   "Can I schedule the same post to multiple locations at once?",
   "What types of posts can I schedule? (Photo, Offer, Event, Update)",
   "Will my scheduled posts appear on Google automatically?",
-  "Can I edit or delete a post after I’ve scheduled it?",
+  "Can I edit or delete a post after I've scheduled it?",
   "Do scheduled posts affect my Google ranking?",
-  "What’s the best time and day to post on Google Business?",
+  "What's the best time and day to post on Google Business?",
   "Can I see all my upcoming scheduled posts in a calendar?",
   "Is there a limit to how many posts I can schedule?",
   "What happens if I lose internet — will my scheduled post still go live?",
@@ -91,7 +89,7 @@ const RUN_SCAN_SUGGESTIONS = [
   "What does 'Visibility Percentage' mean?",
   "How accurate are these rankings compared to real Google search?",
   "Should I scan with one keyword or multiple?",
-  "What’s the difference between grid size and distance?",
+  "What's the difference between grid size and distance?",
   "Why does my business sometimes not appear in some grid points?",
   "How often should I run a scan for best results?",
   "Does a higher 'Average Rank' mean I'm doing well?",
@@ -116,11 +114,11 @@ const REVIEWS_SUGGESTIONS = [
 const REVIEW_POSTER_SUGGESTIONS = [
   "What is the Review Poster and how does it work?",
   "How do I create my first review poster?",
-  "Can I auto-fill the review link from my Google locations?",
+  "Can I auto-fill the review link from your Google locations?",
   "What are background patterns and which one looks best?",
   "What should I put in the 'Keywords / Review Hints' section?",
   "How do customers actually leave a review using the poster?",
-  "How do I edit or delete a poster I’ve already created?",
+  "How do I edit or delete a poster I've already created?",
 ];
 
 export default function HelpDeskPage() {
@@ -197,7 +195,7 @@ export default function HelpDeskPage() {
   const startLocationsFlow = () => { resetAllFlows(); setInLocationsFlow(true); setShowTools(false); setMessages(prev => [...prev, { role: 'user', content: 'Locations' }, { role: 'assistant', content: "The Locations page is your central dashboard to view, search, filter, and manage all connected Google Business Profiles. From here you can add new locations, view details, or jump to manage posts/reviews.\n\nHere are the most common questions:" }]); };
   const startBulkPostingFlow = () => { resetAllFlows(); setInBulkPostingFlow(true); setShowTools(false); setMessages(prev => [...prev, { role: 'user', content: 'Bulk Posting' }, { role: 'assistant', content: "Bulk Posting lets you publish the same post to hundreds of locations instantly — the ultimate time-saver for agencies and multi-location businesses.\n\nHere are the most common questions:" }]); };
   const startSchedulePostingFlow = () => { resetAllFlows(); setInSchedulePostingFlow(true); setShowTools(false); setMessages(prev => [...prev, { role: 'user', content: 'Schedule Posting' }, { role: 'assistant', content: "Schedule Posting lets you plan and automate your Google Business posts in advance — perfect for promotions, events, holidays, and consistent branding.\n\nYou can see all upcoming posts in a beautiful calendar view!\n\nHere are the most common questions:" }]); };
-  const startRunScanFlow = () => { resetAllFlows(); setInRunScanFlow(true); setShowTools(false); setMessages(prev => [...prev, { role: 'user', content: 'Run a Scan' }, { role: 'assistant', content: "The 'Run a Scan' tool shows exactly where your business ranks on Google Maps for your target keywords — across a grid of real search locations around your store.\n\nIt’s one of the most powerful local SEO tools available.\n\nHere are the most common questions:" }]); };
+  const startRunScanFlow = () => { resetAllFlows(); setInRunScanFlow(true); setShowTools(false); setMessages(prev => [...prev, { role: 'user', content: 'Run a Scan' }, { role: 'assistant', content: "The 'Run a Scan' tool shows exactly where your business ranks on Google Maps for your target keywords — across a grid of real search locations around your store.\n\nIt's one of the most powerful local SEO tools available.\n\nHere are the most common questions:" }]); };
   const startReviewsFlow = () => { resetAllFlows(); setInReviewsFlow(true); setShowTools(false); setMessages(prev => [...prev, { role: 'user', content: 'Reviews' }, { role: 'assistant', content: "The Reviews tool lets you view, reply, and manage all customer reviews across your locations in one place.\n\nHere are the most common questions:" }]); };
   const startReviewPosterFlow = () => { resetAllFlows(); setInReviewPosterFlow(true); setShowTools(false); setMessages(prev => [...prev, { role: 'user', content: 'Review Poster' }, { role: 'assistant', content: "The Review Poster lets you create stunning QR code posters that make it incredibly easy for customers to leave 5-star Google reviews!\n\nHere are the most common questions:" }]); };
 
@@ -253,19 +251,19 @@ export default function HelpDeskPage() {
 
       const suggestions = inLocationsFlow ? LOCATIONS_SUGGESTIONS
         : inBulkPostingFlow ? BULK_POSTING_SUGGESTIONS
-        : inSchedulePostingFlow ? SCHEDULE_POSTING_SUGGESTIONS
-        : inRunScanFlow ? RUN_SCAN_SUGGESTIONS
-        : inReviewsFlow ? REVIEWS_SUGGESTIONS
-        : inReviewPosterFlow ? REVIEW_POSTER_SUGGESTIONS
-        : [];
+          : inSchedulePostingFlow ? SCHEDULE_POSTING_SUGGESTIONS
+            : inRunScanFlow ? RUN_SCAN_SUGGESTIONS
+              : inReviewsFlow ? REVIEWS_SUGGESTIONS
+                : inReviewPosterFlow ? REVIEW_POSTER_SUGGESTIONS
+                  : [];
 
       const topic = inLocationsFlow ? 'Locations'
         : inBulkPostingFlow ? 'Bulk Posting'
-        : inSchedulePostingFlow ? 'Schedule Posting'
-        : inRunScanFlow ? 'Run a Scan'
-        : inReviewsFlow ? 'Reviews'
-        : inReviewPosterFlow ? 'Review Poster'
-        : '';
+          : inSchedulePostingFlow ? 'Schedule Posting'
+            : inRunScanFlow ? 'Run a Scan'
+              : inReviewsFlow ? 'Reviews'
+                : inReviewPosterFlow ? 'Review Poster'
+                  : '';
 
       if (lastUser && suggestions.includes(lastUser) && !lastAssistant.includes("Do you have any other questions")) {
         setTimeout(() => showFollowUp(topic), 1200);
@@ -273,7 +271,6 @@ export default function HelpDeskPage() {
     }
   }, [messages, loading, inLocationsFlow, inBulkPostingFlow, inSchedulePostingFlow, inRunScanFlow, inReviewsFlow, inReviewPosterFlow]);
 
-  // End Chat — No popup, instant clear
   const endChat = () => {
     const hasConversation = messages.length > 1 || !showInitialChoices;
     if (!hasConversation) return;
@@ -291,135 +288,171 @@ export default function HelpDeskPage() {
 
   const currentSuggestions = inLocationsFlow ? LOCATIONS_SUGGESTIONS
     : inBulkPostingFlow ? BULK_POSTING_SUGGESTIONS
-    : inSchedulePostingFlow ? SCHEDULE_POSTING_SUGGESTIONS
-    : inRunScanFlow ? RUN_SCAN_SUGGESTIONS
-    : inReviewsFlow ? REVIEWS_SUGGESTIONS
-    : inReviewPosterFlow ? REVIEW_POSTER_SUGGESTIONS
-    : [];
+      : inSchedulePostingFlow ? SCHEDULE_POSTING_SUGGESTIONS
+        : inRunScanFlow ? RUN_SCAN_SUGGESTIONS
+          : inReviewsFlow ? REVIEWS_SUGGESTIONS
+            : inReviewPosterFlow ? REVIEW_POSTER_SUGGESTIONS
+              : [];
 
   const currentTopic = inLocationsFlow ? 'Locations'
     : inBulkPostingFlow ? 'Bulk Posting'
-    : inSchedulePostingFlow ? 'Schedule Posting'
-    : inRunScanFlow ? 'Run a Scan'
-    : inReviewsFlow ? 'Reviews'
-    : inReviewPosterFlow ? 'Review Poster'
-    : '';
+      : inSchedulePostingFlow ? 'Schedule Posting'
+        : inRunScanFlow ? 'Run a Scan'
+          : inReviewsFlow ? 'Reviews'
+            : inReviewPosterFlow ? 'Review Poster'
+              : '';
 
   const inGuidedFlow = inLocationsFlow || inBulkPostingFlow || inSchedulePostingFlow || inRunScanFlow || inReviewsFlow || inReviewPosterFlow;
 
   return (
-<div className="min-h-screen  text-gray-100 flex flex-col">
-      {/* Header */}
-      <div className="px-6 py-4 flex items-center justify-between bg-card">
-        <div className="flex items-center gap-3">
-          <Bot className="w-8 h-8 text-[#8c5cff]" />
+    <div className="flex flex-col h-[800px] bg-background rounded-2xl overflow-hidden border border-border">
+      {/* Header - Sticky */}
+      <div className="sticky top-0 z-10 border-b border-border/50 px-6 py-3 flex items-center justify-between bg-background/95 backdrop-blur-sm">
+        <div className="flex items-center gap-2">
+          <div className="w-7 h-7 rounded-lg bg-primary/10 flex items-center justify-center flex-shrink-0">
+            <Bot className="w-4 h-4 text-primary" />
+          </div>
           <div>
-            <h1 className="font-semibold text-lg">Help & Support</h1>
-            <p className="text-xs text-gray-500">Always here to guide you</p>
+            <h1 className="font-semibold text-xs text-foreground">Help & Support</h1>
+            <p className="text-xs text-muted-foreground leading-none">Always here to guide you</p>
           </div>
         </div>
-        <button
+        <Button
+          variant="ghost"
+          size="icon"
           onClick={endChat}
           disabled={!hasConversation}
-          className={`p-2 rounded-lg transition ${hasConversation
-            ? 'hover:bg-[#2a2c33] text-white'
-            : 'text-gray-600 cursor-not-allowed opacity-50'
-          }`}
+          className="h-8 w-8"
         >
-          <X className="w-5 h-5" />
-        </button>
+          <X className="w-4 h-4" />
+        </Button>
       </div>
 
       {/* Messages Area */}
-      <div className="flex-1 overflow-y-auto px-6 py-8 space-y-6">
+      <div className="flex-1 overflow-y-auto px-6 py-4 space-y-3">
         {messages.map((m, i) => (
           <div key={i} className={`flex ${m.role === 'user' ? 'justify-end' : 'justify-start'}`}>
-            <div className={`max-w-2xl px-5 py-3 rounded-2xl ${m.role === 'user'
-              ? 'bg-[#8c5cff] text-white'
-              : 'bg-[#2a2c33] border border-gray-800'
-            }`}>
-              <p className="whitespace-pre-wrap text-sm leading-relaxed">{m.content}</p>
+            <div className={`max-w-4xl px-4 py-3 rounded-xl ${m.role === 'user'
+              ? 'bg-primary text-primary-foreground'
+              : 'bg-muted text-foreground'
+              }`}>
+              <p className="text-sm">
+                {markdownToTxt(m.content)}
+              </p>
             </div>
           </div>
         ))}
 
         {loading && (
           <div className="flex justify-start">
-            <div className="px-5 py-3 rounded-2xl bg-[#2a2c33] border border-gray-800">
-              <Loader2 className="w-5 h-5 animate-spin text-[#8c5cff]" />
+            <div className="px-4 py-3 rounded-lg bg-muted border border-border">
+              <Loader2 className="w-4 h-4 animate-spin text-primary" />
             </div>
           </div>
         )}
 
         {/* Tool Cards */}
         {showTools && (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 max-w-5xl mx-auto">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-3 max-w-6xl">
             {Object.entries(TOOLS).map(([key, tool]) => {
               const Icon = tool.icon;
               return (
-                <button
+                <Button
                   key={key}
+                  variant="outline"
+                  className="h-auto p-3 justify-start overflow-hidden"
                   onClick={() => handleTool(key)}
                   disabled={loading}
-                  className="p-5 bg-[#2a2c33] border border-gray-800 rounded-xl hover:border-[#8c5cff] hover:bg-[#33353d] transition text-left disabled:opacity-50"
                 >
-                  <div className="flex items-start gap-4">
-                    <div className="p-2 bg-[#33353d] rounded-lg">
-                      <Icon className="w-6 h-6 text-[#8c5cff]" />
+                  <div className="flex gap-3 w-full min-w-0">
+
+                    {/* Icon */}
+                    <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center flex-shrink-0">
+                      <Icon className="w-4 h-4 text-primary" />
                     </div>
-                    <div>
-                      <h3 className="font-medium">{tool.title}</h3>
-                      <p className="text-sm text-gray-500 mt-1">{tool.desc}</p>
+
+                    {/* Text */}
+                    <div className="text-left min-w-0">
+                      <h3 className="text-sm font-medium truncate">
+                        {tool.title}
+                      </h3>
+                      <p className="text-xs text-muted-foreground mt-0.5">
+                        {tool.desc}
+                      </p>
                     </div>
+
                   </div>
-                </button>
+                </Button>
               );
             })}
           </div>
         )}
 
         {/* Guided Suggestions */}
-        {inGuidedFlow && messages[messages.length - 1]?.content.includes("most common questions") && (
-          <div className="max-w-4xl mx-auto">
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-              {currentSuggestions.map((q, i) => (
-                <button
-                  key={i}
-                  onClick={() => handleSuggestionClick(q)}
-                  className="text-left p-4 bg-[#2a2c33] border border-gray-800 rounded-xl hover:border-[#8c5cff] hover:bg-[#33353d] transition text-sm text-gray-300"
-                >
-                  {q}
-                </button>
-              ))}
+        {inGuidedFlow &&
+          messages[messages.length - 1]?.content.includes("most common questions") && (
+            <div className="max-w-4xl w-full">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                {currentSuggestions.map((q, i) => (
+                  <Button
+                    key={i}
+                    variant="outline"
+                    className="h-auto p-3 text-xs justify-start text-left w-full min-w-0 overflow-hidden"
+                    onClick={() => handleSuggestionClick(q)}
+                  >
+                    <span className="block min-w-0">
+                      {q}
+                    </span>
+                  </Button>
+                ))}
+              </div>
             </div>
-          </div>
-        )}
+          )}
 
         {/* Follow-up Buttons */}
         {inGuidedFlow && messages[messages.length - 1]?.content.includes("Do you have any other questions") && (
-          <div className="max-w-2xl mx-auto flex flex-col sm:flex-row gap-4">
-            <button onClick={() => handleFollowUp('yes', currentTopic)} className="flex items-center justify-center gap-3 px-6 py-4 bg-[#8c5cff] hover:bg-[#7a4ee6] rounded-xl transition font-medium">
-              <CheckCircle className="w-5 h-5" /> Yes, show me more
-            </button>
-            <button onClick={() => handleFollowUp('no', currentTopic)} className="flex items-center justify-center gap-3 px-6 py-4 bg-[#2a2c33] hover:bg-[#33353d] rounded-xl transition font-medium border border-gray-700">
-              <XCircle className="w-5 h-5" /> No, I'm all set
-            </button>
+          <div className="max-w-md flex gap-2">
+            <Button
+              onClick={() => handleFollowUp('yes', currentTopic)}
+              size="sm"
+              className="flex-1"
+            >
+              <CheckCircle className="w-3 h-3 mr-1.5" />
+              Yes, show me more
+            </Button>
+            <Button
+              variant="outline"
+              onClick={() => handleFollowUp('no', currentTopic)}
+              size="sm"
+              className="flex-1"
+            >
+              <XCircle className="w-3 h-3 mr-1.5" />
+              No, I'm all set
+            </Button>
           </div>
         )}
 
         {/* Initial Choices */}
         {showInitialChoices && messages.length === 1 && (
-          <div className="max-w-2xl mx-auto grid grid-cols-1 md:grid-cols-2 gap-4">
-            <button onClick={() => handleChoice('app')} className="p-6 bg-[#2a2c33] border border-gray-800 rounded-xl hover:border-[#8c5cff] transition text-left">
-              <Sparkles className="w-8 h-8 mb-3 text-[#8c5cff]" />
-              <h3 className="font-medium text-lg">Tell me about this app</h3>
-              <p className="text-sm text-gray-500 mt-2">What it does, who it's for</p>
-            </button>
-            <button onClick={() => handleChoice('tools')} className="p-6 bg-[#2a2c33] border border-gray-800 rounded-xl hover:border-[#8c5cff] transition text-left">
-              <HelpCircle className="w-8 h-8 mb-3 text-[#8c5cff]" />
-              <h3 className="font-medium text-lg">Show me all tools</h3>
-              <p className="text-sm text-gray-500 mt-2">Explore every feature</p>
-            </button>
+          <div className="max-w-2xl grid grid-cols-1 md:grid-cols-2 gap-2">
+            <Button
+              variant="outline"
+              className="h-auto p-4 justify-start flex-col items-start"
+              onClick={() => handleChoice('app')}
+            >
+              <Sparkles className="w-4 h-4 text-primary mb-1.5" />
+              <span className="font-medium text-xs">Tell me about this app</span>
+              <span className="text-xs text-muted-foreground mt-0.5">What it does, who it's for</span>
+            </Button>
+            <Button
+              variant="outline"
+              className="h-auto p-4 justify-start flex-col items-start"
+              onClick={() => handleChoice('tools')}
+            >
+              <HelpCircle className="w-4 h-4 text-primary mb-1.5" />
+              <span className="font-medium text-xs">Show me all tools</span>
+              <span className="text-xs text-muted-foreground mt-0.5">Explore every feature</span>
+            </Button>
           </div>
         )}
 
@@ -427,17 +460,16 @@ export default function HelpDeskPage() {
       </div>
 
       {/* Bottom Bar */}
-<div className="px-6 py-4 text-center bg-card">
-          <button
+      <div className="sticky bottom-0 border-t border-border/50 px-6 py-3 text-center bg-background/95 backdrop-blur-sm">
+        <Button
+          variant="ghost"
+          size="sm"
           onClick={endChat}
           disabled={!hasConversation}
-          className={`text-sm transition ${hasConversation
-            ? 'text-gray-500 hover:text-gray-300'
-            : 'text-gray-700 cursor-not-allowed opacity-50'
-          }`}
+          className="text-xs"
         >
           End chat
-        </button>
+        </Button>
       </div>
     </div>
   );

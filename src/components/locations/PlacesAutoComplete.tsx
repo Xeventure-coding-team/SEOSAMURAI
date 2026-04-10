@@ -282,17 +282,19 @@ export default function PlacesAutoComplete({ setPosition, setName }: PlacesAutoC
   }, [debouncedSearch])
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-5">
       {hasPermission === false && message && (
-        <Alert variant="destructive">
+        <Alert variant="destructive" className="animate-in fade-in">
           <AlertCircle className="h-4 w-4" />
           <AlertDescription>{message}</AlertDescription>
         </Alert>
       )}
 
       <div className="space-y-4">
+        {/* Search Input */}
         <div className="relative">
-          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+
           <Input
             placeholder="Search for places..."
             value={inputValue}
@@ -300,98 +302,117 @@ export default function PlacesAutoComplete({ setPosition, setName }: PlacesAutoC
               setInputValue(e.target.value)
               debouncedSearch(e.target.value)
             }}
-            className="pl-10 pr-10"
+            className="pl-10 pr-10 h-11 text-sm shadow-sm focus-visible:ring-2 focus-visible:ring-primary/40"
           />
+
           {loadingSearch && (
-            <Loader2 className="absolute right-3 top-1/2 transform -translate-y-1/2 h-4 w-4 animate-spin text-muted-foreground" />
+            <Loader2 className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 animate-spin text-muted-foreground" />
           )}
+
           {inputValue && !loadingSearch && (
             <Button
               variant="ghost"
-              size="sm"
+              size="icon"
               onClick={handleClear}
-              className="absolute right-1 top-1/2 transform -translate-y-1/2 h-6 w-6 p-0"
+              className="absolute right-1 top-1/2 -translate-y-1/2 h-7 w-7 rounded-full hover:bg-muted"
             >
-              <X className="h-3 w-3" />
+              <X className="h-3.5 w-3.5" />
             </Button>
           )}
         </div>
 
+        {/* Results */}
         {showResults && (
           <div className="space-y-3">
             {loadingSearch && (
-              <div className="text-center py-8">
+              <div className="text-center py-10">
                 <Loader2 className="h-6 w-6 animate-spin mx-auto mb-2 text-muted-foreground" />
                 <p className="text-sm text-muted-foreground">Searching locations...</p>
               </div>
             )}
 
             {!loadingSearch && searchResults.length === 0 && inputValue && (
-              <div className="text-center py-8">
-                <Search className="h-12 w-12 mx-auto mb-2 text-muted-foreground" />
-                <p className="text-sm text-muted-foreground">No locations found for "{inputValue}"</p>
+              <div className="text-center py-10">
+                <Search className="h-10 w-10 mx-auto mb-2 text-muted-foreground opacity-70" />
+                <p className="text-sm text-muted-foreground">
+                  No results for <span className="font-medium">"{inputValue}"</span>
+                </p>
               </div>
             )}
 
             {!loadingSearch && searchResults.length > 0 && (
               <div className="space-y-2">
+                {/* Header */}
                 <div className="flex items-center justify-between">
-                  <h3 className="font-medium">Search Results</h3>
-                  <Badge variant="secondary">{searchResults.length} found</Badge>
+                  <h3 className="font-semibold text-sm tracking-tight">
+                    Search Results
+                  </h3>
+                  <Badge variant="secondary" className="text-xs">
+                    {searchResults.length} found
+                  </Badge>
                 </div>
 
-                <div className="space-y-2">
-                  <ScrollArea className={`${searchResults.length > 2 ? "h-[400px]" : "h-[200px]"}`}>
+                {/* List */}
+                <ScrollArea
+                  className={`${searchResults.length > 2 ? "h-[380px]" : "h-[200px]"
+                    }`}
+                >
+                  <div className="space-y-2">
                     {searchResults.map((result, idx) => (
                       <Card
                         key={`${result.place_id}-${idx}`}
-                        className="cursor-pointer hover:shadow-md transition-shadow mt-2"
+                        className="cursor-pointer transition-all hover:border-primary/40 hover:-translate-y-[1px]"
                         onClick={() => handleSelect(result)}
                       >
-                        <CardContent className="p-4">
+                        <CardContent className="p-3">
                           <div className="flex items-start gap-3">
-                            <div className="flex-shrink-0 w-10 h-10 bg-muted rounded-md flex items-center justify-center">
+                            {/* Icon */}
+                            <div className="w-10 h-10 bg-muted rounded-lg flex items-center justify-center">
                               <MapPin className="h-4 w-4 text-muted-foreground" />
                             </div>
 
+                            {/* Content */}
                             <div className="flex-1 min-w-0">
-                              <div className="flex items-start justify-between gap-2 mb-2">
-                                <h4 className="font-medium text-sm leading-tight">{result.name}</h4>
+                              <div className="flex justify-between gap-2 mb-1">
+                                <h4 className="text-sm font-medium leading-tight line-clamp-1">
+                                  {result.name}
+                                </h4>
+
                                 {result.rating && (
-                                  <div className="flex items-center gap-1 text-xs">
+                                  <div className="flex items-center gap-1 text-xs bg-muted px-1.5 py-0.5 rounded">
                                     <Star className="h-3 w-3 fill-yellow-400 text-yellow-400" />
                                     <span>{result.rating}</span>
                                   </div>
                                 )}
                               </div>
 
-                              <p className="text-xs text-muted-foreground mb-2 line-clamp-1">
+                              <p className="text-xs text-muted-foreground line-clamp-1 mb-2">
                                 {result.formatted_address}
                               </p>
 
-                              <div className="flex items-center gap-2 flex-wrap">
-                                <Badge variant="outline" className="text-xs">
+                              <div className="flex flex-wrap gap-1.5">
+                                <Badge variant="outline" className="text-[10px] px-1.5 py-0">
                                   {getBusinessType(result.types)}
                                 </Badge>
 
                                 {result.business_status === "OPERATIONAL" && (
-                                  <Badge variant="outline" className="text-xs text-green-600">
+                                  <Badge className="text-[10px] px-1.5 py-0 bg-green-50 text-green-600 border border-green-200">
                                     Open
                                   </Badge>
                                 )}
 
                                 {result.opening_hours?.open_now !== undefined && (
-                                  <div className="flex items-center gap-1 text-xs text-muted-foreground">
+                                  <span className="flex items-center gap-1 text-[10px] text-muted-foreground">
                                     <Clock className="h-3 w-3" />
-                                    <span>{result.opening_hours.open_now ? "Open now" : "Closed"}</span>
-                                  </div>
+                                    {result.opening_hours.open_now ? "Open now" : "Closed"}
+                                  </span>
                                 )}
 
-                                {result.photos && result.photos.length > 0 && (
-                                  <div className="flex items-center gap-1 text-xs text-muted-foreground">
+                                {result.photos?.length > 0 && (
+                                  <span className="flex items-center gap-1 text-[10px] text-muted-foreground">
                                     <Camera className="h-3 w-3" />
-                                    <span>{result.photos.length}</span>
-                                  </div>
+                                    {result.photos.length}
+                                  </span>
                                 )}
                               </div>
                             </div>
@@ -399,33 +420,34 @@ export default function PlacesAutoComplete({ setPosition, setName }: PlacesAutoC
                         </CardContent>
                       </Card>
                     ))}
-                  </ScrollArea>
-                </div>
+                  </div>
+                </ScrollArea>
               </div>
             )}
           </div>
         )}
       </div>
 
+      {/* Selected Place */}
       {loading ? (
-        <Card>
+        <Card className="animate-pulse">
           <CardContent className="p-4 space-y-3">
             <Skeleton className="h-4 w-32" />
             <Skeleton className="h-3 w-full" />
             <Skeleton className="h-3 w-3/4" />
-            <Skeleton className="h-8 w-full" />
+            <Skeleton className="h-9 w-full rounded-md" />
           </CardContent>
         </Card>
       ) : (
         selectedPlaceDetails && (
-          <Card>
-            <CardContent className="p-4 space-y-4">
+          <Card className="border-primary/20 shadow-sm">
+            <CardContent className="space-y-4">
               <div className="flex items-center gap-2">
                 <Globe className="h-4 w-4 text-muted-foreground" />
-                <h3 className="font-medium">Selected Location</h3>
+                <h3 className="font-semibold text-sm">Selected Location</h3>
               </div>
 
-              <div className="space-y-3">
+              <div className="space-y-3 text-sm">
                 <div>
                   <div className="text-xs text-muted-foreground mb-1">Business Name</div>
                   <div className="font-medium">{selectedPlaceDetails.name}</div>
@@ -433,13 +455,13 @@ export default function PlacesAutoComplete({ setPosition, setName }: PlacesAutoC
 
                 <div>
                   <div className="text-xs text-muted-foreground mb-1">Address</div>
-                  <div className="text-sm">{selectedPlaceDetails.formatted_address}</div>
+                  <div>{selectedPlaceDetails.formatted_address}</div>
                 </div>
 
                 {selectedPlaceDetails.formatted_phone_number !== "N/A" && (
                   <div>
                     <div className="text-xs text-muted-foreground mb-1">Phone</div>
-                    <div className="text-sm">{selectedPlaceDetails.formatted_phone_number}</div>
+                    <div>{selectedPlaceDetails.formatted_phone_number}</div>
                   </div>
                 )}
 
@@ -448,7 +470,7 @@ export default function PlacesAutoComplete({ setPosition, setName }: PlacesAutoC
                     <div className="text-xs text-muted-foreground mb-1">Rating</div>
                     <div className="flex items-center gap-1">
                       <Star className="h-3 w-3 fill-yellow-400 text-yellow-400" />
-                      <span className="text-sm">{selectedPlaceDetails.rating}</span>
+                      {selectedPlaceDetails.rating}
                     </div>
                   </div>
                 )}
@@ -460,7 +482,7 @@ export default function PlacesAutoComplete({ setPosition, setName }: PlacesAutoC
                       href={selectedPlaceDetails.website}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="text-sm text-primary hover:underline inline-flex items-center gap-1"
+                      className="text-primary hover:underline inline-flex items-center gap-1"
                     >
                       Visit Website
                       <ExternalLink className="h-3 w-3" />
@@ -469,7 +491,12 @@ export default function PlacesAutoComplete({ setPosition, setName }: PlacesAutoC
                 )}
               </div>
 
-              <Button onClick={checkPermission} disabled={loadingPermission} className="w-full cursor-pointer">
+              <Button
+                onClick={checkPermission}
+                disabled={loadingPermission}
+                className="w-full font-medium"
+                size="sm"
+              >
                 {loadingPermission ? (
                   <>
                     <Loader2 className="h-4 w-4 animate-spin mr-2" />
@@ -478,7 +505,7 @@ export default function PlacesAutoComplete({ setPosition, setName }: PlacesAutoC
                 ) : hasPermission === true ? (
                   <>
                     <CheckCircle className="h-4 w-4 mr-2" />
-                    Added Successfully!
+                    Added Successfully
                   </>
                 ) : (
                   <>

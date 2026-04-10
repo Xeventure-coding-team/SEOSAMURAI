@@ -138,7 +138,7 @@ export async function POST(req: Request): Promise<NextResponse<APIResponse>> {
     const isValidToken = await validateGMBToken(accessToken);
     if (!isValidToken) {
       return NextResponse.json(
-        { hasPermission: false, error: 'Invalid or expired GMB access token' },
+        { hasPermission: false, error: 'Session expired. Please log in to Google My Business again.' },
         { status: 401 }
       );
     }
