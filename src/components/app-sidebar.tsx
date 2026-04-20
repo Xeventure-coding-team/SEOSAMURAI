@@ -81,7 +81,7 @@ const data = {
       group: "Posting & Reputation",
     },
     {
-      title: "Reviews",
+      title: "Unreplied Reviews",
       url: "/app/reviews",
       icon: Star,
       group: "Posting & Reputation",

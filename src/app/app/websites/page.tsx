@@ -4,6 +4,11 @@ import { Button } from '@/components/ui/button';
 import { Plus } from 'lucide-react';
 import Link from 'next/link';
 import { stackServerApp } from '@/stack';
+import { Metadata } from 'next';
+
+export const metadata: Metadata = {
+    title: "Websites | Rankerly",
+};
 
 export default async function page() {
     const user = await stackServerApp.getUser();

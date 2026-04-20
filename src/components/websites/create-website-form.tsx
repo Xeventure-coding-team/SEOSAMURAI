@@ -292,54 +292,137 @@ export function CreateWebsiteForm({ userId, onSuccessRedirect, onSuccess }: Crea
             }
         }
 
+        const currentPlaceId = form.getValues('placeId');
         setLoading(true);
         const loadingToast = toast.loading('Creating website and importing business data...');
 
         try {
-
-            // Create FormData to send both JSON data and file
             const formData = new FormData();
+            // REQUIRED FIELDS
+            formData.append('userId', userId || '');
+            formData.append('placeId', currentPlaceId || data.placeId || '');
+            formData.append('subdomain', data.subdomain);
 
-            // Append all form fields as JSON
-            formData.append('data', JSON.stringify({
-                ...data,
-                userId: userId,
-                accountId: gmbAccountId,
-                gmbLocationData: {
-                    location: selectedLocationData.location,
-                    reviews: selectedLocationData.reviews,
-                    media: selectedLocationData.media,
-                },
-            }));
+            // Optional fields
+            if (data.locationId) formData.append('locationId', data.locationId);
+            if (gmbAccountId) formData.append('accountId', gmbAccountId);
+            if (data.title) formData.append('title', data.title);
+            if (data.description) formData.append('description', data.description);
+            if (data.primaryColor) formData.append('primaryColor', data.primaryColor);
+            if (data.secondaryColor) formData.append('secondaryColor', data.secondaryColor);
+            if (data.fontFamily) formData.append('fontFamily', data.fontFamily);
+            if (data.enabledSections) formData.append('enabledSections', JSON.stringify(data.enabledSections));
+            if (logoFile) formData.append('logo', logoFile);
 
-            // Append logo file if selected
-            if (logoFile) {
-                formData.append('logo', logoFile);
+            // ✅ SEND FULL DATA (NO FILTERING)
+            if (selectedLocationData) {
+
+                // ✅ Get all reviews safely
+                const allReviews =
+                    selectedLocationData.location.reviews?.reviews || [];
+
+                // ✅ Rating helper
+                const getRating = (review: any) => {
+                    if (review.rating) return Number(review.rating);
+                    if (review.starRating === 'FIVE') return 5;
+                    if (review.starRating === 'FOUR') return 4;
+                    if (review.starRating === 'THREE') return 3;
+                    if (review.starRating === 'TWO') return 2;
+                    if (review.starRating === 'ONE') return 1;
+                    return 0;
+                };
+
+                // ✅ Top 10 reviews
+                const top10Reviews = allReviews
+                    .filter(r => getRating(r) >= 4)
+                    .sort((a, b) => {
+                        const ratingDiff = getRating(b) - getRating(a);
+                        if (ratingDiff !== 0) return ratingDiff;
+
+                        const timeA = new Date(a.createTime || a.time || 0).getTime();
+                        const timeB = new Date(b.createTime || b.time || 0).getTime();
+                        return timeB - timeA;
+                    })
+                    .slice(0, 10);
+
+                // ✅ Top 10 media
+                const top10Media =
+                    selectedLocationData.location.media?.mediaItems?.slice(0, 10) || [];
+
+                const cleanLocation = { ...selectedLocationData.location };
+
+                // ❌ remove heavy / duplicate fields
+                delete cleanLocation.media;
+                delete cleanLocation.reviews
+
+                const payload = {
+                    location: cleanLocation,
+                    locationData: selectedLocationData.location.locationData,
+
+                    reviews: top10Reviews,
+                    media: top10Media,
+                    posts: selectedLocationData.scheduledPosts || [],
+
+                    businessInfo: {
+                        displayName:
+                            selectedLocationData.location?.locationData?.name ||
+                            selectedLocationData.location?.data?.name,
+
+                        formattedAddress:
+                            selectedLocationData.location?.locationData?.formatted_address ||
+                            selectedLocationData.location?.data?.formatted_address,
+
+                        phoneNumber: selectedLocationData.location?.phoneNumbers?.primaryPhone,
+
+                        websiteUri: selectedLocationData.location?.website,
+
+                        rating:
+                            selectedLocationData.location?.rating ||
+                            selectedLocationData.reviews?.averageRating,
+
+                        totalReviewCount:
+                            selectedLocationData.reviews?.totalReviewCount ||
+                            allReviews.length,
+
+                        description:
+                            data.description ||
+                            selectedLocationData.location?.data?.profile?.description,
+
+                        openingHours:
+                            selectedLocationData.location?.opening_hours ||
+                            selectedLocationData.location?.data?.opening_hours,
+                    }
+                };
+                
+ 
+                // ✅ IMPORTANT: send as separate fields (BEST PRACTICE)
+                formData.append('businessInfo', JSON.stringify(payload.businessInfo));
+                formData.append('reviews', JSON.stringify(payload.reviews));
+                formData.append('media', JSON.stringify(payload.media));
+                formData.append('posts', JSON.stringify(payload.posts));
+                formData.append('location', JSON.stringify(payload.location));
+                formData.append('locationData', JSON.stringify(payload.locationData));
             }
 
+            // ✅ FIX: removed wrong return
             const response = await axios.post('/api/websites', formData, {
-                headers: {
-                    'Content-Type': 'multipart/form-data',
-                },
+                headers: { 'Content-Type': 'multipart/form-data' },
             });
 
-            toast.success('Website created successfully!', { id: loadingToast, icon: '🎉' });
+            toast.success('Website created successfully!', { id: loadingToast });
+
             form.reset();
             setSelectedLocationData(null);
             setLocations([]);
             setLogoPreview(null);
+            setLogoFile(null);
 
             if (onSuccess) {
-                onSuccess();
-            } else if (onSuccessRedirect) {
-                router.push(onSuccessRedirect);
-            } else {
-                router.push(`/websites/${response.data.website.id}`);
+               router.push(`/app/websites/${response.data.website.id}`);
             }
+
         } catch (error: any) {
-            console.error('Error creating website:', error);
-            const errorMessage = error.response?.data?.error || 'Failed to create website';
-            toast.error(errorMessage, { id: loadingToast });
+            toast.error(error.response?.data?.error || 'Failed to create website', { id: loadingToast });
         } finally {
             setLoading(false);
         }

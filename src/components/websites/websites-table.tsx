@@ -55,6 +55,8 @@ import {
     XCircle,
     Star,
 } from 'lucide-react';
+import { getWebsiteUrl } from '@/lib/website-url';
+import Link from 'next/link';
 
 interface WebsiteCachedData {
     id: string;
@@ -120,7 +122,7 @@ export function WebsitesTable() {
         if (!selectedWebsite) return;
 
         const loadingToast = toast.loading('Deleting website...');
-        
+
         try {
             await axios.delete(`/api/websites/${selectedWebsite.id}`);
             toast.success('Website deleted successfully', { id: loadingToast });
@@ -137,10 +139,10 @@ export function WebsitesTable() {
     const handleSync = async (websiteId: string) => {
         setSyncingId(websiteId);
         const loadingToast = toast.loading('Starting sync process...');
-        
+
         try {
             await axios.post(`/api/websites/${websiteId}/sync`);
-            toast.success('Sync started successfully! Data will be updated shortly.', { 
+            toast.success('Sync started successfully! Data will be updated shortly.', {
                 id: loadingToast,
                 icon: '🔄'
             });
@@ -156,12 +158,12 @@ export function WebsitesTable() {
     const handlePublishToggle = async (website: Website) => {
         const action = !website.isPublished ? 'publishing' : 'unpublishing';
         const loadingToast = toast.loading(`${action} website...`);
-        
+
         try {
             await axios.patch(`/api/websites/${website.id}`, {
                 isPublished: !website.isPublished,
             });
-            toast.success(`Website ${!website.isPublished ? 'published' : 'unpublished'} successfully!`, { 
+            toast.success(`Website ${!website.isPublished ? 'published' : 'unpublished'} successfully!`, {
                 id: loadingToast,
                 icon: !website.isPublished ? '🎉' : '📝'
             });
@@ -181,9 +183,7 @@ export function WebsitesTable() {
         });
     };
 
-    const getWebsiteUrl = (subdomain: string) => {
-        return `https://${subdomain}.yourdomain.com`;
-    };
+
 
     const formatDate = (date: string | null) => {
         if (!date) return 'Never';
@@ -213,25 +213,46 @@ export function WebsitesTable() {
     };
 
     const getLastSyncStatus = (website: Website) => {
-        if (!website.cachedData?.lastSyncedAt) {
+        const data = website?.cachedData;
+
+        if (!data?.lastSyncedAt) {
             return { text: 'Never synced', variant: 'secondary' as const };
         }
-        if (website.cachedData.isSyncing) {
+
+        if (data?.isSyncing) {
             return { text: 'Syncing...', variant: 'secondary' as const };
         }
-        if (website.cachedData.lastSyncError) {
+
+        if (data?.lastSyncError) {
             return { text: 'Sync failed', variant: 'destructive' as const };
         }
-        const daysSinceSync = Math.floor(
-            (Date.now() - new Date(website.cachedData.lastSyncedAt).getTime()) / (1000 * 60 * 60 * 24)
-        );
-        if (daysSinceSync > 7) {
-            return { text: `Stale (${daysSinceSync}d ago)`, variant: 'destructive' as const };
+
+        const diffMs = Date.now() - new Date(data.lastSyncedAt).getTime();
+
+        const minutes = Math.floor(diffMs / (1000 * 60));
+        const hours = Math.floor(diffMs / (1000 * 60 * 60));
+        const days = Math.floor(diffMs / (1000 * 60 * 60 * 24));
+
+        // ⏱ Less than 1 hour
+        if (minutes < 60) {
+            return { text: `${minutes}m ago`, variant: 'default' as const };
         }
-        if (daysSinceSync > 1) {
-            return { text: `${daysSinceSync}d ago`, variant: 'warning' as const };
+
+        // ⏱ Less than 24 hours
+        if (hours < 24) {
+            return { text: `${hours}h ago`, variant: 'default' as const };
         }
-        return { text: 'Recent', variant: 'default' as const };
+
+        // 📅 Days
+        if (days > 7) {
+            return { text: `Stale (${days}d ago)`, variant: 'destructive' as const };
+        }
+
+        if (days > 1) {
+            return { text: `${days}d ago`, variant: 'warning' as const };
+        }
+
+        return { text: '1d ago', variant: 'default' as const };
     };
 
     const filteredWebsites = websites.filter(website =>
@@ -290,13 +311,13 @@ export function WebsitesTable() {
                                             <TableCell className="font-medium">
                                                 <div className="flex items-center gap-2">
                                                     {website.logoUrl ? (
-                                                        <img 
-                                                            src={website.logoUrl} 
+                                                        <img
+                                                            src={website.logoUrl}
                                                             alt={website.title}
                                                             className="h-8 w-8 rounded-full object-cover"
                                                         />
                                                     ) : (
-                                                        <div 
+                                                        <div
                                                             className="h-8 w-8 rounded-full flex items-center justify-center"
                                                             style={{ backgroundColor: website.primaryColor }}
                                                         >
@@ -345,7 +366,7 @@ export function WebsitesTable() {
                                             </TableCell>
                                             <TableCell>
                                                 <div className="flex items-center gap-2">
-                                                    <Badge 
+                                                    <Badge
                                                         variant={website.isPublished ? "default" : "secondary"}
                                                         className="cursor-pointer"
                                                         onClick={() => handlePublishToggle(website)}
@@ -412,25 +433,27 @@ export function WebsitesTable() {
                                                     </DropdownMenuTrigger>
                                                     <DropdownMenuContent align="end">
                                                         <DropdownMenuLabel>Actions</DropdownMenuLabel>
-                                                        <DropdownMenuItem onClick={() => window.open(getWebsiteUrl(website.subdomain), '_blank')}>
+                                                        <DropdownMenuItem
+                                                            onClick={() => window.open(getWebsiteUrl(website.subdomain), '_blank')}
+                                                        >
                                                             <ExternalLink className="mr-2 h-4 w-4" />
                                                             View Website
                                                         </DropdownMenuItem>
-                                                        <DropdownMenuItem onClick={() => handleSync(website.id)}>
-                                                            <RefreshCw className="mr-2 h-4 w-4" />
-                                                            Sync Data
-                                                        </DropdownMenuItem>
+                                                        <Link href={`/app/websites/sync/${website.id}`}>
+                                                            <DropdownMenuItem>
+                                                                <RefreshCw className="mr-2 h-4 w-4" />
+                                                                Sync Data
+                                                            </DropdownMenuItem>
+                                                        </Link>
                                                         <DropdownMenuSeparator />
-                                                        <DropdownMenuItem>
-                                                            <Eye className="mr-2 h-4 w-4" />
-                                                            View Details
-                                                        </DropdownMenuItem>
-                                                        <DropdownMenuItem>
-                                                            <Edit className="mr-2 h-4 w-4" />
-                                                            Edit Website
-                                                        </DropdownMenuItem>
+                                                        <Link href={`/app/websites/edit/${website.id}`}>
+                                                            <DropdownMenuItem>
+                                                                <Edit className="mr-2 h-4 w-4" />
+                                                                Edit Website
+                                                            </DropdownMenuItem>
+                                                        </Link>
                                                         <DropdownMenuSeparator />
-                                                        <DropdownMenuItem 
+                                                        <DropdownMenuItem
                                                             className="text-red-600"
                                                             onClick={() => {
                                                                 setSelectedWebsite(website);
@@ -521,8 +544,8 @@ function EmptyState({ searchTerm }: { searchTerm: string }) {
             <Globe className="mx-auto h-12 w-12 text-muted-foreground" />
             <h3 className="mt-4 text-lg font-semibold">No websites found</h3>
             <p className="mt-2 text-sm text-muted-foreground">
-                {searchTerm 
-                    ? `No websites matching "${searchTerm}"` 
+                {searchTerm
+                    ? `No websites matching "${searchTerm}"`
                     : "Get started by creating your first website"}
             </p>
             {!searchTerm && (

@@ -1,26 +1,33 @@
-import { CreateWebsiteForm } from '@/components/websites/create-website-form';
 import DashboardLayout from '@/app/layouts/DashboardLayout';
 import { ArrowLeft } from 'lucide-react';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
-import { StackServerApp } from '@stackframe/stack';
 import { stackServerApp } from '@/stack';
 import { Metadata } from 'next';
+import WebsiteSyncDashboard from '@/components/websites/WebsiteSyncDashboard';
+
+interface PageProps {
+    params: Promise<{
+        id: string;
+    }>;
+}
 
 export const metadata: Metadata = {
-    title: "Create Website | Rankerly",
+    title: "Sync Website | Rankerly",
 };
 
-export default async function CreateWebsitePage() {
+export default async function page({ params }: PageProps) {
+    const { id: websiteId } = await params;
 
     const user = await stackServerApp.getUser();
-    
+
+
     if (!user) {
         return (
             <DashboardLayout>
                 <div className="container mx-auto py-6">
                     <div className="text-center py-12">
-                        <p className="text-muted-foreground">Please sign in to create a website</p>
+                        <p className="text-muted-foreground">Please sign in to edit a website</p>
                         <Link href="/signin">
                             <Button className="mt-4">Sign In</Button>
                         </Link>
@@ -43,19 +50,15 @@ export default async function CreateWebsitePage() {
                         </Button>
                     </Link>
                     <div>
-                        <h1 className="text-3xl font-bold tracking-tight">Create New Website</h1>
+                        <h1 className="text-3xl font-bold tracking-tight">Sync Website</h1>
                         <p className="text-muted-foreground mt-1">
-                            Create a website from your Google My Business location
+                            Sync your website
                         </p>
                     </div>
                 </div>
 
-                {/* Create Form - Client Component */}
-                <CreateWebsiteForm 
-                    userId={userId} 
-                    onSuccessRedirect="/app/websites"
-                />
-                
+                <WebsiteSyncDashboard websiteId={websiteId} />
+
             </div>
         </DashboardLayout>
     );
