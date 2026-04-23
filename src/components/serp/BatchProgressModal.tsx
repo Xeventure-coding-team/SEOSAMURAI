@@ -103,7 +103,7 @@ const BatchProgressModal: React.FC<BatchProgressModalProps> = ({
     }
   }, [isOpen, startTime])
 
-    useEffect(() => {
+  useEffect(() => {
     if (progress.status === "COMPLETED") {
       // freeze the last elapsed value
       if (stoppedTime === null) {
@@ -423,7 +423,7 @@ const BatchProgressModal: React.FC<BatchProgressModalProps> = ({
 
           <Separator />
 
-          <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4">
+          <div className="sticky bottom-0 z-10 flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 border-t  pt-4">
             <div className="text-sm text-muted-foreground">
               Batch ID: <code className="text-xs bg-muted px-1 py-0.5 rounded">{progress.batchId}</code>
             </div>
@@ -441,6 +441,8 @@ const BatchProgressModal: React.FC<BatchProgressModalProps> = ({
               )}
             </div>
           </div>
+
+
         </div>
       </DialogContent>
     </Dialog>

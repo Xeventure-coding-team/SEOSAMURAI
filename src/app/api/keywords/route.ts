@@ -16,8 +16,8 @@ interface TrackedKeywordData {
     title: string | null;
     snippet: string | null;
     canUpdate: boolean;
-    nextUpdateTime: string;
-    timeUntilUpdate: number;
+    nextUpdateTime: string;   // "pending" for new keywords, ISO string for batched
+    timeUntilUpdate: number;  // -1 for new keywords, seconds for batched
     refreshRate: number;
     lastChecked: Date | null;
     isActive: boolean;
@@ -44,20 +44,9 @@ export async function GET(req: Request) {
         const userId = user.id;
         const now = new Date();
 
-        // Build where clause
-        const whereClause: any = {
-            userId,
-            isActive: true
-        };
-
-        whereClause.locationId = locationId;
-
-        // Get all tracked keywords for the user
         const trackingEntries = await prisma.keywordTracking.findMany({
-            where: whereClause,
-            orderBy: [
-                { createdAt: 'desc' }
-            ]
+            where: { userId, isActive: true, locationId },
+            orderBy: [{ createdAt: 'desc' }]
         });
 
         if (trackingEntries.length === 0) {
@@ -76,7 +65,6 @@ export async function GET(req: Request) {
             });
         }
 
-        // Get latest rank data for each keyword
         const keywordRankPromises = trackingEntries.map(async (entry) => {
             const latestRank = await prisma.keywordRank.findFirst({
                 where: {
@@ -87,11 +75,19 @@ export async function GET(req: Request) {
                 orderBy: { createdAt: 'desc' }
             });
 
-            // Use nextBatchUpdate from database, or calculate 2 days from last check/creation
-            const nextBatchUpdate = entry.nextBatchUpdate ||
-                new Date((entry.lastChecked || entry.createdAt).getTime() + (48 * 60 * 60 * 1000));
+            // A keyword is "new" if it has never been through a batch run.
+            // lastChecked is ONLY set by the batch runner — never on initial create.
+            const isNewKeyword = !entry.lastChecked && !entry.nextBatchUpdate;
 
-            const timeUntilBatch = Math.max(0, Math.floor((nextBatchUpdate.getTime() - now.getTime()) / 1000));
+            const nextBatchUpdate = isNewKeyword
+                ? null
+                : entry.nextBatchUpdate ||
+                  new Date(entry.lastChecked!.getTime() + 48 * 60 * 60 * 1000);
+
+            // -1 is the sentinel meaning "awaiting first batch — no countdown"
+            const timeUntilBatch = nextBatchUpdate
+                ? Math.max(0, Math.floor((nextBatchUpdate.getTime() - now.getTime()) / 1000))
+                : -1;
 
             const keywordData: TrackedKeywordData = {
                 id: entry.id,
@@ -99,17 +95,17 @@ export async function GET(req: Request) {
                 location: entry.location,
                 locationId: locationId || "default",
                 targetDomain: entry.targetDomain,
-                currentRank: latestRank?.rank || null,
-                previousRank: latestRank?.previousRank || null,
-                rankChange: latestRank?.rankChange || 'NOT_FOUND',
-                rankChangeValue: latestRank?.rankChangeValue || 0,
-                url: latestRank?.url || null,
-                title: latestRank?.title || null,
-                snippet: latestRank?.snippet || null,
-                canUpdate: false, // Always false for batch system
-                nextUpdateTime: nextBatchUpdate.toISOString(),
+                currentRank: latestRank?.rank ?? null,
+                previousRank: latestRank?.previousRank ?? null,
+                rankChange: latestRank?.rankChange ?? 'NOT_FOUND',
+                rankChangeValue: latestRank?.rankChangeValue ?? 0,
+                url: latestRank?.url ?? null,
+                title: latestRank?.title ?? null,
+                snippet: latestRank?.snippet ?? null,
+                canUpdate: false,
+                nextUpdateTime: nextBatchUpdate?.toISOString() ?? "pending",
                 timeUntilUpdate: timeUntilBatch,
-                refreshRate: 48, // Fixed to 48 hours for batch system
+                refreshRate: 48,
                 lastChecked: entry.lastChecked,
                 isActive: entry.isActive,
                 createdAt: entry.createdAt.toISOString()
@@ -120,28 +116,26 @@ export async function GET(req: Request) {
 
         const keywordsData = await Promise.all(keywordRankPromises);
 
-        // Sort by creation date (most recent first)
-        keywordsData.sort((a, b) => {
-            return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
-        });
+        keywordsData.sort((a, b) =>
+            new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+        );
 
-        // Calculate summary stats
         const rankedCount = keywordsData.filter(k => k.currentRank !== null).length;
         const avgRank = keywordsData
             .filter(k => k.currentRank !== null)
             .reduce((sum, k) => sum + k.currentRank!, 0) / rankedCount || 0;
 
-        // Find the earliest next batch update time (when all keywords will update)
+        // Only include keywords that have been through a batch run when computing
+        // the global next-update time — skip "pending" ones entirely.
         const nextBatchUpdate = keywordsData.reduce((earliest, keyword) => {
+            if (keyword.nextUpdateTime === "pending") return earliest;
             const keywordBatch = new Date(keyword.nextUpdateTime);
+            if (isNaN(keywordBatch.getTime())) return earliest;
             return !earliest || keywordBatch < earliest ? keywordBatch : earliest;
         }, null as Date | null);
 
-        // Check if there's a pending batch update
         const pendingBatch = await prisma.batchUpdate.findFirst({
-            where: {
-                status: { in: ['PENDING', 'RUNNING'] }
-            },
+            where: { status: { in: ['PENDING', 'RUNNING'] } },
             orderBy: { createdAt: 'desc' }
         });
 
@@ -150,21 +144,21 @@ export async function GET(req: Request) {
             data: keywordsData,
             metadata: {
                 total: keywordsData.length,
-                updateable: 0, // Always 0 for batch system
+                updateable: 0,
                 ranked: rankedCount,
                 averageRank: Math.round(avgRank * 100) / 100,
-                locationId: locationId,
+                locationId,
                 userId,
                 lastFetch: now.toISOString(),
                 batchUpdateInfo: {
-                    nextBatchUpdate: nextBatchUpdate?.toISOString() || null,
-                    refreshRate: 48, // Consistent 48-hour batch cycle
+                    nextBatchUpdate: nextBatchUpdate?.toISOString() ?? null,
+                    refreshRate: 48,
                     pendingBatch: pendingBatch ? {
                         id: pendingBatch.id,
                         status: pendingBatch.status,
                         totalKeywords: pendingBatch.totalKeywords,
                         processedKeywords: pendingBatch.processedKeywords,
-                        startedAt: pendingBatch.startedAt?.toISOString() || null
+                        startedAt: pendingBatch.startedAt?.toISOString() ?? null
                     } : null,
                     systemNote: "All keywords update together every 2 days via batch processing."
                 }
@@ -180,7 +174,6 @@ export async function GET(req: Request) {
     }
 }
 
-// DELETE method to remove keyword and all related data
 export async function DELETE(req: Request) {
     try {
         const { searchParams } = new URL(req.url);
@@ -195,7 +188,6 @@ export async function DELETE(req: Request) {
             return NextResponse.json({ error: "Missing keyword ID" }, { status: 400 });
         }
 
-        // First, find the keyword to verify ownership
         const keywordEntry = await prisma.keywordTracking.findFirst({
             where: { id: keywordId, userId: user.id }
         });
@@ -204,19 +196,14 @@ export async function DELETE(req: Request) {
             return NextResponse.json({ error: "Keyword not found" }, { status: 404 });
         }
 
-        const keyword = keywordEntry.keyword;
-        const location = keywordEntry.location;
-
-        // Delete related entries in keywordRank table
         await prisma.keywordRank.deleteMany({
             where: {
-                keyword,
-                location,
+                keyword: keywordEntry.keyword,
+                location: keywordEntry.location,
                 userId: user.id
             }
         });
 
-        // Delete the main keywordTracking entry
         await prisma.keywordTracking.delete({
             where: { id: keywordId }
         });

@@ -116,6 +116,7 @@ export function GmbPostForm({
   const [activeTab, setActiveTab] = useState("single")
   const fileInputRef = useRef<HTMLInputElement>(null)
   const [isSubmitting, setIsSubmitting] = useState(false)
+  const [aiGeneratedImageUrl, setAiGeneratedImageUrl] = useState<string | null>(null)
 
   const { createPost, loading } = useGmbPosts()
 
@@ -125,13 +126,13 @@ export function GmbPostForm({
       postContent: "",
       actionButton: "NO_ACTION",
       actionLink: "",
-      callPhone: phoneNumber ? phoneNumber :"",
+      callPhone: phoneNumber ? phoneNumber : "",
       image_url: "",
     },
   })
 
-  const displayImageUrl = previewUrl || form.watch("image_url")
   const watchedImageUrl = form.watch("image_url")
+  const displayImageUrl = aiGeneratedImageUrl || previewUrl || watchedImageUrl
 
   const generateImageFromContent = async () => {
     const postContent = form.getValues("postContent")
@@ -153,7 +154,15 @@ export function GmbPostForm({
       const result = await response.json()
 
       if (result.success) {
+        // Clear any uploaded file first
+        if (selectedFile) {
+          removeFile()
+        }
+
+        // Just set the image_url form field - exactly like manual URL upload
         form.setValue("image_url", result.imageUrl)
+
+        console.log("Image URL set:", result.imageUrl) // Debug
         toast.success("Image generated from content!")
       } else {
         toast.error(result.message || "Failed to generate image")
@@ -165,6 +174,7 @@ export function GmbPostForm({
       setIsGeneratingImage(false)
     }
   }
+
 
   const enhanceContent = async () => {
     const postContent = form.getValues("postContent")
@@ -199,8 +209,8 @@ export function GmbPostForm({
     }
   }
 
+  // Update the generateImage function
   const generateImage = async () => {
-    alert("starting")
     if (!imagePrompt.trim()) {
       toast.error("Please enter a prompt for image generation")
       return
@@ -217,8 +227,16 @@ export function GmbPostForm({
       const result = await response.json()
 
       if (result.success) {
+        // Clear any uploaded file first
+        if (selectedFile) {
+          removeFile()
+        }
+
+        // Just set the image_url form field - exactly like manual URL upload
         form.setValue("image_url", result.imageUrl)
         setImagePrompt("")
+
+        console.log("Image URL set:", result.imageUrl) // Debug
         toast.success("Image generated successfully!")
       } else {
         toast.error(result.message || "Failed to generate image")
@@ -360,6 +378,7 @@ export function GmbPostForm({
 
   const removeFile = useCallback(() => {
     setSelectedFile(null)
+    setAiGeneratedImageUrl(null)
     if (previewUrl) {
       URL.revokeObjectURL(previewUrl)
       setPreviewUrl(null)
@@ -384,7 +403,7 @@ export function GmbPostForm({
         account: accountId,
         location: locationId,
         accessToken: accessToken,
-        image_url: data.image_url || undefined,
+        image_url: aiGeneratedImageUrl || data.image_url || undefined,
         file: selectedFile || undefined,
       }
 
@@ -408,14 +427,14 @@ export function GmbPostForm({
   const characterCount = form.watch("postContent")?.length || 0
   const watchedPostContent = form.watch("postContent")
 
- 
-const getActionButtonInfo = (actionType: string) => {
-  const option = actionButtonOptions.find(
-    (opt) => opt.value === actionType
-  )
 
-  return option || { label: "No Action", icon: Send }
-}
+  const getActionButtonInfo = (actionType: string) => {
+    const option = actionButtonOptions.find(
+      (opt) => opt.value === actionType
+    )
+
+    return option || { label: "No Action", icon: Send }
+  }
 
   const handleBulkSubmit = async () => {
     setIsSubmitting(true)
@@ -482,7 +501,7 @@ const getActionButtonInfo = (actionType: string) => {
     await enhanceContent()
   }
 
-
+ 
   return (
     <Dialog open={isOpen} onOpenChange={handleClose}>
       <DialogContent className="custom-dialog">
@@ -529,7 +548,7 @@ const getActionButtonInfo = (actionType: string) => {
                       )}
 
                       {/* Image Preview */}
-                      {(watchedImageUrl || previewUrl) && (
+                      {(watchedImageUrl || previewUrl || aiGeneratedImageUrl) && (
                         <div className="rounded-lg overflow-hidden">
                           <img
                             src={displayImageUrl || "/placeholder.svg"}
@@ -1039,7 +1058,7 @@ const getActionButtonInfo = (actionType: string) => {
                                       Phone Number
                                     </FormLabel>
                                     <FormControl>
-                                      <Input placeholder="+1234567890" {...field}  disabled/>
+                                      <Input placeholder="+1234567890" {...field} disabled />
                                     </FormControl>
                                     <FormDescription>
                                       Phone number users can call when they click the action button

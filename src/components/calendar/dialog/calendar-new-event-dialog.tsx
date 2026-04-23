@@ -55,6 +55,8 @@ import { useGMBStore } from "@/store/gmbStore"
 import useStore from "@/store/CounterField"
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
 
+import { useCalendarStore } from '@/store/calendarStore'
+
 interface GmbPostFormProps {
   selectedLocation?: string | undefined
   accountId?: string | null
@@ -197,6 +199,7 @@ export default function CalendarNewEventDialog({
   const [isLoadingDetails, setIsLoadingDetails] = useState(false)
 
   const { createPost, loading, refreshPosts } = useGmbPostsScheduled()
+  const { addEvent } = useCalendarStore()
 
 
   const { key, increaseKey } = useStore()
@@ -291,7 +294,14 @@ export default function CalendarNewEventDialog({
       const result = await response.json()
 
       if (result.success) {
+        // Clear any uploaded file first (this is the missing piece)
+        if (selectedFile) {
+          removeFile() // This clears the file and preview
+        }
+
+        // Set the image URL - this will update watchedImageUrl automatically
         form.setValue("image_url", result.imageUrl)
+
         toast.success("Image generated from content!")
       } else {
         toast.error(result.message || "Failed to generate image")
@@ -303,6 +313,7 @@ export default function CalendarNewEventDialog({
       setIsGeneratingImage(false)
     }
   }
+
 
   const enhanceContent = async () => {
     const postContent = form.getValues("postContent")
@@ -354,8 +365,15 @@ export default function CalendarNewEventDialog({
       const result = await response.json()
 
       if (result.success) {
+        // Clear any uploaded file first (this is the missing piece)
+        if (selectedFile) {
+          removeFile() // This clears the file and preview
+        }
+
+        // Set the image URL - this will update watchedImageUrl automatically
         form.setValue("image_url", result.imageUrl)
         setImagePrompt("")
+
         toast.success("Image generated successfully!")
       } else {
         toast.error(result.message || "Failed to generate image")
@@ -497,11 +515,12 @@ export default function CalendarNewEventDialog({
       const result = await createPost(postData)
 
       if (result.success) {
-        toast.success("Post created successfully!")
+        addEvent(result.data)
         form.reset()
         removeFile()
         increaseKey()
-        onPostCreated?.(result.data) // THIS IS THE KEY LINE
+        onPostCreated?.(result.data)
+        toast.success("Post created successfully!")
       } else {
         toast.error(result.message || "Failed to create post")
       }
@@ -617,15 +636,16 @@ export default function CalendarNewEventDialog({
 
                   {/* Form Panel */}
                   <Card className="lg:sticky lg:top-4 h-fit lg:col-span-9">
+
                     <CardHeader>
                       <CardTitle className="flex items-center gap-2">
                         <Send className="h-5 w-5" />
-                        {enableBulkPosting ? "Scheduled GMB Posts" : "View Scheduled Post"}
+                        {enableBulkPosting ? "GMB Posts Manager" : "Scheduled Post"}
                       </CardTitle>
                       <CardDescription>
                         {enableBulkPosting
-                          ? "Manage all your scheduled Google My Business posts in one place"
-                          : "Check the details and timing of your scheduled post for your Google My Business listing"}
+                          ? "Create, schedule, and manage all your Google My Business posts from a single dashboard"
+                          : "Review your scheduled post details including content, media, and publishing time for your GMB listing"}
                       </CardDescription>
                     </CardHeader>
 

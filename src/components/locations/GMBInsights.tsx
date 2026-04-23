@@ -14,6 +14,11 @@ import {
   Monitor,
   Smartphone,
 } from "lucide-react"
+import { Button } from "@/components/ui/button"
+import { Calendar as CalendarIcon } from "lucide-react"
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
+import { Calendar as CalendarComponent } from "@/components/ui/calendar"
+import { format } from "date-fns"
 import ErrorRender from "../Error"
 import { Loader } from "../Loader/Loader"
 
@@ -62,29 +67,45 @@ export default function GMBInsights({ locationId, accessToken }: GMBInsightsProp
   const [insightsData, setInsightsData] = useState<InsightsResponse | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
+  const [startDate, setStartDate] = useState<Date>()
+  const [endDate, setEndDate] = useState<Date>()
 
+  // Initialize dates
   useEffect(() => {
-    if (!locationId || !accessToken) {
-      setError("Missing required parameters: locationId and accessToken")
-      setLoading(false)
+    const today = new Date()
+    const thirtyDaysAgo = new Date(today)
+    thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30)
+    
+    setStartDate(thirtyDaysAgo)
+    setEndDate(today)
+  }, [])
+
+  // Fetch insights when dates change
+  useEffect(() => {
+    if (!locationId || !accessToken || !startDate || !endDate) {
+      if (!locationId || !accessToken) {
+        setError("Missing required parameters: locationId and accessToken")
+        setLoading(false)
+      }
       return
     }
 
-    const today = new Date()
-    const startDate = new Date(today)
-    startDate.setDate(startDate.getDate() - 30)
-    const startDateStr = startDate.toISOString().split("T")[0]
-    const endDateStr = today.toISOString().split("T")[0]
+    const formatDateForApi = (date: Date) => {
+      return date.toISOString().split("T")[0]
+    }
 
     const fetchInsights = async () => {
+      setLoading(true)
+      setError(null)
+      
       try {
         const response = await fetch(
           "/api/insights?" +
           new URLSearchParams({
             location_name: locationId,
             access_token: accessToken,
-            start_date: startDateStr,
-            end_date: endDateStr,
+            start_date: formatDateForApi(startDate),
+            end_date: formatDateForApi(endDate),
           }),
         )
 
@@ -94,7 +115,7 @@ export default function GMBInsights({ locationId, accessToken }: GMBInsightsProp
         }
 
         const data = await response.json()
-        console.log("Received insights data:", data) // Debug log
+        console.log("Received insights data:", data)
         setInsightsData(data)
       } catch (err: any) {
         console.error("Error fetching insights:", err)
@@ -105,7 +126,7 @@ export default function GMBInsights({ locationId, accessToken }: GMBInsightsProp
     }
 
     fetchInsights()
-  }, [locationId, accessToken])
+  }, [locationId, accessToken, startDate, endDate])
 
   // Function to get icon for each metric
   const getMetricIcon = (metric: string) => {
@@ -267,14 +288,14 @@ export default function GMBInsights({ locationId, accessToken }: GMBInsightsProp
     return { hasData, dayCount }
   }
 
-  if (loading) {
+  if (loading && !insightsData) {
     return (
       <div className="space-y-4">
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <Calendar className="w-4 h-4" />
-              GMB Insights - Last 30 Days
+              GMB Insights
             </CardTitle>
           </CardHeader>
           <CardContent>
@@ -303,78 +324,145 @@ export default function GMBInsights({ locationId, accessToken }: GMBInsightsProp
             <Calendar className="w-4 h-4" />
             GMB Insights Summary
           </CardTitle>
-          <p className="text-sm text-muted-foreground">
+          <div className="flex flex-col sm:flex-row gap-4 mt-4">
+            <div className="flex-1">
+              <label className="text-sm font-medium text-muted-foreground block mb-2">
+                Start Date
+              </label>
+              <Popover>
+                <PopoverTrigger asChild>
+                  <Button
+                    variant="outline"
+                    className="w-full justify-start text-left font-normal"
+                  >
+                    <CalendarIcon className="mr-2 h-4 w-4" />
+                    {startDate ? format(startDate, "PPP") : <span>Pick a date</span>}
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent className="w-auto p-0" align="start">
+                  <CalendarComponent
+                    mode="single"
+                    selected={startDate}
+                    onSelect={(date) => {
+                      setStartDate(date)
+                      if (endDate && date && date > endDate) {
+                        setEndDate(date)
+                      }
+                    }}
+                    disabled={(date) => date > new Date()}
+                    initialFocus
+                  />
+                </PopoverContent>
+              </Popover>
+            </div>
+            <div className="flex-1">
+              <label className="text-sm font-medium text-muted-foreground block mb-2">
+                End Date
+              </label>
+              <Popover>
+                <PopoverTrigger asChild>
+                  <Button
+                    variant="outline"
+                    className="w-full justify-start text-left font-normal"
+                  >
+                    <CalendarIcon className="mr-2 h-4 w-4" />
+                    {endDate ? format(endDate, "PPP") : <span>Pick a date</span>}
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent className="w-auto p-0" align="start">
+                  <CalendarComponent
+                    mode="single"
+                    selected={endDate}
+                    onSelect={(date) => {
+                      setEndDate(date)
+                      if (startDate && date && date < startDate) {
+                        setStartDate(date)
+                      }
+                    }}
+                    disabled={(date) => date > new Date() || (startDate && date < startDate)}
+                    initialFocus
+                  />
+                </PopoverContent>
+              </Popover>
+            </div>
+          </div>
+          <p className="text-sm text-muted-foreground mt-4">
             {dateRange ? (
               <>
                 Performance metrics from {formatDate(dateRange.startDate)} to {formatDate(dateRange.endDate)} (
                 {dataInfo.dayCount} days)
               </>
             ) : (
-              "Performance metrics for your Google My Business listing"
+              "Select a date range to view performance metrics for your Google My Business listing"
             )}
           </p>
         </CardHeader>
         <CardContent>
-
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-            {Object.entries(totals).map(([metric, total]) => (
-              <Card key={metric} className="overflow-hidden">
-                <CardContent>
-                  <div className="flex items-center justify-between mb-3">
-                    <div className="flex items-center gap-2.5">
-                      <div className="rounded-md bg-primary/10 p-2">
-                        {getMetricIcon(metric)}
+          {loading ? (
+            <Loader text="Updating insights..." />
+          ) : (
+            <>
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+                {Object.entries(totals).map(([metric, total]) => (
+                  <Card key={metric} className="overflow-hidden">
+                    <CardContent>
+                      <div className="flex items-center justify-between mb-3">
+                        <div className="flex items-center gap-2.5">
+                          <div className="rounded-md bg-primary/10 p-2">
+                            {getMetricIcon(metric)}
+                          </div>
+                          <span className="text-sm font-medium text-muted-foreground">
+                            {formatMetricName(metric)}
+                          </span>
+                        </div>
                       </div>
-                      <span className="text-sm font-medium text-muted-foreground">
-                        {formatMetricName(metric)}
-                      </span>
-                    </div>
-                  </div>
-                  <div className="text-3xl font-semibold tracking-tight">
-                    {total.toLocaleString()}
-                  </div>
-                  <p className="mt-1 text-xs text-muted-foreground">
-                    Total this period
-                  </p>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
-
-          {!dataInfo.hasData && (
-            <div className="mt-4">
-              <Card>
-                <CardContent className="p-6">
-                  <div className="flex items-start gap-3">
-                    <div className="text-yellow-500 mt-1">
-                      <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
-                        <path fillRule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
-                      </svg>
-                    </div>
-                    <div>
-                      <h4 className="font-medium mb-1">No Activity Recorded</h4>
-                      <p className="text-sm text-muted-foreground mb-3">
-                        We retrieved {dataInfo.dayCount} days of data from your Google My Business account, but no customer engagement was recorded during this period.
+                      <div className="text-3xl font-semibold tracking-tight">
+                        {total.toLocaleString()}
+                      </div>
+                      <p className="mt-1 text-xs text-muted-foreground">
+                        Total this period
                       </p>
-                      <div className="text-sm text-muted-foreground">
-                        <p className="font-medium mb-2">Possible reasons:</p>
-                        <ul className="list-disc list-inside space-y-1">
-                          <li>Your business profile had no customer interactions</li>
-                          <li>The location is newly created</li>
-                          <li>Some metrics may not be available for your business type</li>
-                          <li>Data may be delayed (typically 24-48 hours)</li>
-                        </ul>
+                    </CardContent>
+                  </Card>
+                ))}
+              </div>
+
+              {!dataInfo.hasData && (
+                <div className="mt-4">
+                  <Card>
+                    <CardContent className="p-6">
+                      <div className="flex items-start gap-3">
+                        <div className="text-yellow-500 mt-1">
+                          <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                            <path fillRule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
+                          </svg>
+                        </div>
+                        <div>
+                          <h4 className="font-medium mb-1">No Activity Recorded</h4>
+                          <p className="text-sm text-muted-foreground mb-3">
+                            We retrieved {dataInfo.dayCount} days of data from your Google My Business account, but no customer engagement was recorded during this period.
+                          </p>
+                          <div className="text-sm text-muted-foreground">
+                            <p className="font-medium mb-2">Possible reasons:</p>
+                            <ul className="list-disc list-inside space-y-1">
+                              <li>Your business profile had no customer interactions</li>
+                              <li>The location is newly created</li>
+                              <li>Some metrics may not be available for your business type</li>
+                              <li>Data may be delayed (typically 24-48 hours)</li>
+                            </ul>
+                          </div>
+                        </div>
                       </div>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-            </div>
+                    </CardContent>
+                  </Card>
+                </div>
+              )}
+            </>
           )}
         </CardContent>
       </Card>
 
-      {dataInfo.hasData && (
+      {dataInfo.hasData && !loading && (
         <Card>
           <CardHeader>
             <CardTitle className="text-lg">Quick Overview</CardTitle>

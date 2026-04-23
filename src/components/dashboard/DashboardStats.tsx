@@ -287,14 +287,14 @@ export default function DashboardStats() {
 
                     <Badge>
                       {kw.rank ? (
-                      <span className="text-sm font-medium">
-                        #{kw.rank}
-                      </span>
-                    ) : (
-                      <span className="text-sm text-muted-foreground">
-                        —
-                      </span>
-                    )}
+                        <span className="text-sm font-medium">
+                          #{kw.rank}
+                        </span>
+                      ) : (
+                        <span className="text-sm text-muted-foreground">
+                          —
+                        </span>
+                      )}
                     </Badge>
 
                   </div>
@@ -304,56 +304,56 @@ export default function DashboardStats() {
           </CardContent>
         </Card>
 
- {/* Recommendations */}
-<Card>
-  <CardHeader className="pb-3">
-    <CardTitle className="text-base font-semibold">
-      Recommendations
-    </CardTitle>
-    <CardDescription className="text-sm">
-      Quick wins and keywords to watch
-    </CardDescription>
-  </CardHeader>
+        {/* Recommendations */}
+        <Card>
+          <CardHeader className="pb-3">
+            <CardTitle className="text-base font-semibold">
+              Recommendations
+            </CardTitle>
+            <CardDescription className="text-sm">
+              Quick wins and keywords to watch
+            </CardDescription>
+          </CardHeader>
 
-  <CardContent className="pt-0">
-    {recommendations.length === 0 ? (
-      <div className="py-5 space-y-1 text-center">
-        <p className="text-sm text-muted-foreground">
-          No rank movement detected yet
-        </p>
-        <p className="text-sm text-muted-foreground">
-          Recommendations appear once data is available
-        </p>
-      </div>
-    ) : (
-      <div className="space-y-3">
-        {recommendations.slice(0, 5).map((r, idx) => {
-          const rank = r.rank as number
-          const isImproving = (r.delta ?? 0) > 0
-
-          return (
-            <div key={idx} className="flex items-start gap-2">
-              {isImproving ? (
-                <TrendingUp className="h-4 w-4 text-green-500 mt-0.5 shrink-0" />
-              ) : (
-                <TrendingDown className="h-4 w-4 text-red-500 mt-0.5 shrink-0" />
-              )}
-
-              <div className="min-w-0">
-                <p className="text-sm font-medium truncate">
-                  {r.keyword}
+          <CardContent className="pt-0">
+            {recommendations.length === 0 ? (
+              <div className="py-5 space-y-1 text-center">
+                <p className="text-sm text-muted-foreground">
+                  No rank movement detected yet
                 </p>
                 <p className="text-sm text-muted-foreground">
-                  Rank #{rank} • {r.location}
+                  Recommendations appear once data is available
                 </p>
               </div>
-            </div>
-          )
-        })}
-      </div>
-    )}
-  </CardContent>
-</Card>
+            ) : (
+              <div className="space-y-3">
+                {recommendations.slice(0, 5).map((r, idx) => {
+                  const rank = r.rank as number
+                  const isImproving = (r.delta ?? 0) > 0
+
+                  return (
+                    <div key={idx} className="flex items-start gap-2">
+                      {isImproving ? (
+                        <TrendingUp className="h-4 w-4 text-green-500 mt-0.5 shrink-0" />
+                      ) : (
+                        <TrendingDown className="h-4 w-4 text-red-500 mt-0.5 shrink-0" />
+                      )}
+
+                      <div className="min-w-0">
+                        <p className="text-sm font-medium truncate">
+                          {r.keyword}
+                        </p>
+                        <p className="text-sm text-muted-foreground">
+                          Rank #{rank} • {r.location}
+                        </p>
+                      </div>
+                    </div>
+                  )
+                })}
+              </div>
+            )}
+          </CardContent>
+        </Card>
 
         {/* Upcoming Posts */}
         <Card>

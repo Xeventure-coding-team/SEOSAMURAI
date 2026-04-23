@@ -3,14 +3,13 @@ import { CalendarEvent, Mode } from './calendar-types'
 import { useEffect, useState } from 'react'
 import CalendarNewEventDialog from './dialog/calendar-new-event-dialog'
 import CalendarManageEventDialog from './dialog/calendar-manage-event-dialog'
+import { useCalendarStore } from '@/store/calendarStore'
 
 export default function CalendarProvider({
   accountId,
   locationId,
   businessName,
   selectedLocation,
-  events,
-  setEvents,
   mode,
   setMode,
   date,
@@ -40,6 +39,7 @@ export default function CalendarProvider({
   const [newEventDialogOpen, setNewEventDialogOpen] = useState(false)
   const [manageEventDialogOpen, setManageEventDialogOpen] = useState(false)
   const [selectedEvent, setSelectedEvent] = useState<CalendarEvent | null>(null)
+  const { events, setEvents } = useCalendarStore()
 
 
   useEffect(() => {

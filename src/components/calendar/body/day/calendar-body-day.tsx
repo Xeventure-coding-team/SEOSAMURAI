@@ -16,7 +16,7 @@ export default function CalendarBodyDay() {
           </div>
         </div>
       </div>
-      <div className="lg:flex hidden flex-col flex-grow divide-y max-w-[276px]">
+      <div className="lg:flex hidden flex-col flex-grow divide-y max-w-[276px] bg-background">
         <CalendarBodyDayCalendar />
         <CalendarBodyDayEvents />
       </div>

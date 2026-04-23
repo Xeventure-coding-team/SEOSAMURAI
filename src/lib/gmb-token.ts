@@ -135,7 +135,8 @@ async function getValidGMBToken(userId: string): Promise<string> {
         );
 
         // Step 5: Calculate new expiry time
-        const newExpiry = new Date(Date.now() + expiresIn * 1000);
+        const expiresInSafe = expiresIn || 3600; // fallback 1 hour
+        const newExpiry = new Date(Date.now() + expiresInSafe * 1000);
 
         // Step 6: Update database with new token
         await prisma.gmbIntegration.update({
@@ -150,11 +151,17 @@ async function getValidGMBToken(userId: string): Promise<string> {
       } catch (refreshError) {
         console.error(`❌ Failed to refresh token for user ${userId}:`, refreshError);
 
-        // Mark integration as inactive since refresh failed
-        await prisma.gmbIntegration.update({
-          where: { id: integration.id },
-          data: { isActive: false },
-        });
+        if (axios.isAxiosError(refreshError)) {
+          const status = refreshError.response?.status;
+
+          if (status === 400) {
+            // invalid_grant → real failure
+            await prisma.gmbIntegration.update({
+              where: { id: integration.id },
+              data: { isActive: false },
+            });
+          }
+        }
 
         throw new Error("TOKEN_REFRESH_FAILED");
       }

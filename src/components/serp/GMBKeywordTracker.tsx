@@ -36,6 +36,7 @@ import {
   Minus,
   SearchX,
   HelpCircle,
+  TrashIcon,
 } from "lucide-react"
 import BatchProgressModal from "./BatchProgressModal"
 import { LoadingSpinner } from "../Loader/Loader"
@@ -115,35 +116,39 @@ const KeywordTracker: React.FC<KeywordTrackerProps> = ({ location, businessName,
   const [editValue, setEditValue] = useState<string>("")
   const [savingEdit, setSavingEdit] = useState<boolean>(false)
 
-  // Add useEffect for countdown timer
+
   useEffect(() => {
-    if (trackedKeywords.length > 0) {
-      // Get the earliest next update time from all keywords
-      const nextUpdate = trackedKeywords.reduce(
-        (earliest, keyword) => {
-          const keywordUpdate = new Date(keyword.nextUpdateTime)
-          return !earliest || keywordUpdate < earliest ? keywordUpdate : earliest
-        },
-        null as Date | null,
-      )
+    if (trackedKeywords.length === 0) return;
 
-      if (nextUpdate) {
-        const updateCountdown = () => {
-          const now = new Date()
-          const timeUntil = Math.max(0, Math.floor((nextUpdate.getTime() - now.getTime()) / 1000))
-          setBatchCountdown(timeUntil)
-          setBatchUpdateAvailable(timeUntil === 0)
-        }
+    const batchedKeywords = trackedKeywords.filter(
+      (k) => k.timeUntilUpdate !== -1 && k.nextUpdateTime !== "pending"
+    );
 
-        // Update immediately
-        updateCountdown()
-
-        // Update every second
-        const interval = setInterval(updateCountdown, 1000)
-        return () => clearInterval(interval)
-      }
+    if (batchedKeywords.length === 0) {
+      setBatchCountdown(null);
+      setBatchUpdateAvailable(false);
+      return;
     }
-  }, [trackedKeywords])
+
+    const nextUpdate = batchedKeywords.reduce((earliest, keyword) => {
+      const keywordUpdate = new Date(keyword.nextUpdateTime);
+      return !earliest || keywordUpdate < earliest ? keywordUpdate : earliest;
+    }, null as Date | null);
+
+    if (!nextUpdate) return;
+
+    const updateCountdown = () => {
+      const now = new Date();
+      const timeUntil = Math.max(0, Math.floor((nextUpdate.getTime() - now.getTime()) / 1000));
+      setBatchCountdown(timeUntil);
+      setBatchUpdateAvailable(timeUntil === 0);
+    };
+
+    updateCountdown();
+    const interval = setInterval(updateCountdown, 1000);
+    return () => clearInterval(interval);
+  }, [trackedKeywords]);
+
 
   useEffect(() => {
     fetchTrackedKeywords()
@@ -728,271 +733,284 @@ const KeywordTracker: React.FC<KeywordTrackerProps> = ({ location, businessName,
                       </div>
                       <div>
                         <p className="font-semibold text-blue-900 dark:text-blue-100 text-lg">
-                          {batchUpdateAvailable ? "Batch Update Available" : "Next Batch Update"}
+                          {batchCountdown === null
+                            ? "Awaiting First Batch"
+                            : batchUpdateAvailable
+                              ? "Batch Update Available"
+                              : "Next Batch Update"}
                         </p>
                         <p className="text-blue-700 dark:text-blue-300">
-                          {batchUpdateAvailable
-                            ? `Update all ${trackedKeywords.length} keywords now`
-                            : `Next update in: ${formatCountdown(batchCountdown)}`}
+                          {batchCountdown === null
+                            ? "Rankings will appear after the first batch runs"
+                            : batchUpdateAvailable
+                              ? `Update all ${trackedKeywords.length} keywords now`
+                              : `Next update in: ${formatCountdown(batchCountdown)}`}
                         </p>
                       </div>
                     </div>
 
                     <Tooltip>
                       <TooltipTrigger asChild>
-                        <Button
-                          onClick={batchUpdateAvailable ? requestBatchUpdate : undefined}
-                          style={{ cursor: !batchUpdateAvailable ? 'not-allowed' : null }}
-                          className={`w-full sm:w-auto h-12 shadow-lg ${batchUpdateAvailable
-                            ? "bg-blue-600 hover:bg-blue-700"
-                            : "bg-blue-600 opacity-50 cursor-not-allowed pointer-events-auto"
-                            }`}
-                          size="lg"
-                        >
-                          {updating === "batch" ? (
-                            <>
-                              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                              Starting Update...
-                            </>
-                          ) : (
-                            <>
-                              Update All Keywords
-                              <Badge variant="secondary" className="ml-2 bg-white/20 text-white border-white/30">
-                                {trackedKeywords.length}
-                              </Badge>
-                            </>
-                          )}
-                        </Button>
+                        <span className="inline-block">  {/* ← Add this span wrapper */}
+                          <Button
+                            onClick={batchCountdown === null || batchUpdateAvailable ? requestBatchUpdate : undefined}
+                            disabled={updating === "batch" || (!batchUpdateAvailable && batchCountdown !== null)}
+                            style={{ cursor: updating === "batch" ? "not-allowed" : "pointer" }}
+                            className={`w-full sm:w-auto h-12 shadow-lg bg-blue-600 hover:bg-blue-700`}
+                            size="lg"
+                          >
+                            {updating === "batch" ? (
+                              <>
+                                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                                Starting Update...
+                              </>
+                            ) : (
+                              <>
+                                {batchCountdown === null ? "Run First Batch" : "Update All Keywords"}
+                                <Badge variant="secondary" className="ml-2 bg-white/20 text-white border-white/30">
+                                  {trackedKeywords.length}
+                                </Badge>
+                              </>
+                            )}
+                          </Button>
+                        </span>
                       </TooltipTrigger>
                       <TooltipContent>
                         {batchUpdateAvailable
                           ? "Update all tracked keywords with latest rankings"
-                          : `Batch update will be available ${formatCountdown(batchCountdown)}`}
+                          : batchCountdown === null
+                            ? "Click to run first batch update"
+                            : `Batch update will be available ${formatCountdown(batchCountdown)}`}
                       </TooltipContent>
                     </Tooltip>
+
                   </div>
                 </CardContent>
               </Card>
             )}
 
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-3">
-                  <BarChart3 className="h-6 w-6" />
+            <div className="p-0 m-0 bg-background shadow-sm rounded-md border-none">
+
+              <div className="mb-4 pt-4 px-4">
+                <div className="flex gap-3">
+                  <TrendingUp className="h-6 w-6" />
                   Tracked Keywords
                   <Badge variant="secondary" className="ml-auto">
                     {trackedKeywords.length}/{MAX_KEYWORDS}
                   </Badge>
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="p-0">
-                {fetchingKeywords ? (
-                  <div className="p-8">
-                    <div className="space-y-6">
-                      {[...Array(3)].map((_, i) => (
-                        <div key={i} className="flex items-center space-x-6">
-                          <Skeleton className="h-12 w-12 rounded-full" />
-                          <div className="space-y-3 flex-1">
-                            <Skeleton className="h-4 w-[300px]" />
-                            <Skeleton className="h-4 w-[200px]" />
-                          </div>
-                          <Skeleton className="h-8 w-[120px]" />
+                </div>
+              </div>
+
+              {fetchingKeywords ? (
+                <div className="mb-4 pt-4 px-4">
+                  <div className="space-y-6">
+                    {[...Array(3)].map((_, i) => (
+                      <div key={i} className="flex items-center space-x-6">
+                        <Skeleton className="h-12 w-12 rounded-full" />
+                        <div className="space-y-3 flex-1">
+                          <Skeleton className="h-4 w-[300px]" />
+                          <Skeleton className="h-4 w-[200px]" />
                         </div>
-                      ))}
-                    </div>
+                        <Skeleton className="h-8 w-[120px]" />
+                      </div>
+                    ))}
                   </div>
-                ) : trackedKeywords.length === 0 ? (
-                  <div className="flex flex-col items-center justify-center py-16 text-center">
-                    <div className="mb-6 rounded-full bg-muted/50 p-4">
-                      <Target className="h-8 w-8 text-muted-foreground/70" />
-                    </div>
-                    <h3 className="mb-2 text-lg font-medium">No keywords tracked</h3>
-                    <p className="mb-6 text-sm text-muted-foreground max-w-sm">
-                      Add keywords to monitor your search rankings and track performance over time.
-                    </p>
-                    <Button onClick={() => setShowAddModal(true)} variant="outline" size="sm">
-                      <Plus className="mr-2 h-3.5 w-3.5" />
-                      Add keyword
-                    </Button>
+                </div>
+              ) : trackedKeywords.length === 0 ? (
+                <div className="flex flex-col items-center justify-center py-16 text-center">
+                  <div className="mb-6 rounded-full bg-muted/50 p-4">
+                    <Target className="h-8 w-8 text-muted-foreground/70" />
                   </div>
-                ) : (
-                  <div className="overflow-x-auto">
-                    <Table>
-                      <TableHeader>
-                        <TableRow>
-                          <TableHead className="w-[350px]">Keyword</TableHead>
-                          <TableHead className="text-center">Position</TableHead>
-                          <TableHead className="text-center">Change</TableHead>
-                          <TableHead className="text-center">Previous</TableHead>
-                          <TableHead className="text-right">Actions</TableHead>
-                        </TableRow>
-                      </TableHeader>
-                      <TableBody>
-                        {trackedKeywords.map((kw) => (
-                          <TableRow
-                            key={kw.id}
-                            className={`group transition-colors ${kw.rankChange === "UP"
-                                ? "bg-emerald-50/40 hover:bg-emerald-50/60 dark:bg-emerald-950/20 dark:hover:bg-emerald-950/30"
-                                : kw.rankChange === "DOWN"
-                                  ? "bg-red-50/40 hover:bg-red-50/60 dark:bg-red-950/20 dark:hover:bg-red-950/30"
-                                  : "hover:bg-muted/50"
-                              }`}
-                          >
-                            {/* Keyword */}
-                            <TableCell className="py-4">
-                              <div className="space-y-1">
-                                {editKeywordId === kw.id ? (
-                                  <Input
-                                    value={editValue}
-                                    onChange={(e) => setEditValue(e.target.value)}
-                                    placeholder="Edit keyword..."
-                                    className="h-9"
-                                  />
-                                ) : (
-                                  <div className="font-medium text-base text-pretty">{kw.keyword}</div>
-                                )}
-                                 
-                              </div>
-                            </TableCell>
+                  <h3 className="mb-2 text-lg font-medium">No keywords tracked</h3>
+                  <p className="mb-6 text-sm text-muted-foreground max-w-sm">
+                    Add keywords to monitor your search rankings and track performance over time.
+                  </p>
+                  <Button onClick={() => setShowAddModal(true)} variant="outline" size="sm">
+                    <Plus className="mr-2 h-3.5 w-3.5" />
+                    Add keyword
+                  </Button>
+                </div>
+              ) : (
+                <div className="overflow-x-auto rounded-md shadow-sm">
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead className="w-[350px]">Keyword</TableHead>
+                        <TableHead className="text-center">Position</TableHead>
+                        <TableHead className="text-center">Change</TableHead>
+                        <TableHead className="text-center">Previous</TableHead>
+                        <TableHead className="text-right">Actions</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {trackedKeywords.map((kw) => (
+                        <TableRow
+                          key={kw.id}
+                          className={`group transition-colors ${kw.rankChange === "UP"
+                            ? "bg-emerald-50/40 hover:bg-emerald-50/60 dark:bg-emerald-950/20 dark:hover:bg-emerald-950/30"
+                            : kw.rankChange === "DOWN"
+                              ? "bg-red-50/40 hover:bg-red-50/60 dark:bg-red-950/20 dark:hover:bg-red-950/30"
+                              : "hover:bg-muted/50"
+                            }`}
+                        >
+                          {/* Keyword */}
+                          <TableCell className="py-4">
+                            <div className="space-y-1">
+                              {editKeywordId === kw.id ? (
+                                <Input
+                                  value={editValue}
+                                  onChange={(e) => setEditValue(e.target.value)}
+                                  placeholder="Edit keyword..."
+                                  className="h-9"
+                                />
+                              ) : (
+                                <div className="font-medium text-base text-pretty">{kw.keyword}</div>
+                              )}
 
-                            {/* Position */}
-                            <TableCell className="text-center">
-                              <span
-                                className={`inline-flex items-center justify-center font-mono text-base font-medium rounded-md w-9 h-6 ${kw.currentRank === 1
-                                    ? "bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300"
-                                    : kw.currentRank && kw.currentRank <= 3
-                                      ? "bg-blue-50 text-blue-700 dark:bg-blue-950 dark:text-blue-300"
-                                      : "bg-muted text-muted-foreground"
-                                  }`}
-                              >
-                                {kw.currentRank ? `#${kw.currentRank}` : "—"}
+                            </div>
+                          </TableCell>
+
+                          {/* Position */}
+                          <TableCell className="text-center">
+                            <span
+                              className={`inline-flex items-center justify-center font-mono text-base font-medium rounded-md w-9 h-6 ${kw.currentRank === 1
+                                ? "bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300"
+                                : kw.currentRank && kw.currentRank <= 3
+                                  ? "bg-blue-50 text-blue-700 dark:bg-blue-950 dark:text-blue-300"
+                                  : "bg-muted text-muted-foreground"
+                                }`}
+                            >
+                              {kw.currentRank ? `#${kw.currentRank}` : "—"}
+                            </span>
+                          </TableCell>
+
+                          {/* Change */}
+                          <TableCell className="text-center">
+                            {kw.rankChange === "UP" && (
+                              <span className="inline-flex items-center gap-0.5 text-sm font-medium px-2 py-0.5 rounded-md bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300">
+                                <TrendingUp className="h-3 w-3" />
+                                +{kw.rankChangeValue}
                               </span>
-                            </TableCell>
-
-                            {/* Change */}
-                            <TableCell className="text-center">
-                              {kw.rankChange === "UP" && (
-                                <span className="inline-flex items-center gap-1 text-base font-medium px-2 py-1 rounded-md bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300">
-                                  <TrendingUp className="h-3 w-3" />
-                                  +{kw.rankChangeValue}
-                                </span>
-                              )}
-                              {kw.rankChange === "DOWN" && (
-                                <span className="inline-flex items-center gap-1 text-base font-medium px-2 py-1 rounded-md bg-red-100 text-red-800 dark:bg-red-950 dark:text-red-300">
-                                  <TrendingDown className="h-3 w-3" />
-                                  -{kw.rankChangeValue}
-                                </span>
-                              )}
-                              {kw.rankChange === "NEW" && (
-                                <span className="inline-flex items-center gap-1 text-base font-medium px-2 py-1 rounded-md bg-blue-100 text-blue-800 dark:bg-blue-950 dark:text-blue-300">
-                                  <Sparkles className="h-3 w-3" />
-                                  New
-                                </span>
-                              )}
-                              {(kw.rankChange === "SAME" || kw.rankChange === "NOT_FOUND" || !kw.rankChange) && (
-                                <span className="text-xs text-muted-foreground">—</span>
-                              )}
-                            </TableCell>
-
-                            {/* Previous */}
-                            <TableCell className="text-center">
-                              <span className="text-base text-muted-foreground font-mono">
-                                {kw.previousRank ? `#${kw.previousRank}` : "—"}
+                            )}
+                            {kw.rankChange === "DOWN" && (
+                              <span className="inline-flex items-center gap-0.5 text-sm font-medium px-2 py-0.5 rounded-md bg-red-100 text-red-800 dark:bg-red-950 dark:text-red-300">
+                                <TrendingDown className="h-3 w-3" />
+                                -{kw.rankChangeValue}
                               </span>
-                            </TableCell>
+                            )}
+                            {kw.rankChange === "NEW" && (
+                              <span className="inline-flex items-center gap-0.5 text-sm font-medium px-2 py-0.5 rounded-md bg-blue-100 text-blue-800 dark:bg-blue-950 dark:text-blue-300">
+                                <Sparkles className="h-3 w-3" />
+                                New
+                              </span>
+                            )}
+                            {(kw.rankChange === "SAME" || kw.rankChange === "NOT_FOUND" || !kw.rankChange) && (
+                              <span className="text-sm text-muted-foreground">—</span>
+                            )}
+                          </TableCell>
 
-                            {/* Actions */}
-                            <TableCell className="text-right">
-                              <div className="flex items-center justify-end gap-2">
-                                {editKeywordId === kw.id ? (
-                                  <>
-                                    <Tooltip>
-                                      <TooltipTrigger asChild>
-                                        <Button
-                                          variant="ghost"
-                                          size="sm"
-                                          onClick={saveEdit}
-                                          disabled={savingEdit || !editValue.trim()}
-                                          className="opacity-100 h-9 w-9 p-0 hover:bg-primary/10"
-                                        >
-                                          {savingEdit ? (
-                                            <Loader2 className="h-4 w-4 animate-spin" />
-                                          ) : (
-                                            <Check className="h-4 w-4" />
-                                          )}
-                                        </Button>
-                                      </TooltipTrigger>
-                                      <TooltipContent>{savingEdit ? "Saving..." : "Save changes"}</TooltipContent>
-                                    </Tooltip>
-                                    <Tooltip>
-                                      <TooltipTrigger asChild>
-                                        <Button
-                                          variant="ghost"
-                                          size="sm"
-                                          onClick={cancelEdit}
-                                          className="opacity-100 h-9 w-9 p-0 hover:bg-primary/10"
-                                        >
-                                          <X className="h-4 w-4" />
-                                        </Button>
-                                      </TooltipTrigger>
-                                      <TooltipContent>Cancel</TooltipContent>
-                                    </Tooltip>
-                                  </>
-                                ) : (
+                          {/* Previous */}
+                          <TableCell className="text-center">
+                            {kw.previousRank ? (
+                              <span className="inline-flex items-center justify-center px-2 py-1 rounded-md text-sm font-mono font-medium bg-yellow-100 text-yellow-800 dark:bg-yellow-900/40 dark:text-yellow-300">
+                                #{kw.previousRank}
+                              </span>
+                            ) : (
+                              <span className="text-xs text-muted-foreground">—</span>
+                            )}
+                          </TableCell>
+
+                          {/* Actions */}
+                          <TableCell className="text-right">
+                            <div className="flex items-center justify-end gap-2">
+                              {editKeywordId === kw.id ? (
+                                <>
                                   <Tooltip>
                                     <TooltipTrigger asChild>
                                       <Button
                                         variant="ghost"
                                         size="sm"
-                                        onClick={() => startEdit(kw)}
-                                        className="opacity-0 group-hover:opacity-100 transition-opacity h-9 w-9 p-0 hover:bg-primary/10"
+                                        onClick={saveEdit}
+                                        disabled={savingEdit || !editValue.trim()}
+                                        className="opacity-100 h-9 w-9 p-0 hover:bg-primary/10"
                                       >
-                                        <Pencil className="h-4 w-4" />
+                                        {savingEdit ? (
+                                          <Loader2 className="h-4 w-4 animate-spin" />
+                                        ) : (
+                                          <Check className="h-4 w-4" />
+                                        )}
                                       </Button>
                                     </TooltipTrigger>
-                                    <TooltipContent>Edit keyword</TooltipContent>
+                                    <TooltipContent>{savingEdit ? "Saving..." : "Save changes"}</TooltipContent>
                                   </Tooltip>
-                                )}
-
-                                {kw.url && (
                                   <Tooltip>
                                     <TooltipTrigger asChild>
                                       <Button
                                         variant="ghost"
                                         size="sm"
-                                        onClick={() => setSelectedKeyword(kw)}
-                                        className="opacity-0 group-hover:opacity-100 transition-opacity h-9 w-9 p-0 hover:bg-primary/10"
+                                        onClick={cancelEdit}
+                                        className="opacity-100 h-9 w-9 p-0 hover:bg-primary/10"
                                       >
-                                        <Eye className="h-4 w-4" />
+                                        <X className="h-4 w-4" />
                                       </Button>
                                     </TooltipTrigger>
-                                    <TooltipContent>View keyword details</TooltipContent>
+                                    <TooltipContent>Cancel</TooltipContent>
                                   </Tooltip>
-                                )}
-
+                                </>
+                              ) : (
                                 <Tooltip>
                                   <TooltipTrigger asChild>
                                     <Button
                                       variant="ghost"
                                       size="sm"
-                                      onClick={() => deleteKeyword(kw.id!)}
-                                      className="opacity-0 group-hover:opacity-100 transition-opacity h-9 w-9 p-0 hover:bg-destructive/10 hover:text-destructive"
+                                      onClick={() => startEdit(kw)}
+                                      className="opacity-0 group-hover:opacity-100 transition-opacity h-9 w-9 p-0 hover:bg-primary/10"
                                     >
-                                      <X className="h-4 w-4" />
+                                      <Pencil className="h-4 w-4" />
                                     </Button>
                                   </TooltipTrigger>
-                                  <TooltipContent>Delete this keyword</TooltipContent>
+                                  <TooltipContent>Edit keyword</TooltipContent>
                                 </Tooltip>
-                              </div>
-                            </TableCell>
-                          </TableRow>
-                        ))}
-                      </TableBody>
-                    </Table>
-                  </div>
-                )}
-              </CardContent>
-            </Card>
+                              )}
+
+                              {kw.url && (
+                                <Tooltip>
+                                  <TooltipTrigger asChild>
+                                    <Button
+                                      variant="ghost"
+                                      size="sm"
+                                      onClick={() => setSelectedKeyword(kw)}
+                                      className="opacity-0 group-hover:opacity-100 transition-opacity h-9 w-9 p-0 hover:bg-primary/10"
+                                    >
+                                      <Eye className="h-4 w-4" />
+                                    </Button>
+                                  </TooltipTrigger>
+                                  <TooltipContent>View keyword details</TooltipContent>
+                                </Tooltip>
+                              )}
+
+                              <Tooltip>
+                                <TooltipTrigger asChild>
+                                  <Button
+                                    variant="ghost"
+                                    size="sm"
+                                    onClick={() => deleteKeyword(kw.id!)}
+                                    className="opacity-0 group-hover:opacity-100 transition-opacity h-9 w-9 p-0 hover:bg-destructive/10 hover:text-destructive"
+                                  >
+                                    <TrashIcon className="h-4 w-4" />
+                                  </Button>
+                                </TooltipTrigger>
+                                <TooltipContent>Delete this keyword</TooltipContent>
+                              </Tooltip>
+                            </div>
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                </div>
+              )}
+            </div>
 
             <Dialog open={!!selectedKeyword} onOpenChange={() => setSelectedKeyword(null)}>
               <DialogContent className="max-w-3xl">

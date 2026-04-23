@@ -130,18 +130,28 @@ export function CompetitorAnalysisWithMap({
                             </div>
                         </CardHeader>
                     </Card>
-
                     <Alert>
                         <AlertCircle className="h-4 w-4" />
-                        <AlertTitle>No Competitor Data Available</AlertTitle>
+                        <AlertTitle>No Competitors Detected</AlertTitle>
                         <AlertDescription>
-                            You're tracking {trackedKeywordsCount} keyword{trackedKeywordsCount !== 1 ? 's' : ''},
-                            but we haven't found any competitors in the search results yet. This could mean:
-                            <ul className="list-disc list-inside mt-2 space-y-1">
-                                <li>Your keywords are very new and need time to gather data</li>
-                                <li>Your business is dominating all tracked keywords</li>
-                                <li>The search results haven't been updated recently</li>
-                            </ul>
+
+                            <p>
+                                You're currently tracking <strong>{trackedKeywordsCount}</strong> keyword{trackedKeywordsCount !== 1 ? 's' : ''},
+                                but no competitors have appeared in the search results yet.
+                            </p>
+
+                            <div className="mt-2 text-sm">
+                                This usually happens when:
+                                <ul className="list-disc list-inside mt-2 space-y-1">
+                                    <li>The keywords are newly added and data is still being collected</li>
+                                    <li>Your business is ranking strongly across these keywords</li>
+                                    <li>Search engine results haven’t refreshed recently</li>
+                                </ul>
+                            </div>
+
+                            <div className="mt-3 text-sm text-muted-foreground">
+                                Try checking back later or adding more keywords to expand your tracking coverage.
+                            </div>
                         </AlertDescription>
                     </Alert>
                 </div>
@@ -204,7 +214,7 @@ export function CompetitorAnalysisWithMap({
                 </Card>
 
                 <div className={`grid gap-6 ${showMap ? "lg:grid-cols-2" : "grid-cols-1"}`}>
-                    
+
                     <div className="space-y-4">
                         {competitors.map((competitor) => (
                             <Card

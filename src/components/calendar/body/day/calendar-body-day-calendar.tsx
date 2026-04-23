@@ -8,6 +8,8 @@ export default function CalendarBodyDayCalendar() {
       selected={date}
       onSelect={(date: Date | undefined) => date && setDate(date)}
       mode="single"
+      className='w-full z-0'
+      style={{zIndex: 0}}
     />
   )
 }

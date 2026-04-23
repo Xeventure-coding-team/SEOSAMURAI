@@ -12,6 +12,7 @@ import Calendar from "../calendar/calendar"
 import { useGMBStore } from "@/store/gmbStore"
 import { Loader } from "../Loader/Loader"
 import { useCalendarContext } from "../calendar/calendar-context"
+import { useCalendarStore } from '@/store/calendarStore'
 
 interface Location {
     name: string
@@ -109,7 +110,6 @@ export default function SelectLocation() {
     const [loadingDetails, setLoadingDetails] = useState(false)
     const [error, setError] = useState<string | null>(null)
     const [retryCount, setRetryCount] = useState(0)
-    const [events, setEvents] = useState<CalendarEvent[]>([])
     const [mode, setMode] = useState<Mode>('month')
     const [date, setDate] = useState<Date>(new Date())
 
@@ -117,6 +117,8 @@ export default function SelectLocation() {
     const accessToken = useGMBStore((state) => state.accessToken)
     const [shouldOpenDialog, setShouldOpenDialog] = useState(false)
     const [openDialog, setOpenDialog] = useState(false)
+
+    const { events, setEvents, addEvent } = useCalendarStore()
 
     const hasValidCredentials = gmbAccountId && accessToken
 
@@ -213,9 +215,7 @@ export default function SelectLocation() {
 
                 // Update events state - THIS IS IMPORTANT
                 if (response.data.scheduledPosts) {
-                    setEvents(response.data.scheduledPosts)
-                } else {
-                    setEvents([]) // Clear events if none returned
+                     setEvents(response.data.scheduledPosts)
                 }
 
                 toast.success(`${displayName} selected and ready for posting!`, {
@@ -240,9 +240,10 @@ export default function SelectLocation() {
         }
     }
 
-    const handlePostCreated = (postData: any) => {
+    const handlePostCreated = async () => {
+        setOpenDialog(false)
         if (selectedLocation) {
-            fetchLocationDetails(selectedLocation)
+            await fetchLocationDetails(selectedLocation)
         }
     }
 
@@ -266,9 +267,6 @@ export default function SelectLocation() {
         })
         fetchLocations()
     }
-
-
-
 
     if (loadingLocations) {
         return (
@@ -386,7 +384,6 @@ export default function SelectLocation() {
             {locationDetails && selectedLocation && (
                 <>
                     <Calendar
-                        key={events.length}
                         accountId={gmbAccountId}
                         locationId={selectedLocation}
                         businessName={locationDetails.locationData?.name}

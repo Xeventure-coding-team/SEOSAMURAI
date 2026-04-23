@@ -11,7 +11,7 @@ export default function CalendarBodyDayEvents() {
     .sort((a, b) => new Date(a.scheduledAt).getTime() - new Date(b.scheduledAt).getTime());
 
   return !!dayEvents.length ? (
-    <div className="flex flex-col gap-2">
+    <div className="flex flex-col gap-2 w-full">
       <p className="font-medium p-2 pb-0 font-heading">
         Posts scheduled {format(date, 'MMM d, yyyy')}
       </p>
