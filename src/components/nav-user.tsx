@@ -89,7 +89,7 @@ export function NavUser({
                 <span className="truncate font-medium">
                   {user.name || "Guest User"}
                 </span>
-                <span className="text-muted-foreground truncate text-xs">
+                <span className="truncate text-xs">
                   {user.email || "No email provided"}
                 </span>
               </div>
@@ -117,7 +117,7 @@ export function NavUser({
                   <span className="truncate font-medium">
                     {user.name || "Guest User"}
                   </span>
-                  <span className="text-muted-foreground truncate text-xs">
+                  <span className="truncate text-xs">
                     {user.email || "No email provided"}
                   </span>
                 </div>

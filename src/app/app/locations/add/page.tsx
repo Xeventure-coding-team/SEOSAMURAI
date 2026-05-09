@@ -1,5 +1,6 @@
 import DashboardLayout from '@/app/layouts/DashboardLayout'
 import AddLocations from '@/components/locations/AddLocations'
+import { PlanGate } from '@/components/PlanGate'
 import React from 'react'
 
 export const metadata = {
@@ -9,7 +10,11 @@ export const metadata = {
 
 function page() {
   return (
-    <DashboardLayout><AddLocations /></DashboardLayout>
+    <DashboardLayout>
+      <PlanGate mode={{ type: "slot", slot: "locations" }} featureName="Locations">
+        <AddLocations />
+      </PlanGate>
+    </DashboardLayout>
   )
 }
 

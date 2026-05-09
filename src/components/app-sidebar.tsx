@@ -3,46 +3,36 @@
 import * as React from "react"
 
 import { NavMain } from "@/components/nav-main"
-import { NavSecondary } from "@/components/nav-secondary"
 import { NavUser } from "@/components/nav-user"
 import {
   Sidebar,
   SidebarContent,
   SidebarFooter,
   SidebarHeader,
-  SidebarMenu,
-  SidebarMenuButton,
-  SidebarMenuItem,
 } from "@/components/ui/sidebar"
 import {
   ChartBar,
   Circle,
-  File,
   LayoutDashboard,
   MapPin,
-  Radar,
-  Users,
   Star,
   Camera,
   FileText,
   BrainCircuit,
   Settings,
-  HelpCircle,
-  Search,
-  Zap,
   Timer,
   ExternalLink,
   Megaphone,
   Contact,
-  ScanSearch,
-  MessageCircle,
   Headset,
   ScanLine,
-  Eye
+  Eye,
 } from "lucide-react"
 import { useUser } from "@stackframe/stack";
 import { usePathname } from "next/navigation";
 import { usePageStore } from "@/store/usePageStore";
+import Logo from "./Logo";
+import { UsageRemaining } from "./subscription/UsageRemaining";
 
 
 const data = {
@@ -108,7 +98,7 @@ const data = {
 
     // Tools & Support
     {
-      title: "Run a Scan",
+      title: "Geo-Grid Rank Tracking",
       url: "/app/scan",
       icon: ScanLine,
       group: "Tools & Support",
@@ -223,32 +213,29 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
 
   return (
     <Sidebar collapsible="offcanvas" {...props} variant="sidebar">
-      <SidebarHeader>
-        <SidebarMenu>
-          <SidebarMenuItem>
-            <SidebarMenuButton
-              asChild
-              className="data-[slot=sidebar-menu-button]:!p-1.5"
-            >
-              <a href="#">
-                <Zap className="!size-5" />
-                <span className="text-base font-semibold">Rankerly</span>
-              </a>
-            </SidebarMenuButton>
-          </SidebarMenuItem>
-        </SidebarMenu>
+      <SidebarHeader className="border-b border-sidebar-border/30 py-4 px-2">
+        <Logo />
       </SidebarHeader>
-      <SidebarContent>
+      <SidebarContent className="px-2">
         <NavMain items={data.navMain} />
-        <NavSecondary items={data.navSecondary} className="mt-auto" />
       </SidebarContent>
+
       <SidebarFooter>
+
+        <div className="px-4 py-4 mb-4 border rounded-2xl border-neutral-600">
+          <UsageRemaining
+            compact
+            metrics={["postsUsed", "aiReviewRepliesUsed", "geoGridScansUsed", "scheduledPostsUsed" , "reviewPostersUsed"]}
+          />
+        </div>
+
         <NavUser user={{
           name: user?.displayName ?? undefined,
           email: user?.primaryEmail ?? undefined,
           avatar: user?.profileImageUrl ?? undefined,
         }} />
       </SidebarFooter>
+
     </Sidebar>
   )
 }

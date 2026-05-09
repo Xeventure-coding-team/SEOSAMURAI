@@ -4,6 +4,8 @@ import FormData from 'form-data';
 import axios from 'axios';
 import { prisma } from "../../../../../lib/prisma";
 import { stackServerApp } from '@/stack';
+import { decrementUsage, incrementUsage } from '@/lib/usage';
+import { canUse, canUseErrorMessage } from '@/lib/actions/can-use';
 
 // Validation schemas
 const createScheduledPostSchema = z.object({
@@ -47,6 +49,7 @@ const updateScheduledPostSchema = z.object({
     imageUrl: z.string().optional()
 });
 
+const POST_RELEASES_QUOTA = ["scheduled", "failed", "cancelled"] as const;
 
 // Helper function to delete image from ImageKit
 async function deleteFromImageKit(imageUrl: string): Promise<void> {
@@ -227,10 +230,22 @@ export async function GET(request: NextRequest) {
 export async function POST(request: NextRequest) {
     try {
         const user = await stackServerApp.getUser();
+
+        const F = await canUse(user.id, "scheduled-posts")
+
+        if (!F.ok) {
+            return NextResponse.json({
+                success: false,
+                error: canUseErrorMessage(F, "scheduled-posts")
+            }, { status: 401 });
+        }
+
+
         const contentType = request.headers.get('content-type');
         let body: any;
         let file: Buffer | null = null;
         let fileName: string | null = null;
+
 
         // Handle form data or JSON
         if (contentType?.includes('multipart/form-data')) {
@@ -324,6 +339,8 @@ export async function POST(request: NextRequest) {
                 user_id: user?.id,
             }
         });
+
+        await incrementUsage(user.id, "scheduledPostsUsed");
 
         return NextResponse.json({
             success: true,
@@ -556,7 +573,7 @@ export async function DELETE(request: NextRequest) {
                 message: 'Scheduled post not found'
             }, { status: 404 });
         }
-        // Don't allow deletion of published posts
+
         if (existingPost.status === 'PUBLISHED') {
             return NextResponse.json({
                 success: false,
@@ -564,7 +581,6 @@ export async function DELETE(request: NextRequest) {
             }, { status: 400 });
         }
 
-        // Delete the associated ImageKit image if imageUrl exists
         if (existingPost.imageUrl) {
             try {
                 await deleteFromImageKit(existingPost.imageUrl);
@@ -572,6 +588,19 @@ export async function DELETE(request: NextRequest) {
                 console.error('Failed to delete image');
             }
         }
+
+        // ── Release quota if post never ran ──────────────────────────────────
+        const user = await stackServerApp.getUser();
+        if (user && POST_RELEASES_QUOTA.includes(existingPost.status as any)) {
+            const usage = await prisma.usage.findUnique({ 
+                where: { stackUserId: user.id } 
+            });
+            // Only decrement if post was created in the current billing period
+            if (usage && existingPost.createdAt >= usage.periodStart) {
+                await decrementUsage(user.id, "scheduledPostsUsed");
+            }
+        }
+        // ─────────────────────────────────────────────────────────────────────
 
         await prisma.scheduledPost.delete({
             where: { id }

@@ -24,7 +24,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog"
-import { Star, Loader2, Reply, Send, Sparkles, AlertCircle, Edit, Trash2, MoreHorizontal, MapPin, SortAsc, SortDesc } from "lucide-react"
+import { Star, Loader2, Reply, Send, Sparkles, AlertCircle, Edit, Trash2, MoreHorizontal, MapPin, SortAsc, SortDesc, RefreshCw, BugIcon } from "lucide-react"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
 import toast from "react-hot-toast"
 import { format } from "timeago.js";
@@ -32,6 +32,10 @@ import { Badge } from "../ui/badge"
 import { useGMBStore } from "@/store/gmbStore"
 import ErrorRender from "../Error"
 import { Loader } from "../Loader/Loader"
+import { UsageGate } from "../usage-gate"
+import { PlanGate } from "../PlanGate"
+import { cn } from "@/lib/utils"
+import { Skeleton } from "../ui/skeleton"
 
 interface TimeAgoProps {
   timestamp: string | Date;
@@ -491,462 +495,504 @@ export default function UnrepliedReviews({
     return (
       <Card className={className}>
         <CardHeader>
-          <CardTitle>Unreplied Reviews</CardTitle>
-          <CardDescription>Loading unreplied reviews...</CardDescription>
+          <Skeleton className="h-7 w-40" />
+          <Skeleton className="h-4 w-48" />
         </CardHeader>
-        <CardContent>
-          <Loader text="Loading unreplied reviews..." />
+        <CardContent className="space-y-6">
+          {[1, 2, 3].map((i) => (
+            <div key={i} className="space-y-3">
+              <div className="flex items-start gap-3">
+                <Skeleton className="h-10 w-10 rounded-full" />
+                <div className="flex-1 space-y-2">
+                  <Skeleton className="h-4 w-32" />
+                  <Skeleton className="h-3 w-24" />
+                </div>
+              </div>
+              <Skeleton className="h-16 w-full" />
+              <div className="flex gap-2">
+                <Skeleton className="h-8 w-20" />
+                <Skeleton className="h-8 w-24" />
+              </div>
+            </div>
+          ))}
         </CardContent>
       </Card>
-    )
+    );
   }
 
   if (error) {
     return (
-      <ErrorRender error={"We couldn't load this content. You can retry or report the issue."} />
-    )
+      <Card className={cn("border-red-200 dark:border-red-800", className)}>
+        <CardHeader>
+          <div className="flex items-center gap-2">
+            <AlertCircle className="h-5 w-5 text-red-500" />
+            <CardTitle>Unable to Load Reviews</CardTitle>
+          </div>
+          <CardDescription>Something went wrong while fetching your unreplied reviews</CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <p className="text-sm text-muted-foreground">
+            {error ? error?.message : "An unexpected error occurred"}
+          </p>
+          <div className="flex gap-3">
+            <Button variant="outline" size="sm" onClick={() => window.location.reload()}>
+              <RefreshCw className="h-3.5 w-3.5 mr-1" />
+              Retry
+            </Button>
+            <Button variant="ghost" size="sm">
+              <BugIcon className="h-3.5 w-3.5 mr-1" />
+              Report Issue
+            </Button>
+          </div>
+        </CardContent>
+      </Card>
+    );
   }
 
   return (
-    <Card className={className}>
+    <PlanGate mode={{ type: "metric", metric: "aiReviewRepliesUsed" }} featureName="Unreplied Reviews">
+      <Card className={`${className} border-0 shadow-none m-0`}>
 
-      <CardHeader>
-        <div className="flex items-center justify-between">
+        <CardHeader>
+          <div className="flex items-center justify-between">
 
-          {/* Left */}
-          <div className="flex items-center gap-2">
-            <CardTitle>Unreplied Reviews</CardTitle>
-            <CardDescription><Badge>{totalUnrepliedCount}</Badge></CardDescription>
+            {/* Left */}
+            <div className="flex items-center gap-2">
+              <CardTitle>Unreplied Reviews</CardTitle>
+              <CardDescription><Badge>{totalUnrepliedCount}</Badge></CardDescription>
+            </div>
+
+            {/* Right - Sort */}
+            <button
+              onClick={() =>
+                setSortOrder(sortOrder === "latest" ? "oldest" : "latest")
+              }
+              className="flex items-center gap-1 rounded-md border px-2 py-1 text-xs text-muted-foreground hover:bg-muted transition-colors"
+              title={
+                sortOrder === "latest"
+                  ? "Showing latest first"
+                  : "Showing oldest first"
+              }
+            >
+              {sortOrder === "latest" ? (
+                <>
+                  <SortDesc className="h-3.5 w-3.5" />
+                  Latest
+                </>
+              ) : (
+                <>
+                  <SortAsc className="h-3.5 w-3.5" />
+                  Oldest
+                </>
+              )}
+            </button>
           </div>
 
-          {/* Right - Sort */}
-          <button
-            onClick={() =>
-              setSortOrder(sortOrder === "latest" ? "oldest" : "latest")
-            }
-            className="flex items-center gap-1 rounded-md border px-2 py-1 text-xs text-muted-foreground hover:bg-muted transition-colors"
-            title={
-              sortOrder === "latest"
-                ? "Showing latest first"
-                : "Showing oldest first"
-            }
-          >
-            {sortOrder === "latest" ? (
-              <>
-                <SortDesc className="h-3.5 w-3.5" />
-                Latest
-              </>
-            ) : (
-              <>
-                <SortAsc className="h-3.5 w-3.5" />
-                Oldest
-              </>
-            )}
-          </button>
-        </div>
+          {/* Description */}
+          <CardDescription>
+            {groupedReviews.length} locations with pending replies
+          </CardDescription>
+        </CardHeader>
 
-        {/* Description */}
-        <CardDescription>
-          {groupedReviews.length} locations with pending replies
-        </CardDescription>
-      </CardHeader>
+        <CardContent>
+          {groupedReviews.length > 0 ? (
+            <div className="space-y-4">
+              {groupedReviews.map((locationGroup) => (
+                <div key={locationGroup.locationId} className="space-y-4">
 
-      <CardContent>
-        {groupedReviews.length > 0 ? (
-          <div className="space-y-4">
-            {groupedReviews.map((locationGroup) => (
-              <div key={locationGroup.locationId} className="space-y-4">
+                  <div className="space-y-4">
+                    {locationGroup.reviews.map((review) => {
+                      if (!review || typeof review !== "object" || !review.reviewId) {
+                        return null
+                      }
 
-                <div className="space-y-4">
-                  {locationGroup.reviews.map((review) => {
-                    if (!review || typeof review !== "object" || !review.reviewId) {
-                      return null
-                    }
+                      const profilePhotoUrl = review.reviewer?.profilePhotoUrl
+                      const isImageLoading = profilePhotoUrl ? loadingImages.has(profilePhotoUrl) : false
+                      const hasReply =
+                        review.reviewReply &&
+                        typeof review.reviewReply === "object" &&
+                        review.reviewReply.comment &&
+                        typeof review.reviewReply.comment === "string"
 
-                    const profilePhotoUrl = review.reviewer?.profilePhotoUrl
-                    const isImageLoading = profilePhotoUrl ? loadingImages.has(profilePhotoUrl) : false
-                    const hasReply =
-                      review.reviewReply &&
-                      typeof review.reviewReply === "object" &&
-                      review.reviewReply.comment &&
-                      typeof review.reviewReply.comment === "string"
-
-                    return (
-                      <div key={review.reviewId} className="space-y-3">
-                        <div className="flex gap-4 p-4 rounded-lg border">
-                          <div className="relative">
-                            <Avatar className="w-10 h-10">
-                              {profilePhotoUrl && !imageErrors.has(profilePhotoUrl) && (
-                                <AvatarImage
-                                  src={getImageSrc(profilePhotoUrl) || "/placeholder.svg"}
-                                  onLoadStart={() => handleImageLoadStart(profilePhotoUrl)}
-                                  onLoad={() => handleImageLoad(profilePhotoUrl)}
-                                  onError={() => handleImageError(profilePhotoUrl)}
-                                />
-                              )}
-                              <AvatarFallback>
-                                {review.reviewer?.displayName?.charAt(0)?.toUpperCase() || "?"}
-                              </AvatarFallback>
-                            </Avatar>
-                            {isImageLoading && (
-                              <div className="absolute inset-0 flex items-center justify-center bg-muted rounded-full">
-                                <Loader2 className="w-4 h-4 animate-spin" />
-                              </div>
-                            )}
-                          </div>
-                          <div className="flex-1 space-y-2">
-                            <div className="flex items-center justify-between">
-                              <p className="font-medium text-sm capitalize">{review.reviewer?.displayName || "Anonymous"}</p>
-                              <div className="flex items-center gap-2">
-                                <div className="flex">
-                                  {Array.from({ length: 5 }).map((_, i) => (
-                                    <Star
-                                      key={i}
-                                      className={`w-4 h-4 ${i < ratingToNumber(review.starRating)
-                                        ? "text-yellow-400 fill-current"
-                                        : "text-gray-300"
-                                        }`}
-                                    />
-                                  ))}
+                      return (
+                        <div key={review.reviewId} className="space-y-3">
+                          <div className="flex gap-4 p-4 rounded-lg border">
+                            <div className="relative">
+                              <Avatar className="w-10 h-10">
+                                {profilePhotoUrl && !imageErrors.has(profilePhotoUrl) && (
+                                  <AvatarImage
+                                    src={getImageSrc(profilePhotoUrl) || "/placeholder.svg"}
+                                    onLoadStart={() => handleImageLoadStart(profilePhotoUrl)}
+                                    onLoad={() => handleImageLoad(profilePhotoUrl)}
+                                    onError={() => handleImageError(profilePhotoUrl)}
+                                  />
+                                )}
+                                <AvatarFallback>
+                                  {review.reviewer?.displayName?.charAt(0)?.toUpperCase() || "?"}
+                                </AvatarFallback>
+                              </Avatar>
+                              {isImageLoading && (
+                                <div className="absolute inset-0 flex items-center justify-center bg-muted rounded-full">
+                                  <Loader2 className="w-4 h-4 animate-spin" />
                                 </div>
-
-                                <span className="text-xs text-muted-foreground">
-                                  {formatDate(review.createTime || review.updateTime)}
-                                </span>
-                              </div>
+                              )}
                             </div>
-                            {review.comment && typeof review.comment === "string" ? (
-                              <p className="text-sm text-muted-foreground">{review.comment}</p>
-                            ) : (
-                              <p className="text-sm text-muted-foreground italic">No review text provided</p>
-                            )}
+                            <div className="flex-1 space-y-2">
+                              <div className="flex items-center justify-between">
+                                <p className="font-medium text-sm capitalize">{review.reviewer?.displayName || "Anonymous"}</p>
+                                <div className="flex items-center gap-2">
+                                  <div className="flex">
+                                    {Array.from({ length: 5 }).map((_, i) => (
+                                      <Star
+                                        key={i}
+                                        className={`w-4 h-4 ${i < ratingToNumber(review.starRating)
+                                          ? "text-yellow-400 fill-current"
+                                          : "text-gray-300"
+                                          }`}
+                                      />
+                                    ))}
+                                  </div>
 
-                            <div className="flex gap-2 items-center">
+                                  <span className="text-xs text-muted-foreground">
+                                    {formatDate(review.createTime || review.updateTime)}
+                                  </span>
+                                </div>
+                              </div>
+                              {review.comment && typeof review.comment === "string" ? (
+                                <p className="text-sm text-muted-foreground">{review.comment}</p>
+                              ) : (
+                                <p className="text-sm text-muted-foreground italic">No review text provided</p>
+                              )}
 
-                              {showReplyButton && !hasReply && (
-                                <div className="pt-2">
-                                  <Dialog
-                                    open={replyDialogOpen === review.reviewId}
-                                    onOpenChange={(open) =>
-                                      open
-                                        ? openReplyDialog(review.reviewId, locationGroup.locationId)
-                                        : closeReplyDialog()
-                                    }
-                                  >
-                                    <DialogTrigger asChild>
-                                      <Button variant="outline" size="sm">
-                                        <Reply className="w-4 h-4 mr-2" />
-                                        Reply
-                                      </Button>
-                                    </DialogTrigger>
-                                    <DialogContent className="sm:max-w-[525px]">
-                                      <DialogHeader>
-                                        <DialogTitle>Reply to Review</DialogTitle>
-                                        <DialogDescription>
-                                          Responding to {review.reviewer?.displayName || "Anonymous"}'s review at{" "}
-                                          {locationGroup.storeName ? locationGroup.storeName : locationGroup.businessName}
-                                        </DialogDescription>
-                                      </DialogHeader>
+                              <div className="flex gap-2 items-center">
 
-                                      <div className="space-y-4">
-                                        <div className="p-3 bg-muted rounded-lg">
-                                          <div className="flex items-center gap-2 mb-2">
-                                            <div className="flex">
-                                              {Array.from({ length: 5 }).map((_, i) => (
-                                                <Star
-                                                  key={i}
-                                                  className={`w-3 h-3 ${i < ratingToNumber(review.starRating)
-                                                    ? "text-yellow-400 fill-current"
-                                                    : "text-gray-300"
-                                                    }`}
-                                                />
-                                              ))}
+                                {showReplyButton && !hasReply && (
+                                  <div className="pt-2">
+                                    <Dialog
+                                      open={replyDialogOpen === review.reviewId}
+                                      onOpenChange={(open) =>
+                                        open
+                                          ? openReplyDialog(review.reviewId, locationGroup.locationId)
+                                          : closeReplyDialog()
+                                      }
+                                    >
+                                      <DialogTrigger asChild>
+                                        <UsageGate metric="aiReviewRepliesUsed">
+                                          <Button variant="outline" size="sm">
+                                            <Reply className="w-4 h-4 mr-2" />
+                                            Reply
+                                          </Button>
+                                        </UsageGate>
+                                      </DialogTrigger>
+                                      <DialogContent className="sm:max-w-[525px]">
+                                        <DialogHeader>
+                                          <DialogTitle>Reply to Review</DialogTitle>
+                                          <DialogDescription>
+                                            Responding to {review.reviewer?.displayName || "Anonymous"}'s review at{" "}
+                                            {locationGroup.storeName ? locationGroup.storeName : locationGroup.businessName}
+                                          </DialogDescription>
+                                        </DialogHeader>
+
+                                        <div className="space-y-4">
+                                          <div className="p-3 bg-muted rounded-lg">
+                                            <div className="flex items-center gap-2 mb-2">
+                                              <div className="flex">
+                                                {Array.from({ length: 5 }).map((_, i) => (
+                                                  <Star
+                                                    key={i}
+                                                    className={`w-3 h-3 ${i < ratingToNumber(review.starRating)
+                                                      ? "text-yellow-400 fill-current"
+                                                      : "text-gray-300"
+                                                      }`}
+                                                  />
+                                                ))}
+                                              </div>
+                                              <span className="text-xs text-muted-foreground">
+                                                {review.reviewer?.displayName || "Anonymous"}
+                                              </span>
                                             </div>
-                                            <span className="text-xs text-muted-foreground">
-                                              {review.reviewer?.displayName || "Anonymous"}
-                                            </span>
+                                            <p className="text-sm">{review.comment || "No review text provided"}</p>
                                           </div>
-                                          <p className="text-sm">{review.comment || "No review text provided"}</p>
-                                        </div>
 
-                                        <div className="space-y-2">
-                                          <div className="mt-3 border-t pt-3">
-                                            <p className="text-xs text-muted-foreground mb-2">
-                                              Do you think this review is incorrect?
-                                            </p>
+                                          <div className="space-y-2">
+                                            <div className="mt-3 border-t pt-3">
+                                              <p className="text-xs text-muted-foreground mb-2">
+                                                Do you think this review is incorrect?
+                                              </p>
 
-                                            {!showIncorrectInput ? (
+                                              {!showIncorrectInput ? (
+                                                <Button
+                                                  variant="outline"
+                                                  size="sm"
+                                                  onClick={() => setShowIncorrectInput(true)}
+                                                >
+                                                  Yes
+                                                </Button>
+                                              ) : (
+                                                <>
+                                                  <Textarea
+                                                    placeholder="Please explain why you think this review is incorrect..."
+                                                    value={incorrectReason}
+                                                    onChange={(e) => setIncorrectReason(e.target.value)}
+                                                    rows={3}
+                                                  />
+                                                  <div className="text-right">
+                                                    <Button
+                                                      variant="destructive"
+                                                      size="sm"
+                                                      className="mt-2"
+                                                      onClick={() => setShowIncorrectInput(false)}
+                                                    >
+                                                      Cancel
+                                                    </Button>
+                                                  </div>
+                                                </>
+                                              )}
+                                            </div>
+
+                                            <div className="flex items-center justify-between">
+                                              <label className="text-sm font-medium">Your Reply</label>
                                               <Button
                                                 variant="outline"
                                                 size="sm"
-                                                onClick={() => setShowIncorrectInput(true)}
+                                                onClick={() =>
+                                                  generateAIReply(
+                                                    review.comment || "",
+                                                    review.reviewId,
+                                                    review.reviewer?.displayName || "",
+                                                    locationGroup.storeName ? locationGroup.storeName : locationGroup.businessName,
+                                                    review.starRating
+                                                  )
+                                                }
                                               >
-                                                Yes
+                                                {generatingReply ? (
+                                                  <>
+                                                    <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                                                    Generating...
+                                                  </>
+                                                ) : (
+                                                  <>
+                                                    <Sparkles className="w-4 h-4 mr-2" />
+                                                    Generate Reply
+                                                  </>
+                                                )}
                                               </Button>
+                                            </div>
+
+                                            {generatingReply && aiGenerationProgress && (
+                                              <div className="flex items-center gap-2 p-2 bg-blue-50 dark:bg-blue-950/20 rounded-lg">
+                                                <div className="flex space-x-1">
+                                                  <div className="w-2 h-2 bg-blue-500 rounded-full animate-bounce [animation-delay:-0.3s]"></div>
+                                                  <div className="w-2 h-2 bg-blue-500 rounded-full animate-bounce [animation-delay:-0.15s]"></div>
+                                                  <div className="w-2 h-2 bg-blue-500 rounded-full animate-bounce"></div>
+                                                </div>
+                                                <span className="text-sm text-blue-600 animate-pulse">
+                                                  {aiGenerationProgress}
+                                                </span>
+                                              </div>
+                                            )}
+
+                                            <Textarea
+                                              placeholder="Write your reply here..."
+                                              value={replyText}
+                                              onChange={(e) => setReplyText(e.target.value)}
+                                              rows={4}
+                                            />
+                                          </div>
+                                        </div>
+
+                                        <DialogFooter>
+                                          <Button variant="outline" onClick={closeReplyDialog}>
+                                            Cancel
+                                          </Button>
+                                          <Button
+                                            onClick={() =>
+                                              locationGroup.locationId && handlePostReply(review.reviewId, locationGroup.locationId)
+                                            }
+                                            disabled={postingReply || !replyText.trim()}
+                                          >
+                                            {postingReply ? (
+                                              <>
+                                                <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                                                Posting...
+                                              </>
                                             ) : (
                                               <>
-                                                <Textarea
-                                                  placeholder="Please explain why you think this review is incorrect..."
-                                                  value={incorrectReason}
-                                                  onChange={(e) => setIncorrectReason(e.target.value)}
-                                                  rows={3}
-                                                />
-                                                <div className="text-right">
-                                                  <Button
-                                                    variant="destructive"
-                                                    size="sm"
-                                                    className="mt-2"
-                                                    onClick={() => setShowIncorrectInput(false)}
-                                                  >
-                                                    Cancel
-                                                  </Button>
-                                                </div>
+                                                <Send className="w-4 h-4 mr-2" />
+                                                Post Reply
                                               </>
                                             )}
-                                          </div>
+                                          </Button>
+                                        </DialogFooter>
+                                      </DialogContent>
+                                    </Dialog>
+                                  </div>
+                                )}
 
-                                          <div className="flex items-center justify-between">
-                                            <label className="text-sm font-medium">Your Reply</label>
-                                            <Button
-                                              variant="outline"
-                                              size="sm"
-                                              onClick={() =>
-                                                generateAIReply(
-                                                  review.comment || "",
-                                                  review.reviewId,
-                                                  review.reviewer?.displayName || "",
-                                                  locationGroup.storeName ? locationGroup.storeName : locationGroup.businessName,
-                                                  review.starRating
-                                                )
-                                              }
-                                            >
-                                              {generatingReply ? (
-                                                <>
-                                                  <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                                                  Generating...
-                                                </>
-                                              ) : (
-                                                <>
-                                                  <Sparkles className="w-4 h-4 mr-2" />
-                                                  Generate Reply
-                                                </>
-                                              )}
-                                            </Button>
-                                          </div>
+                                <Badge className="mt-2">
+                                  {locationGroup.storeName ? locationGroup.storeName : locationGroup.businessName}
+                                </Badge>
 
-                                          {generatingReply && aiGenerationProgress && (
-                                            <div className="flex items-center gap-2 p-2 bg-blue-50 dark:bg-blue-950/20 rounded-lg">
-                                              <div className="flex space-x-1">
-                                                <div className="w-2 h-2 bg-blue-500 rounded-full animate-bounce [animation-delay:-0.3s]"></div>
-                                                <div className="w-2 h-2 bg-blue-500 rounded-full animate-bounce [animation-delay:-0.15s]"></div>
-                                                <div className="w-2 h-2 bg-blue-500 rounded-full animate-bounce"></div>
-                                              </div>
-                                              <span className="text-sm text-blue-600 animate-pulse">
-                                                {aiGenerationProgress}
-                                              </span>
-                                            </div>
-                                          )}
+                                <Badge className="mt-2">
+                                  <TimeAgo timestamp={review.createTime} />
+                                </Badge>
 
-                                          <Textarea
-                                            placeholder="Write your reply here..."
-                                            value={replyText}
-                                            onChange={(e) => setReplyText(e.target.value)}
-                                            rows={4}
-                                          />
-                                        </div>
-                                      </div>
-
-                                      <DialogFooter>
-                                        <Button variant="outline" onClick={closeReplyDialog}>
-                                          Cancel
-                                        </Button>
-                                        <Button
-                                          onClick={() =>
-                                            locationGroup.locationId && handlePostReply(review.reviewId, locationGroup.locationId)
-                                          }
-                                          disabled={postingReply || !replyText.trim()}
-                                        >
-                                          {postingReply ? (
-                                            <>
-                                              <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                                              Posting...
-                                            </>
-                                          ) : (
-                                            <>
-                                              <Send className="w-4 h-4 mr-2" />
-                                              Post Reply
-                                            </>
-                                          )}
-                                        </Button>
-                                      </DialogFooter>
-                                    </DialogContent>
-                                  </Dialog>
-                                </div>
-                              )}
-
-                              <Badge className="mt-2">
-                                {locationGroup.storeName ? locationGroup.storeName : locationGroup.businessName}
-                              </Badge>
-
-                              <Badge className="mt-2">
-                                <TimeAgo timestamp={review.createTime} />
-                              </Badge>
-
+                              </div>
                             </div>
                           </div>
-                        </div>
 
-                        {hasReply && (
-                          <div className="ml-14 p-3 bg-blue-50 dark:bg-blue-950/20 rounded-lg border-l-4 border-blue-500">
-                            <div className="flex items-center justify-between mb-2">
-                              <div className="flex items-center gap-2">
-                                <Reply className="w-4 h-4 text-blue-600" />
-                                <span className="text-sm font-medium text-blue-600">
-                                  {locationGroup.storeName ? locationGroup.storeName : locationGroup.businessName} Reply
-                                </span>
-                                <span className="text-xs text-muted-foreground">
-                                  {formatDate(review.reviewReply!.updateTime)}
-                                </span>
+                          {hasReply && (
+                            <div className="ml-14 p-3 bg-blue-50 dark:bg-blue-950/20 rounded-lg border-l-4 border-blue-500">
+                              <div className="flex items-center justify-between mb-2">
+                                <div className="flex items-center gap-2">
+                                  <Reply className="w-4 h-4 text-blue-600" />
+                                  <span className="text-sm font-medium text-blue-600">
+                                    {locationGroup.storeName ? locationGroup.storeName : locationGroup.businessName} Reply
+                                  </span>
+                                  <span className="text-xs text-muted-foreground">
+                                    {formatDate(review.reviewReply!.updateTime)}
+                                  </span>
+                                </div>
+
+                                <DropdownMenu
+                                  open={dropdownOpen === review.reviewId}
+                                  onOpenChange={(open) => setDropdownOpen(open ? review.reviewId : null)}
+                                >
+                                  <DropdownMenuTrigger asChild>
+                                    <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
+                                      <MoreHorizontal className="w-4 h-4" />
+                                    </Button>
+                                  </DropdownMenuTrigger>
+                                  <DropdownMenuContent align="end">
+                                    <DropdownMenuItem
+                                      onClick={() => {
+                                        setDropdownOpen(null)
+                                        openEditDialog(review.reviewId, review.reviewReply!.comment)
+                                        setCurrentLocationId(locationGroup.locationId)
+                                      }}
+                                      disabled={editingReply || deletingReply}
+                                    >
+                                      <Edit className="w-4 h-4 mr-2" />
+                                      Edit Reply
+                                    </DropdownMenuItem>
+                                    <DropdownMenuItem
+                                      onClick={() => {
+                                        setDropdownOpen(null)
+                                        setDeleteDialogOpen(review.reviewId)
+                                        setCurrentLocationId(locationGroup.locationId)
+                                      }}
+                                      disabled={editingReply || deletingReply}
+                                    >
+                                      <Trash2 className="w-4 h-4 mr-2" />
+                                      Delete Reply
+                                    </DropdownMenuItem>
+                                  </DropdownMenuContent>
+                                </DropdownMenu>
                               </div>
 
-                              <DropdownMenu
-                                open={dropdownOpen === review.reviewId}
-                                onOpenChange={(open) => setDropdownOpen(open ? review.reviewId : null)}
-                              >
-                                <DropdownMenuTrigger asChild>
-                                  <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
-                                    <MoreHorizontal className="w-4 h-4" />
-                                  </Button>
-                                </DropdownMenuTrigger>
-                                <DropdownMenuContent align="end">
-                                  <DropdownMenuItem
-                                    onClick={() => {
-                                      setDropdownOpen(null)
-                                      openEditDialog(review.reviewId, review.reviewReply!.comment)
-                                      setCurrentLocationId(locationGroup.locationId)
-                                    }}
-                                    disabled={editingReply || deletingReply}
-                                  >
-                                    <Edit className="w-4 h-4 mr-2" />
-                                    Edit Reply
-                                  </DropdownMenuItem>
-                                  <DropdownMenuItem
-                                    onClick={() => {
-                                      setDropdownOpen(null)
-                                      setDeleteDialogOpen(review.reviewId)
-                                      setCurrentLocationId(locationGroup.locationId)
-                                    }}
-                                    disabled={editingReply || deletingReply}
-                                  >
-                                    <Trash2 className="w-4 h-4 mr-2" />
-                                    Delete Reply
-                                  </DropdownMenuItem>
-                                </DropdownMenuContent>
-                              </DropdownMenu>
+                              <div className="relative">
+                                <p className="text-sm">{review.reviewReply!.comment}</p>
+                              </div>
                             </div>
-
-                            <div className="relative">
-                              <p className="text-sm">{review.reviewReply!.comment}</p>
-                            </div>
-                          </div>
-                        )}
-                      </div>
-                    )
-                  })}
+                          )}
+                        </div>
+                      )
+                    })}
+                  </div>
                 </div>
-              </div>
-            ))}
-          </div>
-        ) : (
-          <div className="text-center py-8 text-muted-foreground">
-            <Star className="w-12 h-12 mx-auto mb-4 opacity-50" />
-            <p>No unreplied reviews found</p>
-            <p className="text-xs mt-2">All reviews have been replied to or no reviews exist</p>
-          </div>
-        )}
+              ))}
+            </div>
+          ) : (
+            <div className="text-center py-8 text-muted-foreground">
+              <Star className="w-12 h-12 mx-auto mb-4 opacity-50" />
+              <p>No unreplied reviews found</p>
+              <p className="text-xs mt-2">All reviews have been replied to or no reviews exist</p>
+            </div>
+          )}
 
-        <Dialog open={editDialogOpen !== null} onOpenChange={(open) => !open && closeEditDialog()}>
-          <DialogContent className="sm:max-w-[525px]">
-            <DialogHeader>
-              <DialogTitle>Edit Reply</DialogTitle>
-              <DialogDescription>Update your reply to this review</DialogDescription>
-            </DialogHeader>
+          <Dialog open={editDialogOpen !== null} onOpenChange={(open) => !open && closeEditDialog()}>
+            <DialogContent className="sm:max-w-[525px]">
+              <DialogHeader>
+                <DialogTitle>Edit Reply</DialogTitle>
+                <DialogDescription>Update your reply to this review</DialogDescription>
+              </DialogHeader>
 
-            {replyEditState && (
-              <div className="space-y-4">
-                <div className="space-y-2">
-                  <label className="text-sm font-medium">Your Reply</label>
-                  <Textarea
-                    placeholder="Write your reply here..."
-                    value={replyEditState.editedText}
-                    onChange={(e) =>
-                      setReplyEditState((prev) => (prev ? { ...prev, editedText: e.target.value } : null))
-                    }
-                    rows={4}
-                  />
+              {replyEditState && (
+                <div className="space-y-4">
+                  <div className="space-y-2">
+                    <label className="text-sm font-medium">Your Reply</label>
+                    <Textarea
+                      placeholder="Write your reply here..."
+                      value={replyEditState.editedText}
+                      onChange={(e) =>
+                        setReplyEditState((prev) => (prev ? { ...prev, editedText: e.target.value } : null))
+                      }
+                      rows={4}
+                    />
+                  </div>
                 </div>
-              </div>
-            )}
+              )}
 
-            <DialogFooter>
-              <Button variant="outline" onClick={closeEditDialog}>
-                Cancel
-              </Button>
-              <Button
-                onClick={() =>
-                  editDialogOpen && currentLocationId && handleEditReply(editDialogOpen, currentLocationId)
-                }
-                disabled={!replyEditState?.editedText.trim() || editingReply}
-              >
-                {editingReply ? (
-                  <>
-                    <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                    Updating...
-                  </>
-                ) : (
-                  <>
-                    <Edit className="w-4 h-4 mr-2" />
-                    Update Reply
-                  </>
-                )}
-              </Button>
-            </DialogFooter>
-          </DialogContent>
-        </Dialog>
+              <DialogFooter>
+                <Button variant="outline" onClick={closeEditDialog}>
+                  Cancel
+                </Button>
+                <Button
+                  onClick={() =>
+                    editDialogOpen && currentLocationId && handleEditReply(editDialogOpen, currentLocationId)
+                  }
+                  disabled={!replyEditState?.editedText.trim() || editingReply}
+                >
+                  {editingReply ? (
+                    <>
+                      <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                      Updating...
+                    </>
+                  ) : (
+                    <>
+                      <Edit className="w-4 h-4 mr-2" />
+                      Update Reply
+                    </>
+                  )}
+                </Button>
+              </DialogFooter>
+            </DialogContent>
+          </Dialog>
 
-        <AlertDialog open={deleteDialogOpen !== null} onOpenChange={(open) => !open && setDeleteDialogOpen(null)}>
-          <AlertDialogContent>
-            <AlertDialogHeader>
-              <AlertDialogTitle>Delete Reply</AlertDialogTitle>
-              <AlertDialogDescription>
-                Are you sure you want to delete this reply? This action cannot be undone.
-              </AlertDialogDescription>
-            </AlertDialogHeader>
-            <AlertDialogFooter>
-              <AlertDialogCancel>Cancel</AlertDialogCancel>
-              <AlertDialogAction
-                onClick={() =>
-                  deleteDialogOpen && currentLocationId && handleDeleteReply(deleteDialogOpen, currentLocationId)
-                }
-                disabled={deletingReply}
-                className="bg-red-600 hover:bg-red-700"
-              >
-                {deletingReply ? (
-                  <>
-                    <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                    Deleting...
-                  </>
-                ) : (
-                  <>
-                    <Trash2 className="w-4 h-4 mr-2" />
-                    Delete Reply
-                  </>
-                )}
-              </AlertDialogAction>
-            </AlertDialogFooter>
-          </AlertDialogContent>
-        </AlertDialog>
-      </CardContent>
-    </Card>
+          <AlertDialog open={deleteDialogOpen !== null} onOpenChange={(open) => !open && setDeleteDialogOpen(null)}>
+            <AlertDialogContent>
+              <AlertDialogHeader>
+                <AlertDialogTitle>Delete Reply</AlertDialogTitle>
+                <AlertDialogDescription>
+                  Are you sure you want to delete this reply? This action cannot be undone.
+                </AlertDialogDescription>
+              </AlertDialogHeader>
+              <AlertDialogFooter>
+                <AlertDialogCancel>Cancel</AlertDialogCancel>
+                <AlertDialogAction
+                  onClick={() =>
+                    deleteDialogOpen && currentLocationId && handleDeleteReply(deleteDialogOpen, currentLocationId)
+                  }
+                  disabled={deletingReply}
+                  className="bg-red-600 hover:bg-red-700"
+                >
+                  {deletingReply ? (
+                    <>
+                      <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                      Deleting...
+                    </>
+                  ) : (
+                    <>
+                      <Trash2 className="w-4 h-4 mr-2" />
+                      Delete Reply
+                    </>
+                  )}
+                </AlertDialogAction>
+              </AlertDialogFooter>
+            </AlertDialogContent>
+          </AlertDialog>
+        </CardContent>
+      </Card>
+    </PlanGate>
   )
 }

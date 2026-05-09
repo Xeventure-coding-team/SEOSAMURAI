@@ -27,7 +27,6 @@ export function middleware(request: NextRequest) {
   if (match) {
     subdomain = match[1];
     if (subdomain !== 'www' && subdomain !== 'localhost') {
-      console.log('✅ Subdomain detected:', subdomain);
     } else {
       subdomain = null;
     }

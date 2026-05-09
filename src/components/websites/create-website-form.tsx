@@ -47,6 +47,7 @@ import {
     Globe,
 } from 'lucide-react';
 import { useGMBStore } from '@/store/gmbStore';
+import { usePageStore } from '@/store/usePageStore';
 
 const formSchema = z.object({
     locationId: z.string().min(1, 'Please select a location'),
@@ -118,6 +119,12 @@ export function CreateWebsiteForm({ userId, onSuccessRedirect, onSuccess }: Crea
     const [logoPreview, setLogoPreview] = useState<string | null>(null);
     const [logoFile, setLogoFile] = useState<File | null>(null);
 
+    const setPageName = usePageStore((state) => state.setPageName);
+
+    useEffect(() => {
+        setPageName('Create New Website');
+    },[])
+
 
     const router = useRouter();
     const gmbAccountId = useGMBStore((state) => state.accountId);
@@ -175,7 +182,6 @@ export function CreateWebsiteForm({ userId, onSuccessRedirect, onSuccess }: Crea
 
             if (response.data.accounts && response.data.accounts.length > 0) {
                 setLocations(response.data.accounts);
-                toast.success(`Found ${response.data.accounts.length} business locations`);
             } else {
                 toast.error("No business locations found. Check your GMB account.");
             }
@@ -198,13 +204,11 @@ export function CreateWebsiteForm({ userId, onSuccessRedirect, onSuccess }: Crea
             setLoadingDetails(true);
             setError(null);
 
-            const actualLocationId = locationName.startsWith("locations/")
-                ? locationName.split("/")[1]
-                : locationName;
+             
 
             const response = await axios.get(`/api/gmb/location`, {
                 params: {
-                    location_name: actualLocationId,
+                    location_name: locationName,
                     access_token: accessToken,
                     gmb_account_id: gmbAccountId,
                     with_posts: true
@@ -393,8 +397,8 @@ export function CreateWebsiteForm({ userId, onSuccessRedirect, onSuccess }: Crea
                             selectedLocationData.location?.data?.opening_hours,
                     }
                 };
-                
- 
+
+
                 // ✅ IMPORTANT: send as separate fields (BEST PRACTICE)
                 formData.append('businessInfo', JSON.stringify(payload.businessInfo));
                 formData.append('reviews', JSON.stringify(payload.reviews));
@@ -418,7 +422,7 @@ export function CreateWebsiteForm({ userId, onSuccessRedirect, onSuccess }: Crea
             setLogoFile(null);
 
             if (onSuccess) {
-               router.push(`/app/websites/${response.data.website.id}`);
+                router.push(`/app/websites/${response.data.website.id}`);
             }
 
         } catch (error: any) {
@@ -498,7 +502,7 @@ export function CreateWebsiteForm({ userId, onSuccessRedirect, onSuccess }: Crea
                                                     </FormControl>
                                                     <SelectContent>
                                                         {locations.map((location) => (
-                                                            <SelectItem key={location.name} value={location.name}>
+                                                            <SelectItem key={location.id} value={location.id}>
                                                                 <div className="flex items-center gap-2">
                                                                     <Store className="h-4 w-4" />
                                                                     {getLocationDisplayName(location)}

@@ -2,9 +2,13 @@ import { NextResponse } from "next/server";
 import axios from "axios";
 import { prisma } from "../../../../../lib/prisma";
 import { stackServerApp } from "@/stack";
+import { validateGMBToken } from "@/lib/gmb-token";
+import { decrypt, encrypt } from "@/lib/crypto";
+import { hasValidLocationChoice } from "@/lib/location-choice";
 
 // Types for better type safety
 interface LocationDetails {
+  id: string;
   name: string;
   title?: string;
   profile?: any;
@@ -38,49 +42,115 @@ interface LocationDetails {
 }
 
 interface DBLocation {
+  id: string;
   location_id: string;
   location_name: string;
   website: string | null;
   categories: string | null;
   last_rank_updated: Date | null;
+  is_active: boolean | null;
 }
 
 interface DetailedLocation extends LocationDetails {
+  id: string;
   location_id: string;
   last_rank_updated: Date | null;
   displayName?: string;
   businessWebsite?: string;
   formattedAddress?: string;
+  is_active?: boolean;
 }
 
-// Utility function to validate GMB access token
-async function validateGMBToken(token: string): Promise<boolean> {
+// Validate GMB access token, refresh if expired
+async function getValidAccessToken(userId: string): Promise<string | null> {
+  // Get current access token from DB
+  const integration = await prisma.gmbIntegration.findUnique({
+    where: { userId },
+    select: { accessToken: true, isActive: true },
+  });
+
+  if (!integration?.isActive || !integration.accessToken) return null;
+
+  let accessToken: string;
   try {
-    const response = await axios.get(
-      "https://mybusinessaccountmanagement.googleapis.com/v1/accounts",
-      {
-        headers: { Authorization: `Bearer ${token}` },
-        timeout: 10000,
-      },
-    );
-    
-    // If we get here, the token is valid AND the user has at least one account
-    return response.status === 200;
-  } catch (error) {
-    if (axios.isAxiosError(error)) {
-      if (error.response?.status === 401) {
-        console.error("Token invalid or expired");
-      } else if (error.response?.status === 403) {
-        console.error("Token lacks required permissions");
-      } else if (error.code === 'ECONNABORTED') {
-        console.error("Request timeout - API may be slow");
-      } else {
-        console.error(`API error: ${error.response?.status}`, error.response?.data);
-      }
-    } else {
-      console.error("Unexpected error:", error);
+    accessToken = decrypt(integration.accessToken);
+  } catch {
+    return null;
+  }
+
+  // Validate token
+  const isValid = await validateGMBToken(accessToken);
+  if (isValid) return accessToken;
+
+  // Token invalid — call refresh endpoint internally
+  const refreshed = await refreshGMBToken(userId);
+  return refreshed;
+}
+
+async function refreshGMBToken(userId: string): Promise<string | null> {
+  try {
+    // Read refresh token from DB (same as your route.ts does)
+    const integration = await prisma.gmbIntegration.findUnique({
+      where: { userId },
+      select: { refreshToken: true, isActive: true },
+    });
+
+    if (!integration?.isActive || !integration.refreshToken) return null;
+
+    let decryptedRefreshToken: string;
+    try {
+      decryptedRefreshToken = decrypt(integration.refreshToken);
+    } catch {
+      await prisma.gmbIntegration.update({
+        where: { userId },
+        data: { isActive: false, updatedAt: new Date() },
+      });
+      return null;
     }
-    return false;
+
+    const googleRes = await fetch("https://oauth2.googleapis.com/token", {
+      method: "POST",
+      headers: { "Content-Type": "application/x-www-form-urlencoded" },
+      body: new URLSearchParams({
+        client_id: process.env.NEXT_PUBLIC_CLIENT_ID!,
+        client_secret: process.env.NEXT_PUBLIC_CLIENT_SECRET!,
+        refresh_token: decryptedRefreshToken,
+        grant_type: "refresh_token",
+      }),
+    });
+
+    const data = await googleRes.json();
+
+    if (!googleRes.ok) {
+      if (data.error === "invalid_grant") {
+        await prisma.gmbIntegration.update({
+          where: { userId },
+          data: { accessToken: "", refreshToken: null, isActive: false, updatedAt: new Date() },
+        });
+      }
+      return null;
+    }
+
+    const newEncryptedAccess = encrypt(data.access_token);
+    const newEncryptedRefresh = data.refresh_token
+      ? encrypt(data.refresh_token)
+      : integration.refreshToken;
+
+    await prisma.gmbIntegration.update({
+      where: { userId },
+      data: {
+        accessToken: newEncryptedAccess,
+        refreshToken: newEncryptedRefresh,
+        tokenExpiry: new Date(Date.now() + data.expires_in * 1000),
+        isActive: true,
+        updatedAt: new Date(),
+      },
+    });
+
+    return data.access_token; // return decrypted for immediate use
+  } catch (err) {
+    console.error("[refreshGMBToken] error:", err);
+    return null;
   }
 }
 
@@ -260,8 +330,9 @@ async function fetchLocationsBatch(
           );
 
           if (!googleData) {
-            console.warn(`⚠️ Using database fallback for: ${location.location_id}`, );
+            console.warn(`⚠️ Using database fallback for: ${location.location_id}`,);
             return {
+              id: location.id,
               name: location.location_id,
               title: location.location_name || "",
               websiteUri: location.website || undefined,
@@ -282,16 +353,20 @@ async function fetchLocationsBatch(
           const formattedAddress = extractFormattedAddress(googleData);
 
           return {
+            id: location.id,
             ...googleData,
             location_id: location.location_id,
             last_rank_updated: location.last_rank_updated,
             displayName,
             businessWebsite,
             formattedAddress,
-          };
+            is_active: location.is_active,
+          }
+
         } catch (error) {
-          console.error(`💥 Error processing location ${location.location_id}:`,error,);
+          console.error(`💥 Error processing location ${location.location_id}:`, error,);
           return {
+            id: location.id,
             name: location.location_id,
             title: location.location_name || "",
             websiteUri: location.website || undefined,
@@ -303,6 +378,7 @@ async function fetchLocationsBatch(
             displayName: location.location_name || "Unknown Location",
             businessWebsite: location.website || null,
             formattedAddress: null,
+            is_active: location.is_active,
           };
         }
       }),
@@ -313,9 +389,9 @@ async function fetchLocationsBatch(
       if (result.status === "fulfilled" && result.value) {
         results.push(result.value);
       } else {
-        console.warn( `⚠️ Failed to process location: ${batch[index].location_id}`,result.reason,);
         const location = batch[index];
         results.push({
+          id: location.id,
           name: location.location_id,
           title: location.location_name || "",
           websiteUri: location.website || undefined,
@@ -324,6 +400,7 @@ async function fetchLocationsBatch(
           displayName: location.location_name || "Unknown Location",
           businessWebsite: location.website || null,
           formattedAddress: null,
+          is_active: location.is_active, 
         });
       }
     });
@@ -349,7 +426,7 @@ export async function GET(req: Request) {
     }
 
     const { searchParams } = new URL(req.url);
-    const accessToken = searchParams.get("accessToken");
+    const accessToken = await getValidAccessToken(user.id);
 
     // Validate required parameters
     if (!accessToken) {
@@ -358,7 +435,7 @@ export async function GET(req: Request) {
         { status: 400 },
       );
     }
- 
+
     // Validate GMB access token
     const isValidToken = await validateGMBToken(accessToken);
     if (!isValidToken) {
@@ -372,11 +449,13 @@ export async function GET(req: Request) {
     const dbLocations = await prisma.locations.findMany({
       where: { user_id: user.id, is_deleted: false },
       select: {
+        id: true,
         location_id: true,
         location_name: true,
         website: true,
         categories: true,
         last_rank_updated: true,
+        is_active: true
       },
     });
 
@@ -389,10 +468,12 @@ export async function GET(req: Request) {
     }
 
     // Fetch Google details in batches
-    const detailedLocations = await fetchLocationsBatch(dbLocations,accessToken,);
+    const detailedLocations = await fetchLocationsBatch(dbLocations, accessToken,);
 
     // Log summary of results
     const successfulFetches = detailedLocations.filter((loc) => loc.profile || loc.title,).length;
+
+    const locationChoiceMade = await hasValidLocationChoice(user.id)
 
     return NextResponse.json({
       accounts: detailedLocations,
@@ -404,6 +485,7 @@ export async function GET(req: Request) {
         withGoogleData: successfulFetches,
         databaseFallback: detailedLocations.length - successfulFetches,
       },
+      locationChoiceMade
     });
   } catch (error: any) {
     console.error("Error in GMB locations API:", {

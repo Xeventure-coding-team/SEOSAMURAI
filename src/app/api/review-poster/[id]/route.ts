@@ -10,7 +10,7 @@ export async function GET(
   try {
     // Get authenticated user
     const user = await stackServerApp.getUser();
-    
+
     if (!user) {
       return NextResponse.json(
         { error: "Unauthorized. Please sign in." },
@@ -54,8 +54,8 @@ export async function GET(
     // Verify ownership
     if (poster.userId !== user.id) {
       return NextResponse.json(
-        { error: "Unauthorized to view this poster" },
-        { status: 403 }
+        { error: "Poster not found" },
+        { status: 404 }
       );
     }
 

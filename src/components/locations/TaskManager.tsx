@@ -19,10 +19,12 @@ import {
 } from "lucide-react"
 
 import { Button } from "@/components/ui/button"
-import { Card } from "@/components/ui/card"
+import { Card, CardContent } from "@/components/ui/card"
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
 import { AnimatedTabItem, AnimatedTabs } from "../design/AnimatedTabs"
 import TaskActionButton from "./TaskActionButton"
+import { PlanGate } from "../PlanGate"
+import { Skeleton } from "../ui/skeleton"
 
 type Task = {
   id: string
@@ -120,41 +122,41 @@ export default function TaskManager({
   const [excludingTaskId, setExcludingTaskId] = useState<string | null>(null)
   const [success, setSuccess] = useState<string | null>(null)
 
- function getWeekNumber(date: Date): string {
-  const d = new Date(Date.UTC(date.getFullYear(), date.getMonth(), date.getDate()));
-  const dayNum = d.getUTCDay() || 7;
-  d.setUTCDate(d.getUTCDate() + 4 - dayNum);
-  const yearStart = new Date(Date.UTC(d.getUTCFullYear(), 0, 1));
-  const weekNo = Math.ceil((((d.getTime() - yearStart.getTime()) / 86400000) + 1) / 7);
-  return `${d.getUTCFullYear()}-W${String(weekNo).padStart(2, '0')}`;
-}
+  function getWeekNumber(date: Date): string {
+    const d = new Date(Date.UTC(date.getFullYear(), date.getMonth(), date.getDate()));
+    const dayNum = d.getUTCDay() || 7;
+    d.setUTCDate(d.getUTCDate() + 4 - dayNum);
+    const yearStart = new Date(Date.UTC(d.getUTCFullYear(), 0, 1));
+    const weekNo = Math.ceil((((d.getTime() - yearStart.getTime()) / 86400000) + 1) / 7);
+    return `${d.getUTCFullYear()}-W${String(weekNo).padStart(2, '0')}`;
+  }
 
-const currentWeek = getWeekNumber(new Date());
+  const currentWeek = getWeekNumber(new Date());
 
-const { data, error, isLoading, mutate } = useSWR<ApiData>(
-  locationId 
-    ? `/api/tasks?locationId=${encodeURIComponent(locationId)}` 
-    : null,
-  fetcher,
-  { revalidateOnFocus: true, revalidateOnReconnect: true },
-)
+  const { data, error, isLoading, mutate } = useSWR<ApiData>(
+    locationId
+      ? `/api/tasks?locationId=${encodeURIComponent(locationId)}`
+      : null,
+    fetcher,
+    { revalidateOnFocus: true, revalidateOnReconnect: true },
+  )
 
-const stats = data?.stats
-const scores = data?.scores
-const tasks = data?.tasks?.active || []
-const completedTasks = data?.completedTasks || []
-const excludedTasks = data?.excludedTasks || []
-const performance = data?.performance
-const weekFromApi = data?.week || currentWeek
-const refreshedAt = data?.refreshedAt
-const nextRefresh = data?.nextRefresh
+  const stats = data?.stats
+  const scores = data?.scores
+  const tasks = data?.tasks?.active || []
+  const completedTasks = data?.completedTasks || []
+  const excludedTasks = data?.excludedTasks || []
+  const performance = data?.performance
+  const weekFromApi = data?.week || currentWeek
+  const refreshedAt = data?.refreshedAt
+  const nextRefresh = data?.nextRefresh
 
-// Refetch when window refocuses or after any key actions
-useEffect(() => {
-  const onFocus = () => mutate()
-  window.addEventListener("focus", onFocus)
-  return () => window.removeEventListener("focus", onFocus)
-}, [mutate])
+  // Refetch when window refocuses or after any key actions
+  useEffect(() => {
+    const onFocus = () => mutate()
+    window.addEventListener("focus", onFocus)
+    return () => window.removeEventListener("focus", onFocus)
+  }, [mutate])
 
   const getPriorityColor = (priority?: string) => {
     switch (priority) {
@@ -266,12 +268,23 @@ useEffect(() => {
 
   if (isLoading) {
     return (
-      <div className="pt-12 flex items-center justify-center">
-        <div className="inline-flex items-center gap-2 text-muted-foreground">
-          <Loader2 className="w-4 h-4 animate-spin" aria-hidden="true" />
-          <span>Preparing your workspace...</span>
-        </div>
-      </div>
+       <Card>
+        <CardContent className="space-y-4 py-8">
+          <div className="space-y-2">
+            <Skeleton className="h-5 w-48" />
+            <Skeleton className="h-4 w-64" />
+          </div>
+          <div className="space-y-2">
+            <Skeleton className="h-4 w-full" />
+            <Skeleton className="h-4 w-3/4" />
+            <Skeleton className="h-4 w-5/6" />
+          </div>
+          <div className="flex gap-3 pt-4">
+            <Skeleton className="h-10 w-28" />
+            <Skeleton className="h-10 w-32" />
+          </div>
+        </CardContent>
+      </Card>
     )
   }
 
@@ -498,127 +511,129 @@ useEffect(() => {
           </AnimatedTabItem>
 
           <AnimatedTabItem value="tasks" label="Tasks">
-            <div className="p-5">
-              <h3 className="text-lg font-semibold mb-4 text-foreground">Active Tasks</h3>
-              {tasks.length === 0 ? (
-                <div className="bg-card border border-border rounded-xl p-12 text-center">
-                  <AlertCircle className="w-12 h-12 text-muted-foreground mx-auto mb-4" aria-hidden="true" />
-                  <p className="text-muted-foreground mb-4">No tasks available for this location</p>
-                  <Button onClick={handleRefresh} disabled={refreshing} className="gap-2">
-                    {refreshing ? (
-                      <>
-                        <Loader2 className="w-4 h-4 animate-spin" aria-hidden="true" />
-                        Generating...
-                      </>
-                    ) : (
-                      <>
-                        <RefreshCw className="w-4 h-4" aria-hidden="true" />
-                        Generate Tasks
-                      </>
-                    )}
-                  </Button>
-                </div>
-              ) : (
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  {tasks.map((task) => (
-                    <div
-                      key={task.id}
-                      className="bg-card border border-border rounded-xl p-6 hover:shadow-md transition-shadow focus-within:ring-1 focus-within:ring-primary/50 min-h-[220px]"
-                    >
-                      <div className="flex items-start justify-between mb-3">
-                        <div className="flex-1">
-                          <div className="flex items-center gap-2 mb-2">
-                            {getStatusIcon(task.status)}
-                            <h4 className="font-semibold text-foreground">{task.title}</h4>
-                          </div>
-                          <p className="text-sm text-muted-foreground">{task.description}</p>
-                        </div>
-                        <div className={`w-2 h-2 rounded-full ${getPriorityColor(task.priority)} ml-2 flex-shrink-0`} />
-                      </div>
-
-                      <div className="flex flex-wrap gap-2 mb-3">
-                        {/* Category or Type (at least one badge) */}
-                        <span className="px-2 py-1 bg-muted text-muted-foreground text-xs rounded-full capitalize">
-                          {(
-                            task.category && task.type &&
-                              task.category.replace(/_/g, " ").toLowerCase() ===
-                              task.type.replace(/_/g, " ").toLowerCase()
-                              ? task.category
-                              : task.category || task.type || "uncategorized"
-                          ).replace(/_/g, " ")}
-                        </span>
-
-                        {/* Impact badge */}
-                        <span className="px-2 py-1 bg-muted text-muted-foreground text-xs rounded-full flex items-center gap-1 capitalize">
-                          <TrendingUp className="w-3 h-3 text-primary" />
-                          {(task.impact || "normal").replace(/_/g, " ")}
-                        </span>
-                      </div>
-
-
-                      <div className="mb-3">
-                        <div className="h-2 bg-muted rounded-full overflow-hidden">
-                          <div
-                            className="h-full bg-primary transition-all"
-                            style={{
-                              width: task.status === "completed" ? "100%" : task.status === "in_progress" ? "50%" : "0%",
-                            }}
-                          />
-                        </div>
-                      </div>
-
-                      {task.status !== "completed" && (
-                        <div className="flex gap-2">
-                          <TaskActionButton
-                            task={task}
-                            locationId={locationId}
-                            onTaskUpdate={handleTaskUpdate}
-                            description={description}
-                            placeId={placeId}
-                            gmbAccountId={gmbAccountId}
-                            accessToken={accessToken}
-                            businessName={businessName}
-                            primaryCategory={primaryCategory}
-                            additionalCategories={additionalCategories}
-                            address={address}
-                            services={services}
-                            mutate={mutate}
-                          />
-                          <TooltipProvider>
-                            <Tooltip>
-                              <TooltipTrigger asChild>
-                                <Button
-                                  onClick={() => excludeTask(task.id)}
-                                  disabled={excludingTaskId === task.id}
-                                  variant="outline"
-                                  size="sm"
-                                  className="gap-2"
-                                >
-                                  {excludingTaskId === task.id ? (
-                                    <>
-                                      <Loader2 className="w-4 h-4 animate-spin" />
-                                      Excluding...
-                                    </>
-                                  ) : (
-                                    <>
-                                      <XCircle className="w-4 h-4" />
-                                      Exclude
-                                    </>
-                                  )}
-                                </Button>
-                              </TooltipTrigger>
-                              <TooltipContent>
-                                <p>Hide this task until the next refresh</p>
-                              </TooltipContent>
-                            </Tooltip>
-                          </TooltipProvider>
-                        </div>
+            <PlanGate mode={{ type: "feature", feature: "tasks" }} featureName="Tasks">
+              <div className="p-5">
+                <h3 className="text-lg font-semibold mb-4 text-foreground">Active Tasks</h3>
+                {tasks.length === 0 ? (
+                  <div className="bg-card border border-border rounded-xl p-12 text-center">
+                    <AlertCircle className="w-12 h-12 text-muted-foreground mx-auto mb-4" aria-hidden="true" />
+                    <p className="text-muted-foreground mb-4">No tasks available for this location</p>
+                    <Button onClick={handleRefresh} disabled={refreshing} className="gap-2">
+                      {refreshing ? (
+                        <>
+                          <Loader2 className="w-4 h-4 animate-spin" aria-hidden="true" />
+                          Generating...
+                        </>
+                      ) : (
+                        <>
+                          <RefreshCw className="w-4 h-4" aria-hidden="true" />
+                          Generate Tasks
+                        </>
                       )}
-                    </div>
-                  ))}
-                </div>
-              )}
-            </div>
+                    </Button>
+                  </div>
+                ) : (
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    {tasks.map((task) => (
+                      <div
+                        key={task.id}
+                        className="bg-card border border-border rounded-xl p-6 hover:shadow-md transition-shadow focus-within:ring-1 focus-within:ring-primary/50 min-h-[220px]"
+                      >
+                        <div className="flex items-start justify-between mb-3">
+                          <div className="flex-1">
+                            <div className="flex items-center gap-2 mb-2">
+                              {getStatusIcon(task.status)}
+                              <h4 className="font-semibold text-foreground">{task.title}</h4>
+                            </div>
+                            <p className="text-sm text-muted-foreground">{task.description}</p>
+                          </div>
+                          <div className={`w-2 h-2 rounded-full ${getPriorityColor(task.priority)} ml-2 flex-shrink-0`} />
+                        </div>
+
+                        <div className="flex flex-wrap gap-2 mb-3">
+                          {/* Category or Type (at least one badge) */}
+                          <span className="px-2 py-1 bg-muted text-muted-foreground text-xs rounded-full capitalize">
+                            {(
+                              task.category && task.type &&
+                                task.category.replace(/_/g, " ").toLowerCase() ===
+                                task.type.replace(/_/g, " ").toLowerCase()
+                                ? task.category
+                                : task.category || task.type || "uncategorized"
+                            ).replace(/_/g, " ")}
+                          </span>
+
+                          {/* Impact badge */}
+                          <span className="px-2 py-1 bg-muted text-muted-foreground text-xs rounded-full flex items-center gap-1 capitalize">
+                            <TrendingUp className="w-3 h-3 text-primary" />
+                            {(task.impact || "normal").replace(/_/g, " ")}
+                          </span>
+                        </div>
+
+
+                        <div className="mb-3">
+                          <div className="h-2 bg-muted rounded-full overflow-hidden">
+                            <div
+                              className="h-full bg-primary transition-all"
+                              style={{
+                                width: task.status === "completed" ? "100%" : task.status === "in_progress" ? "50%" : "0%",
+                              }}
+                            />
+                          </div>
+                        </div>
+
+                        {task.status !== "completed" && (
+                          <div className="flex gap-2">
+                            <TaskActionButton
+                              task={task}
+                              locationId={locationId}
+                              onTaskUpdate={handleTaskUpdate}
+                              description={description}
+                              placeId={placeId}
+                              gmbAccountId={gmbAccountId}
+                              accessToken={accessToken}
+                              businessName={businessName}
+                              primaryCategory={primaryCategory}
+                              additionalCategories={additionalCategories}
+                              address={address}
+                              services={services}
+                              mutate={mutate}
+                            />
+                            <TooltipProvider>
+                              <Tooltip>
+                                <TooltipTrigger asChild>
+                                  <Button
+                                    onClick={() => excludeTask(task.id)}
+                                    disabled={excludingTaskId === task.id}
+                                    variant="outline"
+                                    size="sm"
+                                    className="gap-2"
+                                  >
+                                    {excludingTaskId === task.id ? (
+                                      <>
+                                        <Loader2 className="w-4 h-4 animate-spin" />
+                                        Excluding...
+                                      </>
+                                    ) : (
+                                      <>
+                                        <XCircle className="w-4 h-4" />
+                                        Exclude
+                                      </>
+                                    )}
+                                  </Button>
+                                </TooltipTrigger>
+                                <TooltipContent>
+                                  <p>Hide this task until the next refresh</p>
+                                </TooltipContent>
+                              </Tooltip>
+                            </TooltipProvider>
+                          </div>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            </PlanGate>
           </AnimatedTabItem>
 
           <AnimatedTabItem value="completed" label="Completed">
@@ -728,112 +743,114 @@ useEffect(() => {
           </AnimatedTabItem>
 
           <AnimatedTabItem value="achievements" label="Achievements">
-            <div className="p-6">
-              {data?.achievements && data.achievements.length > 0 ? (
-                <div>
-                  <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
-                    <Trophy className="w-5 h-5 text-primary" aria-hidden="true" />
-                    Recent Achievements
-                  </h3>
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                    {data.achievements.map((a) => (
-                      <div
-                        key={a.id}
-                        className="group relative flex items-center gap-4 p-4 bg-card rounded-lg border border-border hover:border-primary/50 transition-all duration-300 hover:shadow-md"
-                      >
-                        {/* Icon circle with gradient effect */}
-                        <div className="relative w-8 h-8 flex-shrink-0 rounded-full bg-gradient-to-br from-primary/10 to-primary/5 flex items-center justify-center border border-primary/20 group-hover:border-primary/40 transition-all duration-300 group-hover:scale-105">
-                          <span className="font-bold text-primary text-xl">
-                            {a.title.charAt(0)}
-                          </span>
-                        </div>
-
-                        {/* Content section */}
-                        <div className="flex-1 min-w-0 space-y-1">
-                          <h3 className="font-semibold text-foreground text-base leading-tight group-hover:text-primary transition-colors duration-200">
-                            {a.title}
-                          </h3>
-                          <p className="text-sm text-muted-foreground leading-snug line-clamp-2">
-                            {a.description}
-                          </p>
-                        </div>
-
-                        {/* Points badge with subtle animation */}
-                        <div className="flex-shrink-0">
-                          <div className="bg-primary text-primary-foreground px-4 py-1.5 rounded-full font-semibold text-sm shadow-sm group-hover:shadow-md transition-all duration-300 group-hover:scale-105">
-                            +{a.points}
+            <PlanGate mode={{ type: "feature", feature: "task-achievements" }} featureName="Achievements">
+              <div className="p-6">
+                {data?.achievements && data.achievements.length > 0 ? (
+                  <div>
+                    <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
+                      <Trophy className="w-5 h-5 text-primary" aria-hidden="true" />
+                      Recent Achievements
+                    </h3>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                      {data.achievements.map((a) => (
+                        <div
+                          key={a.id}
+                          className="group relative flex items-center gap-4 p-4 bg-card rounded-lg border border-border hover:border-primary/50 transition-all duration-300 hover:shadow-md"
+                        >
+                          {/* Icon circle with gradient effect */}
+                          <div className="relative w-8 h-8 flex-shrink-0 rounded-full bg-gradient-to-br from-primary/10 to-primary/5 flex items-center justify-center border border-primary/20 group-hover:border-primary/40 transition-all duration-300 group-hover:scale-105">
+                            <span className="font-bold text-primary text-xl">
+                              {a.title.charAt(0)}
+                            </span>
                           </div>
-                        </div>
 
-                        {/* Subtle accent line */}
-                        <div className="absolute bottom-0 left-4 right-4 h-px bg-gradient-to-r from-transparent via-border to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-                      </div>
-                    ))}
+                          {/* Content section */}
+                          <div className="flex-1 min-w-0 space-y-1">
+                            <h3 className="font-semibold text-foreground text-base leading-tight group-hover:text-primary transition-colors duration-200">
+                              {a.title}
+                            </h3>
+                            <p className="text-sm text-muted-foreground leading-snug line-clamp-2">
+                              {a.description}
+                            </p>
+                          </div>
+
+                          {/* Points badge with subtle animation */}
+                          <div className="flex-shrink-0">
+                            <div className="bg-primary text-primary-foreground px-4 py-1.5 rounded-full font-semibold text-sm shadow-sm group-hover:shadow-md transition-all duration-300 group-hover:scale-105">
+                              +{a.points}
+                            </div>
+                          </div>
+
+                          {/* Subtle accent line */}
+                          <div className="absolute bottom-0 left-4 right-4 h-px bg-gradient-to-r from-transparent via-border to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+                        </div>
+                      ))}
+                    </div>
                   </div>
-                </div>
-              ) : (
-                <div className="bg-card border border-border rounded-xl p-6 text-center text-muted-foreground">
-                  No recent achievements.
-                </div>
-              )}
-            </div>
+                ) : (
+                  <div className="bg-card border border-border rounded-xl p-6 text-center text-muted-foreground">
+                    No recent achievements.
+                  </div>
+                )}
+              </div>
+            </PlanGate>
           </AnimatedTabItem>
 
           <AnimatedTabItem value="milestones" label="Milestones">
-
-            <div className="p-6">
-              {data?.milestones.recent && data.milestones.recent.length > 0 ? (
-                <div>
-                  <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
-                    <Trophy className="w-5 h-5 text-primary" aria-hidden="true" />
-                    Recent Milestones
-                  </h3>
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                    {data.milestones.recent.map((m) => (
-                      <div
-                        key={m.id}
-                        className="group relative flex items-center gap-4 p-4 bg-card rounded-lg border border-border hover:border-primary/50 transition-all duration-300 hover:shadow-md"
-                      >
-                        {/* Icon circle with gradient effect */}
-                        <div className="relative w-8 h-8 flex-shrink-0 rounded-full bg-gradient-to-br from-primary/10 to-primary/5 flex items-center justify-center border border-primary/20 group-hover:border-primary/40 transition-all duration-300 group-hover:scale-105">
-                          <span className="font-bold text-primary text-xl">
-                            {m.title.charAt(0)}
-                          </span>
-                        </div>
-
-                        {/* Content section */}
-                        <div className="flex-1 min-w-0 space-y-1">
-                          <h3 className="font-semibold text-foreground text-base leading-tight group-hover:text-primary transition-colors duration-200">
-                            {m.title}
-                          </h3>
-                          <p className="text-sm text-muted-foreground leading-snug line-clamp-2">
-                            {m.description}
-                          </p>
-                          <p className="text-xs text-muted-foreground">
-                            Achieved: {new Date(m.achievedAt).toLocaleDateString()}
-                          </p>
-                        </div>
-
-                        {/* Points badge with subtle animation */}
-                        <div className="flex-shrink-0">
-                          <div className="bg-primary text-primary-foreground px-4 py-1.5 rounded-full font-semibold text-sm shadow-sm group-hover:shadow-md transition-all duration-300 group-hover:scale-105">
-                            +{m.value}
+            <PlanGate mode={{ type: "feature", feature: "task-milestones" }} featureName="Milestones">
+              <div className="p-6">
+                {data?.milestones.recent && data.milestones.recent.length > 0 ? (
+                  <div>
+                    <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
+                      <Trophy className="w-5 h-5 text-primary" aria-hidden="true" />
+                      Recent Milestones
+                    </h3>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                      {data.milestones.recent.map((m) => (
+                        <div
+                          key={m.id}
+                          className="group relative flex items-center gap-4 p-4 bg-card rounded-lg border border-border hover:border-primary/50 transition-all duration-300 hover:shadow-md"
+                        >
+                          {/* Icon circle with gradient effect */}
+                          <div className="relative w-8 h-8 flex-shrink-0 rounded-full bg-gradient-to-br from-primary/10 to-primary/5 flex items-center justify-center border border-primary/20 group-hover:border-primary/40 transition-all duration-300 group-hover:scale-105">
+                            <span className="font-bold text-primary text-xl">
+                              {m.title.charAt(0)}
+                            </span>
                           </div>
+
+                          {/* Content section */}
+                          <div className="flex-1 min-w-0 space-y-1">
+                            <h3 className="font-semibold text-foreground text-base leading-tight group-hover:text-primary transition-colors duration-200">
+                              {m.title}
+                            </h3>
+                            <p className="text-sm text-muted-foreground leading-snug line-clamp-2">
+                              {m.description}
+                            </p>
+                            <p className="text-xs text-muted-foreground">
+                              Achieved: {new Date(m.achievedAt).toLocaleDateString()}
+                            </p>
+                          </div>
+
+                          {/* Points badge with subtle animation */}
+                          <div className="flex-shrink-0">
+                            <div className="bg-primary text-primary-foreground px-4 py-1.5 rounded-full font-semibold text-sm shadow-sm group-hover:shadow-md transition-all duration-300 group-hover:scale-105">
+                              +{m.value}
+                            </div>
+                          </div>
+
+                          {/* Subtle accent line */}
+                          <div className="absolute bottom-0 left-4 right-4 h-px bg-gradient-to-r from-transparent via-border to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
                         </div>
-
-                        {/* Subtle accent line */}
-                        <div className="absolute bottom-0 left-4 right-4 h-px bg-gradient-to-r from-transparent via-border to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-                      </div>
-                    ))}
+                      ))}
+                    </div>
                   </div>
-                </div>
-              ) : (
-                <div className="bg-card border border-border rounded-xl p-6 text-center text-muted-foreground">
-                  No recent milestones.
-                </div>
-              )}
-            </div>
-
+                ) : (
+                  <div className="bg-card border border-border rounded-xl p-6 text-center text-muted-foreground">
+                    No recent milestones.
+                  </div>
+                )}
+              </div>
+            </PlanGate>
           </AnimatedTabItem>
         </AnimatedTabs>
       </Card>

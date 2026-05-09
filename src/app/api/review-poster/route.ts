@@ -1,18 +1,30 @@
 import { NextRequest, NextResponse } from "next/server";
 import { stackServerApp } from "@/stack";
 import { prisma } from "../../../../lib/prisma";
+import { canUse, canUseErrorMessage } from "@/lib/actions/can-use";
+import { incrementUsage } from "@/lib/usage";
 
 export async function POST(request: NextRequest) {
   try {
     // Get authenticated user
     const user = await stackServerApp.getUser();
-    
+
     if (!user) {
       return NextResponse.json(
         { error: "Unauthorized. Please sign in." },
         { status: 401 }
       );
     }
+
+    const F = await canUse(user.id, "review-posters")
+
+    if (!F.ok) {
+      return NextResponse.json({
+        success: false,
+        error: { success: false, error: canUseErrorMessage(F, "review-posters") },
+      }, { status: 401 });
+    }
+
 
     const body = await request.json();
     const { businessName, reviewUrl, bgColor, bgPattern, keywords } = body;
@@ -61,12 +73,13 @@ export async function POST(request: NextRequest) {
         bgColor: bgColor || "#10b981",
         bgPattern: finalBgPattern,
         keywords: keywordsArray,
-        // placeId: placeId || null,
       },
     });
 
+    await incrementUsage(user.id, "reviewPostersUsed");
+
     return NextResponse.json(
-      { 
+      {
         success: true,
         message: "Review poster saved successfully",
         poster: {
@@ -92,7 +105,7 @@ export async function GET(request: NextRequest) {
   try {
     // Get authenticated user
     const user = await stackServerApp.getUser();
-    
+
     if (!user) {
       return NextResponse.json(
         { error: "Unauthorized. Please sign in." },
@@ -126,7 +139,7 @@ export async function GET(request: NextRequest) {
           businessName: true,
           reviewUrl: true,
           bgColor: true,
-          bgPattern: true, 
+          bgPattern: true,
           keywords: true,
           createdAt: true,
           updatedAt: true,
@@ -161,7 +174,7 @@ export async function DELETE(request: NextRequest) {
   try {
     // Get authenticated user
     const user = await stackServerApp.getUser();
-    
+
     if (!user) {
       return NextResponse.json(
         { error: "Unauthorized. Please sign in." },
@@ -204,7 +217,7 @@ export async function DELETE(request: NextRequest) {
     });
 
     return NextResponse.json(
-      { 
+      {
         success: true,
         message: "Review poster deleted successfully"
       },
@@ -223,7 +236,7 @@ export async function PUT(request: NextRequest) {
   try {
     // Get authenticated user
     const user = await stackServerApp.getUser();
-    
+
     if (!user) {
       return NextResponse.json(
         { error: "Unauthorized. Please sign in." },
@@ -311,7 +324,7 @@ export async function PUT(request: NextRequest) {
     });
 
     return NextResponse.json(
-      { 
+      {
         success: true,
         message: "Review poster updated successfully",
         poster: updatedPoster

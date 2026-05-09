@@ -1,7 +1,6 @@
 "use client"
 
-import React, { useEffect, useState } from "react"
-import { useRouter, usePathname } from "next/navigation"
+import React, { useEffect, useRef, useState, useCallback } from "react"
 import GoogleBusinessConnect from "@/components/GMB/GoogleBusinessConnect"
 import { Skeleton } from "@/components/ui/skeleton"
 import { useUser } from "@stackframe/stack"
@@ -12,142 +11,281 @@ interface GMBAuthWrapperProps {
   children: React.ReactNode
 }
 
+// ─── Constants ────────────────────────────────────────────────────────────────
+const TOKEN_REFRESH_BUFFER_MS = 5 * 60 * 1000          // refresh 5 min before expiry
+const SESSION_CACHE_KEY = "gmb_session_valid"
+const SESSION_CACHE_TTL_MS = 30 * 60 * 1000            // re-validate against API every 30 min
+const MAX_INIT_RETRIES = 4
+const RETRY_BASE_DELAY_MS = 1500                        // exponential back-off base
+
+type AuthState = "loading" | "authenticated" | "unauthenticated" | "error"
+
+// ─── Singleton refresh promise — prevents parallel refresh races ──────────────
+let globalRefreshPromise: Promise<string | null> | null = null
+
 const GMBAuthWrapper: React.FC<GMBAuthWrapperProps> = ({ children }) => {
-  const [authState, setAuthState] = useState<'loading' | 'authenticated' | 'unauthenticated' | 'error'>('loading')
+  const [authState, setAuthState] = useState<AuthState>("loading")
   const [error, setError] = useState<string | null>(null)
+  const refreshTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const mountedRef = useRef(true)
+
+  const handleAuthenticated = useCallback(() => {
+    setSessionCache(true)
+    setAuthState("authenticated")
+  }, [])
+
+
   const user = useUser()
 
   const {
-    accessToken,
     setAccessToken,
     setRefreshToken,
     setTokenExpiry,
     setAccountName,
     setAccountId,
-    clearTokens
+    clearTokens,
+    tokenExpiry: storeTokenExpiry,
   } = useGMBStore()
+
+  // ─── Helpers ────────────────────────────────────────────────────────────────
 
   const isTokenExpired = (expiry: Date | null): boolean => {
     if (!expiry) return true
-    // Consider token expired if it expires within the next 5 minutes
-    return Date.now() + (5 * 60 * 1000) > expiry.getTime()
+    return Date.now() + TOKEN_REFRESH_BUFFER_MS > new Date(expiry).getTime()
   }
 
-  const refreshToken = async (): Promise<string | null> => {
+  /** Read/write a lightweight cache flag so fast navigations skip the API call */
+  const getSessionCache = (): boolean => {
     try {
-      console.log("Attempting to refresh token...")
-
-      const response = await fetch("/api/gmb/refresh-token", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({}),
-      })
-
-      if (!response.ok) {
-        const errorData = await response.json()
-        console.error("Refresh failed:", errorData)
-        return null
-      }
-
-      const data = await response.json()
-
-      // Update Zustand store with refreshed tokens
-      setAccessToken(data.access_token)
-      if (data.refresh_token) {
-        setRefreshToken(data.refresh_token)
-      }
-      setTokenExpiry(new Date(Date.now() + data.expires_in * 1000))
-
-      console.log("Token refreshed successfully")
-      return data.access_token
-
-    } catch (error) {
-      console.error("Token refresh failed:", error)
-      return null
-    }
-  }
-
-  const validateAndLoadTokens = async (): Promise<boolean> => {
-    try {
-      const response = await fetch("/api/gmb/token", {
-        method: "GET",
-        headers: { "Content-Type": "application/json" },
-        cache: "no-store"
-      })
-
-      if (!response.ok) {
-        if (response.status === 404) return false
-        throw new Error(`Failed to load tokens: ${response.status}`)
-      }
-
-      const data = await response.json()
-
-      // Guard: API returned null or empty (backend still processing)
-      if (!data || !data.isActive) return false
-
-      if (data.accessToken) setAccessToken(data.accessToken)
-      if (data.refreshToken) setRefreshToken(data.refreshToken)
-      if (data.tokenExpiry) setTokenExpiry(new Date(data.tokenExpiry))
-      if (data.accountName) setAccountName(data.accountName)
-      if (data.accountId) setAccountId(data.accountId)
-
-      if (isTokenExpired(new Date(data.tokenExpiry))) {
-        const newToken = await refreshToken()
-        if (!newToken) return false
-      }
-
-      return true
-
+      const raw = sessionStorage.getItem(SESSION_CACHE_KEY)
+      if (!raw) return false
+      const { ts } = JSON.parse(raw)
+      return Date.now() - ts < SESSION_CACHE_TTL_MS
     } catch {
-      // Silently fail — caller handles the false return
       return false
     }
   }
 
-  useEffect(() => {
-    const checkAuthentication = async () => {
-      // Wait for user to be loaded
-      if (!user?.id) {
-        setAuthState('loading')
+  const setSessionCache = (valid: boolean) => {
+    try {
+      if (valid) {
+        sessionStorage.setItem(SESSION_CACHE_KEY, JSON.stringify({ ts: Date.now() }))
+      } else {
+        sessionStorage.removeItem(SESSION_CACHE_KEY)
+      }
+    } catch {
+      // sessionStorage may be blocked (private mode) — safe to ignore
+    }
+  }
+
+  // ─── Token refresh (singleton, race-safe) ──────────────────────────────────
+
+  const doTokenRefresh = useCallback(async (): Promise<string | null> => {
+    if (globalRefreshPromise) {
+      console.log("[GMBAuth] Refresh already in-flight, awaiting existing promise")
+      return globalRefreshPromise
+    }
+
+    globalRefreshPromise = (async () => {
+      try {
+        const res = await fetch("/api/gmb/refresh-token", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          // No body — server always reads refresh token from DB
+        })
+
+        if (!res.ok) {
+          const err = await res.json().catch(() => ({}))
+          console.error("[GMBAuth] Refresh failed:", err)
+          return null
+        }
+
+        const data = await res.json()
+
+        if (!mountedRef.current) return data.access_token
+
+        setAccessToken(data.access_token)
+        if (data.refresh_token) setRefreshToken(data.refresh_token)
+        const expiry = new Date(Date.now() + data.expires_in * 1000)
+        setTokenExpiry(expiry)
+
+        scheduleProactiveRefresh(expiry)
+        console.log("[GMBAuth] Token refreshed successfully")
+        return data.access_token
+      } catch (e) {
+        console.error("[GMBAuth] Refresh exception:", e)
+        return null
+      } finally {
+        globalRefreshPromise = null
+      }
+    })()
+
+    return globalRefreshPromise
+  }, [setAccessToken, setRefreshToken, setTokenExpiry])
+
+  // ─── Schedule background refresh before expiry ─────────────────────────────
+
+  const scheduleProactiveRefresh = useCallback(
+    (expiry: Date) => {
+      if (refreshTimerRef.current) clearTimeout(refreshTimerRef.current)
+
+      const msUntilRefresh =
+        new Date(expiry).getTime() - Date.now() - TOKEN_REFRESH_BUFFER_MS
+
+      if (msUntilRefresh <= 0) {
+        // Already near expiry — refresh now
+        doTokenRefresh()
         return
       }
 
-      // Check if we have OAuth callback parameters - if so, let GoogleBusinessConnect handle everything
-      const params = new URLSearchParams(window.location.search)
-      const hasOAuthParams = params.has('code') || params.has('error')
+      console.log(
+        `[GMBAuth] Proactive refresh scheduled in ${Math.round(msUntilRefresh / 60000)} min`
+      )
 
-      if (hasOAuthParams) {
-        console.log("OAuth callback detected, delegating to GoogleBusinessConnect")
-        setAuthState('unauthenticated')
+      refreshTimerRef.current = setTimeout(async () => {
+        if (!mountedRef.current) return
+        const newToken = await doTokenRefresh()
+        if (!newToken && mountedRef.current) {
+          // Refresh failed — force re-auth
+          setSessionCache(false)
+          clearTokens()
+          setAuthState("unauthenticated")
+        }
+      }, msUntilRefresh)
+    },
+    [doTokenRefresh, clearTokens]
+  )
+
+  // ─── Load & validate tokens from API (with retry) ──────────────────────────
+
+  const validateAndLoadTokens = useCallback(
+    async (attempt = 0): Promise<boolean> => {
+      try {
+        const res = await fetch("/api/gmb/token", {
+          method: "GET",
+          headers: { "Content-Type": "application/json" },
+          cache: "no-store",
+        })
+
+        if (res.status === 404 || res.status === 401) return false
+
+        if (!res.ok) {
+          throw new Error(`Token API returned ${res.status}`)
+        }
+
+        const data = await res.json()
+
+        if (!data || !data.isActive || !data.accessToken) return false
+
+        // Populate store
+        setAccessToken(data.accessToken)
+        if (data.refreshToken) setRefreshToken(data.refreshToken)
+        const expiry = data.tokenExpiry ? new Date(data.tokenExpiry) : null
+        if (expiry) setTokenExpiry(expiry)
+        if (data.accountName) setAccountName(data.accountName)
+        if (data.accountId) setAccountId(data.accountId)
+
+        // Refresh if expired or near expiry
+        if (isTokenExpired(expiry)) {
+          console.log("[GMBAuth] Token expired/near-expiry, refreshing...")
+          const newToken = await doTokenRefresh()
+          if (!newToken) return false
+        } else if (expiry) {
+          scheduleProactiveRefresh(expiry)
+        }
+
+        return true
+      } catch (err) {
+        console.warn(`[GMBAuth] validateAndLoadTokens attempt ${attempt + 1} failed:`, err)
+
+        // Retry with exponential back-off on network errors
+        if (attempt < MAX_INIT_RETRIES) {
+          const delay = RETRY_BASE_DELAY_MS * Math.pow(2, attempt)
+          console.log(`[GMBAuth] Retrying in ${delay}ms...`)
+          await new Promise((r) => setTimeout(r, delay))
+          if (!mountedRef.current) return false
+          return validateAndLoadTokens(attempt + 1)
+        }
+
+        return false
+      }
+    },
+    [
+      setAccessToken,
+      setRefreshToken,
+      setTokenExpiry,
+      setAccountName,
+      setAccountId,
+      doTokenRefresh,
+      scheduleProactiveRefresh,
+    ]
+  )
+
+  // ─── Main auth check ────────────────────────────────────────────────────────
+
+  useEffect(() => {
+    mountedRef.current = true
+
+    const checkAuthentication = async () => {
+      if (!user?.id) {
+        setAuthState("loading")
         return
+      }
+
+      // OAuth callback — hand off to GoogleBusinessConnect
+      const params = new URLSearchParams(window.location.search)
+      if (params.has("code") || params.has("error")) {
+        setAuthState("unauthenticated")
+        return
+      }
+
+      // Fast path: session cache hit → skip API call only if token is still fresh
+      if (getSessionCache()) {
+        if (storeTokenExpiry && !isTokenExpired(storeTokenExpiry)) {
+          scheduleProactiveRefresh(storeTokenExpiry)
+          setAuthState("authenticated")
+          return
+        }
+        // Token is expired or missing — invalidate cache and fall through to full validation
+        setSessionCache(false)
       }
 
       try {
         setError(null)
-        
         const isValid = await validateAndLoadTokens()
 
-        if (isValid) {
-          console.log("GMB authentication valid")
-          setAuthState('authenticated')
-        } else {
-          clearTokens()
-          setAuthState('unauthenticated')
-        }
+        if (!mountedRef.current) return
 
-      } catch (error) {
-        console.error("Authentication check failed:", error)
-        setError("Failed to verify authentication")
+        if (isValid) {
+          setSessionCache(true)
+          setAuthState("authenticated")
+        } else {
+          setSessionCache(false)
+          clearTokens()
+          setAuthState("unauthenticated")
+        }
+      } catch (e) {
+        console.error("[GMBAuth] Auth check failed:", e)
+        if (!mountedRef.current) return
+        setSessionCache(false)
+        setError("Failed to verify authentication. Please try again.")
         clearTokens()
-        setAuthState('error')
+        setAuthState("error")
       }
     }
 
     checkAuthentication()
+
+    return () => {
+      mountedRef.current = false
+      if (refreshTimerRef.current) clearTimeout(refreshTimerRef.current)
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user?.id])
 
-  // Show loading state
-  if (authState === 'loading' || !user?.id) {
+  // ─── Render ─────────────────────────────────────────────────────────────────
+
+  if (authState === "loading" || !user?.id) {
     return (
       <div className="flex flex-col items-center justify-center min-h-screen space-y-4">
         <div className="text-center space-y-4">
@@ -160,19 +298,18 @@ const GMBAuthWrapper: React.FC<GMBAuthWrapperProps> = ({ children }) => {
     )
   }
 
-  // Show error state with retry option
-  if (authState === 'error') {
+  if (authState === "error") {
     return (
-      <ErrorRender error={"We couldn't load this content. You can retry or report the issue."} />
+      <ErrorRender
+        error={error ?? "We couldn't load this content. You can retry or report the issue."}
+      />
     )
   }
 
-  // Show connection screen if not authenticated
-  if (authState === 'unauthenticated') {
-    return <GoogleBusinessConnect />
+  if (authState === "unauthenticated") {
+    return <GoogleBusinessConnect onAuthenticated={handleAuthenticated} />
   }
 
-  // Show protected content if authenticated
   return <>{children}</>
 }
 

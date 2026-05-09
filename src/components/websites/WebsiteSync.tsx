@@ -242,9 +242,8 @@ export function WebsiteSync({
           <Calendar className="w-4 h-4 text-purple-600" />
         </div>
         <div>
-          <div className="text-xs text-gray-500 uppercase tracking-wide">Next Auto Sync</div>
-          <div className="font-medium text-gray-900">{formatDate(nextSync)}</div>
-          <div className="text-[11px] text-gray-400">scheduled daily</div>
+          <div className="text-xs text-gray-500 uppercase tracking-wide">Last Updated</div>
+          <div className="font-medium text-gray-900">{formatDate(lastSync)}</div>
         </div>
       </div>
     )}

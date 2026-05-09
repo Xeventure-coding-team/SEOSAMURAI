@@ -6,6 +6,7 @@ import { MapPin, Loader2, AlertCircle } from "lucide-react"
 import axios from "axios"
 import toast from "react-hot-toast"
 import { useGMBStore } from "@/store/gmbStore"
+import { Skeleton } from "../ui/skeleton"
 
 interface Location {
   name: string
@@ -122,22 +123,22 @@ export default function LocationSelector({
           Select Business Location
         </label>
       )}
-      
+
       <Select
         value={value}
         onValueChange={handleValueChange}
         disabled={loadingLocations || locations.length === 0 || !!error}
       >
         <SelectTrigger className="w-full location_selector">
-          <SelectValue 
+          <SelectValue
             placeholder={
-              loadingLocations 
-                ? "Loading locations..." 
+              loadingLocations
+                ? "Loading locations..."
                 : error
-                ? "Failed to load locations"
-                : locations.length === 0
-                ? "No locations available"
-                : placeholder
+                  ? "Failed to load locations"
+                  : locations.length === 0
+                    ? "No locations available"
+                    : placeholder
             }
           />
         </SelectTrigger>
@@ -160,18 +161,25 @@ export default function LocationSelector({
       </Select>
 
       {loadingLocations && (
-        <div className="flex items-center gap-2 text-xs text-muted-foreground">
-          <Loader2 className="h-3 w-3 animate-spin" />
-          Loading your business locations...
+        <div className="space-y-2">
+          <div className="flex items-center gap-2">
+            <Skeleton className="h-3 w-3 rounded-full" />
+            <Skeleton className="h-3 w-40" />
+          </div>
+          <div className="flex items-center gap-2 pl-5">
+            <Skeleton className="h-2 w-full max-w-md" />
+          </div>
         </div>
       )}
 
       {error && !loadingLocations && (
-        <div className="flex items-center gap-2 text-xs text-destructive">
-          <AlertCircle className="h-3 w-3" />
-          {error}
+        <div className="inline-flex items-center gap-2 rounded-md bg-destructive/10 px-3 py-1.5 text-xs text-destructive">
+          <AlertCircle className="h-3.5 w-3.5 shrink-0" />
+          <span className="truncate max-w-md">{error}</span>
         </div>
       )}
+
+
     </div>
   )
 }

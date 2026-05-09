@@ -13,3 +13,6 @@ npx prisma migrate dev --name init
 # 4. (Optional) Open Prisma Studio to view your database
 
 npx prisma studio
+
+
+cloudflared tunnel --url http://localhost:3000

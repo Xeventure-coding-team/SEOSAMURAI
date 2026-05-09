@@ -30,6 +30,10 @@ import toast from "react-hot-toast"
 import Link from "next/link"
 import { downloadPosterAsPDF, SavedPoster } from "@/lib/download/poster-download"
 import ReviewPosterDisplay from "./ReviewPosterDisplay"
+import { SlotBadge } from "../slot-badge"
+import { UsageBadge } from "../usage-badge"
+import { UsageGate } from "../usage-gate"
+import { Skeleton } from "../ui/skeleton"
 
 interface EditFormData {
   businessName: string
@@ -164,14 +168,19 @@ export default function SharedGoogleReviewPosterList() {
   if (loading) {
     return (
       <Card>
-        <CardContent className="flex items-center justify-center py-12">
-          <div className="flex items-center gap-3">
-            <Loader2 className="h-6 w-6 animate-spin text-primary" />
-            <span>Loading your posters...</span>
+        <CardHeader>
+          <Skeleton className="h-7 w-40" />
+          <Skeleton className="h-4 w-64" />
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            {[1, 2, 3].map((i) => (
+              <Skeleton key={i} className="h-48 w-full rounded-lg" />
+            ))}
           </div>
         </CardContent>
       </Card>
-    )
+    );
   }
 
   const handlePreviewClick = (poster: typeof posters[0]) => {
@@ -190,12 +199,24 @@ export default function SharedGoogleReviewPosterList() {
           <Badge variant="secondary">
             {posters.length} {posters.length === 1 ? 'Poster' : 'Posters'}
           </Badge>
-          <Button asChild size="lg" className="shrink-0">
-            <Link href="/app/shared-google-review-poster/create">
-              <Plus className="h-5 w-5" />
-              Create New Poster
-            </Link>
-          </Button>
+
+
+          <div className='flex gap-4 items-center flex-wrap'>
+            <UsageBadge metric="reviewPostersUsed" label="Review Posters" />
+
+            <UsageGate metric="reviewPostersUsed">
+              <Button asChild size="lg" className="shrink-0">
+                <Link href="/app/shared-google-review-poster/create">
+                  <Plus className="h-5 w-5" />
+                  Create New Poster
+                </Link>
+              </Button>
+            </UsageGate>
+
+
+          </div>
+
+
         </div>
       </div>
 

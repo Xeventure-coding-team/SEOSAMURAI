@@ -10,6 +10,7 @@ import { RefreshCw, Star, Info, Eye, EyeOff, TrendingUp, AlertCircle, MapPin, Cl
 import { Loader } from "../Loader/Loader"
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
 import { APIProvider, Map, AdvancedMarker, Pin } from "@vis.gl/react-google-maps"
+import { PlanGate } from "../PlanGate"
 
 interface KeywordRanking {
     keyword: string
@@ -94,233 +95,266 @@ export function CompetitorAnalysisWithMap({
     // No keywords tracked state
     if (!hasKeywords || trackedKeywordsCount === 0) {
         return (
-            <div className="flex flex-col items-center justify-center py-16 text-center">
-                <div className="mb-4 rounded-full bg-muted/50 p-3">
-                    <TrendingUp className="h-6 w-6 text-muted-foreground/70" />
+              <PlanGate
+            mode={{ type: "feature", feature: "competitor-insights" }}
+            featureName="Competitor Insights"
+            description="Upgrade to Pro to access competitor insights."
+        >
+            <div className="flex flex-col items-center justify-center py-24 text-center">
+
+                {/* Icon */}
+                <div className="mb-4 rounded-2xl border border-border/60 bg-background p-5 shadow-sm">
+                    <TrendingUp className="h-10 w-10 text-primary/70" />
                 </div>
-                <h3 className="mb-1 text-sm font-medium">No keywords tracked</h3>
-                <p className="mb-4 text-xs text-muted-foreground max-w-sm">
-                    Add keywords to see competitor rankings
+                {/* Title */}
+                <h3 className="mb-2 text-lg font-semibold">
+                    No keywords yet
+                </h3>
+
+                {/* Description */}
+                <p className="max-w-md text-sm text-muted-foreground leading-relaxed">
+                    Once you start tracking keywords, you’ll be able to monitor rankings,
+                    analyze competitors, and understand how your visibility changes over time.
                 </p>
-                <Button
-                    onClick={() => {/* navigate to keyword tracker */ }}
-                    variant="outline"
-                    size="sm"
-                >
-                    <Plus className="mr-1.5 h-3.5 w-3.5" />
-                    Add keywords
-                </Button>
+
+                {/* Subtle hint */}
+                <p className="mt-4 text-xs text-muted-foreground/60">
+                    Your data will appear here as soon as keywords are added
+                </p>
             </div>
+            </PlanGate>
         )
     }
 
     // No competitors found but has keywords
     if (competitors.length === 0 && hasKeywords) {
         return (
+            <PlanGate
+                mode={{ type: "feature", feature: "competitor-insights" }}
+                featureName="Competitor Insights"
+                description="Upgrade to Pro to access competitor insights."
+            >
+                <TooltipProvider>
+                    <div className="space-y-6">
+
+                        {/* Header */}
+                        <div className="flex justify-between items-center flex-wrap gap-4">
+                            <h2 className="text-xl font-semibold">Competitor Rankings</h2>
+
+                            <Button
+                                onClick={handleRefresh}
+                                disabled={loading}
+                                variant="outline"
+                                size="sm"
+                            >
+                                <RefreshCw
+                                    className={`h-4 w-4 mr-2 ${loading ? "animate-spin" : ""}`}
+                                />
+                                Refresh
+                            </Button>
+                        </div>
+
+                        {/* Empty State */}
+                        <div className="rounded-xl border border-border/60 bg-background p-8 text-center">
+
+                            {/* Icon */}
+                            <div className="mb-4 flex justify-center">
+                                <div className="rounded-xl border border-border/50 p-3">
+                                    <AlertCircle className="h-5 w-5 text-muted-foreground/70" />
+                                </div>
+                            </div>
+
+                            {/* Title */}
+                            <h3 className="text-base font-medium mb-2">
+                                No competitors detected
+                            </h3>
+
+                            {/* Description */}
+                            <p className="text-sm text-muted-foreground max-w-md mx-auto leading-relaxed">
+                                You're tracking <strong>{trackedKeywordsCount}</strong>{" "}
+                                keyword{trackedKeywordsCount !== 1 ? "s" : ""}, but no competing
+                                businesses have appeared in the results yet.
+                            </p>
+
+                            {/* Subtle explanation */}
+                            <p className="mt-3 text-xs text-muted-foreground/70">
+                                This can happen with new keywords or when your rankings are strong.
+                                Data will update as results refresh.
+                            </p>
+                        </div>
+                    </div>
+                </TooltipProvider>
+            </PlanGate>
+        )
+    }
+
+    return (
+        <PlanGate
+            mode={{ type: "feature", feature: "competitor-insights" }}
+            featureName="Competitor Insights"
+            description="Upgrade to Pro to access competitor insights."
+        >
             <TooltipProvider>
                 <div className="space-y-6 max-w-8xl">
                     <Card>
                         <CardHeader>
                             <div className="flex justify-between items-center flex-wrap gap-4">
-                                <CardTitle className="text-2xl">Competitor Rankings</CardTitle>
-                                <Button onClick={handleRefresh} disabled={loading} variant="outline" size="sm">
-                                    <RefreshCw className={`h-4 w-4 mr-2 ${loading ? "animate-spin" : ""}`} />
-                                    Refresh Data
-                                </Button>
+                                <div className="flex items-center gap-2">
+                                    <CardTitle className="text-2xl">Top {competitors.length} Competitors</CardTitle>
+                                    <Tooltip>
+                                        <TooltipTrigger>
+                                            <Info className="h-4 w-4 text-muted-foreground" />
+                                        </TooltipTrigger>
+                                        <TooltipContent>
+                                            <p>Competitors ranked by their average position across {trackedKeywordsCount} tracked keywords</p>
+                                        </TooltipContent>
+                                    </Tooltip>
+                                </div>
+                                <div className="flex gap-2">
+                                    <Tooltip>
+                                        <TooltipTrigger asChild>
+                                            <Button onClick={() => setShowMap(!showMap)} variant="outline" size="sm">
+                                                {showMap ? <EyeOff className="h-4 w-4 mr-2" /> : <Eye className="h-4 w-4 mr-2" />}
+                                                {showMap ? "Hide Map" : "Show Map"}
+                                            </Button>
+                                        </TooltipTrigger>
+                                        <TooltipContent>
+                                            <p>{showMap ? "Hide the competitor location map" : "Show competitors on an interactive map"}</p>
+                                        </TooltipContent>
+                                    </Tooltip>
+                                    <Tooltip>
+                                        <TooltipTrigger asChild>
+                                            <Button
+                                                onClick={handleRefresh}
+                                                disabled={loading}
+                                                variant="outline"
+                                                size="sm"
+                                            >
+                                                <RefreshCw className={`h-4 w-4 mr-2 ${loading ? "animate-spin" : ""}`} />
+                                                {loading ? "Updating..." : "Refresh Data"}
+                                            </Button>
+                                        </TooltipTrigger>
+                                        <TooltipContent>
+                                            <p>Refresh competitor rankings with latest data</p>
+                                        </TooltipContent>
+                                    </Tooltip>
+                                </div>
+                            </div>
+
+                            <div className="text-sm text-muted-foreground mt-2">
+                                Based on {trackedKeywordsCount} tracked keyword{trackedKeywordsCount !== 1 ? 's' : ''}
                             </div>
                         </CardHeader>
                     </Card>
-                    <Alert>
-                        <AlertCircle className="h-4 w-4" />
-                        <AlertTitle>No Competitors Detected</AlertTitle>
-                        <AlertDescription>
 
-                            <p>
-                                You're currently tracking <strong>{trackedKeywordsCount}</strong> keyword{trackedKeywordsCount !== 1 ? 's' : ''},
-                                but no competitors have appeared in the search results yet.
-                            </p>
+                    <div className={`grid gap-6 ${showMap ? "lg:grid-cols-2" : "grid-cols-1"}`}>
 
-                            <div className="mt-2 text-sm">
-                                This usually happens when:
-                                <ul className="list-disc list-inside mt-2 space-y-1">
-                                    <li>The keywords are newly added and data is still being collected</li>
-                                    <li>Your business is ranking strongly across these keywords</li>
-                                    <li>Search engine results haven’t refreshed recently</li>
-                                </ul>
-                            </div>
-
-                            <div className="mt-3 text-sm text-muted-foreground">
-                                Try checking back later or adding more keywords to expand your tracking coverage.
-                            </div>
-                        </AlertDescription>
-                    </Alert>
-                </div>
-            </TooltipProvider>
-        )
-    }
-
-    return (
-        <TooltipProvider>
-            <div className="space-y-6 max-w-8xl">
-                <Card>
-                    <CardHeader>
-                        <div className="flex justify-between items-center flex-wrap gap-4">
-                            <div className="flex items-center gap-2">
-                                <CardTitle className="text-2xl">Top {competitors.length} Competitors</CardTitle>
-                                <Tooltip>
-                                    <TooltipTrigger>
-                                        <Info className="h-4 w-4 text-muted-foreground" />
-                                    </TooltipTrigger>
-                                    <TooltipContent>
-                                        <p>Competitors ranked by their average position across {trackedKeywordsCount} tracked keywords</p>
-                                    </TooltipContent>
-                                </Tooltip>
-                            </div>
-                            <div className="flex gap-2">
-                                <Tooltip>
-                                    <TooltipTrigger asChild>
-                                        <Button onClick={() => setShowMap(!showMap)} variant="outline" size="sm">
-                                            {showMap ? <EyeOff className="h-4 w-4 mr-2" /> : <Eye className="h-4 w-4 mr-2" />}
-                                            {showMap ? "Hide Map" : "Show Map"}
-                                        </Button>
-                                    </TooltipTrigger>
-                                    <TooltipContent>
-                                        <p>{showMap ? "Hide the competitor location map" : "Show competitors on an interactive map"}</p>
-                                    </TooltipContent>
-                                </Tooltip>
-                                <Tooltip>
-                                    <TooltipTrigger asChild>
-                                        <Button
-                                            onClick={handleRefresh}
-                                            disabled={loading}
-                                            variant="outline"
-                                            size="sm"
-                                        >
-                                            <RefreshCw className={`h-4 w-4 mr-2 ${loading ? "animate-spin" : ""}`} />
-                                            {loading ? "Updating..." : "Refresh Data"}
-                                        </Button>
-                                    </TooltipTrigger>
-                                    <TooltipContent>
-                                        <p>Refresh competitor rankings with latest data</p>
-                                    </TooltipContent>
-                                </Tooltip>
-                            </div>
-                        </div>
-
-                        <div className="text-sm text-muted-foreground mt-2">
-                            Based on {trackedKeywordsCount} tracked keyword{trackedKeywordsCount !== 1 ? 's' : ''}
-                        </div>
-                    </CardHeader>
-                </Card>
-
-                <div className={`grid gap-6 ${showMap ? "lg:grid-cols-2" : "grid-cols-1"}`}>
-
-                    <div className="space-y-4">
-                        {competitors.map((competitor) => (
-                            <Card
-                                key={competitor.id}
-                                className={`hover:shadow-md transition-all cursor-pointer ${selectedCompetitor?.id === competitor.id ? "ring-2 ring-primary" : ""
-                                    }`}
-                                onClick={() => selectCompetitor(competitor)}
-                            >
-                                <CardContent>
-                                    <div className="space-y-4">
-                                        <div className="flex justify-between items-start gap-4">
-                                            <div className="flex-1 space-y-3">
-                                                <div className="flex items-center gap-3">
-                                                    <Tooltip>
-                                                        <TooltipTrigger>
-                                                            <Badge variant="default" className="text-sm font-bold">
-                                                                #{competitor.rank}
-                                                            </Badge>
-                                                        </TooltipTrigger>
-                                                        <TooltipContent>
-                                                            <p>Overall competitor ranking</p>
-                                                        </TooltipContent>
-                                                    </Tooltip>
-                                                    <h3 className="text-lg font-semibold text-foreground">{competitor.name}</h3>
-                                                </div>
-
-                                                <p className="text-muted-foreground text-sm">
-                                                    {competitor.address || competitor.domain || 'No address available'}
-                                                </p>
-
-                                                <div className="flex items-center gap-4 text-sm flex-wrap">
-                                                    <Tooltip>
-                                                        <TooltipTrigger>
-                                                            <div className="flex items-center gap-1">
-                                                                <TrendingUp className="h-4 w-4 text-green-500" />
-                                                                <span className="font-medium">Best: #{competitor.bestRank}</span>
-                                                            </div>
-                                                        </TooltipTrigger>
-                                                        <TooltipContent>
-                                                            <p>Best ranking position across all keywords</p>
-                                                        </TooltipContent>
-                                                    </Tooltip>
-                                                    <Tooltip>
-                                                        <TooltipTrigger>
-                                                            <div className="flex items-center gap-1">
-                                                                <Star className="h-4 w-4 text-blue-500" />
-                                                                <span className="font-medium">Avg: #{Math.round(competitor.averageRank || 0)}</span>
-                                                            </div>
-                                                        </TooltipTrigger>
-                                                        <TooltipContent>
-                                                            <p>Average position across all keywords</p>
-                                                        </TooltipContent>
-                                                    </Tooltip>
-                                                    <Tooltip>
-                                                        <TooltipTrigger>
-                                                            <Badge variant="secondary">
-                                                                {competitor.totalKeywordsRanked} keyword{competitor.totalKeywordsRanked !== 1 ? 's' : ''}
-                                                            </Badge>
-                                                        </TooltipTrigger>
-                                                        <TooltipContent>
-                                                            <p>Number of tracked keywords this competitor ranks for</p>
-                                                        </TooltipContent>
-                                                    </Tooltip>
-                                                </div>
-
-                                                {(competitor.rating || competitor.reviewCount || competitor.distance) && (
-                                                    <div className="flex items-center gap-4 text-sm flex-wrap pt-2 border-t">
-                                                        {competitor.rating && (
-                                                            <div className="flex items-center gap-1">
-                                                                <Star className="h-4 w-4 fill-yellow-400 text-yellow-400" />
-                                                                <span className="font-medium">{competitor.rating}/5</span>
-                                                                {competitor.reviewCount && (
-                                                                    <span className="text-muted-foreground ml-1">
-                                                                        ({competitor.reviewCount} reviews)
-                                                                    </span>
-                                                                )}
-                                                            </div>
-                                                        )}
-                                                        {competitor.distance && !competitor.rating && (
-                                                            <div className="flex items-center gap-1 text-muted-foreground">
-                                                                <MapPin className="h-4 w-4" />
-                                                                <span className="font-medium">
-                                                                    {(competitor.distance / 1000).toFixed(1)} km away
-                                                                </span>
-                                                            </div>
-                                                        )}
+                        <div className="space-y-4">
+                            {competitors.map((competitor) => (
+                                <Card
+                                    key={competitor.id}
+                                    className={`hover:shadow-md transition-all cursor-pointer ${selectedCompetitor?.id === competitor.id ? "ring-2 ring-primary" : ""
+                                        }`}
+                                    onClick={() => selectCompetitor(competitor)}
+                                >
+                                    <CardContent>
+                                        <div className="space-y-4">
+                                            <div className="flex justify-between items-start gap-4">
+                                                <div className="flex-1 space-y-3">
+                                                    <div className="flex items-center gap-3">
+                                                        <Tooltip>
+                                                            <TooltipTrigger>
+                                                                <Badge variant="default" className="text-sm font-bold">
+                                                                    #{competitor.rank}
+                                                                </Badge>
+                                                            </TooltipTrigger>
+                                                            <TooltipContent>
+                                                                <p>Overall competitor ranking</p>
+                                                            </TooltipContent>
+                                                        </Tooltip>
+                                                        <h3 className="text-lg font-semibold text-foreground">{competitor.name}</h3>
                                                     </div>
-                                                )}
-                                            </div>
 
-                                            <div className="flex flex-col gap-2">
-                                                {competitor.googleMapsUri ? (
-                                                    <Button asChild size="sm" className="whitespace-nowrap">
-                                                        <a href={competitor.googleMapsUri} target="_blank" rel="noopener noreferrer">
-                                                            View on Maps
-                                                        </a>
-                                                    </Button>
-                                                ) : competitor.website || competitor.domain ? (
-                                                    <Button asChild size="sm" variant="outline" className="whitespace-nowrap">
-                                                        <a href={competitor.website || `https://${competitor.domain}`} target="_blank" rel="noopener noreferrer">
-                                                            Visit Website
-                                                        </a>
-                                                    </Button>
-                                                ) : null}
+                                                    <p className="text-muted-foreground text-sm">
+                                                        {competitor.address || competitor.domain || 'No address available'}
+                                                    </p>
 
-                                                {/* <Button
+                                                    <div className="flex items-center gap-4 text-sm flex-wrap">
+                                                        <Tooltip>
+                                                            <TooltipTrigger>
+                                                                <div className="flex items-center gap-1">
+                                                                    <TrendingUp className="h-4 w-4 text-green-500" />
+                                                                    <span className="font-medium">Best: #{competitor.bestRank}</span>
+                                                                </div>
+                                                            </TooltipTrigger>
+                                                            <TooltipContent>
+                                                                <p>Best ranking position across all keywords</p>
+                                                            </TooltipContent>
+                                                        </Tooltip>
+                                                        <Tooltip>
+                                                            <TooltipTrigger>
+                                                                <div className="flex items-center gap-1">
+                                                                    <Star className="h-4 w-4 text-blue-500" />
+                                                                    <span className="font-medium">Avg: #{Math.round(competitor.averageRank || 0)}</span>
+                                                                </div>
+                                                            </TooltipTrigger>
+                                                            <TooltipContent>
+                                                                <p>Average position across all keywords</p>
+                                                            </TooltipContent>
+                                                        </Tooltip>
+                                                        <Tooltip>
+                                                            <TooltipTrigger>
+                                                                <Badge variant="secondary">
+                                                                    {competitor.totalKeywordsRanked} keyword{competitor.totalKeywordsRanked !== 1 ? 's' : ''}
+                                                                </Badge>
+                                                            </TooltipTrigger>
+                                                            <TooltipContent>
+                                                                <p>Number of tracked keywords this competitor ranks for</p>
+                                                            </TooltipContent>
+                                                        </Tooltip>
+                                                    </div>
+
+                                                    {(competitor.rating || competitor.reviewCount || competitor.distance) && (
+                                                        <div className="flex items-center gap-4 text-sm flex-wrap pt-2 border-t">
+                                                            {competitor.rating && (
+                                                                <div className="flex items-center gap-1">
+                                                                    <Star className="h-4 w-4 fill-yellow-400 text-yellow-400" />
+                                                                    <span className="font-medium">{competitor.rating}/5</span>
+                                                                    {competitor.reviewCount && (
+                                                                        <span className="text-muted-foreground ml-1">
+                                                                            ({competitor.reviewCount} reviews)
+                                                                        </span>
+                                                                    )}
+                                                                </div>
+                                                            )}
+                                                            {competitor.distance && !competitor.rating && (
+                                                                <div className="flex items-center gap-1 text-muted-foreground">
+                                                                    <MapPin className="h-4 w-4" />
+                                                                    <span className="font-medium">
+                                                                        {(competitor.distance / 1000).toFixed(1)} km away
+                                                                    </span>
+                                                                </div>
+                                                            )}
+                                                        </div>
+                                                    )}
+                                                </div>
+
+                                                <div className="flex flex-col gap-2">
+                                                    {competitor.googleMapsUri ? (
+                                                        <Button asChild size="sm" className="whitespace-nowrap">
+                                                            <a href={competitor.googleMapsUri} target="_blank" rel="noopener noreferrer">
+                                                                View on Maps
+                                                            </a>
+                                                        </Button>
+                                                    ) : competitor.website || competitor.domain ? (
+                                                        <Button asChild size="sm" variant="outline" className="whitespace-nowrap">
+                                                            <a href={competitor.website || `https://${competitor.domain}`} target="_blank" rel="noopener noreferrer">
+                                                                Visit Website
+                                                            </a>
+                                                        </Button>
+                                                    ) : null}
+
+                                                    {/* <Button
                                                     variant="outline"
                                                     size="sm"
                                                     onClick={(e) => {
@@ -340,171 +374,172 @@ export function CompetitorAnalysisWithMap({
                                                         </>
                                                     )}
                                                 </Button> */}
-                                                <></>
+                                                    <></>
+                                                </div>
                                             </div>
-                                        </div>
-                                        {/* Expanded keyword rankings */}
-                                        {expandedCompetitor === competitor.id && (
-                                            <div className="mt-4 pt-4 border-t">
-                                                <h4 className="text-sm font-semibold mb-3">Keyword Rankings:</h4>
-                                                <div className="space-y-2">
-                                                    {competitor.keywordRankings.map((kr, idx) => (
-                                                        <div key={idx} className="flex items-center justify-between p-2 bg-muted/50 rounded">
-                                                            <div className="flex-1">
-                                                                <span className="text-sm font-medium">{kr.keyword}</span>
-                                                                {kr.title && (
-                                                                    <p className="text-xs text-muted-foreground truncate mt-1">
-                                                                        {kr.title}
-                                                                    </p>
-                                                                )}
+                                            {/* Expanded keyword rankings */}
+                                            {expandedCompetitor === competitor.id && (
+                                                <div className="mt-4 pt-4 border-t">
+                                                    <h4 className="text-sm font-semibold mb-3">Keyword Rankings:</h4>
+                                                    <div className="space-y-2">
+                                                        {competitor.keywordRankings.map((kr, idx) => (
+                                                            <div key={idx} className="flex items-center justify-between p-2 bg-muted/50 rounded">
+                                                                <div className="flex-1">
+                                                                    <span className="text-sm font-medium">{kr.keyword}</span>
+                                                                    {kr.title && (
+                                                                        <p className="text-xs text-muted-foreground truncate mt-1">
+                                                                            {kr.title}
+                                                                        </p>
+                                                                    )}
+                                                                </div>
+                                                                <Badge
+                                                                    variant="outline"
+                                                                    className={`ml-2 ${kr.rank <= 3 ? 'bg-green-100 text-green-800 border-green-200' :
+                                                                        kr.rank <= 10 ? 'bg-blue-100 text-blue-800 border-blue-200' :
+                                                                            'bg-yellow-100 text-yellow-800 border-yellow-200'
+                                                                        }`}
+                                                                >
+                                                                    #{kr.rank}
+                                                                </Badge>
                                                             </div>
-                                                            <Badge
-                                                                variant="outline"
-                                                                className={`ml-2 ${kr.rank <= 3 ? 'bg-green-100 text-green-800 border-green-200' :
-                                                                    kr.rank <= 10 ? 'bg-blue-100 text-blue-800 border-blue-200' :
-                                                                        'bg-yellow-100 text-yellow-800 border-yellow-200'
-                                                                    }`}
-                                                            >
-                                                                #{kr.rank}
-                                                            </Badge>
-                                                        </div>
-                                                    ))}
-                                                </div>
-                                            </div>
-                                        )}
-                                    </div>
-                                </CardContent>
-                            </Card>
-                        ))}
-                    </div>
-
-                    {showMap && (
-                        <div className="lg:sticky lg:top-6 lg:self-start space-y-4">
-                            <div className="h-[450px] rounded-lg overflow-hidden shadow-lg">
-                                <APIProvider apiKey={process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY || ""}>
-                                    <Map
-                                        center={getMapCenter()}
-                                        zoom={getMapZoom()}
-                                        mapId="competitor-analysis-map"
-                                        className="w-full h-full"
-                                        clickableIcons={false}
-                                        disableDefaultUI={true}
-                                    >
-                                        {/* Your business location */}
-                                        {coordinates && (
-                                            <AdvancedMarker position={coordinates}>
-                                                <Pin background="#3b82f6" borderColor="#1e40af" glyphColor="#ffffff">
-                                                    <div className="w-3 h-3 bg-blue-600 rounded-full"></div>
-                                                </Pin>
-                                            </AdvancedMarker>
-                                        )}
-
-                                        {/* Competitors */}
-                                        {competitors.map((competitor) => {
-                                            const mockCoords = coordinates
-                                                ? {
-                                                    lat: coordinates.lat + (Math.random() - 0.5) * 0.02,
-                                                    lng: coordinates.lng + (Math.random() - 0.5) * 0.02,
-                                                }
-                                                : { lat: 40.7128, lng: -74.006 }
-
-                                            return (
-                                                <AdvancedMarker
-                                                    key={competitor.id}
-                                                    position={competitor.coordinates || mockCoords}
-                                                    onClick={() => selectCompetitor(competitor)}
-                                                >
-                                                    <Pin
-                                                        background={selectedCompetitor?.id === competitor.id ? "#ef4444" : "#10b981"}
-                                                        borderColor={selectedCompetitor?.id === competitor.id ? "#dc2626" : "#059669"}
-                                                        glyphColor="#ffffff"
-                                                    >
-                                                        <div className="text-xs font-bold text-white">#{competitor.rank}</div>
-                                                    </Pin>
-                                                </AdvancedMarker>
-                                            )
-                                        })}
-                                    </Map>
-                                </APIProvider>
-                            </div>
-
-                            {/* Enhanced Selected Competitor Panel */}
-                            {selectedCompetitor && (
-                                <Card>
-                                    <CardContent>
-                                        <div className="space-y-4">
-                                            <div className="flex items-center gap-3">
-                                                <Badge variant="default" className="text-sm font-bold">
-                                                    #{selectedCompetitor.rank}
-                                                </Badge>
-                                                <h4 className="font-semibold text-lg truncate">{selectedCompetitor.name}</h4>
-                                            </div>
-
-                                            <p className="text-sm text-muted-foreground">
-                                                {selectedCompetitor.address || selectedCompetitor.domain || 'Online competitor'}
-                                            </p>
-
-                                            <div className="grid grid-cols-3 gap-4 text-center py-3 bg-muted/50 rounded-lg border">
-                                                <div>
-                                                    <p className="text-xs text-muted-foreground">Best Rank</p>
-                                                    <p className="text-2xl font-bold text-green-600">#{selectedCompetitor.bestRank}</p>
-                                                </div>
-                                                <div>
-                                                    <p className="text-xs text-muted-foreground">Average</p>
-                                                    <p className="text-2xl font-bold">#{Math.round(selectedCompetitor.averageRank || 0)}</p>
-                                                </div>
-                                                <div>
-                                                    <p className="text-xs text-muted-foreground">Keywords</p>
-                                                    <p className="text-2xl font-bold">{selectedCompetitor.totalKeywordsRanked}</p>
-                                                </div>
-                                            </div>
-
-                                            {(selectedCompetitor.rating || selectedCompetitor.reviewCount || selectedCompetitor.distance) && (
-                                                <div className="flex flex-wrap gap-4 text-sm pt-2 border-t">
-                                                    {selectedCompetitor.rating && (
-                                                        <div className="flex items-center gap-1">
-                                                            <Star className="h-4 w-4 fill-yellow-400 text-yellow-400" />
-                                                            <span>{selectedCompetitor.rating}/5</span>
-                                                            {selectedCompetitor.reviewCount && (
-                                                                <span className="text-muted-foreground ml-1">
-                                                                    ({selectedCompetitor.reviewCount} reviews)
-                                                                </span>
-                                                            )}
-                                                        </div>
-                                                    )}
-                                                    {selectedCompetitor.distance && (
-                                                        <div className="flex items-center gap-1">
-                                                            <MapPin className="h-4 w-4" />
-                                                            <span>{(selectedCompetitor.distance / 1000).toFixed(1)} km away</span>
-                                                        </div>
-                                                    )}
+                                                        ))}
+                                                    </div>
                                                 </div>
                                             )}
-
-                                            <div className="flex flex-col gap-2 pt-3">
-                                                {selectedCompetitor.googleMapsUri && (
-                                                    <Button asChild size="sm" className="w-full">
-                                                        <a href={selectedCompetitor.googleMapsUri} target="_blank" rel="noopener noreferrer">
-                                                            View on Google Maps
-                                                        </a>
-                                                    </Button>
-                                                )}
-                                                {(selectedCompetitor.website || selectedCompetitor.domain) && (
-                                                    <Button asChild size="sm" variant="outline" className="w-full">
-                                                        <a href={selectedCompetitor.website || `https://${selectedCompetitor.domain}`} target="_blank" rel="noopener noreferrer">
-                                                            Visit Website
-                                                        </a>
-                                                    </Button>
-                                                )}
-                                            </div>
                                         </div>
                                     </CardContent>
                                 </Card>
-                            )}
+                            ))}
                         </div>
-                    )}
+
+                        {showMap && (
+                            <div className="lg:sticky lg:top-6 lg:self-start space-y-4">
+                                <div className="h-[450px] rounded-lg overflow-hidden shadow-lg">
+                                    <APIProvider apiKey={process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY || ""}>
+                                        <Map
+                                            center={getMapCenter()}
+                                            zoom={getMapZoom()}
+                                            mapId="competitor-analysis-map"
+                                            className="w-full h-full"
+                                            clickableIcons={false}
+                                            disableDefaultUI={true}
+                                        >
+                                            {/* Your business location */}
+                                            {coordinates && (
+                                                <AdvancedMarker position={coordinates}>
+                                                    <Pin background="#3b82f6" borderColor="#1e40af" glyphColor="#ffffff">
+                                                        <div className="w-3 h-3 bg-blue-600 rounded-full"></div>
+                                                    </Pin>
+                                                </AdvancedMarker>
+                                            )}
+
+                                            {/* Competitors */}
+                                            {competitors.map((competitor) => {
+                                                const mockCoords = coordinates
+                                                    ? {
+                                                        lat: coordinates.lat + (Math.random() - 0.5) * 0.02,
+                                                        lng: coordinates.lng + (Math.random() - 0.5) * 0.02,
+                                                    }
+                                                    : { lat: 40.7128, lng: -74.006 }
+
+                                                return (
+                                                    <AdvancedMarker
+                                                        key={competitor.id}
+                                                        position={competitor.coordinates || mockCoords}
+                                                        onClick={() => selectCompetitor(competitor)}
+                                                    >
+                                                        <Pin
+                                                            background={selectedCompetitor?.id === competitor.id ? "#ef4444" : "#10b981"}
+                                                            borderColor={selectedCompetitor?.id === competitor.id ? "#dc2626" : "#059669"}
+                                                            glyphColor="#ffffff"
+                                                        >
+                                                            <div className="text-xs font-bold text-white">#{competitor.rank}</div>
+                                                        </Pin>
+                                                    </AdvancedMarker>
+                                                )
+                                            })}
+                                        </Map>
+                                    </APIProvider>
+                                </div>
+
+                                {/* Enhanced Selected Competitor Panel */}
+                                {selectedCompetitor && (
+                                    <Card>
+                                        <CardContent>
+                                            <div className="space-y-4">
+                                                <div className="flex items-center gap-3">
+                                                    <Badge variant="default" className="text-sm font-bold">
+                                                        #{selectedCompetitor.rank}
+                                                    </Badge>
+                                                    <h4 className="font-semibold text-lg truncate">{selectedCompetitor.name}</h4>
+                                                </div>
+
+                                                <p className="text-sm text-muted-foreground">
+                                                    {selectedCompetitor.address || selectedCompetitor.domain || 'Online competitor'}
+                                                </p>
+
+                                                <div className="grid grid-cols-3 gap-4 text-center py-3 bg-muted/50 rounded-lg border">
+                                                    <div>
+                                                        <p className="text-xs text-muted-foreground">Best Rank</p>
+                                                        <p className="text-2xl font-bold text-green-600">#{selectedCompetitor.bestRank}</p>
+                                                    </div>
+                                                    <div>
+                                                        <p className="text-xs text-muted-foreground">Average</p>
+                                                        <p className="text-2xl font-bold">#{Math.round(selectedCompetitor.averageRank || 0)}</p>
+                                                    </div>
+                                                    <div>
+                                                        <p className="text-xs text-muted-foreground">Keywords</p>
+                                                        <p className="text-2xl font-bold">{selectedCompetitor.totalKeywordsRanked}</p>
+                                                    </div>
+                                                </div>
+
+                                                {(selectedCompetitor.rating || selectedCompetitor.reviewCount || selectedCompetitor.distance) && (
+                                                    <div className="flex flex-wrap gap-4 text-sm pt-2 border-t">
+                                                        {selectedCompetitor.rating && (
+                                                            <div className="flex items-center gap-1">
+                                                                <Star className="h-4 w-4 fill-yellow-400 text-yellow-400" />
+                                                                <span>{selectedCompetitor.rating}/5</span>
+                                                                {selectedCompetitor.reviewCount && (
+                                                                    <span className="text-muted-foreground ml-1">
+                                                                        ({selectedCompetitor.reviewCount} reviews)
+                                                                    </span>
+                                                                )}
+                                                            </div>
+                                                        )}
+                                                        {selectedCompetitor.distance && (
+                                                            <div className="flex items-center gap-1">
+                                                                <MapPin className="h-4 w-4" />
+                                                                <span>{(selectedCompetitor.distance / 1000).toFixed(1)} km away</span>
+                                                            </div>
+                                                        )}
+                                                    </div>
+                                                )}
+
+                                                <div className="flex flex-col gap-2 pt-3">
+                                                    {selectedCompetitor.googleMapsUri && (
+                                                        <Button asChild size="sm" className="w-full">
+                                                            <a href={selectedCompetitor.googleMapsUri} target="_blank" rel="noopener noreferrer">
+                                                                View on Google Maps
+                                                            </a>
+                                                        </Button>
+                                                    )}
+                                                    {(selectedCompetitor.website || selectedCompetitor.domain) && (
+                                                        <Button asChild size="sm" variant="outline" className="w-full">
+                                                            <a href={selectedCompetitor.website || `https://${selectedCompetitor.domain}`} target="_blank" rel="noopener noreferrer">
+                                                                Visit Website
+                                                            </a>
+                                                        </Button>
+                                                    )}
+                                                </div>
+                                            </div>
+                                        </CardContent>
+                                    </Card>
+                                )}
+                            </div>
+                        )}
+                    </div>
                 </div>
-            </div>
-        </TooltipProvider>
+            </TooltipProvider>
+        </PlanGate>
     )
 }

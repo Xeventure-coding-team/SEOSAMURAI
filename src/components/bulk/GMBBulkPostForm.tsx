@@ -34,8 +34,10 @@ import { Label } from "@/components/ui/label"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Badge } from "@/components/ui/badge"
 import { Alert, AlertDescription, AlertTitle } from "../ui/alert"
+import { UsageGate } from "../usage-gate"
 
 interface GmbPostFormProps {
+  postUsed?: number | null
   accountId?: string | null
   locationId?: string | null
   accessToken?: string | null
@@ -88,6 +90,7 @@ const actionButtonOptions = [
 ]
 
 export function GmbBulkPostForm({
+  postUsed,
   accountId,
   locationId,
   accessToken,
@@ -277,62 +280,6 @@ export function GmbBulkPostForm({
     updateBulkPost(postId, "image_url", "")
   }
 
-  const handleFileSelect = useCallback(
-    (file: File) => {
-      // Validate file type
-      if (!ACCEPTED_IMAGE_TYPES.includes(file.type)) {
-        toast.error("Please select a valid image file (JPEG, PNG, WebP)")
-        return
-      }
-
-      // Validate file size
-      if (file.size > MAX_FILE_SIZE) {
-        toast.error("File size must be less than 10MB")
-        return
-      }
-
-      if (file.size < MIN_FILE_SIZE) {
-        toast.error("File size must be at least 10KB. Please use a higher quality image.");
-        return
-      }
-
-      setSelectedFile(file)
-
-      // Create preview URL
-      const url = URL.createObjectURL(file)
-      setPreviewUrl(url)
-
-      // Clear image URL field when file is selected
-      form.setValue("image_url", "")
-
-      toast.success("Image selected successfully")
-    },
-    [form],
-  )
-
-  const handleDrag = useCallback((e: React.DragEvent) => {
-    e.preventDefault()
-    e.stopPropagation()
-    if (e.type === "dragenter" || e.type === "dragover") {
-      setDragActive(true)
-    } else if (e.type === "dragleave") {
-      setDragActive(false)
-    }
-  }, [])
-
-  const handleDrop = useCallback(
-    (e: React.DragEvent) => {
-      e.preventDefault()
-      e.stopPropagation()
-      setDragActive(false)
-
-      if (e.dataTransfer.files && e.dataTransfer.files[0]) {
-        handleFileSelect(e.dataTransfer.files[0])
-      }
-    },
-    [handleFileSelect],
-  )
-
   const removeFile = useCallback(() => {
     setSelectedFile(null)
     if (previewUrl) {
@@ -343,45 +290,6 @@ export function GmbBulkPostForm({
       fileInputRef.current.value = ""
     }
   }, [previewUrl])
-
-  const onSubmit = async (data: PostFormData) => {
-    if (!accountId || !locationId || !accessToken) {
-      toast.error("Missing account credentials")
-      return
-    }
-
-    try {
-      const postData: CreatePostData = {
-        postContent: data.postContent,
-        actionButton: data.actionButton || null,
-        actionLink: data.actionLink || null,
-        callPhone: data.callPhone || null,
-        account: accountId,
-        location: locationId,
-        accessToken: accessToken,
-        image_url: data.image_url || undefined,
-        file: selectedFile || undefined,
-      }
-
-      const result = await createPost(postData)
-
-      if (result.success) {
-        toast.success("Post created successfully!")
-        form.reset()
-        removeFile()
-        onPostCreated?.(result.data)
-      } else {
-        toast.error(result.message || "Failed to create post")
-      }
-    } catch (error) {
-      toast.error("An error occurred while creating the post")
-      console.error("Post creation error:", error)
-    }
-  }
-
-  const watchedActionButton = form.watch("actionButton")?.toUpperCase()
-  const characterCount = form.watch("postContent")?.length || 0
-  const watchedPostContent = form.watch("postContent")
 
   const getActionButtonInfo = (actionType: string) => {
     const option = actionButtonOptions.find((opt) => opt.value === actionType.toUpperCase())
@@ -670,10 +578,12 @@ export function GmbBulkPostForm({
                   </p>
                 </div>
                 <div className="flex gap-2 flex-shrink-0 ml-4">
-                  <Button onClick={addBulkPost} variant="outline" size="sm">
-                    <Plus className="h-4 w-4 mr-2" />
-                    Add Post
-                  </Button>
+                  <UsageGate metric="postsUsed">
+                    <Button onClick={addBulkPost} variant="outline" size="sm" disabled={postUsed === bulkPosts.length}>
+                      <Plus className="h-4 w-4 mr-2" />
+                      Add Post
+                    </Button>
+                  </UsageGate>
                   {bulkPosts.length > 0 && (
                     <Button
                       onClick={() => {
@@ -702,10 +612,18 @@ export function GmbBulkPostForm({
                       <p className="text-muted-foreground mb-4">
                         Click "Add Post" to start creating your bulk posting campaign
                       </p>
-                      <Button onClick={addBulkPost}>
-                        <Plus className="h-4 w-4 mr-2" />
-                        Create Your First Post
-                      </Button>
+
+                      <div>
+                        <UsageGate metric="postsUsed">
+                          <div>
+                            <Button onClick={addBulkPost}>
+                              <Plus className="h-4 w-4 mr-2" />
+                              Create Your First Post
+                            </Button>
+                          </div>
+                        </UsageGate>
+                      </div>
+
                     </div>
                   </div>
                 ) : (
@@ -756,6 +674,7 @@ export function GmbBulkPostForm({
                                   size="sm"
                                   className="h-8 w-8 p-0"
                                   title="Duplicate post"
+                                  disabled={postUsed === bulkPosts.length}
                                 >
                                   <Copy className="h-4 w-4" />
                                 </Button>
@@ -1001,24 +920,26 @@ export function GmbBulkPostForm({
                               content
                             </p>
                           </div>
-                          <Button
-                            onClick={handleBulkSubmit}
-                            disabled={isSubmitting || bulkPosts.filter((p) => p.postContent.trim()).length === 0}
-                            size="lg"
-                            className="w-full sm:w-auto"
-                          >
-                            {isSubmitting ? (
-                              <>
-                                <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                                Creating Posts...
-                              </>
-                            ) : (
-                              <>
-                                <Send className="h-4 w-4 mr-2" />
-                                Create All Posts ({bulkPosts.filter((p) => p.postContent.trim()).length})
-                              </>
-                            )}
-                          </Button>
+                          <UsageGate metric="postsUsed">
+                            <Button
+                              onClick={handleBulkSubmit}
+                              disabled={isSubmitting || bulkPosts.filter((p) => p.postContent.trim()).length === 0}
+                              size="lg"
+                              className="w-full sm:w-auto"
+                            >
+                              {isSubmitting ? (
+                                <>
+                                  <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                                  Creating Posts...
+                                </>
+                              ) : (
+                                <>
+                                  <Send className="h-4 w-4 mr-2" />
+                                  Create All Posts ({bulkPosts.filter((p) => p.postContent.trim()).length})
+                                </>
+                              )}
+                            </Button>
+                          </UsageGate>
                         </div>
                       </CardContent>
                     </Card>

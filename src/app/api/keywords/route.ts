@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { stackServerApp } from "@/stack";
 import { prisma } from "../../../../lib/prisma";
+import { cleanGmbLocationId, getLocationById } from "@/lib/getLocationById";
 
 interface TrackedKeywordData {
     id: string;
@@ -16,8 +17,8 @@ interface TrackedKeywordData {
     title: string | null;
     snippet: string | null;
     canUpdate: boolean;
-    nextUpdateTime: string;   // "pending" for new keywords, ISO string for batched
-    timeUntilUpdate: number;  // -1 for new keywords, seconds for batched
+    nextUpdateTime: string;
+    timeUntilUpdate: number;
     refreshRate: number;
     lastChecked: Date | null;
     isActive: boolean;
@@ -27,7 +28,7 @@ interface TrackedKeywordData {
 export async function GET(req: Request) {
     try {
         const { searchParams } = new URL(req.url);
-        const locationId = searchParams.get("locationId");
+        const locationId = searchParams.get("locationId") // MongoDB _id
 
         const user = await stackServerApp.getUser();
         if (!user?.id) {
@@ -41,12 +42,20 @@ export async function GET(req: Request) {
             );
         }
 
+        // ✅ Resolve real GMB location ID from MongoDB _id
+        const dbLocation = await getLocationById(locationId)
+        if (!dbLocation) {
+            return NextResponse.json({ error: "Location not found" }, { status: 404 })
+        }
+
+        const cleanLocationId = cleanGmbLocationId(dbLocation.location_id)
         const userId = user.id;
         const now = new Date();
 
+        // ── Fetch all keywords — use cleanLocationId + userId (user-scoped, no conflict)
         const trackingEntries = await prisma.keywordTracking.findMany({
-            where: { userId, isActive: true, locationId },
-            orderBy: [{ createdAt: 'desc' }]
+            where: { userId, locationId: cleanLocationId }, // ✅
+            orderBy: { createdAt: 'desc' }
         });
 
         if (trackingEntries.length === 0) {
@@ -65,39 +74,47 @@ export async function GET(req: Request) {
             });
         }
 
-        const keywordRankPromises = trackingEntries.map(async (entry) => {
-            const latestRank = await prisma.keywordRank.findFirst({
-                where: {
-                    keyword: entry.keyword,
-                    location: entry.location,
-                    userId: entry.userId
-                },
-                orderBy: { createdAt: 'desc' }
-            });
+        // ── Fetch all latest ranks in one query — no N+1 ─────────────────────
+        const allRanks = await prisma.keywordRank.findMany({
+            where: {
+                userId,
+                keyword: { in: trackingEntries.map(e => e.keyword) },
+                location: { in: trackingEntries.map(e => e.location) },
+            },
+            orderBy: { createdAt: "desc" }
+        })
 
-            // A keyword is "new" if it has never been through a batch run.
-            // lastChecked is ONLY set by the batch runner — never on initial create.
-            const isNewKeyword = !entry.lastChecked && !entry.nextBatchUpdate;
+        // Build lookup map — first entry per keyword::location = latest
+        const rankMap = new Map<string, typeof allRanks[0]>()
+        allRanks.forEach(r => {
+            const key = `${r.keyword}::${r.location}`
+            if (!rankMap.has(key)) rankMap.set(key, r)
+        })
+
+        // ── Build response data ───────────────────────────────────────────────
+        const keywordsData: TrackedKeywordData[] = trackingEntries.map((entry) => {
+            const latestRank = rankMap.get(`${entry.keyword}::${entry.location}`)
+
+            const isNewKeyword = !entry.lastChecked && !entry.nextBatchUpdate
 
             const nextBatchUpdate = isNewKeyword
                 ? null
                 : entry.nextBatchUpdate ||
-                  new Date(entry.lastChecked!.getTime() + 48 * 60 * 60 * 1000);
+                new Date(entry.lastChecked!.getTime() + 48 * 60 * 60 * 1000)
 
-            // -1 is the sentinel meaning "awaiting first batch — no countdown"
             const timeUntilBatch = nextBatchUpdate
                 ? Math.max(0, Math.floor((nextBatchUpdate.getTime() - now.getTime()) / 1000))
-                : -1;
+                : -1
 
-            const keywordData: TrackedKeywordData = {
+            return {
                 id: entry.id,
                 keyword: entry.keyword,
                 location: entry.location,
-                locationId: locationId || "default",
+                locationId,
                 targetDomain: entry.targetDomain,
                 currentRank: latestRank?.rank ?? null,
                 previousRank: latestRank?.previousRank ?? null,
-                rankChange: latestRank?.rankChange ?? 'NOT_FOUND',
+                rankChange: (latestRank?.rankChange ?? 'NOT_FOUND') as TrackedKeywordData['rankChange'],
                 rankChangeValue: latestRank?.rankChangeValue ?? 0,
                 url: latestRank?.url ?? null,
                 title: latestRank?.title ?? null,
@@ -109,41 +126,36 @@ export async function GET(req: Request) {
                 lastChecked: entry.lastChecked,
                 isActive: entry.isActive,
                 createdAt: entry.createdAt.toISOString()
-            };
+            }
+        })
 
-            return keywordData;
-        });
+        // ── Compute metadata ──────────────────────────────────────────────────
+        const rankedCount = keywordsData.filter(k => k.currentRank !== null).length
+        const avgRank = rankedCount > 0
+            ? keywordsData
+                .filter(k => k.currentRank !== null)
+                .reduce((sum, k) => sum + k.currentRank!, 0) / rankedCount
+            : 0
 
-        const keywordsData = await Promise.all(keywordRankPromises);
-
-        keywordsData.sort((a, b) =>
-            new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
-        );
-
-        const rankedCount = keywordsData.filter(k => k.currentRank !== null).length;
-        const avgRank = keywordsData
-            .filter(k => k.currentRank !== null)
-            .reduce((sum, k) => sum + k.currentRank!, 0) / rankedCount || 0;
-
-        // Only include keywords that have been through a batch run when computing
-        // the global next-update time — skip "pending" ones entirely.
         const nextBatchUpdate = keywordsData.reduce((earliest, keyword) => {
-            if (keyword.nextUpdateTime === "pending") return earliest;
-            const keywordBatch = new Date(keyword.nextUpdateTime);
-            if (isNaN(keywordBatch.getTime())) return earliest;
-            return !earliest || keywordBatch < earliest ? keywordBatch : earliest;
-        }, null as Date | null);
+            if (keyword.nextUpdateTime === "pending") return earliest
+            const keywordBatch = new Date(keyword.nextUpdateTime)
+            if (isNaN(keywordBatch.getTime())) return earliest
+            return !earliest || keywordBatch < earliest ? keywordBatch : earliest
+        }, null as Date | null)
 
         const pendingBatch = await prisma.batchUpdate.findFirst({
             where: { status: { in: ['PENDING', 'RUNNING'] } },
             orderBy: { createdAt: 'desc' }
-        });
+        })
 
         return NextResponse.json({
             success: true,
             data: keywordsData,
             metadata: {
                 total: keywordsData.length,
+                active: keywordsData.filter(k => k.isActive).length,
+                paused: keywordsData.filter(k => !k.isActive).length,
                 updateable: 0,
                 ranked: rankedCount,
                 averageRank: Math.round(avgRank * 100) / 100,

@@ -30,11 +30,13 @@ model locations {
   location_name     String
   website           String?
   is_deleted        Boolean   @default(false)
-  deleted_at        DateTime?  
+  deleted_at        DateTime?
   categories        String?
   last_rank_updated DateTime?
   created_at        DateTime  @default(now())
   updated_at        DateTime  @updatedAt
+
+  is_active Boolean @default(true)
 }
 
 model ScheduledPost {
@@ -230,32 +232,32 @@ model RankAlert {
 }
 
 model Task {
-  id              String   @id @default(auto()) @map("_id") @db.ObjectId
-  userId          String
-  locationId      String
-  placeId         String?
-  title           String
-  description     String
-  category        String
-  type            String
-  priority        String
-  impact          String
-  points          Int      @default(0)
-  week            String
-  status          String   @default("pending")
-  repeatable      Boolean  @default(false)
-  estimatedTime   String
-  
+  id            String  @id @default(auto()) @map("_id") @db.ObjectId
+  userId        String
+  locationId    String
+  placeId       String?
+  title         String
+  description   String
+  category      String
+  type          String
+  priority      String
+  impact        String
+  points        Int     @default(0)
+  week          String
+  status        String  @default("pending")
+  repeatable    Boolean @default(false)
+  estimatedTime String
+
   // Additional fields from JSON
   repeatFrequency  String?
-  businessType     String   @default("all")
+  businessType     String  @default("all")
   actionType       String
-  editableViaAPI   Boolean  @default(true)
-  verificationType String   @default("auto")
+  editableViaAPI   Boolean @default(true)
+  verificationType String  @default("auto")
   caution          String?
-  
-  createdAt       DateTime @default(now())
-  updatedAt       DateTime @updatedAt
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   @@index([userId, locationId, week])
   @@index([userId, status])
@@ -488,39 +490,40 @@ enum ScheduledPostStatus {
 // Google review poster
 
 model GoogleReviewPoster {
-  id           String   @id @default(auto()) @map("_id") @db.ObjectId
-  userId       String
-  
+  id     String @id @default(auto()) @map("_id") @db.ObjectId
+  userId String
+
   // Poster Details
   businessName String
   reviewUrl    String
   bgColor      String   @default("#10b981")
   bgPattern    String   @default("none")
-  keywords     String[] @default([])  // Array of keywords
-  
-  createdAt    DateTime @default(now())
-  updatedAt    DateTime @updatedAt
-  
+  keywords     String[] @default([]) // Array of keywords
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
   @@index([userId])
   @@map("google_review_posters")
 }
 
 model gmb_reviews {
-  id            String    @id @default(auto()) @map("_id") @db.ObjectId
-  reviewId      String    @unique // Google's review ID
-  accountId     String
-  locationId    String
-  reviewerName  String?
-  rating        Int?
-  comment       String?  
-  reviewReply   Json?     // Store the reply object
-  createTime    DateTime?
-  updateTime    DateTime?
-  isDeleted     Boolean   @default(false)
-  deletedAt     DateTime?
-  rawData       Json      // Store complete review data
-  createdAt     DateTime  @default(now())
-  updatedAt     DateTime  @updatedAt
+  id           String    @id @default(auto()) @map("_id") @db.ObjectId
+  reviewId     String    @unique // Google's review ID
+  accountId    String
+  locationId   String
+  reviewerName String?
+  rating       Int?
+  comment      String?
+  reviewReply  Json? // Store the reply object
+  createTime   DateTime?
+  updateTime   DateTime?
+  isDeleted    Boolean   @default(false)
+  deletedAt    DateTime?
+  rawData      Json // Store complete review data
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+  user_id      String
 
   @@unique([accountId, locationId, reviewId])
   @@index([accountId, locationId])
@@ -540,7 +543,7 @@ model Message {
   id        String   @id @default(auto()) @map("_id") @db.ObjectId
   chatId    String   @db.ObjectId
   chat      Chat     @relation(fields: [chatId], references: [id], onDelete: Cascade)
-  role      String   // 'user' or 'assistant'
+  role      String // 'user' or 'assistant'
   content   String
   createdAt DateTime @default(now())
 
@@ -548,75 +551,74 @@ model Message {
   @@map("messages")
 }
 
-
 model Website {
-  id          String   @id @default(auto()) @map("_id") @db.ObjectId
-  userId      String
-  locationId  String
-  accountId   String
-  
+  id         String @id @default(auto()) @map("_id") @db.ObjectId
+  userId     String
+  locationId String
+  accountId  String
+
   // Website Identity
-  subdomain   String   @unique
+  subdomain   String  @unique
   title       String
   description String?
   logoUrl     String?
-  
+
   // Design & Customization
-  primaryColor    String   @default("#10b981")
-  secondaryColor  String   @default("#f59e0b")
-  fontFamily      String   @default("Inter")
-  
+  primaryColor   String @default("#10b981")
+  secondaryColor String @default("#f59e0b")
+  fontFamily     String @default("Inter")
+
   // Sections to display
   enabledSections String[] @default(["hero", "reviews", "gallery", "contact"])
-  
+
   // Analytics Integration
   googleAnalyticsId String?
   facebookPixelId   String?
-  
+
   // Publishing Status
-  isPublished Boolean  @default(false)
+  isPublished Boolean   @default(false)
   publishedAt DateTime?
-  
+
   // Timestamps
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-  
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
   // Relations
-  cachedData  WebsiteCachedData?
-  
+  cachedData WebsiteCachedData?
+
+  @@unique([userId, locationId, accountId])
   @@index([userId])
   @@index([locationId])
   @@index([accountId])
-  @@unique([userId, locationId, accountId])
   @@map("websites")
 }
 
 // Store all cached data from GMB as JSON
 model WebsiteCachedData {
-  id          String   @id @default(auto()) @map("_id") @db.ObjectId
-  websiteId   String   @unique @db.ObjectId
-  website     Website  @relation(fields: [websiteId], references: [id], onDelete: Cascade)
-  
+  id        String  @id @default(auto()) @map("_id") @db.ObjectId
+  websiteId String  @unique @db.ObjectId
+  website   Website @relation(fields: [websiteId], references: [id], onDelete: Cascade)
+
   // Raw JSON from GMB API
-  businessInfo    Json?   // Business details: name, address, phone, hours, rating
-  reviews         Json?   // Array of customer reviews
-  photos          Json?   // Array of business photos
-  posts           Json?   // Array of GMB posts
-  
+  businessInfo Json? // Business details: name, address, phone, hours, rating
+  reviews      Json? // Array of customer reviews
+  photos       Json? // Array of business photos
+  posts        Json? // Array of GMB posts
+
   // Sync Metadata
-  lastSyncedAt    DateTime?
-  nextSyncAt      DateTime?
-  syncInterval    Int      @default(24) // hours between syncs
-  
+  lastSyncedAt DateTime?
+  nextSyncAt   DateTime?
+  syncInterval Int       @default(24) // hours between syncs
+
   // Sync Status
-  isSyncing       Boolean  @default(false)
-  lastSyncError   String?
-  syncRetryCount  Int      @default(0)
-  
+  isSyncing      Boolean @default(false)
+  lastSyncError  String?
+  syncRetryCount Int     @default(0)
+
   // Timestamps
-  createdAt       DateTime @default(now())
-  updatedAt       DateTime @updatedAt
-  
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
   @@index([lastSyncedAt])
   @@index([nextSyncAt])
   @@map("website_cached_data")
@@ -624,60 +626,122 @@ model WebsiteCachedData {
 
 // Track all sync history
 model SyncHistory {
-  id          String   @id @default(auto()) @map("_id") @db.ObjectId
-  websiteId   String   @db.ObjectId
-  userId      String
-  
+  id        String @id @default(auto()) @map("_id") @db.ObjectId
+  websiteId String @db.ObjectId
+  userId    String
+
   // Sync Details
-  syncType    String   // "full", "incremental", "manual"
-  status      String   // "success", "failed", "partial"
-  
+  syncType String // "full", "incremental", "manual"
+  status   String // "success", "failed", "partial"
+
   // What was synced
-  reviewsCount  Int?
-  photosCount   Int?
-  postsCount    Int?
-  
+  reviewsCount Int?
+  photosCount  Int?
+  postsCount   Int?
+
   // Error Info
-  errorMessage  String?
-  errorDetails  Json?
-  
+  errorMessage String?
+  errorDetails Json?
+
   // Timing
   fetchedAt   DateTime
   completedAt DateTime?
-  duration    Int?     // milliseconds
-  
-  createdAt   DateTime @default(now())
-  
+  duration    Int? // milliseconds
+
+  createdAt DateTime @default(now())
+
   @@index([userId])
   @@index([fetchedAt])
   @@index([status])
   @@map("sync_history")
-} 
+}
 
 // Queue for scheduled syncs
 model SyncQueue {
-  id          String   @id @default(auto()) @map("_id") @db.ObjectId
-  websiteId   String   @db.ObjectId
-  userId      String
-  
+  id        String @id @default(auto()) @map("_id") @db.ObjectId
+  websiteId String @db.ObjectId
+  userId    String
+
   // Queue Status
-  status      String   @default("pending") // pending, processing, completed, failed
-  priority    Int      @default(0)
-  
+  status   String @default("pending") // pending, processing, completed, failed
+  priority Int    @default(0)
+
   // Scheduling
   scheduledFor DateTime
-  processedAt DateTime?
-  nextRetry   DateTime?
-  
+  processedAt  DateTime?
+  nextRetry    DateTime?
+
   // Retries
-  retryCount  Int      @default(0)
-  maxRetries  Int      @default(3)
-  
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-  
+  retryCount Int @default(0)
+  maxRetries Int @default(3)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
   @@index([status])
   @@index([scheduledFor])
   @@index([priority])
   @@map("sync_queue")
+}
+
+model Subscription {
+  id                     String             @id @default(auto()) @map("_id") @db.ObjectId
+  stackUserId            String             @unique
+  stripeCustomerId       String             @unique
+  stripeSubscriptionId   String             @unique
+  stripePriceId          String
+  stripeCurrentPeriodEnd DateTime
+  status                 SubscriptionStatus @default(ACTIVE)
+  plan                   PlanType
+  cancelAtPeriodEnd      Boolean            @default(false)
+  createdAt              DateTime           @default(now())
+  updatedAt              DateTime           @updatedAt
+
+  usage Usage?
+}
+
+model Usage {
+  id             String       @id @default(auto()) @map("_id") @db.ObjectId
+  subscriptionId String       @unique @db.ObjectId
+  subscription   Subscription @relation(fields: [subscriptionId], references: [id])
+  stackUserId    String       @unique
+
+  periodStart DateTime
+  periodEnd   DateTime
+
+  postsUsed           Int @default(0)
+  aiReviewRepliesUsed Int @default(0)
+  scheduledPostsUsed  Int @default(0)
+  geoGridScansUsed    Int @default(0)
+  reviewPostersUsed   Int @default(0)
+  keywordTrackingUsed Int @default(0)
+
+  updatedAt DateTime @updatedAt
+}
+
+model LocationChoice {
+  id          String   @id @default(auto()) @map("_id") @db.ObjectId
+  stackUserId String
+  confirmedAt DateTime @default(now())
+  periodStart DateTime
+  periodEnd   DateTime
+
+  @@unique([stackUserId, periodEnd])
+  @@map("location_choices")
+}
+
+enum SubscriptionStatus {
+  ACTIVE
+  CANCELED
+  INCOMPLETE
+  INCOMPLETE_EXPIRED
+  PAST_DUE
+  TRIALING
+  UNPAID
+}
+
+enum PlanType {
+  STARTER
+  GROWTH
+  PRO
 }

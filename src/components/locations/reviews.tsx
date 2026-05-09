@@ -41,6 +41,7 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigge
 import toast from "react-hot-toast"
 import { useGMBStore } from "@/store/gmbStore"
 import { Loader } from "../Loader/Loader"
+import { UsageGate } from "../usage-gate"
 
 interface Review {
   reviewId: string
@@ -498,7 +499,7 @@ export default function Reviews({
   }
 
   return (
-    <Card className={className}>
+    <Card className={`${className} border-0 shadow-none p-0 m-0`}>
       <CardHeader>
         <div className="flex items-center justify-between">
           <div>
@@ -660,27 +661,34 @@ export default function Reviews({
                                         rows={3}
                                       />
                                     )}
+
+
                                   </div>
 
                                   <div className="flex items-center justify-between">
                                     <label className="text-sm font-medium">Your Reply</label>
-                                    <Button
-                                      variant="outline"
-                                      size="sm"
-                                      onClick={() => generateAIReply(review.comment || "", review.reviewId, review.reviewer?.displayName || '', review.starRating)}
-                                    >
-                                      {generatingReply ? (
-                                        <>
-                                          <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                                          Generating...
-                                        </>
-                                      ) : (
-                                        <>
-                                          <Sparkles className="w-4 h-4 mr-2" />
-                                          Generate Reply
-                                        </>
-                                      )}
-                                    </Button>
+
+
+                                    <UsageGate metric="aiReviewRepliesUsed">
+                                      <Button
+                                        variant="outline"
+                                        size="sm"
+                                        onClick={() => generateAIReply(review.comment || "", review.reviewId, review.reviewer?.displayName || '', review.starRating)}
+                                      >
+                                        {generatingReply ? (
+                                          <>
+                                            <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                                            Generating...
+                                          </>
+                                        ) : (
+                                          <>
+                                            <Sparkles className="w-4 h-4 mr-2" />
+                                            Generate Reply
+                                          </>
+                                        )}
+                                      </Button>
+                                    </UsageGate>
+                                    
                                   </div>
 
                                   {generatingReply && aiGenerationProgress && (

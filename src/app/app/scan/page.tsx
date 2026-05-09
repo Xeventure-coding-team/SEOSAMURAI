@@ -1,4 +1,5 @@
 import DashboardLayout from '@/app/layouts/DashboardLayout'
+import { PlanGate } from '@/components/PlanGate'
 import GMBLocationMapInterface from '@/components/scan/GMBLocationMapInterface'
 import React from 'react'
 
@@ -8,7 +9,9 @@ export const metadata = {
 
 function page() {
   return (
-    <DashboardLayout><GMBLocationMapInterface /></DashboardLayout>
+    <DashboardLayout>
+        <GMBLocationMapInterface />
+    </DashboardLayout>
   )
 }
 

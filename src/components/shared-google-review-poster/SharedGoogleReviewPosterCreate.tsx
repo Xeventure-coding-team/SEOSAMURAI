@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
@@ -11,6 +11,8 @@ import LocationSelector from "./LocationSelector"
 import toast from "react-hot-toast"
 import axios from "axios"
 import Link from "next/link"
+import { usePageStore } from "@/store/usePageStore"
+import { PlanGate } from "../PlanGate"
 
 interface Location {
   name: string
@@ -145,6 +147,13 @@ export default function GoogleReviewPosterCreate() {
   const [selectedLocationData, setSelectedLocationData] = useState<Location | null>(null)
   const [saving, setSaving] = useState(false)
 
+  const setPageName = usePageStore((state) => state.setPageName);
+
+
+  useEffect(() => {
+    setPageName('Review Poster Creator')
+  }, [])
+
   const handleLocationChange = (locationName: string, locationData: Location) => {
     setSelectedLocation(locationName)
     setSelectedLocationData(locationData)
@@ -222,209 +231,211 @@ export default function GoogleReviewPosterCreate() {
   ]
 
   return (
-    <div className="min-h-screen">
-      <div className="container mx-auto space-y-8">
+    <PlanGate mode={{ type: "metric", metric: "reviewPostersUsed" }} featureName="Review Poster">
+      <div className="min-h-screen">
+        <div className="container mx-auto space-y-8">
 
-        {/* Header */}
-        <div className="space-y-4">
-          <Button
-            variant="ghost"
-            size="sm"
-            asChild
-            className="gap-1.5"
-          >
-            <Link href="/app/shared-google-review-poster">
-              <ChevronLeft className="w-4 h-4" />
-              Back
-            </Link>
-          </Button>
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 bg-primary rounded-lg flex items-center justify-center">
-              <QrCode className="w-6 h-6 text-primary-foreground" />
+          {/* Header */}
+          <div className="space-y-4">
+            <Button
+              variant="ghost"
+              size="sm"
+              asChild
+              className="gap-1.5"
+            >
+              <Link href="/app/shared-google-review-poster">
+                <ChevronLeft className="w-4 h-4" />
+                Back
+              </Link>
+            </Button>
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 bg-primary rounded-lg flex items-center justify-center">
+                <QrCode className="w-6 h-6 text-primary-foreground" />
+              </div>
+              <h1 className="text-4xl font-bold">Review Poster Creator</h1>
             </div>
-            <h1 className="text-4xl font-bold">Review Poster Creator</h1>
+            <p className="text-muted-foreground text-lg">
+              Create beautiful QR-enabled posters to boost your Google reviews
+            </p>
           </div>
-          <p className="text-muted-foreground text-lg">
-            Create beautiful QR-enabled posters to boost your Google reviews
-          </p>
-        </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-          {/* Form Section */}
-          <div className="lg:col-span-1">
-            <Card>
-              <CardHeader>
-                <CardTitle>Customize Poster</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-5">
-                {/* Business Location Selection Component */}
-                <LocationSelector
-                  value={selectedLocation}
-                  onLocationChange={handleLocationChange}
-                  placeholder="Choose a location"
-                  showLabel={true}
-                />
-                <div>
-                  <label className="text-sm font-medium">or</label>
-                </div>
-
-                <div className="space-y-2">
-                  <label className="text-sm font-medium">Business Name</label>
-                  <Input
-                    value={businessName}
-                    onChange={(e) => setBusinessName(e.target.value)}
-                    placeholder="e.g. GloPar Travels"
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            {/* Form Section */}
+            <div className="lg:col-span-1">
+              <Card>
+                <CardHeader>
+                  <CardTitle>Customize Poster</CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-5">
+                  {/* Business Location Selection Component */}
+                  <LocationSelector
+                    value={selectedLocation}
+                    onLocationChange={handleLocationChange}
+                    placeholder="Choose a location"
+                    showLabel={true}
                   />
-                  <p className="text-xs text-muted-foreground">
-                    Auto-filled from location or enter manually
-                  </p>
-                </div>
+                  <div>
+                    <label className="text-sm font-medium">or</label>
+                  </div>
 
-                <div className="space-y-2">
-                  <label className="text-sm font-medium">Google Review Link</label>
-                  <Input
-                    type="url"
-                    value={reviewUrl}
-                    onChange={(e) => setReviewUrl(e.target.value)}
-                    placeholder="https://g.page/r/your-business/review"
-                  />
-                  <p className="text-xs text-muted-foreground">
-                    Auto-filled from location or paste your review link
-                  </p>
-                </div>
-
-                <div className="space-y-2">
-                  <label className="text-sm font-medium">Background Color</label>
-                  <div className="flex gap-2 mb-3">
+                  <div className="space-y-2">
+                    <label className="text-sm font-medium">Business Name</label>
                     <Input
-                      type="color"
-                      value={bgColor}
-                      onChange={(e) => setBgColor(e.target.value)}
-                      className="w-16 h-10 p-1 cursor-pointer"
+                      value={businessName}
+                      onChange={(e) => setBusinessName(e.target.value)}
+                      placeholder="e.g. GloPar Travels"
                     />
-                    <span className="text-sm text-muted-foreground pt-2">{bgColor}</span>
+                    <p className="text-xs text-muted-foreground">
+                      Auto-filled from location or enter manually
+                    </p>
                   </div>
-                  <div className="grid grid-cols-5 gap-2">
-                    {colorOptions.map((color) => (
-                      <button
-                        key={color.value}
-                        onClick={() => setBgColor(color.value)}
-                        className="w-full h-10 rounded-md border-2 border-border hover:border-primary transition-colors"
-                        style={{ backgroundColor: color.value }}
-                        title={color.name}
-                      />
-                    ))}
-                  </div>
-                </div>
 
-                {/* New Background Pattern Section */}
-                <div className="space-y-2">
-                  <label className="text-sm font-medium flex items-center gap-2">
-                    <Palette className="w-4 h-4" />
-                    Background Pattern
-                  </label>
-                  <div className="grid grid-cols-4 gap-2">
-                    {patternOptions.map((pattern) => (
-                      <button
-                        key={pattern.id}
-                        onClick={() => setBgPattern(pattern.id)}
-                        className={`relative aspect-square rounded-md border-2 overflow-hidden transition-all ${bgPattern === pattern.id
+                  <div className="space-y-2">
+                    <label className="text-sm font-medium">Google Review Link</label>
+                    <Input
+                      type="url"
+                      value={reviewUrl}
+                      onChange={(e) => setReviewUrl(e.target.value)}
+                      placeholder="https://g.page/r/your-business/review"
+                    />
+                    <p className="text-xs text-muted-foreground">
+                      Auto-filled from location or paste your review link
+                    </p>
+                  </div>
+
+                  <div className="space-y-2">
+                    <label className="text-sm font-medium">Background Color</label>
+                    <div className="flex gap-2 mb-3">
+                      <Input
+                        type="color"
+                        value={bgColor}
+                        onChange={(e) => setBgColor(e.target.value)}
+                        className="w-16 h-10 p-1 cursor-pointer"
+                      />
+                      <span className="text-sm text-muted-foreground pt-2">{bgColor}</span>
+                    </div>
+                    <div className="grid grid-cols-5 gap-2">
+                      {colorOptions.map((color) => (
+                        <button
+                          key={color.value}
+                          onClick={() => setBgColor(color.value)}
+                          className="w-full h-10 rounded-md border-2 border-border hover:border-primary transition-colors"
+                          style={{ backgroundColor: color.value }}
+                          title={color.name}
+                        />
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* New Background Pattern Section */}
+                  <div className="space-y-2">
+                    <label className="text-sm font-medium flex items-center gap-2">
+                      <Palette className="w-4 h-4" />
+                      Background Pattern
+                    </label>
+                    <div className="grid grid-cols-4 gap-2">
+                      {patternOptions.map((pattern) => (
+                        <button
+                          key={pattern.id}
+                          onClick={() => setBgPattern(pattern.id)}
+                          className={`relative aspect-square rounded-md border-2 overflow-hidden transition-all ${bgPattern === pattern.id
                             ? "border-primary ring-2 ring-primary/20"
                             : "border-border hover:border-primary/50"
-                          }`}
-                        title={pattern.name}
-                      >
-                        {pattern.id === "none" ? (
-                          <div className="w-full h-full bg-muted flex items-center justify-center">
-                            <span className="text-xs font-medium">None</span>
-                          </div>
-                        ) : (
-                          <div
-                            className="w-full h-full text-white"
-                            style={{ color: bgColor }}
-                          >
-                            {pattern.component}
-                          </div>
-                        )}
-                      </button>
-                    ))}
-                  </div>
-                  <p className="text-xs text-muted-foreground">
-                    Choose a pattern to overlay on your background
-                  </p>
-                </div>
-
-                <div className="space-y-2">
-                  <label className="text-sm font-medium">Keywords / Review Hints</label>
-                  <Textarea
-                    value={keywords}
-                    onChange={(e) => setKeywords(e.target.value)}
-                    placeholder="great service, friendly staff, quick delivery..."
-                    rows={4}
-                    className="resize-none"
-                  />
-                  <p className="text-xs text-muted-foreground">Separate keywords with commas</p>
-                </div>
-
-                <div className="flex gap-2 pt-2">
-                  <Button onClick={handleGenerate} variant="outline" className="flex-1">
-                    <QrCode className="h-4 w-4 mr-2" />
-                    Preview
-                  </Button>
-                  <Button
-                    onClick={handleSave}
-                    disabled={saving || !businessName || !reviewUrl}
-                    className="flex-1"
-                  >
-                    {saving ? (
-                      <>
-                        <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                        Saving...
-                      </>
-                    ) : (
-                      <>
-                        <Save className="h-4 w-4 mr-2" />
-                        Save
-                      </>
-                    )}
-                  </Button>
-                </div>
-              </CardContent>
-            </Card>
-          </div>
-
-          {/* Poster Preview */}
-          <div className="lg:col-span-2">
-            <Card>
-              <CardHeader>
-                <CardTitle>Preview</CardTitle>
-              </CardHeader>
-
-              <CardContent>
-                {showPoster ? (
-                  <div className="flex justify-center">
-                    <ReviewPosterDisplay
-                      businessName={businessName}
-                      reviewUrl={reviewUrl}
-                      bgColor={bgColor}
-                      bgPattern={bgPattern}
-                      keywords={keywords}
-                    />
-                  </div>
-                ) : (
-                  <div className="text-center py-24 text-muted-foreground">
-                    <div className="mb-4 inline-block p-6 bg-muted rounded-full">
-                      <QrCode className="h-16 w-16 opacity-40" />
+                            }`}
+                          title={pattern.name}
+                        >
+                          {pattern.id === "none" ? (
+                            <div className="w-full h-full bg-muted flex items-center justify-center">
+                              <span className="text-xs font-medium">None</span>
+                            </div>
+                          ) : (
+                            <div
+                              className="w-full h-full text-white"
+                              style={{ color: bgColor }}
+                            >
+                              {pattern.component}
+                            </div>
+                          )}
+                        </button>
+                      ))}
                     </div>
-                    <p className="text-lg font-medium mb-1">Ready to create?</p>
-                    <p className="text-sm">Fill in the details and click Preview</p>
+                    <p className="text-xs text-muted-foreground">
+                      Choose a pattern to overlay on your background
+                    </p>
                   </div>
-                )}
-              </CardContent>
-            </Card>
+
+                  <div className="space-y-2">
+                    <label className="text-sm font-medium">Keywords / Review Hints</label>
+                    <Textarea
+                      value={keywords}
+                      onChange={(e) => setKeywords(e.target.value)}
+                      placeholder="great service, friendly staff, quick delivery..."
+                      rows={4}
+                      className="resize-none"
+                    />
+                    <p className="text-xs text-muted-foreground">Separate keywords with commas</p>
+                  </div>
+
+                  <div className="flex gap-2 pt-2">
+                    <Button onClick={handleGenerate} variant="outline" className="flex-1">
+                      <QrCode className="h-4 w-4 mr-2" />
+                      Preview
+                    </Button>
+                    <Button
+                      onClick={handleSave}
+                      disabled={saving || !businessName || !reviewUrl}
+                      className="flex-1"
+                    >
+                      {saving ? (
+                        <>
+                          <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                          Saving...
+                        </>
+                      ) : (
+                        <>
+                          <Save className="h-4 w-4 mr-2" />
+                          Save
+                        </>
+                      )}
+                    </Button>
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
+
+            {/* Poster Preview */}
+            <div className="lg:col-span-2">
+              <Card>
+                <CardHeader>
+                  <CardTitle>Preview</CardTitle>
+                </CardHeader>
+
+                <CardContent>
+                  {showPoster ? (
+                    <div className="flex justify-center">
+                      <ReviewPosterDisplay
+                        businessName={businessName}
+                        reviewUrl={reviewUrl}
+                        bgColor={bgColor}
+                        bgPattern={bgPattern}
+                        keywords={keywords}
+                      />
+                    </div>
+                  ) : (
+                    <div className="text-center py-24 text-muted-foreground">
+                      <div className="mb-4 inline-block p-6 bg-muted rounded-full">
+                        <QrCode className="h-16 w-16 opacity-40" />
+                      </div>
+                      <p className="text-lg font-medium mb-1">Ready to create?</p>
+                      <p className="text-sm">Fill in the details and click Preview</p>
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
+            </div>
           </div>
         </div>
       </div>
-    </div>
+    </PlanGate>
   )
 }

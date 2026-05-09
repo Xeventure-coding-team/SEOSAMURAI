@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { prisma } from "../../../../lib/prisma";
 import { stackServerApp } from "@/stack";
+import { getPlanLimits, PlanId } from "@/lib/stripe";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -112,13 +113,13 @@ const MAX_PAGES = 1;
 
 function buildSearchQuery(keyword: string, location: string): string {
   const fullLocation = location.trim();
-  
+
   const prepositionRegex = /\b(in|at|near|around|within|beside|by|on|upon)\s+\w+/i;
-  
+
   if (prepositionRegex.test(keyword)) {
     return `${keyword} ${fullLocation}`;
   }
-  
+
   return `${keyword} in ${fullLocation}`;
 }
 
@@ -145,12 +146,12 @@ async function fetchPlacesPage(
 
   const fetchOnce = async () => {
     const url = buildUrl();
-    
+
     const res = await fetch(url, {
       cache: "no-store",
       signal: AbortSignal.timeout(20_000),
     });
- 
+
     if (!res.ok) {
       const txt = await res.text();
       throw new Error(`Places API HTTP ${res.status}: ${txt}`);
@@ -161,16 +162,16 @@ async function fetchPlacesPage(
   let data = await fetchOnce();
 
   // Handle pagination token not ready (common issue)
-  if (pageToken && (data.status === "INVALID_REQUEST" || 
-                    (data.status === "OK" && !data.next_page_token && data.results?.length === 20))) {
+  if (pageToken && (data.status === "INVALID_REQUEST" ||
+    (data.status === "OK" && !data.next_page_token && data.results?.length === 20))) {
 
     const startTime = Date.now();
     const MAX_WAIT_MS = 15_000; // 15 seconds max wait
     let attempt = 0;
-    
-    while ((data.status === "INVALID_REQUEST" || 
-            (data.status === "OK" && !data.next_page_token && data.results?.length === 20)) && 
-           (Date.now() - startTime) < MAX_WAIT_MS) {
+
+    while ((data.status === "INVALID_REQUEST" ||
+      (data.status === "OK" && !data.next_page_token && data.results?.length === 20)) &&
+      (Date.now() - startTime) < MAX_WAIT_MS) {
       attempt++;
       const delayMs = Math.min(2000 * attempt, 8000); // 2s, 4s, 6s, 8s
       console.log(`Retry ${attempt} — waiting ${delayMs}ms for token activation...`);
@@ -343,6 +344,8 @@ export async function POST(req: Request) {
     }
 
     const userId = user.id;
+
+    // ── 1. Parse body first ───────────────────────────────────────────────────
     const {
       businessName,
       keywords,
@@ -352,6 +355,13 @@ export async function POST(req: Request) {
       refreshRate = 48,
       locationId,
     } = await req.json();
+
+    if (!locationId || typeof locationId !== "string") {
+      return NextResponse.json(
+        { error: "locationId is required" },
+        { status: 400 }
+      )
+    }
 
     const keywordList: string[] = keywords ?? (keyword ? [keyword] : []);
 
@@ -369,6 +379,35 @@ export async function POST(req: Request) {
       );
     }
 
+    // ── 2. Check plan limit against active keyword count ──────────────────────
+    const [activeCount, subscription] = await Promise.all([
+      prisma.keywordTracking.count({
+        where: { userId, isActive: true, locationId }
+      }),
+      prisma.subscription.findUnique({
+        where: { stackUserId: userId }
+      })
+    ])
+
+    if (!subscription) {
+      return NextResponse.json(
+        { error: "No active subscription found" },
+        { status: 403 }
+      )
+    }
+
+    const limit = getPlanLimits(subscription.plan.toLowerCase() as PlanId).keywordTracking
+    const slotsAvailable = limit - activeCount
+
+    if (keywordList.length > slotsAvailable) {
+      return NextResponse.json({
+        error: slotsAvailable <= 0
+          ? `Keyword limit reached (${limit}). Remove existing keywords to add more.`
+          : `Only ${slotsAvailable} keyword slot(s) remaining. You tried to add ${keywordList.length}.`
+      }, { status: 403 })
+    }
+
+    // ── 3. Process keywords ───────────────────────────────────────────────────
     const finalBusinessName: string = businessName || "Unknown Business";
     const normalizedLocation = location.trim();
     const results = [];
@@ -377,10 +416,8 @@ export async function POST(req: Request) {
       if (!currentKeyword || typeof currentKeyword !== "string") continue;
       const trimmedKeyword = currentKeyword.trim();
 
-      // ── 1. Create tracking entry ───────────────────────────────────────────
-      // NOTE: lastChecked is intentionally NOT set here.
-      // It is ONLY set by the batch runner after a successful batch update.
-      // This is the signal the GET route uses to distinguish new vs batched keywords.
+      // Create tracking entry
+      // NOTE: lastChecked intentionally omitted — batch runner sets this
       let trackingEntry;
       try {
         trackingEntry = await prisma.keywordTracking.create({
@@ -392,7 +429,6 @@ export async function POST(req: Request) {
             targetDomain: targetDomain ?? null,
             refreshRate,
             isActive: true,
-            // lastChecked: intentionally omitted — batch runner sets this
           },
         });
       } catch (e) {
@@ -405,10 +441,8 @@ export async function POST(req: Request) {
         continue;
       }
 
-      // ── 2. Fetch initial rank (for display only, not a "batch check") ──────
-      // We fetch rank immediately so the user sees data right away,
-      // but we do NOT set lastChecked — the timer stays in "pending" state
-      // until the first real batch run.
+      // Fetch initial rank for immediate display
+      // Does NOT set lastChecked — timer starts only after first batch run
       let rankResult;
       try {
         const rankData = await performSerpUpdate(
@@ -420,10 +454,6 @@ export async function POST(req: Request) {
           locationId,
           finalBusinessName
         );
-
-        // ✅ Deliberately NOT updating lastChecked here.
-        // The batch runner is the only place that should set lastChecked.
-
         rankResult = { ...rankData, keyword: trimmedKeyword, success: true };
       } catch (e) {
         console.error(`❌ Rank fetch failed for "${trimmedKeyword}":`, e);
@@ -463,6 +493,7 @@ export async function POST(req: Request) {
         },
       },
     });
+
   } catch (error: any) {
     console.error("❌ POST Error:", error);
     return NextResponse.json(
@@ -542,4 +573,7 @@ export async function updateKeywordRanks(
     results,
     stats: { total: results.length, successful: successCount, failed: failCount },
   };
+
+
+
 }

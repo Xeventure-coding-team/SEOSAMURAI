@@ -1,6 +1,6 @@
 "use client"
 
-import React, { useEffect, useState } from "react"
+import React, { useEffect, useRef, useState } from "react"
 import { Button } from "@/components/ui/button"
 import { Card, CardHeader, CardContent, CardTitle, CardDescription } from "@/components/ui/card"
 import { Skeleton } from "@/components/ui/skeleton"
@@ -19,162 +19,248 @@ import {
     ArrowRight,
     RefreshCw,
     X,
-    Loader2Icon
+    WifiOff,
 } from "lucide-react"
 
+
+interface GoogleBusinessConnectProps {
+    onAuthenticated?: () => void
+}
+
+// ─── Types ───────────────────────────────────────────────────────────────────
+
 type State =
-    | "loading"
-    | "connected"
-    | "disconnected"
-    | "connecting"
-    | "disconnecting"
-    | "processing-callback"
+    | "loading"           // initial check
+    | "retrying"          // slow network — re-attempting silently
+    | "connected"         // all good
+    | "disconnected"      // no token found
+    | "connecting"        // OAuth redirect in progress
+    | "disconnecting"     // actively revoking
+    | "processing-callback" // exchanging OAuth code
     | "error"
 
-const GoogleBusinessConnect: React.FC = () => {
+// ─── Constants ───────────────────────────────────────────────────────────────
+
+const MAX_CHECK_RETRIES = 4
+const RETRY_BASE_DELAY_MS = 1200
+const PROGRESS_TICK_MS = 250
+
+// ─── CSRF state helpers ───────────────────────────────────────────────────────
+
+function generateOAuthState(): string {
+    const arr = new Uint8Array(16)
+    crypto.getRandomValues(arr)
+    return Array.from(arr, (b) => b.toString(16).padStart(2, "0")).join("")
+}
+
+function saveOAuthState(state: string) {
+    sessionStorage.setItem("gmb_oauth_state", state)
+}
+
+function validateAndClearOAuthState(receivedState: string | null): boolean {
+    const stored = sessionStorage.getItem("gmb_oauth_state")
+    sessionStorage.removeItem("gmb_oauth_state")
+    return !!stored && stored === receivedState
+}
+
+// ─── Component ───────────────────────────────────────────────────────────────
+
+const GoogleBusinessConnect: React.FC<GoogleBusinessConnectProps> = ({ onAuthenticated }) => {
     const [state, setState] = useState<State>("loading")
     const [accountName, setAccountName] = useState<string | null>(null)
     const [error, setError] = useState<string | null>(null)
     const [progress, setProgress] = useState(0)
+    const [retryCount, setRetryCount] = useState(0)
+    const mountedRef = useRef(true)
 
-    const clientId: string = process.env.NEXT_PUBLIC_CLIENT_ID as string
-    const redirectUri: string = process.env.NEXT_PUBLIC_REDIRECT_URL as string
-    const scopes: string = "https://www.googleapis.com/auth/business.manage"
+    const initCalledRef = useRef(false)
+
+    const clientId = process.env.NEXT_PUBLIC_CLIENT_ID as string
+    const redirectUri = process.env.NEXT_PUBLIC_REDIRECT_URL as string
+    const scopes = "https://www.googleapis.com/auth/business.manage"
+
+    // ─── Progress ticker ───────────────────────────────────────────────────────
 
     useEffect(() => {
-        initializeComponent()
-    }, [])
-
-    // Simulate progress for better UX
-    useEffect(() => {
-        if (state === 'processing-callback' || state === 'connecting') {
-            const interval = setInterval(() => {
-                setProgress(prev => {
-                    if (prev >= 90) return prev
-                    return prev + 10
-                })
-            }, 200)
-            return () => clearInterval(interval)
-        } else {
+        const active = state === "processing-callback" || state === "connecting"
+        if (!active) {
             setProgress(0)
+            return
         }
+        const interval = setInterval(() => {
+            setProgress((p) => (p >= 90 ? p : p + 8))
+        }, PROGRESS_TICK_MS)
+        return () => clearInterval(interval)
     }, [state])
 
+    // ─── Lifecycle ────────────────────────────────────────────────────────────
+
+    useEffect(() => {
+        mountedRef.current = true
+        initializeComponent()
+        return () => {
+            mountedRef.current = false
+        }
+    }, [])
+
+    // ─── Helpers ──────────────────────────────────────────────────────────────
+
+    const safeSetState = (s: State) => {
+        if (mountedRef.current) setState(s)
+    }
+
+    const cleanupURL = () => {
+        const url = new URL(window.location.href)
+        url.search = ""
+        window.history.replaceState({}, document.title, url.toString())
+    }
+
+    // ─── Init ─────────────────────────────────────────────────────────────────
+
     const initializeComponent = async () => {
-        try {
-            setState('loading')
-            setError(null)
 
-            // First, check if we have OAuth callback params
-            const params = new URLSearchParams(window.location.search)
-            const code = params.get("code")
-            const error = params.get("error")
+        if (initCalledRef.current) return
+        initCalledRef.current = true
 
-            if (error) {
-                setError(`Authorization failed: ${error}`)
-                setState('error')
+        safeSetState("loading")
+        setError(null)
+
+        const params = new URLSearchParams(window.location.search)
+        const code = params.get("code")
+        const oauthError = params.get("error")
+        const receivedState = params.get("state")
+
+        if (oauthError) {
+            setError(`Authorization failed: ${oauthError}`)
+            safeSetState("error")
+            cleanupURL()
+            return
+        }
+
+        if (code) {
+            // CSRF check
+            if (!validateAndClearOAuthState(receivedState)) {
+                setError("Security check failed. Please try connecting again.")
+                safeSetState("error")
                 cleanupURL()
                 return
             }
+            await handleOAuthCallback(code)
+            return
+        }
 
-            if (code) {
-                await handleOAuthCallback(code)
+        await checkExistingConnection()
+    }
+
+    // ─── Check existing connection with retry + slow-network UX ───────────────
+
+    const checkExistingConnection = async (attempt = 0) => {
+        if (attempt === 0) safeSetState("loading")
+        if (attempt > 0) {
+            safeSetState("retrying")
+            setRetryCount(attempt)
+        }
+
+        try {
+            const res = await fetch("/api/gmb/token", {
+                method: "GET",
+                headers: { "Content-Type": "application/json" },
+                cache: "no-store",
+                signal: AbortSignal.timeout(10_000), // 10s timeout per attempt
+            })
+
+            if (!mountedRef.current) return
+
+            if (res.ok) {
+                const data = await res.json()
+                if (data?.accessToken && data?.isActive) {
+                    setAccountName(data.accountName ?? "Google My Business Account")
+                    safeSetState("connected")
+                    onAuthenticated?.() 
+                    return
+                }
+            }
+
+            // 401 / 404 → definitively not connected
+            if (res.status === 401 || res.status === 404) {
+                safeSetState("disconnected")
                 return
             }
 
-            // No OAuth params, check existing connection
-            await checkExistingConnection()
+            throw new Error(`Unexpected status: ${res.status}`)
+        } catch (err: any) {
+            const isTimeout = err?.name === "TimeoutError" || err?.name === "AbortError"
+            console.warn(`[GMBConnect] Check attempt ${attempt + 1} failed:`, err?.message)
 
-        } catch (error) {
-            setError("Failed to initialize component")
-            setState('error')
+            if (attempt < MAX_CHECK_RETRIES) {
+                const delay = RETRY_BASE_DELAY_MS * Math.pow(1.8, attempt)
+                await new Promise((r) => setTimeout(r, delay))
+                if (!mountedRef.current) return
+                return checkExistingConnection(attempt + 1)
+            }
+
+            // All retries exhausted
+            if (isTimeout) {
+                setError("Connection is slow. Please check your network and try again.")
+            }
+            safeSetState("disconnected")
         }
     }
 
-    const checkExistingConnection = async (retries = 3, delay = 1000) => {
-        for (let attempt = 0; attempt < retries; attempt++) {
-            try {
-                const response = await fetch("/api/gmb/token", {
-                    method: "GET",
-                    headers: { "Content-Type": "application/json" },
-                    cache: "no-store"
-                })
-
-                if (response.ok) {
-                    const data = await response.json()
-                    if (data && data.accessToken && data.isActive) {
-                        setState('connected')
-                        setAccountName(data.accountName || "Google My Business Account")
-                        setTimeout(() => {
-                            if (!window.location.pathname.includes('/locations')) {
-                                window.location.href = "/app/locations"
-                            }
-                        }, 2000)
-                        return
-                    }
-                }
-            } catch (error) {
-               
-            }
-
-            // Wait before next attempt (skip wait on last attempt)
-            if (attempt < retries - 1) {
-                await new Promise(resolve => setTimeout(resolve, delay))
-            }
-        }
-
-        setState('disconnected')
-    }
+    // ─── OAuth callback handler ───────────────────────────────────────────────
 
     const handleOAuthCallback = async (code: string) => {
-        setState('processing-callback')
+        safeSetState("processing-callback")
         setError(null)
-        setProgress(20)
+        setProgress(15)
 
         try {
-            // Exchange code for tokens
-            const tokenResponse = await fetch("/api/gmb/exchange-token", {
+            // 1. Exchange code for tokens
+            const tokenRes = await fetch("/api/gmb/exchange-token", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({ code }),
             })
 
-            if (!tokenResponse.ok) {
-                const errorData = await tokenResponse.json()
-                throw new Error(errorData.error || "Failed to exchange code for token")
+            if (!tokenRes.ok) {
+                const errData = await tokenRes.json().catch(() => ({}))
+                throw new Error(errData.error ?? "Failed to exchange authorization code")
             }
 
-            const tokenData = await tokenResponse.json()
-            setProgress(50)
+            const tokenData = await tokenRes.json()
+            setProgress(45)
 
-            // Get account information
-            let accountName = null
-            let accountId = null
+            // 2. Fetch account info
+            let accountName: string | null = null
+            let accountId: string | null = null
 
             try {
                 if (process.env.NEXT_PUBLIC_API_BASE_URL) {
-                    const url = `${process.env.NEXT_PUBLIC_API_BASE_URL}connected-accounts?access_token=${tokenData.access_token}`
-                    const accountResponse = await fetch(url, {
-                        method: "GET",
-                        headers: {
-                            "Content-Type": "application/json",
-                            "Authorization": `Bearer ${tokenData.access_token}`
-                        },
-                    })
-
-                    if (accountResponse.ok) {
-                        const accountData = await accountResponse.json()
-                        accountName = accountData.accountName
-                        accountId = accountData.accountId
+                    // Pass token via header, NOT query string
+                    const accountRes = await fetch(
+                        `${process.env.NEXT_PUBLIC_API_BASE_URL}connected-accounts`,
+                        {
+                            method: "GET",
+                            headers: {
+                                "Content-Type": "application/json",
+                                Authorization: `Bearer ${tokenData.access_token}`,
+                            },
+                        }
+                    )
+                    if (accountRes.ok) {
+                        const accountData = await accountRes.json()
+                        accountName = accountData.accountName ?? null
+                        accountId = accountData.accountId ?? null
                     }
                 }
-            } catch (accountError) {
+            } catch (e) {
+                console.warn("[GMBConnect] Could not fetch account info:", e)
             }
 
-            setProgress(75)
+            setProgress(70)
 
-            // Save tokens to database
-            const saveResponse = await fetch("/api/gmb/token", {
+            // 3. Save tokens to DB (server validates them)
+            const saveRes = await fetch("/api/gmb/token", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({
@@ -184,156 +270,174 @@ const GoogleBusinessConnect: React.FC = () => {
                     accountName,
                     accountId,
                 }),
-                cache: "no-store"
+                cache: "no-store",
             })
 
-            if (!saveResponse.ok) {
-                const saveError = await saveResponse.json()
-                throw new Error(saveError.error || "Failed to save tokens")
+            if (!saveRes.ok) {
+                const saveErr = await saveRes.json().catch(() => ({}))
+                throw new Error(saveErr.error ?? "Failed to save connection")
             }
 
             setProgress(100)
-
-            // Success!
-            setState('connected')
-            setAccountName(accountName || "Google My Business Account")
-
-            // Clean up URL
             cleanupURL()
 
-            // Redirect after showing success
+            if (!mountedRef.current) return
+            setAccountName(accountName ?? "Google My Business Account")
+            safeSetState("connected")
+
             setTimeout(() => {
-                window.location.href = "/app/locations"
-            }, 2000)
+                if (mountedRef.current) window.location.href = "/app/locations"
+            }, 1800)
+        } catch (err: any) {
+            console.error("[GMBConnect] OAuth callback failed:", err)
 
-        } catch (error: any) {
-            // Clean up on error
-            try {
-                await fetch("/api/gmb/token", { method: "DELETE" })
-            } catch (cleanupError) {
-            }
+            // Clean up bad tokens
+            await fetch("/api/gmb/token", { method: "DELETE" }).catch(() => { })
 
-            setError(error.message || "Failed to connect to Google My Business")
-            setState('error')
+            if (!mountedRef.current) return
+            setError(err.message ?? "Failed to connect to Google My Business")
+            safeSetState("error")
             cleanupURL()
         }
     }
 
-    const triggerGMBConnection = async () => {
-        try {
-            setState('connecting')
-            setError(null)
-            setProgress(10)
+    // ─── Connect ──────────────────────────────────────────────────────────────
 
-            // Clear any existing tokens
-            try {
-                await fetch("/api/gmb/token", { method: "DELETE" })
-            } catch (error) {
-            }
+    const triggerGMBConnection = async () => {
+        safeSetState("connecting")
+        setError(null)
+        setProgress(10)
+
+        try {
+            // Clear stale tokens
+            await fetch("/api/gmb/token", { method: "DELETE" }).catch(() => { })
+
+            // Generate & store CSRF state
+            const oauthState = generateOAuthState()
+            saveOAuthState(oauthState)
 
             setProgress(30)
 
-            // Build authorization URL
-            const authorizationUrl = `https://accounts.google.com/o/oauth2/v2/auth?client_id=${clientId}&redirect_uri=${encodeURIComponent(redirectUri)}&response_type=code&scope=${encodeURIComponent(scopes)}&access_type=offline&prompt=consent`
+            const authUrl =
+                `https://accounts.google.com/o/oauth2/v2/auth` +
+                `?client_id=${encodeURIComponent(clientId)}` +
+                `&redirect_uri=${encodeURIComponent(redirectUri)}` +
+                `&response_type=code` +
+                `&scope=${encodeURIComponent(scopes)}` +
+                `&access_type=offline` +
+                `&prompt=consent` +
+                `&state=${oauthState}`
 
-            // Redirect to Google OAuth
-            window.location.href = authorizationUrl
-
-        } catch (error) {
+            window.location.href = authUrl
+        } catch {
             setError("Failed to initiate connection. Please try again.")
-            setState('disconnected')
+            safeSetState("disconnected")
         }
     }
+
+    // ─── Disconnect ───────────────────────────────────────────────────────────
 
     const handleDisconnect = async () => {
+        safeSetState("disconnecting")
+        setError(null)
+
         try {
-            setState('connecting')
-            setError(null)
-
-            const response = await fetch("/api/gmb/token", { method: "DELETE" })
-
-            if (response.ok) {
-                setState('disconnected')
-                setAccountName(null)
-            } else {
-                throw new Error("Failed to disconnect")
-            }
-        } catch (error) {
+            const res = await fetch("/api/gmb/token", { method: "DELETE" })
+            if (!res.ok) throw new Error("Delete request failed")
+            if (!mountedRef.current) return
+            setAccountName(null)
+            safeSetState("disconnected")
+        } catch {
             setError("Failed to disconnect. Please try again.")
-            setState('connected') // Revert state on error
+            safeSetState("connected")
         }
     }
 
-    const cleanupURL = () => {
-        // Clean up URL parameters
-        const url = new URL(window.location.href)
-        url.search = ''
-        window.history.replaceState({}, document.title, url.toString())
-    }
+    // ─── Benefits ─────────────────────────────────────────────────────────────
 
-    const retryConnection = () => {
-        setError(null)
-        initializeComponent()
-    }
-
-    // Benefits data for better user understanding
     const benefits = [
         {
             icon: <BarChart3 className="h-5 w-5" />,
             title: "Analytics & Insights",
-            description: "Track performance metrics and customer engagement"
+            description: "Track performance metrics and customer engagement",
         },
         {
             icon: <MapPin className="h-5 w-5" />,
             title: "Location Management",
-            description: "Update business info, hours, and photos instantly"
+            description: "Update business info, hours, and photos instantly",
         },
         {
             icon: <Star className="h-5 w-5" />,
             title: "Review Management",
-            description: "Respond to reviews and improve your reputation"
+            description: "Respond to reviews and improve your reputation",
         },
         {
             icon: <Users className="h-5 w-5" />,
             title: "Customer Engagement",
-            description: "Connect with customers through posts and messaging"
-        }
+            description: "Connect with customers through posts and messaging",
+        },
     ]
 
-    // Render loading state
-    if (state === 'loading' || state === 'processing-callback') {
+    // ─── Loading / processing states ──────────────────────────────────────────
+
+    const isProcessing = state === "loading" || state === "processing-callback"
+    const isSlowNetwork = state === "retrying"
+    const isDisconnecting = state === "disconnecting"
+
+    if (isProcessing || isSlowNetwork) {
         return (
             <div className="flex items-center justify-center min-h-[70vh] p-4">
                 <Card className="max-w-md w-full shadow-lg border-0 bg-card">
                     <CardContent className="p-8">
                         <div className="space-y-6 text-center">
-                            <div className="relative">
-                                <div className="w-16 h-16 mx-auto bg-primary/10 rounded-full flex items-center justify-center">
+                            <div className="w-16 h-16 mx-auto bg-primary/10 rounded-full flex items-center justify-center">
+                                {isSlowNetwork ? (
+                                    <WifiOff className="h-8 w-8 text-amber-500 animate-pulse" />
+                                ) : (
                                     <Loader2 className="animate-spin h-8 w-8 text-primary" />
-                                </div>
+                                )}
                             </div>
 
-                            <div className="space-y-3">
+                            <div className="space-y-2">
                                 <h3 className="text-xl font-semibold">
-                                    {state === 'processing-callback'
+                                    {state === "processing-callback"
                                         ? "Connecting Your Account"
-                                        : "Checking Connection Status"
-                                    }
+                                        : isSlowNetwork
+                                            ? "Slow Connection Detected"
+                                            : "Checking Connection Status"}
                                 </h3>
                                 <p className="text-sm text-muted-foreground">
-                                    {state === 'processing-callback'
-                                        ? "We're securely connecting your Google My Business account. This may take a moment..."
-                                        : "Please wait while we verify your connection status..."
-                                    }
+                                    {state === "processing-callback"
+                                        ? "Securely connecting your Google My Business account..."
+                                        : isSlowNetwork
+                                            ? `Network is slow — retrying automatically (attempt ${retryCount + 1} of ${MAX_CHECK_RETRIES + 1})...`
+                                            : "Please wait while we verify your connection..."}
                                 </p>
                             </div>
 
-                            {state === 'processing-callback' && (
+                            {state === "processing-callback" && (
                                 <div className="space-y-2">
                                     <Progress value={progress} className="h-2" />
-                                    <p className="text-xs text-muted-foreground">
-                                        {progress}% complete
-                                    </p>
+                                    <p className="text-xs text-muted-foreground">{progress}% complete</p>
+                                </div>
+                            )}
+
+                            {isSlowNetwork && (
+                                <div className="space-y-2">
+                                    <div className="flex gap-1 justify-center">
+                                        {Array.from({ length: MAX_CHECK_RETRIES + 1 }).map((_, i) => (
+                                            <div
+                                                key={i}
+                                                className={`h-2 w-6 rounded-full transition-colors ${i < retryCount
+                                                    ? "bg-amber-400"
+                                                    : i === retryCount
+                                                        ? "bg-primary animate-pulse"
+                                                        : "bg-muted"
+                                                    }`}
+                                            />
+                                        ))}
+                                    </div>
+                                    <p className="text-xs text-muted-foreground">Retrying automatically</p>
                                 </div>
                             )}
 
@@ -348,25 +452,27 @@ const GoogleBusinessConnect: React.FC = () => {
         )
     }
 
+    // ─── Main card ────────────────────────────────────────────────────────────
+
     return (
         <div className="flex items-center justify-center min-h-[70vh] p-4">
             <div className="max-w-2xl w-full space-y-6">
-
-                {/* Main Connection Card */}
-                <Card className="border-0 bg-card">
+                <Card className="bg-card">
                     <CardHeader className="text-center space-y-4 pb-6">
                         <div className="flex justify-center">
-                            <div className={`w-16 h-16 rounded-full flex items-center justify-center ${state === 'connected'
-                                ? 'bg-green-100 dark:bg-green-900/20'
-                                : state === 'error'
-                                    ? 'bg-red-100 dark:bg-red-900/20'
-                                    : 'bg-blue-100 dark:bg-blue-900/20'
-                                }`}>
+                            <div
+                                className={`w-16 h-16 rounded-full flex items-center justify-center ${state === "connected"
+                                    ? "bg-green-100 dark:bg-green-900/20"
+                                    : state === "error"
+                                        ? "bg-red-100 dark:bg-red-900/20"
+                                        : "bg-blue-100 dark:bg-blue-900/20"
+                                    }`}
+                            >
                                 {state === "connected" ? (
                                     <CheckCircle className="h-8 w-8 text-[hsl(var(--success))]" />
                                 ) : state === "error" ? (
                                     <AlertCircle className="h-8 w-8 text-[hsl(var(--destructive))]" />
-                                ) : state === "connecting" ? (
+                                ) : state === "connecting" || state === "disconnecting" ? (
                                     <Loader2 className="animate-spin h-8 w-8 text-[hsl(var(--primary))]" />
                                 ) : (
                                     <Shield className="h-8 w-8 text-[hsl(var(--muted-foreground))]" />
@@ -376,28 +482,36 @@ const GoogleBusinessConnect: React.FC = () => {
 
                         <div className="space-y-2">
                             <CardTitle className="text-2xl">
-                                {state === 'connected'
+                                {state === "connected"
                                     ? "Successfully Connected!"
-                                    : "Connect Google My Business"
-                                }
+                                    : state === "disconnecting"
+                                        ? "Disconnecting..."
+                                        : "Connect Google My Business"}
                             </CardTitle>
+
                             <CardDescription className="text-base max-w-md mx-auto">
-                                {state === 'connected' ? (
+                                {state === "connected" ? (
                                     <div className="space-y-2">
-                                        <p>Your account <strong className="text-foreground">{accountName}</strong> is now connected.</p>
+                                        <p>
+                                            Your account <strong className="text-foreground">{accountName}</strong> is
+                                            now connected.
+                                        </p>
                                         <div className="flex items-center justify-center gap-2 text-green-600 dark:text-green-400">
                                             <Zap className="h-4 w-4" />
                                             <span className="font-medium">Redirecting to your locations...</span>
                                         </div>
                                     </div>
                                 ) : (
-                                    "Unlock powerful tools to manage your Google My Business presence and grow your local business."
+                                    "Unlock powerful tools to manage your Google My Business presence."
                                 )}
                             </CardDescription>
                         </div>
 
-                        {state === 'connected' && (
-                            <Badge variant="secondary" className="mx-auto bg-green-100 text-green-800 dark:bg-green-900/20 dark:text-green-400">
+                        {state === "connected" && (
+                            <Badge
+                                variant="secondary"
+                                className="mx-auto bg-green-100 text-green-800 dark:bg-green-900/20 dark:text-green-400"
+                            >
                                 <CheckCircle className="h-3 w-3 mr-1" />
                                 Account Connected
                             </Badge>
@@ -405,7 +519,7 @@ const GoogleBusinessConnect: React.FC = () => {
                     </CardHeader>
 
                     <CardContent className="space-y-6">
-                        {/* Error Display */}
+                        {/* Error banner */}
                         {error && (
                             <div className="p-4 bg-red-50 dark:bg-red-900/10 border border-red-200 dark:border-red-800/30 rounded-lg">
                                 <div className="flex items-start gap-3">
@@ -428,23 +542,27 @@ const GoogleBusinessConnect: React.FC = () => {
                             </div>
                         )}
 
-                        {/* Progress Bar for Connecting State */}
-                        {state === 'connecting' && (
+                        {/* Connecting progress */}
+                        {(state === "connecting" || state === "disconnecting") && (
                             <div className="space-y-3">
                                 <div className="flex items-center gap-3">
                                     <Loader2 className="animate-spin h-5 w-5 text-primary" />
-                                    <span className="font-medium">Connecting to Google...</span>
+                                    <span className="font-medium">
+                                        {state === "connecting"
+                                            ? "Redirecting to Google..."
+                                            : "Removing connection..."}
+                                    </span>
                                 </div>
-                                <Progress value={progress} className="h-2" />
+                                {state === "connecting" && <Progress value={progress} className="h-2" />}
                             </div>
                         )}
 
-                        {/* Action Buttons */}
+                        {/* Action buttons */}
                         <div className="flex flex-col gap-3">
-                            {state === 'connected' ? (
+                            {state === "connected" ? (
                                 <div className="space-y-3">
                                     <Button
-                                        onClick={() => window.location.href = "/app/locations"}
+                                        onClick={() => (window.location.href = "/app/locations")}
                                         className="w-full h-12 text-base"
                                         size="lg"
                                     >
@@ -453,13 +571,13 @@ const GoogleBusinessConnect: React.FC = () => {
                                     </Button>
                                     <Button
                                         onClick={handleDisconnect}
-                                        disabled={state === "connecting"}
+                                        disabled={isDisconnecting}
                                         variant="outline"
                                         className="w-full"
                                     >
-                                        {state === "connecting" ? (
+                                        {isDisconnecting ? (
                                             <>
-                                                <Loader2Icon className="animate-spin mr-2 h-4 w-4" />
+                                                <Loader2 className="animate-spin mr-2 h-4 w-4" />
                                                 Disconnecting...
                                             </>
                                         ) : (
@@ -467,13 +585,9 @@ const GoogleBusinessConnect: React.FC = () => {
                                         )}
                                     </Button>
                                 </div>
-                            ) : state === 'error' ? (
+                            ) : state === "error" ? (
                                 <div className="flex flex-col gap-2 sm:flex-row">
-                                    <Button
-                                        onClick={retryConnection}
-                                        className="flex-1 h-12"
-                                        size="lg"
-                                    >
+                                    <Button onClick={() => { initCalledRef.current = false; initializeComponent() }} className="flex-1 h-12" size="lg">
                                         <RefreshCw className="mr-2 h-5 w-5" />
                                         Try Again
                                     </Button>
@@ -489,11 +603,11 @@ const GoogleBusinessConnect: React.FC = () => {
                             ) : (
                                 <Button
                                     onClick={triggerGMBConnection}
-                                    disabled={state === 'connecting'}
+                                    disabled={state === "connecting"}
                                     className="w-full h-12 text-base"
                                     size="lg"
                                 >
-                                    {state === 'connecting' ? (
+                                    {state === "connecting" ? (
                                         <>
                                             <Loader2 className="animate-spin mr-2 h-5 w-5" />
                                             Redirecting to Google...
@@ -508,42 +622,35 @@ const GoogleBusinessConnect: React.FC = () => {
                             )}
                         </div>
 
-                        {/* Security Note */}
-                        {(state === 'disconnected' || state === 'error') && (
+                        {(state === "disconnected" || state === "error") && (
                             <div className="text-center text-sm text-muted-foreground p-3 bg-muted/30 rounded-lg">
                                 <Shield className="h-4 w-4 inline mr-2" />
-                                Your data is protected by Google's secure OAuth 2.0 authentication
+                                Protected by Google OAuth 2.0 — we never store your password
                             </div>
                         )}
                     </CardContent>
                 </Card>
 
-                {/* Benefits Section - Only show when not connected */}
+                {/* Benefits */}
                 {state !== "connected" && (
                     <Card className="bg-gradient-to-br from-background to-muted border-border">
                         <CardHeader className="text-center pb-4">
-                            <CardTitle className="text-xl text-foreground">
-                                What You'll Get Access To
-                            </CardTitle>
-                            <CardDescription className="text-muted-foreground">
+                            <CardTitle className="text-xl text-foreground">What You'll Get Access To</CardTitle>
+                            <CardDescription>
                                 Powerful tools to manage and grow your local business presence
                             </CardDescription>
                         </CardHeader>
                         <CardContent>
                             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                                {benefits.map((benefit, index) => (
+                                {benefits.map((benefit, i) => (
                                     <div
-                                        key={index}
+                                        key={i}
                                         className="flex items-start gap-4 p-4 rounded-lg border border-border hover:border-primary/20 transition-colors"
                                     >
                                         <div className="text-primary mt-1">{benefit.icon}</div>
                                         <div>
-                                            <h4 className="font-medium text-foreground mb-1">
-                                                {benefit.title}
-                                            </h4>
-                                            <p className="text-sm text-muted-foreground">
-                                                {benefit.description}
-                                            </p>
+                                            <h4 className="font-medium text-foreground mb-1">{benefit.title}</h4>
+                                            <p className="text-sm text-muted-foreground">{benefit.description}</p>
                                         </div>
                                     </div>
                                 ))}
@@ -551,7 +658,6 @@ const GoogleBusinessConnect: React.FC = () => {
                         </CardContent>
                     </Card>
                 )}
-
             </div>
         </div>
     )

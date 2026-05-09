@@ -35,6 +35,8 @@ model locations {
   last_rank_updated DateTime?
   created_at        DateTime  @default(now())
   updated_at        DateTime  @updatedAt
+
+  is_active Boolean @default(true)
 }
 
 model ScheduledPost {
@@ -521,6 +523,7 @@ model gmb_reviews {
   rawData      Json // Store complete review data
   createdAt    DateTime  @default(now())
   updatedAt    DateTime  @updatedAt
+  user_id      String
 
   @@unique([accountId, locationId, reviewId])
   @@index([accountId, locationId])
@@ -679,4 +682,66 @@ model SyncQueue {
   @@index([scheduledFor])
   @@index([priority])
   @@map("sync_queue")
+}
+
+model Subscription {
+  id                     String             @id @default(auto()) @map("_id") @db.ObjectId
+  stackUserId            String             @unique
+  stripeCustomerId       String             @unique
+  stripeSubscriptionId   String             @unique
+  stripePriceId          String
+  stripeCurrentPeriodEnd DateTime
+  status                 SubscriptionStatus @default(ACTIVE)
+  plan                   PlanType
+  cancelAtPeriodEnd      Boolean            @default(false)
+  createdAt              DateTime           @default(now())
+  updatedAt              DateTime           @updatedAt
+
+  usage Usage?
+}
+
+model Usage {
+  id             String       @id @default(auto()) @map("_id") @db.ObjectId
+  subscriptionId String       @unique @db.ObjectId
+  subscription   Subscription @relation(fields: [subscriptionId], references: [id])
+  stackUserId    String       @unique
+
+  periodStart DateTime
+  periodEnd   DateTime
+
+  postsUsed           Int @default(0)
+  aiReviewRepliesUsed Int @default(0)
+  scheduledPostsUsed  Int @default(0)
+  geoGridScansUsed    Int @default(0)
+  reviewPostersUsed   Int @default(0)
+  keywordTrackingUsed Int @default(0)
+
+  updatedAt DateTime @updatedAt
+}
+
+model LocationChoice {
+  id          String   @id @default(auto()) @map("_id") @db.ObjectId
+  stackUserId String
+  confirmedAt DateTime @default(now())
+  periodStart DateTime
+  periodEnd   DateTime
+
+  @@unique([stackUserId, periodEnd])
+  @@map("location_choices")
+}
+
+enum SubscriptionStatus {
+  ACTIVE
+  CANCELED
+  INCOMPLETE
+  INCOMPLETE_EXPIRED
+  PAST_DUE
+  TRIALING
+  UNPAID
+}
+
+enum PlanType {
+  STARTER
+  GROWTH
+  PRO
 }

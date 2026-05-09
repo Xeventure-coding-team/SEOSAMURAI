@@ -1,3 +1,6 @@
+import { canUse, canUseErrorMessage } from "@/lib/actions/can-use";
+import { getLocationById } from "@/lib/getLocationById";
+import { stackServerApp } from "@/stack";
 import { NextResponse } from "next/server"
 
 interface DateObject {
@@ -10,7 +13,6 @@ async function fetchLocationInsights(locationId: string, accessToken: string, st
     try {
         // Clean the location ID - remove 'locations/' prefix if present
         const cleanId = locationId.replace(/^locations\//, "");
-
         const url = new URL(`https://businessprofileperformance.googleapis.com/v1/locations/${cleanId}:fetchMultiDailyMetricsTimeSeries`);
 
         // Valid metrics according to current Google Business Profile Performance API
@@ -50,8 +52,6 @@ async function fetchLocationInsights(locationId: string, accessToken: string, st
             }
         });
 
-        console.log('GMB API Response Status:', response.status);
-
         if (!response.ok) {
             const errorText = await response.text();
             console.error('GMB API Error Response:', errorText);
@@ -81,17 +81,31 @@ async function fetchLocationInsights(locationId: string, accessToken: string, st
 export async function GET(req: Request) {
     try {
         const { searchParams } = new URL(req.url);
-        const locationId = searchParams.get("location_name") || searchParams.get("place_id");
+        const id = searchParams.get("location_name") || searchParams.get("place_id");
         const accessToken = searchParams.get("access_token");
         const startDateStr = searchParams.get("start_date");
         const endDateStr = searchParams.get("end_date");
+        const user = await stackServerApp.getUser();
 
-        console.log('API Request Parameters:', {
-            locationId: locationId ? `${locationId.substring(0, 20)}...` : null,
-            accessToken: accessToken ? 'Present' : 'Missing',
-            startDate: startDateStr,
-            endDate: endDateStr
-        });
+        if (!user?.id) {
+            return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+        }
+
+        if (!id || !accessToken) {
+            return NextResponse.json({ error: "Missing required parameters" }, { status: 400 });
+        }
+
+        const dbLocation = await getLocationById(id)
+        if (!dbLocation) {
+            return NextResponse.json({ error: "Location not found" }, { status: 404 })
+        }
+
+        const locationId = dbLocation.location_id
+
+        const check = await canUse(user.id, "analytics");
+        if (!check.ok) {
+            return NextResponse.json({ error: canUseErrorMessage(check, "analytics") }, { status: 200 });
+        }
 
         if (!locationId || !accessToken) {
             return NextResponse.json(

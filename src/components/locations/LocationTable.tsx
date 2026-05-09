@@ -41,13 +41,122 @@ import {
   MapPinned,
   Clock,
   Image,
+  Activity,
+  Lock,
 } from "lucide-react";
 import Link from "next/link";
+import { cn } from "@/lib/utils";
+
+// LockedActions with only Upgrade button enabled, all tooltips removed
+const LockedActions: React.FC = () => {
+  return (
+    <div className="flex items-center gap-2">
+      {/* Disabled Inactive indicator - dimmed */}
+      <div className="flex items-center gap-1.5 text-xs text-muted-foreground border rounded-md px-2.5 py-1.5 cursor-not-allowed opacity-50">
+        <Lock className="h-3.5 w-3.5" />
+        Inactive
+      </div>
+      {/* Upgrade button - fully visible, not dimmed */}
+      <Button
+        size="sm"
+        asChild
+        className="bg-primary hover:bg-primary/90 relative z-10 opacity-100"
+        style={{ opacity: 200 }}
+      >
+        <Link href="/app/settings/billing">
+          Upgrade
+        </Link>
+      </Button>
+    </div>
+  )
+};
+
+// Locked version of LocationInfoCell - no tooltips, just static text
+const LockedLocationInfoCell: React.FC<{ location: Location }> = ({ location }) => {
+  return (
+    <div className="opacity-50">
+      <div className="font-medium truncate max-w-[300px]">
+        {location.title || "Untitled Location"}
+      </div>
+
+      {location.profile?.description && (
+        <div className="text-sm text-muted-foreground truncate max-w-[350px] mt-1">
+          {location.profile.description}
+        </div>
+      )}
+    </div>
+  );
+};
+
+// Locked version of CategoryBadge - no interactive elements
+const LockedCategoryBadge: React.FC<{ category: string }> = ({ category }) => {
+  const isUncategorized = category === "Uncategorized";
+
+  return (
+    <Badge variant={isUncategorized ? "outline" : "secondary"} className="opacity-50">
+      {category}
+    </Badge>
+  );
+};
+
+
+// Locked version of LocationCell - no tooltips, just static text
+const LockedLocationCell: React.FC<{
+  location: Location;
+  getPreferredLocality: (location: Location) => string;
+}> = ({ location, getPreferredLocality }) => {
+  const locality = getPreferredLocality(location) || "Not specified";
+
+  return (
+    <div className="flex items-center gap-1.5 opacity-60">
+      <MapPin className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
+      <span className="text-sm capitalize truncate max-w-[180px]">
+        {locality}
+      </span>
+    </div>
+  );
+};
+
+// Locked version of WebsiteLink - no link, just static text
+const LockedWebsiteLink: React.FC<{ uri?: string }> = ({ uri }) => {
+  if (!uri) {
+    return <span className="text-sm text-muted-foreground opacity-60">—</span>;
+  }
+
+  return (
+    <span className="text-sm text-muted-foreground opacity-60 cursor-not-allowed">
+      Visit (Locked)
+    </span>
+  );
+};
+
+// Completely locked version of ActionButtons - no links, no buttons, just a disabled message
+const LockedActionButtons: React.FC = () => {
+  return (
+    <div className="flex items-center gap-2">
+      <Button variant="outline" size="sm" disabled className="opacity-50 cursor-not-allowed">
+        <Eye className="h-3.5 w-3.5 mr-1.5" />
+        Details
+      </Button>
+      <Button variant="default" size="sm" disabled className="opacity-50 cursor-not-allowed">
+        <Wrench className="h-3.5 w-3.5 mr-1.5" />
+        Manage
+      </Button>
+      <Button variant="outline" size="sm" disabled className="opacity-50 cursor-not-allowed">
+        More
+        <ChevronDown className="h-3.5 w-3.5 ml-1" />
+      </Button>
+    </div>
+  );
+};
 
 interface Location {
+  id: any;
+  _id: any;
   location_id?: string;
   name: string;
   title?: string;
+  is_active?: boolean;
   profile?: {
     description?: string;
   };
@@ -118,7 +227,7 @@ const LocationTable: React.FC<LocationTableProps> = ({
   return (
     <div className="rounded-lg border overflow-hidden">
       <Table>
-        <TableHeader className="bg-muted/50 sticky top-0 z-10">
+        <TableHeader className="bg-muted/50 sticky top-0">
           <TableRow>
             <TableHead className="w-[400px]">
               <SortButton
@@ -154,30 +263,52 @@ const LocationTable: React.FC<LocationTableProps> = ({
         <TableBody>
           {paginatedLocations.map((location) => (
             <React.Fragment key={location.location_id || location.name}>
-              {/* Main Row */}
-              <TableRow className="hover:bg-muted/30">
+              <TableRow className={cn(
+                "hover:bg-muted/30",
+                !location.is_active && "bg-muted/20"
+              )}>
                 <TableCell className="py-4">
-                  <LocationInfoCell location={location} />
+                  <div className={cn(!location.is_active && "opacity-60")}>
+                    {location.is_active === false ? (
+                      <LockedLocationInfoCell location={location} />
+                    ) : (
+                      <LocationInfoCell location={location} />
+                    )}
+                  </div>
                 </TableCell>
                 <TableCell>
-                  <CategoryBadge
-                    category={
-                      location.categories?.primaryCategory?.displayName ||
-                      "Uncategorized"
-                    }
-                  />
+                    <div className={cn(!location.is_active && "opacity-60")}>
+                  {location.is_active === false ? (
+                    <LockedCategoryBadge category={location.categories?.primaryCategory?.displayName || "Uncategorized"} />
+                  ) : (
+                    <CategoryBadge category={location.categories?.primaryCategory?.displayName || "Uncategorized"} />
+                  )}
+                  </div>
                 </TableCell>
                 <TableCell>
-                  <LocationCell
-                    location={location}
-                    getPreferredLocality={getPreferredLocality}
-                  />
+                  <div className={cn(!location.is_active && "opacity-60")}>
+                  {location.is_active === false ? (
+                    <LockedLocationCell location={location} getPreferredLocality={getPreferredLocality} />
+                  ) : (
+                    <LocationCell location={location} getPreferredLocality={getPreferredLocality} />
+                  )}
+                  </div>
                 </TableCell>
                 <TableCell>
-                  <WebsiteLink uri={location.websiteUri} />
+                   <div className={cn(!location.is_active && "opacity-60")}>
+                  {location.is_active === false ? (
+                    <LockedWebsiteLink uri={location.websiteUri} />
+                  ) : (
+                    <WebsiteLink uri={location.websiteUri} />
+                  )}
+                  </div>
                 </TableCell>
                 <TableCell>
-                  <ActionButtons location={location} />
+                  {location.is_active === false ? (
+                    <LockedActions />
+                  ) : (
+                    <ActionButtons location={location} />
+                  )}
                 </TableCell>
               </TableRow>
             </React.Fragment>
@@ -189,7 +320,7 @@ const LocationTable: React.FC<LocationTableProps> = ({
 };
 
 // ============================================================================
-// Sub-components for cleaner code
+// Sub-components for cleaner code (Active only versions)
 // ============================================================================
 
 const SortButton: React.FC<{
@@ -317,12 +448,12 @@ const WebsiteLink: React.FC<{ uri?: string }> = ({ uri }) => {
 };
 
 const ActionButtons: React.FC<{ location: Location }> = ({ location }) => {
-  const locationSlug = location.name;
-
+  const locationSlug = location.id;
+ 
   return (
     <div className="flex items-center justify-start gap-2">
       {/* Primary Action: View Details */}
-      <Link href={`/app/${locationSlug}`}>
+      <Link href={`/app/locations/${locationSlug}`}>
         <Button variant="outline" size="sm" asChild>
           <span>
             <Eye className="h-3.5 w-3.5 mr-1.5" />
@@ -332,7 +463,7 @@ const ActionButtons: React.FC<{ location: Location }> = ({ location }) => {
       </Link>
 
       {/* Secondary Action: Manage */}
-      <Link href={`/app/${locationSlug}/manage`}>
+      <Link href={`/app/locations/${locationSlug}/manage`}>
         <Button variant="default" size="sm" asChild>
           <span>
             <Wrench className="h-3.5 w-3.5 mr-1.5" />
@@ -382,6 +513,7 @@ const QuickNavDropdown: React.FC<{ locationSlug: string }> = ({
             <span>Hours</span>
           </Link>
         </DropdownMenuItem>
+
         <DropdownMenuItem asChild>
           <Link href={`/app/${locationSlug}#media`} className="flex items-center gap-2">
             <Image className="h-4 w-4" />
@@ -395,11 +527,18 @@ const QuickNavDropdown: React.FC<{ locationSlug: string }> = ({
           </Link>
         </DropdownMenuItem>
 
+        <DropdownMenuItem asChild>
+          <Link href={`/app/${locationSlug}#health`} className="flex items-center gap-2">
+            <Activity className="h-4 w-4" />
+            <span>Health</span>
+          </Link>
+        </DropdownMenuItem>
+
         <div className="h-px bg-border my-2" />
 
         {/* Manage Page Quick Links */}
         <div className="px-2 py-1.5 text-xs font-semibold text-muted-foreground uppercase tracking-wide">
-        Manage
+          Manage
         </div>
         <DropdownMenuItem asChild>
           <Link href={`/app/${locationSlug}/manage#tasks`} className="flex items-center gap-2">

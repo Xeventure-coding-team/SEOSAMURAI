@@ -2,10 +2,12 @@ import { NextResponse } from 'next/server';
 import axios from 'axios';
 import { prisma } from '../../../../../lib/prisma';
 import { stackServerApp } from '@/stack';
+import { incrementUsage } from '@/lib/usage';
+import { canAddSlot } from '@/lib/slots';
 
 // Types for better type safety
 interface GMBLocation {
-  name: string; 
+  name: string;
   title?: string;
   profile?: any;
   websiteUri?: string;
@@ -194,6 +196,16 @@ export async function POST(req: Request): Promise<NextResponse<APIResponse>> {
 
     // Insert new location using GMB location ID as primary identifier
     try {
+
+      const slot = await canAddSlot(user.id, "locations");
+      if (!slot.ok) return NextResponse.json({
+        hasPermission: false,
+        success: false,
+        exist: false,
+        message: '',
+        error: "Location limit reached",
+      }, { status: 403 });
+
       await prisma.locations.create({
         data: {
           user_id: user.id,
@@ -207,6 +219,8 @@ export async function POST(req: Request): Promise<NextResponse<APIResponse>> {
           updated_at: new Date(),
         },
       });
+
+
 
       return NextResponse.json({
         hasPermission: true,

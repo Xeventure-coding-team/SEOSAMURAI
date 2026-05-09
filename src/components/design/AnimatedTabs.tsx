@@ -27,6 +27,8 @@ interface AnimatedTabsProps {
   defaultTab?: string
   className?: string
   noPadding?: boolean
+  /** Pass true to sync selected tab with window.location.hash */
+  syncHash?: boolean
 }
 
 const transition = {
@@ -60,10 +62,12 @@ const TabNavigation = ({
   tabs,
   selectedTabIndex,
   setSelectedTab,
+  onTabClick,
 }: {
   tabs: Tab[]
   selectedTabIndex: number
   setSelectedTab: (input: [number, number]) => void
+  onTabClick?: (value: string) => void
 }) => {
   const [buttonRefs, setButtonRefs] = React.useState<Array<HTMLButtonElement | null>>([])
 
@@ -100,7 +104,7 @@ const TabNavigation = ({
           <button
             key={item.value}
             className={cn(
-              "relative flex items-center px-6 py-3 rounded-md transition-colors font-medium text-sm z-20",
+              "relative flex items-center px-6 py-3 rounded-md transition-colors font-medium z-20",
               {
                 "text-muted-foreground hover:text-foreground": !isActive && !isDangerZone,
                 "text-foreground": isActive && !isDangerZone,
@@ -109,7 +113,10 @@ const TabNavigation = ({
             )}
             onPointerEnter={() => setHoveredTabIndex(i)}
             onFocus={() => setHoveredTabIndex(i)}
-            onClick={() => setSelectedTab([i, i > selectedTabIndex ? 1 : -1])}
+            onClick={() => {
+              setSelectedTab([i, i > selectedTabIndex ? 1 : -1])
+              onTabClick?.(item.value)
+            }}
           >
             <span
               ref={(el) => {
@@ -161,13 +168,27 @@ const TabNavigation = ({
   )
 }
 
-export function AnimatedTabs({ children, items, defaultTab, className, noPadding }: AnimatedTabsProps) {
-  // Extract tab items and their content from children
+export function AnimatedTabs({
+  children,
+  items,
+  defaultTab,
+  className,
+  noPadding,
+  syncHash = false,
+}: AnimatedTabsProps) {
+  // Resolve initial tab — hash takes priority when syncHash is on
+  const resolveInitialTab = () => {
+    if (syncHash && typeof window !== "undefined") {
+      const hash = window.location.hash.replace("#", "")
+      if (items.includes(hash)) return hash
+    }
+    return defaultTab && items.includes(defaultTab) ? defaultTab : items[0]
+  }
+
   const tabItems = React.useMemo(() => {
     const itemsMap = new Map<string, { content: React.ReactNode; label?: string }>()
 
     React.Children.forEach(children, (child) => {
-      // Fixed: Access the props directly using the prop names, not data attributes
       if (React.isValidElement(child) && child.props.value) {
         itemsMap.set(child.props.value, {
           content: child.props.children,
@@ -186,22 +207,41 @@ export function AnimatedTabs({ children, items, defaultTab, className, noPadding
     })
   }, [children, items])
 
-  // Setup the tabs hook
-  const [hookProps] = React.useState(() => {
-    const initialTabId = defaultTab && items.includes(defaultTab) ? defaultTab : items[0]
-
-    return {
-      tabs: tabItems.map(({ label, value }) => ({
-        label,
-        value,
-      })),
-      initialTabId,
-    }
-  })
+  const [hookProps] = React.useState(() => ({
+    tabs: tabItems.map(({ label, value }) => ({ label, value })),
+    initialTabId: resolveInitialTab(),
+  }))
 
   const framer = useTabs(hookProps)
 
-  // Get current tab content
+  // Update hash when tab changes (without adding to browser history)
+  const handleTabClick = React.useCallback(
+    (value: string) => {
+      if (syncHash) {
+        window.history.replaceState(null, "", `#${value}`)
+      }
+    },
+    [syncHash]
+  )
+
+  // Listen for hash changes (back/forward nav, or dropdown link clicks)
+  React.useEffect(() => {
+    if (!syncHash) return
+
+    const onHashChange = () => {
+      const hash = window.location.hash.replace("#", "")
+      if (!items.includes(hash)) return
+
+      const idx = framer.tabProps.tabs.findIndex((t) => t.value === hash)
+      if (idx !== -1 && idx !== framer.tabProps.selectedTabIndex) {
+        framer.tabProps.setSelectedTab([idx, idx > framer.tabProps.selectedTabIndex ? 1 : -1])
+      }
+    }
+
+    window.addEventListener("hashchange", onHashChange)
+    return () => window.removeEventListener("hashchange", onHashChange)
+  }, [syncHash, items, framer.tabProps])
+
   const currentTabContent = tabItems.find((tab) => tab.value === framer.selectedTab.value)?.content
 
   return (
@@ -209,7 +249,7 @@ export function AnimatedTabs({ children, items, defaultTab, className, noPadding
       <div
         className={`relative flex w-full bg-background items-center justify-between rounded-b-none ${noPadding ? "border" : "border-b"} ${noPadding ? "rounded-md" : ""} border-border overflow-x-auto overflow-y-hidden`}
       >
-        <TabNavigation {...framer.tabProps} />
+        <TabNavigation {...framer.tabProps} onTabClick={handleTabClick} />
       </div>
       <AnimatePresence mode="wait">
         <TabContent key={framer.selectedTab.value} noPadding={noPadding ? noPadding : false}>

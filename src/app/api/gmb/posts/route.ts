@@ -2,6 +2,10 @@ import { NextRequest, NextResponse } from 'next/server';
 import axios from 'axios';
 import { z } from 'zod';
 import FormData from 'form-data';
+import { stackServerApp } from '@/stack';
+import { canUse, canUseErrorMessage } from '@/lib/actions/can-use';
+import { incrementUsage } from '@/lib/usage';
+import { cleanGmbLocationId, getLocationById } from '@/lib/getLocationById';
 
 // Validation schemas
 const createPostSchema = z.object({
@@ -221,6 +225,11 @@ export async function GET(request: NextRequest) {
         const pageSize = searchParams.get('pageSize') || '10';
         const pageToken = searchParams.get('pageToken');
 
+        const dbLocation = await getLocationById(rawLocation)
+        if (!dbLocation) {
+            return NextResponse.json({ success: false, message: 'Location not found' }, { status: 404 })
+        }
+
         if (!accessToken || !rawAccount || !rawLocation) {
             return NextResponse.json({
                 success: false,
@@ -230,7 +239,7 @@ export async function GET(request: NextRequest) {
 
         // Clean the account and location IDs
         const account = cleanAccountId(rawAccount);
-        const location = cleanLocationId(rawLocation);
+        const location = cleanGmbLocationId(dbLocation.location_id);
 
         // Build API URL with pagination
         let apiUrl = `https://mybusiness.googleapis.com/v4/accounts/${account}/locations/${location}/localPosts?pageSize=${pageSize}`;
@@ -287,6 +296,18 @@ export async function POST(request: NextRequest) {
         let body: any;
         let file: Buffer | null = null;
         let fileName: string | null = null;
+        const user = await stackServerApp.getUser();
+
+
+        const F = await canUse(user.id, "posts")
+
+        if (!F.ok) {
+            return NextResponse.json({
+                success: false,
+                error: canUseErrorMessage(F, "posts")
+            }, { status: 401 });
+        }
+
 
         if (contentType?.includes('multipart/form-data')) {
             // Handle form data with file upload
@@ -323,9 +344,14 @@ export async function POST(request: NextRequest) {
             image_url,
         } = validatedData;
 
+        const dbLocation = await getLocationById(rawLocation)
+        if (!dbLocation) {
+            return NextResponse.json({ success: false, message: 'Location not found' }, { status: 404 })
+        }
+
         // Clean the account and location IDs
         const account = cleanAccountId(rawAccount);
-        const location = cleanLocationId(rawLocation);
+        const location = cleanGmbLocationId(dbLocation.location_id)
 
         let imageUrl: string | undefined;
 
@@ -395,6 +421,8 @@ export async function POST(request: NextRequest) {
             },
         });
 
+        await incrementUsage(user.id, "postsUsed");
+
         return NextResponse.json({
             success: true,
             data: response.data,
@@ -451,9 +479,14 @@ export async function PATCH(request: NextRequest) {
             }, { status: 400 });
         }
 
+        const dbLocation = await getLocationById(rawLocation)
+        if (!dbLocation) {
+            return NextResponse.json({ success: false, message: 'Location not found' }, { status: 404 })
+        }
+
         // Clean the account and location IDs
         const account = cleanAccountId(rawAccount);
-        const location = cleanLocationId(rawLocation);
+        const location = cleanGmbLocationId(dbLocation.location_id)
 
         const contentType = request.headers.get('content-type');
         let body: any;
@@ -722,9 +755,14 @@ export async function DELETE(request: NextRequest) {
             }, { status: 400 });
         }
 
+        const dbLocation = await getLocationById(rawLocation)
+        if (!dbLocation) {
+            return NextResponse.json({ success: false, message: 'Location not found' }, { status: 404 })
+        }
+
         // Clean the account and location IDs
         const account = cleanAccountId(rawAccount);
-        const location = cleanLocationId(rawLocation);
+        const location = cleanGmbLocationId(dbLocation.location_id)
 
         const decodedPostName = decodeURIComponent(postName);
 

@@ -1,6 +1,9 @@
 // app/api/generate-reply/route.ts
 import { NextRequest, NextResponse } from 'next/server'
 import { GoogleGenAI } from '@google/genai'
+import { incrementUsage } from '@/lib/usage';
+import { stackServerApp } from '@/stack';
+import { canUse, canUseErrorMessage, getCode } from '@/lib/actions/can-use';
 
 // Initialize Gemini AI (prefers GEMINI_API_KEY, falls back to AI_KEY)
 const genAI = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY || process.env.AI_KEY! });
@@ -34,6 +37,25 @@ export async function POST(request: NextRequest): Promise<NextResponse<SuccessRe
         },
         { status: 500 }
       )
+    }
+
+
+    const user = await stackServerApp.getUser();
+
+    if (!user) {
+      return NextResponse.json({
+        success: false,
+        error: "Unauthorized"
+      }, { status: 401 });
+    }
+
+    const check = await canUse(user.id, "ai-review-replies");
+    if (!check.ok) {
+      return NextResponse.json({
+        success: false,
+        error: canUseErrorMessage(check, "ai-review-replies"),
+        code: getCode(check),
+      });
     }
 
     // Parse and validate request body
@@ -351,6 +373,15 @@ Write ONLY the reply text. Be human, not a corporate bot.`;
     if (!cleanedReply.toLowerCase().includes(trimmedGuestName.toLowerCase().split(' ')[0])) {
       console.warn('Generated reply does not include guest name, regenerating...');
       // Could add a retry here if needed
+    }
+
+    const increment = await incrementUsage(user.id, "aiReviewRepliesUsed");
+    if (!increment.ok) {
+      return NextResponse.json({
+        success: false,
+        error: canUseErrorMessage(increment, "ai-review-replies"),
+        code: "LIMIT_REACHED",
+      });
     }
 
     return NextResponse.json(

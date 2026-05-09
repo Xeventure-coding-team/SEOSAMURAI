@@ -84,7 +84,7 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
         <AppSidebar variant={pathname === "/app/scan" ? "sidebar" : "inset"} />
         <SidebarInset>
           {<SiteHeader />}
-          <div className="flex flex-1 flex-col bg-[#f5f7fc] dark:bg-background">
+          <div className="flex flex-1 flex-col">
             <div className="@container/main flex flex-1 flex-col gap-2">
               <div className={`flex flex-col gap-4 md:gap-6 ${noPadding ? "" : "py-4 md:py-6 px-4 lg:px-6"}`}>
                 <APIProvider apiKey={process.env.NEXT_PUBLIC_PLACES_KEY}><GMBAuthWrapper>{children}</GMBAuthWrapper></APIProvider>

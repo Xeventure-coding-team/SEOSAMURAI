@@ -11,14 +11,40 @@ const badgeVariants = cva(
       variant: {
         default:
           "border-transparent bg-primary text-primary-foreground [a&]:hover:bg-primary/90",
+
         secondary:
           "border-transparent bg-secondary text-secondary-foreground [a&]:hover:bg-secondary/90",
+
         destructive:
           "border-transparent bg-destructive text-white [a&]:hover:bg-destructive/90 focus-visible:ring-destructive/20 dark:focus-visible:ring-destructive/40 dark:bg-destructive/60",
+
         outline:
-          "text-foreground [a&]:hover:bg-accent [a&]:hover:text-accent-foreground",
+          "text-foreground border-border [a&]:hover:bg-accent [a&]:hover:text-accent-foreground",
+
+        /* 🔥 NEW */
+
+        success:
+          "border-transparent bg-green-600 text-white [a&]:hover:bg-green-700 dark:bg-green-500 dark:hover:bg-green-400",
+
         warning:
-          "border-transparent bg-yellow-500 text-white [a&]:hover:bg-yellow-600",
+          "border-transparent bg-amber-500 text-black [a&]:hover:bg-amber-600 dark:bg-amber-400 dark:hover:bg-amber-300",
+
+        info:
+          "border-transparent bg-blue-600 text-white [a&]:hover:bg-blue-700 dark:bg-blue-500 dark:hover:bg-blue-400",
+
+        muted:
+          "border-transparent bg-muted text-muted-foreground",
+
+        /* subtle / soft variants (very useful in dashboards) */
+
+        successSoft:
+          "border border-green-200 bg-green-50 text-green-700 dark:border-green-900 dark:bg-green-900/30 dark:text-green-400",
+
+        warningSoft:
+          "border border-amber-200 bg-amber-50 text-amber-700 dark:border-amber-900 dark:bg-amber-900/30 dark:text-amber-400",
+
+        infoSoft:
+          "border border-blue-200 bg-blue-50 text-blue-700 dark:border-blue-900 dark:bg-blue-900/30 dark:text-blue-400",
       },
     },
     defaultVariants: {

@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "../../../../lib/prisma";
 import { stackServerApp } from "@/stack";
+import { canUse, canUseErrorMessage, CanUseResult } from "@/lib/actions/can-use";
 
 async function fetchAllLocationReviews(
   { accountId, locationId }: { accountId: string; locationId: string },
@@ -10,6 +11,15 @@ async function fetchAllLocationReviews(
   try {
     const cleanAccountId = accountId.replace(/^accounts\//, "");
     const cleanLocationId = locationId.replace(/^locations\//, "");
+
+    const user = await stackServerApp.getUser();
+
+    if (!user) {
+      return NextResponse.json(
+        { error: "Unauthorized. Please sign in." },
+        { status: 401 }
+      );
+    }
 
     let allReviews: any[] = [];
     let nextPageToken: string | null = null;
@@ -141,7 +151,8 @@ async function fetchAllLocationReviews(
 async function processLocationChunk(
   locations: any[],
   accountId: string,
-  accessToken: string
+  accessToken: string,
+  userId: string
 ) {
   let chunkFetched = 0;
   let chunkNewReviews = 0;
@@ -209,6 +220,7 @@ async function processLocationChunk(
         return !existingReviewIds.has(reviewId);
       })
       .map((r: any) => ({
+        user_id: userId,
         reviewId: r.reviewId || r.name,
         accountId,
         locationId,
@@ -217,14 +229,14 @@ async function processLocationChunk(
           r.starRating === "FIVE"
             ? 5
             : r.starRating === "FOUR"
-            ? 4
-            : r.starRating === "THREE"
-            ? 3
-            : r.starRating === "TWO"
-            ? 2
-            : r.starRating === "ONE"
-            ? 1
-            : null,
+              ? 4
+              : r.starRating === "THREE"
+                ? 3
+                : r.starRating === "TWO"
+                  ? 2
+                  : r.starRating === "ONE"
+                    ? 1
+                    : null,
         comment: r.comment || null,
         reviewReply: r.reviewReply || null,
         createTime: r.createTime ? new Date(r.createTime) : null,
@@ -257,32 +269,37 @@ async function processLocationChunk(
 
 export async function POST(request: NextRequest) {
   try {
+    const body = await request.json()
     const user = await stackServerApp.getUser();
 
-    // if (!user) {
-    //   return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    // }
+    if (!user) {
+      return NextResponse.json({
+        success: false,
+        error: "Unauthorized"
+      }, { status: 401 });
+    }
 
-    // 2️⃣ Get active integrations
-    const activeIntegrations = await prisma.gmbIntegration.findFirst({
-      where: {
-        isActive: true,
-        // Remove token expiry check here - we'll handle refresh in getValidAccessToken
-      },
-      select: {
-        id: true,
-        userId: true,
-        user_id: true,
-        accountName: true,
-        accountId: true,
-        accessToken: true,
-        refreshToken: true,
-        tokenExpiry: true,
-      },
-    });
+    const F = await canUse(user.id, "review-tracking");
+    const { accessToken: payloadToken, accountId: payloadAccountId } = body
 
-    const accountId = activeIntegrations.accountId;
-    const accessToken = activeIntegrations.accessToken;
+    if (!F.ok) {
+      const msg = canUseErrorMessage(
+        F as Extract<CanUseResult, { ok: false }>,
+        "review-tracking"
+      );
+      return NextResponse.json({ success: false, error: msg }, { status: 403 });
+    }
+
+    const accessToken = payloadToken
+    const accountId = payloadAccountId
+
+    if (!accessToken || !accountId) {
+      return NextResponse.json(
+        { error: "Missing accessToken or accountId" },
+        { status: 400 }
+      )
+    }
+
     const chunkSize = 5;
 
     if (!accountId || !accessToken) {
@@ -293,7 +310,7 @@ export async function POST(request: NextRequest) {
     }
 
     const dbLocations = await prisma.locations.findMany({
-      where: { user_id: activeIntegrations.userId },
+      where: { user_id: user.id },
       select: {
         id: true,
         location_id: true,
@@ -320,7 +337,7 @@ export async function POST(request: NextRequest) {
       const chunk = dbLocations.slice(i, i + chunkSize);
 
       const { chunkFetched, chunkNewReviews, chunkDeletedReviews } =
-        await processLocationChunk(chunk, accountId, accessToken);
+        await processLocationChunk(chunk, accountId, accessToken, user.id);
 
       totalFetchedCount += chunkFetched;
       totalNewReviews += chunkNewReviews;

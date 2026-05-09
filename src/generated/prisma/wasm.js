@@ -134,7 +134,8 @@ exports.Prisma.LocationsScalarFieldEnum = {
   categories: 'categories',
   last_rank_updated: 'last_rank_updated',
   created_at: 'created_at',
-  updated_at: 'updated_at'
+  updated_at: 'updated_at',
+  is_active: 'is_active'
 };
 
 exports.Prisma.ScheduledPostScalarFieldEnum = {
@@ -455,7 +456,8 @@ exports.Prisma.Gmb_reviewsScalarFieldEnum = {
   deletedAt: 'deletedAt',
   rawData: 'rawData',
   createdAt: 'createdAt',
-  updatedAt: 'updatedAt'
+  updatedAt: 'updatedAt',
+  user_id: 'user_id'
 };
 
 exports.Prisma.ChatScalarFieldEnum = {
@@ -542,6 +544,43 @@ exports.Prisma.SyncQueueScalarFieldEnum = {
   updatedAt: 'updatedAt'
 };
 
+exports.Prisma.SubscriptionScalarFieldEnum = {
+  id: 'id',
+  stackUserId: 'stackUserId',
+  stripeCustomerId: 'stripeCustomerId',
+  stripeSubscriptionId: 'stripeSubscriptionId',
+  stripePriceId: 'stripePriceId',
+  stripeCurrentPeriodEnd: 'stripeCurrentPeriodEnd',
+  status: 'status',
+  plan: 'plan',
+  cancelAtPeriodEnd: 'cancelAtPeriodEnd',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+};
+
+exports.Prisma.UsageScalarFieldEnum = {
+  id: 'id',
+  subscriptionId: 'subscriptionId',
+  stackUserId: 'stackUserId',
+  periodStart: 'periodStart',
+  periodEnd: 'periodEnd',
+  postsUsed: 'postsUsed',
+  aiReviewRepliesUsed: 'aiReviewRepliesUsed',
+  scheduledPostsUsed: 'scheduledPostsUsed',
+  geoGridScansUsed: 'geoGridScansUsed',
+  reviewPostersUsed: 'reviewPostersUsed',
+  keywordTrackingUsed: 'keywordTrackingUsed',
+  updatedAt: 'updatedAt'
+};
+
+exports.Prisma.LocationChoiceScalarFieldEnum = {
+  id: 'id',
+  stackUserId: 'stackUserId',
+  confirmedAt: 'confirmedAt',
+  periodStart: 'periodStart',
+  periodEnd: 'periodEnd'
+};
+
 exports.Prisma.SortOrder = {
   asc: 'asc',
   desc: 'desc'
@@ -584,6 +623,22 @@ exports.RankAlertType = exports.$Enums.RankAlertType = {
   NEW_KEYWORD_RANKING: 'NEW_KEYWORD_RANKING'
 };
 
+exports.SubscriptionStatus = exports.$Enums.SubscriptionStatus = {
+  ACTIVE: 'ACTIVE',
+  CANCELED: 'CANCELED',
+  INCOMPLETE: 'INCOMPLETE',
+  INCOMPLETE_EXPIRED: 'INCOMPLETE_EXPIRED',
+  PAST_DUE: 'PAST_DUE',
+  TRIALING: 'TRIALING',
+  UNPAID: 'UNPAID'
+};
+
+exports.PlanType = exports.$Enums.PlanType = {
+  STARTER: 'STARTER',
+  GROWTH: 'GROWTH',
+  PRO: 'PRO'
+};
+
 exports.Prisma.ModelName = {
   Version: 'Version',
   locations: 'locations',
@@ -612,7 +667,10 @@ exports.Prisma.ModelName = {
   Website: 'Website',
   WebsiteCachedData: 'WebsiteCachedData',
   SyncHistory: 'SyncHistory',
-  SyncQueue: 'SyncQueue'
+  SyncQueue: 'SyncQueue',
+  Subscription: 'Subscription',
+  Usage: 'Usage',
+  LocationChoice: 'LocationChoice'
 };
 
 /**

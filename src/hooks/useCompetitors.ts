@@ -84,7 +84,9 @@ export function useCompetitors(
                 setHasKeywords(result.data.hasKeywords || false);
                 setTrackedKeywordsCount(result.data.metadata?.trackedKeywordsCount || 0);
             } else {
-                throw new Error(result.error || 'Failed to load competitors');
+                setCompetitors([]);
+                setHasKeywords(false);
+                setTrackedKeywordsCount(0);
             }
         } catch (err) {
             console.error('Error fetching competitors:', err);

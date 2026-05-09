@@ -1,5 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import axios, { AxiosError } from 'axios'
+import { stackServerApp } from '@/stack'
+import { incrementUsage } from '@/lib/usage'
 
 interface QueryParams {
   accountId: string
@@ -271,6 +273,16 @@ export async function POST(request: NextRequest): Promise<NextResponse<SuccessRe
     const body = await request.json()
     const { accountId, locationId, selectedId, selectedText, accessToken } = body
 
+    const user = await stackServerApp.getUser();
+
+    if (!user) {
+      return NextResponse.json({
+        success: false,
+        error: "Unauthorized"
+      }, { status: 401 });
+    }
+
+
     // Validate required fields
     if (!accountId || !locationId || !selectedId || !selectedText || !accessToken) {
       return NextResponse.json(
@@ -296,8 +308,6 @@ export async function POST(request: NextRequest): Promise<NextResponse<SuccessRe
     const requestBody = {
       comment: selectedText.trim()
     }
-
-    console.log('Request Body:', requestBody)
 
     const response = await axios.put(
       apiUrl,
@@ -445,9 +455,6 @@ export async function DELETE(request: NextRequest): Promise<NextResponse> {
     const reviewName = `accounts/${accountId.replace('accounts/', '')}/locations/${locationId}/reviews/${selectedId}`
     const apiUrl = `https://mybusiness.googleapis.com/v4/${reviewName}/reply`
 
-    console.log('Delete API URL:', apiUrl)
-    console.log('Review Name:', reviewName)
-
     const response = await axios.delete(apiUrl, {
       headers: {
         Authorization: `Bearer ${accessToken}`,
@@ -455,6 +462,8 @@ export async function DELETE(request: NextRequest): Promise<NextResponse> {
       },
       timeout: 15000,
     })
+
+
 
     return NextResponse.json(
       {

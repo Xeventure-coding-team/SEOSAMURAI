@@ -56,6 +56,7 @@ import useStore from "@/store/CounterField"
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
 
 import { useCalendarStore } from '@/store/calendarStore'
+import { UsageGate } from "@/components/usage-gate"
 
 interface GmbPostFormProps {
   selectedLocation?: string | undefined
@@ -1030,29 +1031,32 @@ export default function CalendarNewEventDialog({
                           )}
                         />
 
-                        <div className="grid grid-cols-3 gap-2">
+                        <div className="grid grid-cols-2 gap-2">
                           {/* Image (upload or URL) is required to submit */}
-                          <Button
-                            type="submit"
-                            className="col-span-2 w-full"
-                            disabled={
-                              loading ||
-                              !form.formState.isValid ||
-                              (!form.watch("image_url") && !selectedFile)
-                            }
-                          >
-                            {loading ? (
-                              <>
-                                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                                Creating Post...
-                              </>
-                            ) : (
-                              <>
-                                <Send className="mr-2 h-4 w-4" />
-                                Create Post
-                              </>
-                            )}
-                          </Button>
+
+                          <UsageGate metric="scheduledPostsUsed" className="w-full">
+                            <Button
+                              type="submit"
+                              className="col-span-2 w-full"
+                              disabled={
+                                loading ||
+                                !form.formState.isValid ||
+                                (!form.watch("image_url") && !selectedFile)
+                              }
+                            >
+                              {loading ? (
+                                <>
+                                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                                  Creating Post...
+                                </>
+                              ) : (
+                                <>
+                                  <Send className="mr-2 h-4 w-4" />
+                                  Create Post
+                                </>
+                              )}
+                            </Button>
+                          </UsageGate>
 
                           <DialogClose asChild>
                             <Button type="button" variant="outline" className="w-full">

@@ -291,7 +291,7 @@ export default function DashboardStats() {
                           #{kw.rank}
                         </span>
                       ) : (
-                        <span className="text-sm text-muted-foreground">
+                        <span className="text-sm text-white">
                           —
                         </span>
                       )}

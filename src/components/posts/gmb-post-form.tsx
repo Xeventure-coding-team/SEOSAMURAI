@@ -42,6 +42,7 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } f
 import { ScrollArea } from "../ui/scroll-area"
 import { TooltipContent, TooltipTrigger, Tooltip } from "../ui/tooltip"
 import { Alert, AlertDescription, AlertTitle } from "../ui/alert"
+import { UsageGate } from "../usage-gate"
 
 interface GmbPostFormProps {
   isOpen: boolean
@@ -501,7 +502,7 @@ export function GmbPostForm({
     await enhanceContent()
   }
 
- 
+
   return (
     <Dialog open={isOpen} onOpenChange={handleClose}>
       <DialogContent className="custom-dialog">
@@ -1071,19 +1072,21 @@ export function GmbPostForm({
                           )}
                         </div>
 
-                        <Button type="submit" className="w-full" disabled={loading}>
-                          {loading ? (
-                            <>
-                              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                              Creating Post...
-                            </>
-                          ) : (
-                            <>
-                              <Send className="mr-2 h-4 w-4" />
-                              Create Post
-                            </>
-                          )}
-                        </Button>
+                        <UsageGate metric="postsUsed">
+                          <Button type="submit" className="w-full" disabled={loading}>
+                            {loading ? (
+                              <>
+                                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                                Creating Post...
+                              </>
+                            ) : (
+                              <>
+                                <Send className="mr-2 h-4 w-4" />
+                                Create Post
+                              </>
+                            )}
+                          </Button>
+                        </UsageGate>
                       </form>
                     </Form>
                   )}

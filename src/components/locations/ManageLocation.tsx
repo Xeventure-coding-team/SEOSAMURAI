@@ -59,6 +59,9 @@ import GMBKeywordTracker from "../serp/GMBKeywordTracker"
 import { LoadingSpinner } from "../Loader/Loader"
 import GMBInsights from "./GMBInsights"
 import TaskManager from "./TaskManager"
+import { UsageGate } from "../usage-gate"
+import { UsageBadge } from "../usage-badge"
+import { LocationLocked } from "./LocationLocked"
 
 interface GMBApiResponse {
   location?: any,
@@ -176,6 +179,7 @@ export default function ManageLocation() {
   const gmbAccountId = useGMBStore((state) => state.accountId)
   const gmbAccountName = useGMBStore((state) => state.accountName)
 
+  const [activeState, setActiveState] = useState<boolean>(false);
 
   const setPageName = usePageStore((state) => state.setPageName)
   const pageName = usePageStore((state) => state.pageName)
@@ -217,6 +221,9 @@ export default function ManageLocation() {
 
         const data: GMBApiResponse = await res.json()
         setPayload(data)
+
+        const isActive = data?.location?.data?.is_active ?? false;
+        setActiveState(isActive);
 
         if (data?.location.locationData?.name) {
           document.title = `${data?.location?.locationData.name} | Location Dashboard`
@@ -514,412 +521,422 @@ export default function ManageLocation() {
 
   return (
     <TooltipProvider>
-      <div>
+      {activeState === false ? <LocationLocked /> : <>
+
         <div>
-          {payload?.location?.locationData === null || undefined ? <LoadingSpinner /> : <AnimatedTabs items={items} defaultTab={activeTab}>
-            <AnimatedTabItem value="tasks">
+          <div>
+            {payload?.location?.locationData === null || undefined ? <LoadingSpinner /> : <AnimatedTabs syncHash items={items} defaultTab={activeTab}>
+              <AnimatedTabItem value="tasks">
 
-              {payload ? <TaskManager
-                locationId={locationId}
-                placeId={payload.location?.data?.metadata?.placeId}
-                gmbAccountId={gmbAccountId}
-                accessToken={accessToken}
-                description={payload.location?.data?.description || ''}
-                businessName={payload?.location?.locationData?.name || ''}
-                primaryCategory={payload.location?.data?.categories?.primaryCategory?.displayName || ''}
-                additionalCategories={payload.location?.data?.categories?.additionalCategories?.map(cat => cat.displayName) || []}
-                address={payload.location?.data?.location || ''}
-                services={payload.location?.data?.categories || {}}
-              /> : <div className="mt-4">
-                <LoadingSpinner />
-              </div>}
+                {payload ? <TaskManager
+                  locationId={locationId}
+                  placeId={payload.location?.data?.metadata?.placeId}
+                  gmbAccountId={gmbAccountId}
+                  accessToken={accessToken}
+                  description={payload.location?.data?.description || ''}
+                  businessName={payload?.location?.locationData?.name || ''}
+                  primaryCategory={payload.location?.data?.categories?.primaryCategory?.displayName || ''}
+                  additionalCategories={payload.location?.data?.categories?.additionalCategories?.map(cat => cat.displayName) || []}
+                  address={payload.location?.data?.location || ''}
+                  services={payload.location?.data?.categories || {}}
+                /> : <div className="mt-4">
+                  <LoadingSpinner />
+                </div>}
 
-            </AnimatedTabItem>
-            <AnimatedTabItem value="keywords">
-              <GMBKeywordTracker keywordLocation={payload?.location?.location} coordinates={payload?.location?.locationData?.geometry?.location} location={payload?.location?.locationData?.formatted_address} businessName={pageName} locationId={locationId} />
-            </AnimatedTabItem>
-            <AnimatedTabItem value="analytics">
-              <GMBInsights accessToken={accessToken} locationId={locationId} />
-            </AnimatedTabItem>
-            <AnimatedTabItem value="competitor-insights">
-              <CompetitorsPage locationId={locationId} coordinates={payload?.location?.locationData?.geometry?.location} businessType={payload?.location?.data?.categories?.primaryCategory?.displayName} businessName={pageName} />
-            </AnimatedTabItem>
-            <AnimatedTabItem value="social-posts">
-              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-                <div>
-                  <h2 className="text-2xl font-semibold tracking-tight">GMB Posts</h2>
-                  <p className="text-muted-foreground">
-                    Create and manage your Google My Business posts to engage with customers
-                  </p>
-                </div>
-                <div className="flex gap-2">
-                  <Button
-                    variant="outline"
-                    onClick={refreshPosts}
-                    disabled={postsLoading}
-                    className="gap-2 bg-transparent"
-                  >
-                    <RefreshCw className={`h-4 w-4 ${postsLoading ? "animate-spin" : ""}`} />
-                    Refresh
-                  </Button>
-                  <Button onClick={handleCreatePostClick} className="gap-2">
-                    <Plus className="h-4 w-4" />
-                    Create Post
-                  </Button>
-                </div>
-              </div>
-
-              <Card className="mt-4">
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
-                    <MessageCircle className="h-5 w-5" />
-                    Your Posts
-                    {totalSize > 0 && <Badge variant="secondary">{totalSize}</Badge>}
-                  </CardTitle>
-                  <CardDescription>All your Google My Business posts in one place</CardDescription>
-                </CardHeader>
-                <CardContent>
-                  {postsError && (
-                    <Alert variant="destructive" className="mb-4">
-                      <AlertCircle className="h-4 w-4" />
-                      <AlertTitle>Error</AlertTitle>
-                      <AlertDescription>{postsError}</AlertDescription>
-                    </Alert>
-                  )}
-
-                  {(postsLoading && posts.length === 0) || postsInitialLoad ? (
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-                      {Array.from({ length: 6 }).map((_, i) => (
-                        <Card key={i} className="overflow-hidden p-0">
-                          <div className="aspect-[4/3]">
-                            <Skeleton className="w-full h-full" />
-                          </div>
-                          <CardContent className="p-4">
-                            <div className="space-y-3">
-                              <div className="flex items-center gap-2">
-                                <Skeleton className="h-5 w-16" />
-                                <Skeleton className="h-5 w-12" />
-                              </div>
-                              <Skeleton className="h-4 w-full" />
-                              <Skeleton className="h-4 w-3/4" />
-                              <div className="flex items-center justify-between">
-                                <div className="flex gap-3">
-                                  <Skeleton className="h-4 w-12" />
-                                  <Skeleton className="h-4 w-12" />
-                                </div>
-                                <Skeleton className="h-8 w-8 rounded" />
-                              </div>
-                            </div>
-                          </CardContent>
-                        </Card>
-                      ))}
+              </AnimatedTabItem>
+              <AnimatedTabItem value="keywords">
+                <GMBKeywordTracker keywordLocation={payload?.location?.location} coordinates={payload?.location?.locationData?.geometry?.location} location={payload?.location?.locationData?.formatted_address} businessName={pageName} locationId={locationId} />
+              </AnimatedTabItem>
+              <AnimatedTabItem value="analytics">
+                <GMBInsights accessToken={accessToken} locationId={locationId} />
+              </AnimatedTabItem>
+              <AnimatedTabItem value="competitor-insights">
+                <CompetitorsPage locationId={locationId} coordinates={payload?.location?.locationData?.geometry?.location} businessType={payload?.location?.data?.categories?.primaryCategory?.displayName} businessName={pageName} />
+              </AnimatedTabItem>
+              <AnimatedTabItem value="social-posts">
+                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+                  <div>
+                    <h2 className="text-2xl font-semibold tracking-tight">GMB Posts</h2>
+                    <p className="text-muted-foreground">
+                      Create and manage your Google My Business posts to engage with customers
+                    </p>
+                  </div>
+                  <div className="flex gap-2">
+                    <div>
+                      <UsageBadge metric="postsUsed" label="GMB Posts" showBar={true} />
                     </div>
-                  ) : posts.length === 0 ? (
-                    <div className="text-center py-12">
-                      <MessageCircle className="h-12 w-12 mx-auto mb-4 text-muted-foreground" />
-                      <h3 className="text-xl font-semibold mb-2">No posts found</h3>
-                      <p className="text-muted-foreground mb-6 max-w-md mx-auto">
-                        This location doesn't have any GMB posts yet. Create your first post to start engaging with
-                        customers.
-                      </p>
+                    <Button
+                      variant="outline"
+                      onClick={refreshPosts}
+                      disabled={postsLoading}
+                      className="gap-2 bg-transparent"
+                    >
+                      <RefreshCw className={`h-4 w-4 ${postsLoading ? "animate-spin" : ""}`} />
+                      Refresh
+                    </Button>
+                    <UsageGate metric="postsUsed">
                       <Button onClick={handleCreatePostClick} className="gap-2">
                         <Plus className="h-4 w-4" />
-                        Create Your First Post
+                        Create Post
                       </Button>
-                    </div>
-                  ) : (
-                    <div className="space-y-6">
+                    </UsageGate>
+                  </div>
+                </div>
+
+                <Card className="mt-4">
+                  <CardHeader>
+                    <CardTitle className="flex items-center gap-2">
+                      <MessageCircle className="h-5 w-5" />
+                      Your Posts
+                      {totalSize > 0 && <Badge variant="secondary">{totalSize}</Badge>}
+                    </CardTitle>
+                    <CardDescription>All your Google My Business posts in one place</CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    {postsError && (
+                      <Alert variant="destructive" className="mb-4">
+                        <AlertCircle className="h-4 w-4" />
+                        <AlertTitle>Error</AlertTitle>
+                        <AlertDescription>{postsError}</AlertDescription>
+                      </Alert>
+                    )}
+
+                    {(postsLoading && posts.length === 0) || postsInitialLoad ? (
                       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-                        {posts.map((post, index) => (
-                          <Card key={`${post.name}-${index}`} className="overflow-hidden p-0">
-                            <div className="relative aspect-[4/3]">
-                              {post.media && post.media.length > 0 ? (
-                                <div className="relative w-full h-full">
-                                  {imageLoadingStates[post.name] && (
-                                    <div className="absolute inset-0 flex items-center justify-center bg-muted">
-                                      <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
-                                    </div>
-                                  )}
-                                  {imageErrorStates[post.name] ? (
-                                    <div
-                                      className="w-full h-full flex flex-col items-center justify-center bg-muted"
-                                      style={{ height: "280px" }}
-                                    >
-                                      <ImageOff className="h-12 w-12 text-muted-foreground mb-2" />
-                                      <span className="text-sm text-muted-foreground">No image available</span>
-                                    </div>
-                                  ) : (
-                                    <img
-                                      src={post.media[0].googleUrl ?
-                                        `https://images.weserv.nl/?url=${encodeURIComponent(post.media[0].googleUrl)}` :
-                                        "/placeholder.svg"
-                                      }
-                                      alt={`${getPostType(post)} post`}
-                                      style={{ height: "280px" }}
-                                      className="w-full h-full object-cover"
-                                      loading="lazy"
-                                      referrerPolicy="no-referrer"
-                                      crossOrigin="anonymous"
-                                      onLoad={() => handleImageLoad(post.name)}
-                                      onError={() => handleImageError(post.name)}
-                                      onLoadStart={() => handleImageLoadStart(post.name)}
-                                    />
-                                  )}
-                                  {post.media.length > 1 && (
-                                    <Badge className="absolute top-2 right-2" variant="secondary">
-                                      +{post.media.length - 1} more
-                                    </Badge>
-                                  )}
-                                </div>
-                              ) : (
-                                <div className="w-full h-full flex flex-col items-center justify-center bg-muted">
-                                  <div className="w-16 h-16 rounded-full bg-background shadow-sm flex items-center justify-center mb-4">
-                                    {post.event ? (
-                                      <Calendar className="h-8 w-8 text-muted-foreground" />
-                                    ) : post.offer ? (
-                                      <Sparkles className="h-8 w-8 text-muted-foreground" />
-                                    ) : (
-                                      <MessageCircle className="h-8 w-8 text-muted-foreground" />
-                                    )}
-                                  </div>
-                                  <h3 className="font-semibold mb-2 text-center">
-                                    {post.event?.title || getPostType(post)}
-                                  </h3>
-                                  <p className="text-sm text-muted-foreground line-clamp-2 text-center px-4">
-                                    {post.summary}
-                                  </p>
-                                </div>
-                              )}
-
-                              <div className="absolute top-2 left-2 flex gap-2">
-                                <Badge className={getPostTypeColor(post)} variant="secondary">
-                                  {getPostType(post)}
-                                </Badge>
-                                <Badge className={getStateColor(post.state)} variant="secondary">
-                                  {post.state}
-                                </Badge>
-                              </div>
-
-                              <div className="absolute top-2 right-2">
-                                <DropdownMenu
-                                  onOpenChange={(open) => {
-                                    if (!open) {
-                                      setTimeout(() => {
-                                        document.body.style.pointerEvents = ""
-                                      }, 50)
-                                    }
-                                  }}
-                                >
-                                  <DropdownMenuTrigger asChild>
-                                    <Button variant="ghost" size="sm" className="bg-background/80 backdrop-blur-sm">
-                                      <MoreHorizontal className="h-4 w-4" />
-                                    </Button>
-                                  </DropdownMenuTrigger>
-                                  <DropdownMenuContent align="end" className="w-48">
-                                    <DropdownMenuLabel>Actions</DropdownMenuLabel>
-                                    <DropdownMenuItem onClick={() => handleEditPostClick(post)}>
-                                      <Edit3 className="h-4 w-4 mr-2" />
-                                      Edit Post
-                                    </DropdownMenuItem>
-                                    <DropdownMenuSeparator />
-                                    <DropdownMenuItem
-                                      className="text-destructive focus:text-destructive"
-                                      onClick={() => handleDeletePostClick(post)}
-                                    >
-                                      <Trash2 className="h-4 w-4 mr-2" />
-                                      Delete Post
-                                    </DropdownMenuItem>
-                                  </DropdownMenuContent>
-                                </DropdownMenu>
-                              </div>
+                        {Array.from({ length: 6 }).map((_, i) => (
+                          <Card key={i} className="overflow-hidden p-0">
+                            <div className="aspect-[4/3]">
+                              <Skeleton className="w-full h-full" />
                             </div>
-
                             <CardContent className="p-4">
                               <div className="space-y-3">
-                                <p className="text-sm line-clamp-3">{post.summary}</p>
-
-                                {post.event && (
-                                  <div className="flex items-center gap-2 p-2 bg-muted rounded-md">
-                                    <Calendar className="h-4 w-4" />
-                                    <span className="text-sm font-medium">{post.event.title}</span>
+                                <div className="flex items-center gap-2">
+                                  <Skeleton className="h-5 w-16" />
+                                  <Skeleton className="h-5 w-12" />
+                                </div>
+                                <Skeleton className="h-4 w-full" />
+                                <Skeleton className="h-4 w-3/4" />
+                                <div className="flex items-center justify-between">
+                                  <div className="flex gap-3">
+                                    <Skeleton className="h-4 w-12" />
+                                    <Skeleton className="h-4 w-12" />
                                   </div>
-                                )}
-
-                                {post.offer && post.offer.couponCode && (
-                                  <div className="flex items-center gap-2 p-2 bg-muted rounded-md">
-                                    <Sparkles className="h-4 w-4" />
-                                    <span className="text-sm font-medium">Code: {post.offer.couponCode}</span>
-                                  </div>
-                                )}
-
-                                <div className="flex items-center justify-between pt-2 border-t">
-                                  <div className="flex items-center gap-4">
-                                    {post.insights && (
-                                      <>
-                                        <div className="flex items-center gap-1 text-muted-foreground">
-                                          <Eye className="h-4 w-4" />
-                                          <span className="text-sm">{post.insights.viewCount.toLocaleString()}</span>
-                                        </div>
-                                        <div className="flex items-center gap-1 text-muted-foreground">
-                                          <Heart className="h-4 w-4" />
-                                          <span className="text-sm">{post.insights.clickCount.toLocaleString()}</span>
-                                        </div>
-                                      </>
-                                    )}
-                                  </div>
-                                  <div className="flex items-center gap-1 text-xs text-muted-foreground">
-                                    <Clock className="h-3 w-3" />
-                                    <span>{formatDate(post.createTime)}</span>
-                                  </div>
+                                  <Skeleton className="h-8 w-8 rounded" />
                                 </div>
                               </div>
                             </CardContent>
                           </Card>
                         ))}
                       </div>
-
-                      {(hasNextPage || currentPage > 1) && (
-                        <div className="flex items-center justify-between pt-4 border-t">
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={handlePrevPage}
-                            disabled={currentPage === 1}
-                            className="gap-2 bg-transparent"
-                          >
-                            <ChevronLeft className="h-4 w-4" />
-                            Previous
+                    ) : posts.length === 0 ? (
+                      <div className="text-center py-12">
+                        <MessageCircle className="h-12 w-12 mx-auto mb-4 text-muted-foreground" />
+                        <h3 className="text-xl font-semibold mb-2">No posts found</h3>
+                        <p className="text-muted-foreground mb-6 max-w-md mx-auto">
+                          This location doesn't have any GMB posts yet. Create your first post to start engaging with
+                          customers.
+                        </p>
+                        <UsageGate metric="postsUsed">
+                          <Button onClick={handleCreatePostClick} className="gap-2">
+                            <Plus className="h-4 w-4" />
+                            Create Your First Post
                           </Button>
+                        </UsageGate>
+                      </div>
+                    ) : (
+                      <div className="space-y-6">
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                          {posts.map((post, index) => (
+                            <Card key={`${post.name}-${index}`} className="overflow-hidden p-0">
+                              <div className="relative aspect-[4/3]">
+                                {post.media && post.media.length > 0 ? (
+                                  <div className="relative w-full h-full">
+                                    {imageLoadingStates[post.name] && (
+                                      <div className="absolute inset-0 flex items-center justify-center bg-muted">
+                                        <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+                                      </div>
+                                    )}
+                                    {imageErrorStates[post.name] ? (
+                                      <div
+                                        className="w-full h-full flex flex-col items-center justify-center bg-muted"
+                                        style={{ height: "280px" }}
+                                      >
+                                        <ImageOff className="h-12 w-12 text-muted-foreground mb-2" />
+                                        <span className="text-sm text-muted-foreground">No image available</span>
+                                      </div>
+                                    ) : (
+                                      <img
+                                        src={post.media[0].googleUrl ?
+                                          `https://images.weserv.nl/?url=${encodeURIComponent(post.media[0].googleUrl)}` :
+                                          "/placeholder.svg"
+                                        }
+                                        alt={`${getPostType(post)} post`}
+                                        style={{ height: "280px" }}
+                                        className="w-full h-full object-cover"
+                                        loading="lazy"
+                                        referrerPolicy="no-referrer"
+                                        crossOrigin="anonymous"
+                                        onLoad={() => handleImageLoad(post.name)}
+                                        onError={() => handleImageError(post.name)}
+                                        onLoadStart={() => handleImageLoadStart(post.name)}
+                                      />
+                                    )}
+                                    {post.media.length > 1 && (
+                                      <Badge className="absolute top-2 right-2" variant="secondary">
+                                        +{post.media.length - 1} more
+                                      </Badge>
+                                    )}
+                                  </div>
+                                ) : (
+                                  <div className="w-full h-full flex flex-col items-center justify-center bg-muted">
+                                    <div className="w-16 h-16 rounded-full bg-background shadow-sm flex items-center justify-center mb-4">
+                                      {post.event ? (
+                                        <Calendar className="h-8 w-8 text-muted-foreground" />
+                                      ) : post.offer ? (
+                                        <Sparkles className="h-8 w-8 text-muted-foreground" />
+                                      ) : (
+                                        <MessageCircle className="h-8 w-8 text-muted-foreground" />
+                                      )}
+                                    </div>
+                                    <h3 className="font-semibold mb-2 text-center">
+                                      {post.event?.title || getPostType(post)}
+                                    </h3>
+                                    <p className="text-sm text-muted-foreground line-clamp-2 text-center px-4">
+                                      {post.summary}
+                                    </p>
+                                  </div>
+                                )}
 
-                          <span className="text-sm text-muted-foreground">
-                            Page {currentPage} {totalSize > 0 && `of ~${Math.ceil(totalSize / pageSize)}`}
-                          </span>
+                                <div className="absolute top-2 left-2 flex gap-2">
+                                  <Badge className={getPostTypeColor(post)} variant="secondary">
+                                    {getPostType(post)}
+                                  </Badge>
+                                  <Badge className={getStateColor(post.state)} variant="secondary">
+                                    {post.state}
+                                  </Badge>
+                                </div>
 
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={handleNextPage}
-                            disabled={!hasNextPage || postsLoading}
-                            className="gap-2 bg-transparent"
-                          >
-                            {postsLoading ? (
-                              <Loader2 className="h-4 w-4 animate-spin" />
-                            ) : (
-                              <>
-                                Next
-                                <ChevronRight className="h-4 w-4" />
-                              </>
-                            )}
-                          </Button>
+                                <div className="absolute top-2 right-2">
+                                  <DropdownMenu
+                                    onOpenChange={(open) => {
+                                      if (!open) {
+                                        setTimeout(() => {
+                                          document.body.style.pointerEvents = ""
+                                        }, 50)
+                                      }
+                                    }}
+                                  >
+                                    <DropdownMenuTrigger asChild>
+                                      <Button variant="ghost" size="sm" className="bg-background/80 backdrop-blur-sm">
+                                        <MoreHorizontal className="h-4 w-4" />
+                                      </Button>
+                                    </DropdownMenuTrigger>
+                                    <DropdownMenuContent align="end" className="w-48">
+                                      <DropdownMenuLabel>Actions</DropdownMenuLabel>
+                                      <DropdownMenuItem onClick={() => handleEditPostClick(post)}>
+                                        <Edit3 className="h-4 w-4 mr-2" />
+                                        Edit Post
+                                      </DropdownMenuItem>
+                                      <DropdownMenuSeparator />
+                                      <DropdownMenuItem
+                                        className="text-destructive focus:text-destructive"
+                                        onClick={() => handleDeletePostClick(post)}
+                                      >
+                                        <Trash2 className="h-4 w-4 mr-2" />
+                                        Delete Post
+                                      </DropdownMenuItem>
+                                    </DropdownMenuContent>
+                                  </DropdownMenu>
+                                </div>
+                              </div>
+
+                              <CardContent className="p-4">
+                                <div className="space-y-3">
+                                  <p className="text-sm line-clamp-3">{post.summary}</p>
+
+                                  {post.event && (
+                                    <div className="flex items-center gap-2 p-2 bg-muted rounded-md">
+                                      <Calendar className="h-4 w-4" />
+                                      <span className="text-sm font-medium">{post.event.title}</span>
+                                    </div>
+                                  )}
+
+                                  {post.offer && post.offer.couponCode && (
+                                    <div className="flex items-center gap-2 p-2 bg-muted rounded-md">
+                                      <Sparkles className="h-4 w-4" />
+                                      <span className="text-sm font-medium">Code: {post.offer.couponCode}</span>
+                                    </div>
+                                  )}
+
+                                  <div className="flex items-center justify-between pt-2 border-t">
+                                    <div className="flex items-center gap-4">
+                                      {post.insights && (
+                                        <>
+                                          <div className="flex items-center gap-1 text-muted-foreground">
+                                            <Eye className="h-4 w-4" />
+                                            <span className="text-sm">{post.insights.viewCount.toLocaleString()}</span>
+                                          </div>
+                                          <div className="flex items-center gap-1 text-muted-foreground">
+                                            <Heart className="h-4 w-4" />
+                                            <span className="text-sm">{post.insights.clickCount.toLocaleString()}</span>
+                                          </div>
+                                        </>
+                                      )}
+                                    </div>
+                                    <div className="flex items-center gap-1 text-xs text-muted-foreground">
+                                      <Clock className="h-3 w-3" />
+                                      <span>{formatDate(post.createTime)}</span>
+                                    </div>
+                                  </div>
+                                </div>
+                              </CardContent>
+                            </Card>
+                          ))}
                         </div>
-                      )}
-                    </div>
-                  )}
 
-                </CardContent>
-              </Card>
-            </AnimatedTabItem>
-            <AnimatedTabItem value="customer-reviews">
-              <Reviews businessName={pageName} locationId={locationId} />
-            </AnimatedTabItem>
-          </AnimatedTabs>}
+                        {(hasNextPage || currentPage > 1) && (
+                          <div className="flex items-center justify-between pt-4 border-t">
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={handlePrevPage}
+                              disabled={currentPage === 1}
+                              className="gap-2 bg-transparent"
+                            >
+                              <ChevronLeft className="h-4 w-4" />
+                              Previous
+                            </Button>
 
+                            <span className="text-sm text-muted-foreground">
+                              Page {currentPage} {totalSize > 0 && `of ~${Math.ceil(totalSize / pageSize)}`}
+                            </span>
+
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={handleNextPage}
+                              disabled={!hasNextPage || postsLoading}
+                              className="gap-2 bg-transparent"
+                            >
+                              {postsLoading ? (
+                                <Loader2 className="h-4 w-4 animate-spin" />
+                              ) : (
+                                <>
+                                  Next
+                                  <ChevronRight className="h-4 w-4" />
+                                </>
+                              )}
+                            </Button>
+                          </div>
+                        )}
+                      </div>
+                    )}
+
+                  </CardContent>
+                </Card>
+              </AnimatedTabItem>
+              <AnimatedTabItem value="customer-reviews">
+                <Reviews businessName={pageName} locationId={locationId} />
+              </AnimatedTabItem>
+            </AnimatedTabs>}
+
+          </div>
         </div>
-      </div>
 
-<GmbPostForm
-  isOpen={isCreatePostModalOpen}
-  onClose={() => setIsCreatePostModalOpen(false)}
-  accessToken={accessToken}
-  locationId={locationId}
-  accountId={accountId}
-  businessName={pageName}
-  onPostCreated={handlePostCreated}
-  phoneNumber={
-    payload?.location?.data?.phoneNumbers?.primaryPhone
-      ?.replace(/[^\d+]/g, "")
-  }
-/>
-
-{editingPost && (
-  <GmbEditPostForm
-    isOpen={isEditPostModalOpen}
-    onClose={() => {
-      setIsEditPostModalOpen(false)
-      setEditingPost(null)
-    }}
-    accessToken={accessToken}
-    locationId={locationId}
-    accountId={accountId}
-    businessName={pageName}
-    onPostUpdated={handlePostUpdated}
-    editPost={editingPost}
-    phoneNumber={
-      payload?.location?.data?.phoneNumbers?.primaryPhone
-        ?.replace(/[^\d+]/g, "")
-    }
-  />
-)}
-
-      <Dialog
-        open={isDeleteDialogOpen}
-        onOpenChange={(open) => {
-          if (!open && !isDeleting) {
-            handleCloseDeleteDialog()
+        <GmbPostForm
+          isOpen={isCreatePostModalOpen}
+          onClose={() => setIsCreatePostModalOpen(false)}
+          accessToken={accessToken}
+          locationId={locationId}
+          accountId={accountId}
+          businessName={pageName}
+          onPostCreated={handlePostCreated}
+          phoneNumber={
+            payload?.location?.data?.phoneNumbers?.primaryPhone
+              ?.replace(/[^\d+]/g, "")
           }
-        }}
-        modal={true}
-      >
-        <DialogContent
-          className="sm:max-w-md"
-          onPointerDownOutside={(e) => {
-            if (isDeleting) {
-              e.preventDefault()
+        />
+
+        {editingPost && (
+          <GmbEditPostForm
+            isOpen={isEditPostModalOpen}
+            onClose={() => {
+              setIsEditPostModalOpen(false)
+              setEditingPost(null)
+            }}
+            accessToken={accessToken}
+            locationId={locationId}
+            accountId={accountId}
+            businessName={pageName}
+            onPostUpdated={handlePostUpdated}
+            editPost={editingPost}
+            phoneNumber={
+              payload?.location?.data?.phoneNumbers?.primaryPhone
+                ?.replace(/[^\d+]/g, "")
+            }
+          />
+        )}
+
+        <Dialog
+          open={isDeleteDialogOpen}
+          onOpenChange={(open) => {
+            if (!open && !isDeleting) {
+              handleCloseDeleteDialog()
             }
           }}
-          onEscapeKeyDown={(e) => {
-            if (isDeleting) {
-              e.preventDefault()
-            }
-          }}
+          modal={true}
         >
-          <DialogHeader>
-            <DialogTitle>Delete Post</DialogTitle>
-            <DialogDescription>
-              Are you sure you want to delete this post? This action cannot be undone and will permanently remove the
-              post from your Google My Business listing.
-            </DialogDescription>
-          </DialogHeader>
-          <DialogFooter className="gap-2">
-            <Button
-              variant="outline"
-              onClick={handleCloseDeleteDialog}
-              disabled={isDeleting}
-              className="w-full sm:w-auto bg-transparent"
-            >
-              Cancel
-            </Button>
-            <Button
-              variant="destructive"
-              onClick={() => deleteConfirmPost && handleDeletePost(deleteConfirmPost)}
-              disabled={isDeleting}
-              className="w-full sm:w-auto"
-            >
-              {isDeleting ? (
-                <>
-                  <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                  Deleting...
-                </>
-              ) : (
-                <>
-                  <Trash2 className="h-4 w-4 mr-2" />
-                  Delete Post
-                </>
-              )}
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+          <DialogContent
+            className="sm:max-w-md"
+            onPointerDownOutside={(e) => {
+              if (isDeleting) {
+                e.preventDefault()
+              }
+            }}
+            onEscapeKeyDown={(e) => {
+              if (isDeleting) {
+                e.preventDefault()
+              }
+            }}
+          >
+            <DialogHeader>
+              <DialogTitle>Delete Post</DialogTitle>
+              <DialogDescription>
+                Are you sure you want to delete this post? This action cannot be undone and will permanently remove the
+                post from your Google My Business listing.
+              </DialogDescription>
+            </DialogHeader>
+            <DialogFooter className="gap-2">
+              <Button
+                variant="outline"
+                onClick={handleCloseDeleteDialog}
+                disabled={isDeleting}
+                className="w-full sm:w-auto bg-transparent"
+              >
+                Cancel
+              </Button>
+              <Button
+                variant="destructive"
+                onClick={() => deleteConfirmPost && handleDeletePost(deleteConfirmPost)}
+                disabled={isDeleting}
+                className="w-full sm:w-auto"
+              >
+                {isDeleting ? (
+                  <>
+                    <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                    Deleting...
+                  </>
+                ) : (
+                  <>
+                    <Trash2 className="h-4 w-4 mr-2" />
+                    Delete Post
+                  </>
+                )}
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
+      </>}
     </TooltipProvider>
   )
 }

@@ -5,7 +5,7 @@ import axios from "axios"
 import toast from "react-hot-toast"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
-import { MapPin, AlertCircle, RefreshCw, Building2, ArrowRight, Loader2, CheckCircle } from "lucide-react"
+import { MapPin, AlertCircle, RefreshCw, Building2, ArrowRight, Loader2, CheckCircle, Lock } from "lucide-react"
 import { ScrollArea } from "../ui/scroll-area"
 import { CalendarEvent, Mode } from "../calendar/calendar-types"
 import Calendar from "../calendar/calendar"
@@ -13,12 +13,18 @@ import { useGMBStore } from "@/store/gmbStore"
 import { Loader } from "../Loader/Loader"
 import { useCalendarContext } from "../calendar/calendar-context"
 import { useCalendarStore } from '@/store/calendarStore'
+import { UsageBadge } from "../usage-badge"
+import { Skeleton } from "../ui/skeleton"
+import Link from "next/link"
+import { cn } from "@/lib/utils"
 
 interface Location {
+    id: string
     name: string
     title: string
     location_id: string
     formattedAddress: string
+    is_active?: boolean
     last_rank_updated: string
     profile?: {
         description?: string
@@ -200,10 +206,10 @@ export default function SelectLocation() {
             setLoadingDetails(true)
             setError(null)
 
-            const actualLocationId = locationName.startsWith("locations/") ? locationName.split("/")[1] : locationName
+
 
             const apiUrl = process.env.NEXT_PUBLIC_API_URL
-            const url = `${apiUrl}/api/gmb/location?location_name=${encodeURIComponent(actualLocationId)}&access_token=${encodeURIComponent(accessToken)}&gmb_account_id=${encodeURIComponent(gmbAccountId)}&with_posts=true`
+            const url = `${apiUrl}/api/gmb/location?location_name=${encodeURIComponent(locationName)}&access_token=${encodeURIComponent(accessToken)}&gmb_account_id=${encodeURIComponent(gmbAccountId)}&with_posts=true`
 
             const response = await axios.get(url)
 
@@ -215,7 +221,7 @@ export default function SelectLocation() {
 
                 // Update events state - THIS IS IMPORTANT
                 if (response.data.scheduledPosts) {
-                     setEvents(response.data.scheduledPosts)
+                    setEvents(response.data.scheduledPosts)
                 }
 
                 toast.success(`${displayName} selected and ready for posting!`, {
@@ -270,37 +276,42 @@ export default function SelectLocation() {
 
     if (loadingLocations) {
         return (
-            <div className="container mx-auto space-y-6">
-                <Card className="border border-border">
-                    <CardContent className="flex flex-col items-center justify-center py-20">
-                        <div className="flex items-center gap-3 mb-4">
-                            <Loader2 className="h-6 w-6 animate-spin text-primary" />
-                            <div className="text-lg font-medium">Loading your business locations</div>
-                        </div>
-                        <p className="text-muted-foreground text-center max-w-md text-sm">
-                            Connecting to your Google My Business account and fetching available locations...
-                        </p>
-                    </CardContent>
-                </Card>
-            </div>
-        )
+            <Card>
+                <CardContent className="space-y-4 py-8">
+                    <div className="space-y-2">
+                        <Skeleton className="h-5 w-48" />
+                        <Skeleton className="h-4 w-64" />
+                    </div>
+                    <div className="space-y-2">
+                        <Skeleton className="h-4 w-full" />
+                        <Skeleton className="h-4 w-3/4" />
+                        <Skeleton className="h-4 w-5/6" />
+                    </div>
+                </CardContent>
+            </Card>
+        );
     }
 
     return (
         <div className="container mx-auto space-y-6">
+
             {error && (
-                <Card className="border-destructive/50 bg-destructive/5">
-                    <CardContent className="flex items-center justify-between p-4">
-                        <div className="flex items-center gap-3">
-                            <AlertCircle className="h-5 w-5 text-destructive" />
-                            <span className="text-destructive font-medium">Connection failed</span>
-                        </div>
-                        <Button variant="outline" size="sm" onClick={handleRetry}>
-                            <RefreshCw className="h-4 w-4 mr-2" />
-                            Try Again
-                        </Button>
-                    </CardContent>
-                </Card>
+                <div className="flex items-center justify-between gap-3 p-3 rounded-md border border-destructive/40 bg-destructive/5">
+
+                    <div className="flex items-center gap-2 text-sm text-destructive">
+                        <AlertCircle className="h-4 w-4" />
+                        <span>Failed to load locations</span>
+                    </div>
+
+                    <button
+                        onClick={handleRetry}
+                        className="flex items-center gap-1 text-sm text-primary hover:underline"
+                    >
+                        <RefreshCw className="h-4 w-4" />
+                        Retry
+                    </button>
+
+                </div>
             )}
 
             <div className="flex flex-col gap-6 sm:flex-row sm:items-start sm:justify-between">
@@ -312,6 +323,11 @@ export default function SelectLocation() {
                         Select a location to start scheduling and managing your posts
                     </p>
                 </div>
+                <div>
+                    <div>
+                        <UsageBadge metric="scheduledPostsUsed" label="Schedule Posts" showBar={true} />
+                    </div>
+                </div>
             </div>
 
             <div className="space-y-4">
@@ -321,62 +337,101 @@ export default function SelectLocation() {
                 </div>
 
                 <ScrollArea className="h-[400px] sm:h-auto">
-                    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2.5">
                         {locations.length === 0 ? (
-                            <Card className="border-dashed">
+                            <Card className="border-dashed col-span-full">
                                 <CardContent className="flex items-center justify-center py-12">
                                     <div className="text-center space-y-2">
                                         <AlertCircle className="h-8 w-8 text-muted-foreground mx-auto" />
-                                        <p className="text-muted-foreground">No locations found</p>
+                                        <p className="text-sm text-muted-foreground">No locations found</p>
                                     </div>
                                 </CardContent>
                             </Card>
                         ) : (
-                            locations.map((location) => (
-                                <Card
-                                    key={location.name}
-                                    className={`cursor-pointer transition-all hover:shadow-md border ${selectedLocation === location.name
-                                        ? "border-primary border-2 shadow-sm bg-background"
-                                        : "border-border hover:border-primary/50"
-                                        }`}
-                                    onClick={() => handleLocationSelect(location.name)}
-                                >
-                                    <CardContent>
-                                        <div className="flex items-start justify-between gap-4">
-                                            <div className="flex items-start gap-4 flex-1 min-w-0">
-                                                <div
-                                                    className={`p-3 rounded-lg shrink-0 ${selectedLocation === location.name ? "bg-primary text-primary-foreground" : "bg-muted"
-                                                        }`}
-                                                >
-                                                    <Building2 className="h-5 w-5" />
-                                                </div>
-                                                <div className="flex-1 min-w-0">
-                                                    <div className="font-semibold text-base break-words">
-                                                        {getLocationDisplayName(location)}
-                                                    </div>
-                                                    {location.storefrontAddress && (
-                                                        <p className="text-xs text-muted-foreground mt-1 break-words">
-                                                            {location.formattedAddress}
-                                                        </p>
-                                                    )}
-                                                </div>
-                                            </div>
-                                            {selectedLocation === location.name && (
-                                                <CheckCircle className="h-5 w-5 text-primary shrink-0" />
-                                            )}
+                            locations.map((location) => {
+                                const isSelected = selectedLocation === location.id
+                                const isLocked = location.is_active === false
+
+                                return (
+                                    <div
+                                        key={location.id}
+                                        onClick={() => !isLocked && handleLocationSelect(location.id)}
+                                        className={cn(
+                                            "flex items-center gap-3 rounded-lg border px-3.5 py-3 transition-colors",
+                                            isLocked
+                                                ? "cursor-not-allowed border-border/50 bg-muted/20"
+                                                : isSelected
+                                                    ? "cursor-pointer border-primary bg-primary/5"
+                                                    : "cursor-pointer border-border hover:bg-muted/40"
+                                        )}
+                                    >
+                                        {/* Icon */}
+                                        <div className={cn(
+                                            "flex h-8 w-8 shrink-0 items-center justify-center rounded-md",
+                                            isLocked
+                                                ? "bg-muted"
+                                                : isSelected
+                                                    ? "bg-primary/10"
+                                                    : "bg-muted"
+                                        )}>
+                                            {isLocked
+                                                ? <Lock className="h-3.5 w-3.5 text-muted-foreground/50" />
+                                                : <Building2 className={cn(
+                                                    "h-3.5 w-3.5",
+                                                    isSelected ? "text-primary" : "text-muted-foreground"
+                                                )} />
+                                            }
                                         </div>
-                                    </CardContent>
-                                </Card>
-                            ))
+
+                                        {/* Text */}
+                                        <div className="flex-1 min-w-0">
+                                            <p className={cn(
+                                                "text-sm font-medium truncate leading-none",
+                                                isLocked ? "text-muted-foreground/60" : ""
+                                            )}>
+                                                {getLocationDisplayName(location)}
+                                            </p>
+                                            {isLocked ? (
+                                                <Link
+                                                    href="/app/settings/billing"
+                                                    onClick={e => e.stopPropagation()}
+                                                    className="text-xs text-muted-foreground hover:text-primary transition-colors mt-0.5 inline-block"
+                                                >
+                                                    Upgrade to unlock
+                                                </Link>
+                                            ) : location.storefrontAddress ? (
+                                                <p className="text-xs text-muted-foreground truncate mt-0.5">
+                                                    {location.formattedAddress}
+                                                </p>
+                                            ) : null}
+                                        </div>
+
+                                        {/* Right indicator */}
+                                        {!isLocked && isSelected && (
+                                            <CheckCircle className="h-4 w-4 text-primary shrink-0" />
+                                        )}
+                                    </div>
+                                )
+                            })
                         )}
                     </div>
                 </ScrollArea>
+
+
             </div>
 
             {loadingDetails && (
                 <Card>
-                    <CardContent className="flex items-center justify-center py-12">
-                        <Loader text="Preparing your workspace..." />
+                    <CardContent className="space-y-4 py-8">
+                        <div className="space-y-2">
+                            <Skeleton className="h-5 w-48" />
+                            <Skeleton className="h-4 w-64" />
+                        </div>
+                        <div className="space-y-2">
+                            <Skeleton className="h-4 w-full" />
+                            <Skeleton className="h-4 w-3/4" />
+                            <Skeleton className="h-4 w-5/6" />
+                        </div>
                     </CardContent>
                 </Card>
             )}

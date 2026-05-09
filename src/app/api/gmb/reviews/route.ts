@@ -1,9 +1,9 @@
 import { NextResponse } from "next/server"
+import { getLocationById, cleanGmbLocationId } from "@/lib/getLocationById"
+import { stackServerApp } from "@/stack"
 
 async function fetchLocationReviews(locationId: string, gmbAccountId: string, accessToken: string) {
   try {
-    
-    // Fetch reviews from GMB API
     const reviewsResponse = await fetch(
       `https://mybusiness.googleapis.com/v4/accounts/${gmbAccountId}/locations/${locationId}/reviews`,
       {
@@ -36,30 +36,44 @@ async function fetchLocationReviews(locationId: string, gmbAccountId: string, ac
 export async function GET(req: Request) {
   try {
     const { searchParams } = new URL(req.url)
-    const locationId = searchParams.get("location_id") || searchParams.get("location_name")
+    const mongoId = searchParams.get("location_id") || searchParams.get("location_name") // MongoDB _id
     const accessToken = searchParams.get("access_token")
     const gmbAccountId = searchParams.get("gmb_account_id")
 
-    const cleanAccountId = gmbAccountId !== undefined || gmbAccountId !== null ? gmbAccountId?.replace('accounts/', '') : gmbAccountId
-    
-    if (!locationId || !accessToken || !cleanAccountId) {
+    // Auth check
+    const user = await stackServerApp.getUser()
+    if (!user?.id) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
+    }
+
+    if (!mongoId || !accessToken || !gmbAccountId) {
       return NextResponse.json(
         {
           error: "Missing required parameters",
-          required: ["location_id (or location_name)", "access_token", "gmb_account_id"],
-          received: { 
-            locationId: !!locationId, 
-            accessToken: !!accessToken, 
-            gmbAccountId: !!gmbAccountId 
+          required: ["location_id (MongoDB _id)", "access_token", "gmb_account_id"],
+          received: {
+            mongoId: !!mongoId,
+            accessToken: !!accessToken,
+            gmbAccountId: !!gmbAccountId
           }
         },
         { status: 400 }
       )
     }
 
-    const data = await fetchLocationReviews(locationId, cleanAccountId, accessToken)
+    // ✅ Resolve real GMB location ID from MongoDB _id
+    const dbLocation = await getLocationById(mongoId)
+    if (!dbLocation) {
+      return NextResponse.json({ error: "Location not found" }, { status: 404 })
+    }
+
+    const cleanLocationId = cleanGmbLocationId(dbLocation.location_id) // ✅ real GMB ID
+    const cleanAccId = gmbAccountId.replace('accounts/', '')
+
+    const data = await fetchLocationReviews(cleanLocationId, cleanAccId, accessToken)
 
     return NextResponse.json(data)
+
   } catch (error: any) {
     console.error('Reviews API Route Error:', error)
     return NextResponse.json(

@@ -52,7 +52,7 @@ export function ReviewsSection({
       action={
         rating ? (
           <div 
-            className="flex items-center gap-2 text-xs sm:text-sm rounded-full px-3 sm:px-4 py-1.5 sm:py-2 border" 
+            className="flex items-center gap-2 text-xs sm:text-sm rounded-full sm:px-4 py-1.5 sm:py-2 border" 
             style={{ borderColor: primary, backgroundColor: `${primary}08` }}
           >
             <StarRating rating={rating} size="sm" />

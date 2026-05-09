@@ -10,8 +10,6 @@ import { ThemeProvider } from "next-themes";
 import { Toaster } from 'react-hot-toast';
 import NextTopLoader from 'nextjs-toploader'
 import { usePathname } from "next/navigation";
-import GMBAuthWrapper from "../wrapper/GMBAuthWrapper";
-import { APIProvider } from "@vis.gl/react-google-maps";
 
 interface DashboardLayoutProps {
   children: React.ReactNode;

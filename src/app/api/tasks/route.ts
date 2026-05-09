@@ -10,6 +10,7 @@ import {
   generateAssignmentSummary,
   getTaskRecommendations
 } from "@/helpers/taskHelper"
+import { cleanGmbLocationId, getLocationById } from "@/lib/getLocationById"
 
 interface TaskTemplate {
   id: string
@@ -640,11 +641,13 @@ export async function POST(req: Request) {
         // Build comprehensive duplicate detection
         const duplicates = new Set<string>();
         existingByTitle.forEach(t => {
-          duplicates.add(t.title);        });
+          duplicates.add(t.title);
+        });
         existingByWeek.forEach(t => {
-          duplicates.add(t.title);        });
+          duplicates.add(t.title);
+        });
 
-        if (duplicates.size > 0) {          
+        if (duplicates.size > 0) {
           throw new Error(`Duplicate tasks detected: ${Array.from(duplicates).join(', ')}`);
         }
       }
@@ -674,7 +677,7 @@ export async function POST(req: Request) {
 
       // If transaction fails due to duplicates, return existing tasks
       if (error.message.includes('Duplicate') && !ALLOW_ALL_TASKS) {
-          return existingWeekTasks;
+        return existingWeekTasks;
       }
 
       // For other errors, throw to outer catch
@@ -783,6 +786,7 @@ export async function GET(req: Request) {
     const locationId = searchParams.get("locationId")
     const includeHistory = searchParams.get("includeHistory") === "true"
 
+
     if (!locationId) {
       return NextResponse.json(
         { error: "locationId is required" },
@@ -790,7 +794,12 @@ export async function GET(req: Request) {
       )
     }
 
-    const cleanLocationId = locationId.replace(/^locations\//, "")
+    const dbLocation = await getLocationById(locationId!)
+    if (!dbLocation) {
+      return NextResponse.json({ error: "Location not found" }, { status: 404 })
+    }
+
+    const cleanLocationId = cleanGmbLocationId(dbLocation.location_id)
     const currentMonth = getMonthKeyFormated(new Date())
     const currentMonth1 = getMonthKey(new Date())
 

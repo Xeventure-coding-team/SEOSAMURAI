@@ -1,3 +1,6 @@
+import { canUse, canUseErrorMessage } from '@/lib/actions/can-use';
+import { incrementUsage } from '@/lib/usage';
+import { stackServerApp } from '@/stack';
 import { NextRequest, NextResponse } from 'next/server';
 
 // Types
@@ -5,6 +8,21 @@ interface GridPoint {
     lat: number;
     lng: number;
     index: number;
+}
+
+interface Competitor {
+    id: string;
+    name: string;
+    averageRank: number;
+    appearances: number;
+    shareOfVoice: number;
+    good: number;
+    average: number;
+    poor: number;
+    outOfTop20: number;
+    rating?: number;
+    userRatingCount?: number;
+    address?: string;
 }
 
 interface RankingResult {
@@ -84,6 +102,20 @@ interface GridRankingResponse {
     error?: string;
     message?: string;
 }
+
+const competitorMap = new Map<string, {
+    id: string;
+    name: string;
+    totalRank: number;
+    count: number;
+    good: number;
+    average: number;
+    poor: number;
+    outOfTop20: number;
+    rating?: number;
+    userRatingCount?: number;
+    address?: string;
+}>();
 
 // Validation helpers
 function isValidCoordinate(lat: number, lng: number): boolean {
@@ -262,7 +294,7 @@ async function searchGooglePlaces(
 
     // Calculate dynamic search radius based on grid distance
     let searchRadius = 5000; // Default 5km
-    
+
     if (gridDistance) {
         const gridRadiusMeters = distanceToMeters(gridDistance);
         // Use a percentage of grid radius as search radius, with min/max bounds
@@ -341,8 +373,6 @@ async function searchGooglePlaces(
             priceLevel: place.price_level ? `PRICE_LEVEL_${place.price_level}` : undefined,
             googleMapsUri: `https://maps.google.com/maps/place/?q=place_id:${place.place_id}`
         }));
-
-        console.log(`Found ${results.length} results at location ${location.lat},${location.lng} with radius ${searchRadius}m`);
         return results;
     } catch (error) {
         if (error instanceof Error) {
@@ -609,6 +639,25 @@ function delay(ms: number): Promise<void> {
 
 export async function POST(request: NextRequest): Promise<NextResponse<GridRankingResponse>> {
     try {
+
+        const user = await stackServerApp.getUser();
+
+        if (!user) {
+            return NextResponse.json({
+                success: false,
+                error: "Unauthorized"
+            }, { status: 401 });
+        }
+
+        const F = await canUse(user.id, "geo-grid-scans");
+
+        if (!F.ok) {
+            return NextResponse.json(
+                { success: false, error: canUseErrorMessage(F, "geo-grid-scans") },
+                { status: 403 }
+            );
+        }
+
         let body: GridRankingRequest;
         try {
             body = await request.json();
@@ -712,7 +761,15 @@ export async function POST(request: NextRequest): Promise<NextResponse<GridRanki
         const gridSizeNum = parseGridSize(gridSize);
         const radiusMeters = distanceToMeters(distance);
 
-        
+        const increment = await incrementUsage(user.id, "geoGridScansUsed");
+
+        if (!increment.ok) {
+            return NextResponse.json(
+                { success: false, error: canUseErrorMessage(increment, "geo-grid-scans") },
+                { status: 403 }
+            );
+        }
+
         const gridPoints = generateGridPoints(center, gridSizeNum, radiusMeters);
 
         if (gridPoints.length === 0) {
@@ -744,6 +801,57 @@ export async function POST(request: NextRequest): Promise<NextResponse<GridRanki
                         businessPlaceId,
                         actualBusinessName,
                     );
+
+
+                    results.forEach((place, index) => {
+                        const placeName = place.displayName?.text;
+                        if (!placeName) return;
+
+                        const rank = index + 1;
+
+                        // Skip your business
+                        const isSameBusiness =
+                            place.id === body.businessPlaceId ||
+                            calculateAdvancedSimilarity(placeName, actualBusinessName) > 0.8;
+
+                        if (isSameBusiness) return;
+
+                        let good = 0, average = 0, poor = 0, outOfTop20 = 0;
+
+                        if (rank <= 3) {
+                            good++; // treat top 3 as good
+                        } else if (rank <= 10) {
+                            good++;
+                        } else if (rank <= 20) {
+                            average++;
+                        } else {
+                            outOfTop20++;
+                        }
+
+                        if (!competitorMap.has(place.id)) {
+                            competitorMap.set(place.id, {
+                                id: place.id,
+                                name: placeName,
+                                totalRank: rank,
+                                count: 1,
+                                good,
+                                average,
+                                poor,
+                                outOfTop20,
+                                rating: place.rating,
+                                userRatingCount: place.userRatingCount,
+                                address: place.formattedAddress
+                            });
+                        } else {
+                            const existing = competitorMap.get(place.id)!;
+                            existing.totalRank += rank;
+                            existing.count += 1;
+                            existing.good += good;
+                            existing.average += average;
+                            existing.poor += poor;
+                            existing.outOfTop20 += outOfTop20;
+                        }
+                    });
 
                     const { rank, found, matchDetails, detectedBusinessName } = findBusinessRank(
                         results,
@@ -800,6 +908,30 @@ export async function POST(request: NextRequest): Promise<NextResponse<GridRanki
             .map(r => r.detectedBusinessName)
             .filter((name, index, self) => self.indexOf(name) === index);
 
+
+        const totalGridPoints = rankings.length;
+
+        const competitors = Array.from(competitorMap.values())
+            .map(c => ({
+                id: c.id,
+                name: c.name,
+                averageRank: Math.round((c.totalRank / c.count) * 100) / 100,
+                appearances: c.count,
+
+                // ⭐ NEW METRICS
+                shareOfVoice: Math.round((c.count / totalGridPoints) * 100 * 100) / 100,
+                good: c.good,
+                average: c.average,
+                poor: c.poor, // optional
+                outOfTop20: c.outOfTop20
+            }))
+            .sort((a, b) => {
+                if (b.shareOfVoice !== a.shareOfVoice) {
+                    return b.shareOfVoice - a.shareOfVoice;
+                }
+                return a.averageRank - b.averageRank;
+            });
+
         // Return enhanced response
         return NextResponse.json({
             success: true,
@@ -814,6 +946,7 @@ export async function POST(request: NextRequest): Promise<NextResponse<GridRanki
                 totalGridPoints: rankings.length,
                 rankings,
                 summary,
+                competitors,
                 metadata: {
                     detectedFromGMB,
                     autoDetectedNames: detectedNames.length > 0 ? detectedNames : undefined,

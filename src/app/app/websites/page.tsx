@@ -5,6 +5,8 @@ import { Plus } from 'lucide-react';
 import Link from 'next/link';
 import { stackServerApp } from '@/stack';
 import { Metadata } from 'next';
+import { UsageGate } from '@/components/usage-gate';
+import { SlotBadge } from '@/components/slot-badge';
 
 export const metadata: Metadata = {
     title: "Websites | Rankerly",
@@ -38,12 +40,21 @@ export default async function page() {
                             Manage and monitor all your business websites
                         </p>
                     </div>
-                    <Link href="/app/websites/create">
-                        <Button>
-                            <Plus className="mr-2 h-4 w-4" />
-                            Create Website
-                        </Button>
-                    </Link>
+
+                    <div className='flex gap-4 items-center flex-wrap'>
+                        <SlotBadge slot="websites" label="Websites" />
+
+                        <UsageGate slot="websites">
+                            <Button asChild size="lg" className="shrink-0">
+                                <Link href="/app/websites/create">
+                                    <Plus className="h-5 w-5 mr-2" />
+                                    Create Website
+                                </Link>
+                            </Button>
+                        </UsageGate>
+                    </div>
+
+
                 </div>
                 <WebsitesTable />
             </div>

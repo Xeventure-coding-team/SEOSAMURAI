@@ -11,44 +11,30 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import Link from "next/link"
 import {
   Search,
-  MapPin,
-  Globe,
-  Building2,
-  SortAsc,
-  SortDesc,
-  Filter,
-  X,
-  Eye,
-  ExternalLink,
   Plus,
   RotateCcw,
-  ChevronDown,
   ChevronLeft,
   ChevronRight,
   ChevronsLeft,
   ChevronsRight,
-  CheckCircle,
-  Wrench,
+  AlertTriangle,
 } from "lucide-react"
 import stringSimilarity from "string-similarity"
 import { toast } from "react-hot-toast"
 import { useGMBStore } from "@/store/gmbStore"
 import ErrorRender from "../Error"
 import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu"
-import {
-  Tooltip,
-  TooltipContent,
   TooltipProvider,
-  TooltipTrigger,
 } from "@/components/ui/tooltip"
 import LocationTable from "./LocationTable"
+import { UsageGate } from "../usage-gate"
+import { SlotBadge } from "../slot-badge"
+import { ChooseActiveLocation } from "./ChooseActiveLocation"
+import { usePlanLimits } from "@/lib/use-plan-limits"
+import { useRouter } from "next/navigation"
 
 type Location = {
+  id?: string
   name: string
   title: string
   formattedAddress: string
@@ -59,7 +45,10 @@ type Location = {
   categories?: { primaryCategory?: { displayName: string } }
   storefrontAddress?: { addressLines?: string[]; locality?: string }
   location_id?: string
+  location_name?: string
+  is_active?: boolean
 }
+
 
 type SortOption = "name" | "category" | "location" | "website"
 type SortDirection = "asc" | "desc"
@@ -67,15 +56,14 @@ type SortDirection = "asc" | "desc"
 const ITEMS_PER_PAGE_OPTIONS = [10, 25, 50, 100]
 
 const getPreferredLocality = (loc: Location) => {
-  return loc.formattedAddress || loc.storefrontAddress?.locality || loc.storefrontAddress?.addressLines?.join(", ") || ""
-    // loc.formattedAddress || loc.storefrontAddress?.addressLines?.join(", ") || ""
-    ;
+  return loc.formattedAddress || loc.storefrontAddress?.locality || loc.storefrontAddress?.addressLines?.join(", ") || "";
 };
 
 export default function LocationsTable() {
   const [locations, setLocations] = useState<Location[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
+  const [locationChoiceMade, setLocationChoiceMade] = useState<boolean>(false)
 
   const [currentPage, setCurrentPage] = useState(1)
   const [itemsPerPage, setItemsPerPage] = useState(10)
@@ -87,10 +75,18 @@ export default function LocationsTable() {
   const [websiteFilter, setWebsiteFilter] = useState<string>("all")
   const [sortBy, setSortBy] = useState<SortOption>("name")
   const [sortDirection, setSortDirection] = useState<SortDirection>("asc")
-  const [showFilters, setShowFilters] = useState(false)
+
+  const limits = usePlanLimits()
+  const planLimit = limits?.locations ?? 1
+  const [showPicker, setShowPicker] = useState(false)
+  const hasInactive = locations.some(l => l.is_active === false)
+  const isOverLimit = locations.length > planLimit
+
 
   const accountId = useGMBStore((state) => state.accountId)
   const accessToken = useGMBStore((state) => state.accessToken)
+
+  const router = useRouter();
 
   const fetchLocations = async () => {
     setLoading(true)
@@ -114,7 +110,9 @@ export default function LocationsTable() {
       }
 
       const data = await res.json()
+      setLocationChoiceMade(data.locationChoiceMade);
       setLocations(data.accounts || [])
+
     } catch (err: any) {
       setError(err.message || "Error loading locations.")
       toast.error(err.message || "Error loading locations.")
@@ -307,227 +305,286 @@ export default function LocationsTable() {
     return <ErrorRender error={"We couldn't load this content. You can retry or report the issue."} />
   }
 
+  const needsChoice = locations.some(l => l.is_active === false)
+  const showBanner = hasInactive && isOverLimit && !locationChoiceMade
+
   return (
     <TooltipProvider>
-      <div className="container mx-auto space-y-6">
-        <div className="flex flex-col gap-6 sm:flex-row sm:items-start sm:justify-between">
-          <div className="space-y-2">
-            <h1 className="text-4xl font-bold tracking-tight">Your Business Locations</h1>
-            <p className="text-lg text-muted-foreground max-w-2xl">
-              Manage all your Google Business locations in one place. View details, track performance, and keep your
-              business information up to date.
-            </p>
-            <div className="flex items-center gap-4 pt-2">
-              <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                <CheckCircle className="h-4 w-4 text-green-600" />
-                <span>{locations.length} locations connected</span>
-              </div>
-              {locations.filter((loc) => loc.websiteUri).length > 0 && (
-                <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                  <Globe className="h-4 w-4 text-blue-600" />
-                  <span>{locations.filter((loc) => loc.websiteUri).length} with websites</span>
-                </div>
-              )}
+      <div className="min-h-screen bg-background px-6">
+        <div className="mx-auto space-y-8">
+
+          {/* Header */}
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+            <div className="flex-1">
+              <h1 className="text-3xl font-bold tracking-tight">Locations</h1>
+              <p className="text-muted-foreground mt-1">
+                Manage {locations.length > 0 ? `your ${locations.length}` : "your"} Google Business locations
+              </p>
+            </div>
+            <div className="flex items-center gap-3 flex-wrap">
+              <SlotBadge slot="locations" label="Locations" />
+              <UsageGate slot="locations">
+                <Button asChild size="sm">
+                  <Link href="/app/locations/add">
+                    <Plus className="h-4 w-4 mr-2" />
+                    Add Location
+                  </Link>
+                </Button>
+              </UsageGate>
+
             </div>
           </div>
-          <Button asChild size="lg" className="shrink-0">
-            <Link href="/app/locations/add">
-              <Plus className="h-5 w-5 mr-2" />
-              Add New Location
-            </Link>
-          </Button>
-        </div>
 
-        <Card className="gap-0">
-          <CardHeader>
-            <CardTitle className="text-base flex items-center gap-2">
-              <Search className="h-4 w-4" />
-              Search & Filter Locations
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-3 pt-0">
-            {/* Search and Filters Row */}
-            <div className="flex gap-3 items-end">
-              <div className="relative flex-1">
-                <Search className="absolute left-2.5 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                <Input
-                  placeholder="Search by business name, category, or description..."
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                  className="pl-8 h-9 text-sm"
-                />
+          {/* Stats Row */}
+          {locations.length > 0 && (
+            <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
+              <div className="bg-card border border-border rounded-lg p-4">
+                <p className="text-xs text-muted-foreground font-medium uppercase tracking-wide">Total Locations</p>
+                <p className="text-2xl font-bold mt-1">{locations.length}</p>
               </div>
+              {locations.filter((loc) => loc.websiteUri).length > 0 && (
+                <div className="bg-card border border-border rounded-lg p-4">
+                  <p className="text-xs text-muted-foreground font-medium uppercase tracking-wide">With Website</p>
+                  <p className="text-2xl font-bold mt-1">{locations.filter((loc) => loc.websiteUri).length}</p>
+                </div>
+              )}
+              <div className="bg-card border border-border rounded-lg p-4">
+                <p className="text-xs text-muted-foreground font-medium uppercase tracking-wide">Total Categories</p>
+                <p className="text-2xl font-bold mt-1">{filterOptions.categories.length}</p>
+              </div>
+            </div>
+          )}
 
-              <div className="space-y-1">
-                <label className="text-xs text-muted-foreground">Category</label>
-                <Select value={categoryFilter} onValueChange={setCategoryFilter}>
-                  <SelectTrigger className="h-9 w-[140px] text-sm">
-                    <SelectValue placeholder="All Categories" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="all">All Categories</SelectItem>
-                    {filterOptions.categories.map((category) => (
-                      <SelectItem key={category} value={category}>
-                        {category}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
+          {/* Filters and Controls */}
+          <div className="bg-card border border-border rounded-lg p-4 space-y-4">
+            {/* Primary Search */}
+            <div className="relative">
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+              <Input
+                placeholder="Search locations by name, category, or description..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="pl-10 h-10 text-sm"
+              />
+            </div>
 
-              <div className="space-y-1">
-                <label className="text-xs text-muted-foreground">Location</label>
-                <Select value={locationFilter} onValueChange={setLocationFilter}>
-                  <SelectTrigger className="h-9 w-[140px] text-sm">
-                    <SelectValue placeholder="All Locations" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="all">All Locations</SelectItem>
-                    {filterOptions.locations.map((location) => (
-                      <SelectItem key={location} value={location}>
-                        {location}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
+            {/* Filter Dropdowns */}
+            <div className="flex flex-wrap items-center gap-2">
+              <Select value={categoryFilter} onValueChange={setCategoryFilter}>
+                <SelectTrigger className="h-10 text-sm w-[160px]">
+                  <SelectValue placeholder="Category" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All Categories</SelectItem>
+                  {filterOptions.categories.map((category) => (
+                    <SelectItem key={category} value={category}>
+                      {category}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+
+              <Select value={locationFilter} onValueChange={setLocationFilter}>
+                <SelectTrigger className="h-10 text-sm w-[160px]">
+                  <SelectValue placeholder="Location" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All Locations</SelectItem>
+                  {filterOptions.locations.map((location) => (
+                    <SelectItem key={location} value={location}>
+                      {location}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+
+              <Select value={websiteFilter} onValueChange={setWebsiteFilter}>
+                <SelectTrigger className="h-10 text-sm w-[160px]">
+                  <SelectValue placeholder="Website" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All</SelectItem>
+                  <SelectItem value="with">Has Website</SelectItem>
+                  <SelectItem value="without">No Website</SelectItem>
+                </SelectContent>
+              </Select>
 
               {hasActiveFilters && (
-                <Button variant="ghost" size="sm" className="h-9 px-3">
-                  <RotateCcw className="h-3.5 w-3.5 mr-1.5" />
-                  Clear
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={clearFilters}
+                  className="h-10 text-sm"
+                >
+                  <RotateCcw className="h-3.5 w-3.5 mr-2" />
+                  Reset
                 </Button>
               )}
             </div>
-          </CardContent>
-        </Card>
 
-
-        {/* Results Summary and Pagination Controls */}
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-4">
-            <p className="text-sm text-muted-foreground">
-              Showing{" "}
-              <span className="font-medium text-foreground">
-                {startIndex + 1}-{Math.min(endIndex, filteredAndSortedLocations.length)}
-              </span>{" "}
-              of{" "}
-              <span className="font-medium text-foreground">
-                {filteredAndSortedLocations.length}
-              </span>{" "}
-              locations
-            </p>
           </div>
 
-          <div className="flex items-center gap-3">
-            <span className="text-sm text-muted-foreground">Show:</span>
-            <Select value={itemsPerPage.toString()} onValueChange={(value) => setItemsPerPage(Number(value))}>
-              <SelectTrigger className="h-9 w-20">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                {ITEMS_PER_PAGE_OPTIONS.map((option) => (
-                  <SelectItem key={option} value={option.toString()}>
-                    {option}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-            <span className="text-sm text-muted-foreground">per page</span>
-          </div>
-        </div>
-
-        <LocationTable
-          filteredAndSortedLocations={filteredAndSortedLocations}
-          paginatedLocations={paginatedLocations}
-          sortBy={sortBy}
-          sortDirection={sortDirection}
-          toggleSort={toggleSort}
-          hasActiveFilters={hasActiveFilters}
-          clearFilters={clearFilters}
-          getPreferredLocality={getPreferredLocality}
-        />
-
-        {totalPages > 1 && (
-          <Card>
-            <CardContent className="p-4">
-              <div className="flex items-center justify-between">
-                <div className="text-sm font-medium text-muted-foreground">
-                  Page {currentPage} of {totalPages}
-                </div>
-
-                <div className="flex items-center gap-2">
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => setCurrentPage(1)}
-                    disabled={currentPage === 1}
-                    className="h-9 w-9 p-0"
-                  >
-                    <ChevronsLeft className="h-4 w-4" />
-                  </Button>
-
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => setCurrentPage(currentPage - 1)}
-                    disabled={currentPage === 1}
-                    className="h-9 w-9 p-0"
-                  >
-                    <ChevronLeft className="h-4 w-4" />
-                  </Button>
-
-                  <div className="flex items-center gap-1">
-                    {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
-                      let pageNumber
-                      if (totalPages <= 5) {
-                        pageNumber = i + 1
-                      } else if (currentPage <= 3) {
-                        pageNumber = i + 1
-                      } else if (currentPage >= totalPages - 2) {
-                        pageNumber = totalPages - 4 + i
-                      } else {
-                        pageNumber = currentPage - 2 + i
-                      }
-
-                      return (
-                        <Button
-                          key={pageNumber}
-                          variant={currentPage === pageNumber ? "default" : "outline"}
-                          size="sm"
-                          onClick={() => setCurrentPage(pageNumber)}
-                          className="h-9 w-9 p-0"
-                        >
-                          {pageNumber}
-                        </Button>
-                      )
-                    })}
-                  </div>
-
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => setCurrentPage(currentPage + 1)}
-                    disabled={currentPage === totalPages}
-                    className="h-9 w-9 p-0"
-                  >
-                    <ChevronRight className="h-4 w-4" />
-                  </Button>
-
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => setCurrentPage(totalPages)}
-                    disabled={currentPage === totalPages}
-                    className="h-9 w-9 p-0"
-                  >
-                    <ChevronsRight className="h-4 w-4" />
-                  </Button>
-                </div>
+          {showBanner && (
+            <div className="flex items-center justify-between gap-4 rounded-xl border border-amber-200 bg-amber-50 dark:bg-amber-950/30 dark:border-amber-800 px-4 py-3">
+              <div className="flex items-center gap-2.5">
+                <AlertTriangle className="h-4 w-4 shrink-0 text-amber-600" />
+                <p className="text-sm text-amber-800 dark:text-amber-400">
+                  <span className="font-medium">{locations.filter(l => l.is_active === false).length} location{locations.filter(l => l.is_active === false).length > 1 ? "s" : ""} inactive</span>
+                  {" "}— your plan allows {planLimit}. Choose which to keep active.
+                </p>
               </div>
-            </CardContent>
-          </Card>
-        )}
+              <Button
+                size="sm"
+                variant="outline"
+                className="shrink-0 border-amber-300 text-amber-800 hover:bg-amber-100"
+                onClick={() => setShowPicker(true)}
+              >
+                Manage
+              </Button>
+            </div>
+          )}
+
+          <ChooseActiveLocation
+            open={showPicker}
+            locations={locations.map(l => ({
+              id: l.location_id ?? l.name,
+              location_id: l.location_id ?? "",
+              location_name: l.title || l.location_name || "Unknown",
+              is_active: l.is_active ?? true
+            }))}
+            limit={planLimit}
+            onConfirm={async (selectedIds) => {
+              await fetch("/api/gmb/locations/set-active", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ selectedIds })
+              })
+              setShowPicker(false)
+              router.refresh()
+            }}
+            onClose={() => setShowPicker(false)}
+          />
+
+
+          {/* Table Section */}
+          <LocationTable
+            filteredAndSortedLocations={filteredAndSortedLocations}
+            paginatedLocations={paginatedLocations}
+            sortBy={sortBy}
+            sortDirection={sortDirection}
+            toggleSort={toggleSort}
+            hasActiveFilters={hasActiveFilters}
+            clearFilters={clearFilters}
+            getPreferredLocality={getPreferredLocality}
+          />
+
+          {/* Pagination Section */}
+          {filteredAndSortedLocations.length > 0 && (
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 p-4 bg-card border border-border rounded-lg">
+              <p className="text-sm text-muted-foreground">
+                Showing{" "}
+                <span className="font-semibold text-foreground">
+                  {startIndex + 1}–{Math.min(endIndex, filteredAndSortedLocations.length)}
+                </span>{" "}
+                of{" "}
+                <span className="font-semibold text-foreground">
+                  {filteredAndSortedLocations.length}
+                </span>{" "}
+                locations
+              </p>
+
+              <div className="flex items-center gap-4">
+                <div className="flex items-center gap-2">
+                  <span className="text-sm text-muted-foreground">Show:</span>
+                  <Select value={itemsPerPage.toString()} onValueChange={(value) => setItemsPerPage(Number(value))}>
+                    <SelectTrigger className="h-9 w-16 text-sm">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {ITEMS_PER_PAGE_OPTIONS.map((option) => (
+                        <SelectItem key={option} value={option.toString()}>
+                          {option}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                {totalPages > 1 && (
+                  <div className="flex items-center gap-1">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => setCurrentPage(1)}
+                      disabled={currentPage === 1}
+                      className="h-9 w-9 p-0"
+                    >
+                      <ChevronsLeft className="h-4 w-4" />
+                    </Button>
+
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => setCurrentPage(currentPage - 1)}
+                      disabled={currentPage === 1}
+                      className="h-9 w-9 p-0"
+                    >
+                      <ChevronLeft className="h-4 w-4" />
+                    </Button>
+
+                    <div className="flex items-center gap-0.5 mx-1">
+                      {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
+                        let pageNumber
+                        if (totalPages <= 5) {
+                          pageNumber = i + 1
+                        } else if (currentPage <= 3) {
+                          pageNumber = i + 1
+                        } else if (currentPage >= totalPages - 2) {
+                          pageNumber = totalPages - 4 + i
+                        } else {
+                          pageNumber = currentPage - 2 + i
+                        }
+
+                        return (
+                          <Button
+                            key={pageNumber}
+                            variant={currentPage === pageNumber ? "default" : "outline"}
+                            size="sm"
+                            onClick={() => setCurrentPage(pageNumber)}
+                            className="h-9 w-9 p-0 text-xs"
+                          >
+                            {pageNumber}
+                          </Button>
+                        )
+                      })}
+                    </div>
+
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => setCurrentPage(currentPage + 1)}
+                      disabled={currentPage === totalPages}
+                      className="h-9 w-9 p-0"
+                    >
+                      <ChevronRight className="h-4 w-4" />
+                    </Button>
+
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => setCurrentPage(totalPages)}
+                      disabled={currentPage === totalPages}
+                      className="h-9 w-9 p-0"
+                    >
+                      <ChevronsRight className="h-4 w-4" />
+                    </Button>
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
+
+        </div>
       </div>
     </TooltipProvider>
   )

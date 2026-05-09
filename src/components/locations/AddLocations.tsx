@@ -22,7 +22,6 @@ const MapComponent = dynamic(() => import("./MapComponent"), {
 })
 
 const AddLocations: React.FC = () => {
-    // ✅ SEPARATE STATE: Keep viewState independent from position
     const [viewState, setViewState] = useState({
         longitude: -0.09,
         latitude: 51.505,
@@ -49,7 +48,6 @@ const AddLocations: React.FC = () => {
         setIsClient(true)
     }, [setPageName])
 
-    // ✅ FIX: Only update viewState when position SIGNIFICANTLY changes
     // NOT on every position change - use debouncing and tolerance
     useEffect(() => {
         // Check if position actually changed

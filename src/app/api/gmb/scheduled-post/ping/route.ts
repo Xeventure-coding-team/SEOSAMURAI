@@ -3,6 +3,7 @@ import { prisma } from "../../../../../../lib/prisma";
 import { ScheduledPostStatus } from "@/generated/prisma";
 import axios from "axios";
 import FormData from "form-data";
+import { decrementUsage } from "@/lib/usage";
 
 const BATCH_SIZE = 5;
 const MAX_RETRIES = 3;
@@ -177,10 +178,10 @@ async function resolveImageUrl(imageUrl: string): Promise<string> {
     const ext = contentType?.includes("png")
       ? ".png"
       : contentType?.includes("gif")
-      ? ".gif"
-      : contentType?.includes("webp")
-      ? ".webp"
-      : ".jpg";
+        ? ".gif"
+        : contentType?.includes("webp")
+          ? ".webp"
+          : ".jpg";
     fileName += ext;
   }
 
@@ -448,6 +449,7 @@ export async function GET(request: NextRequest) {
               errMsg.includes("PERMISSION_DENIED") ||
               newRetryCount >= maxRetries;
 
+            // After hard fail — release the slot back
             if (isHardFail) {
               userResult.postsFailed++;
               userResult.errors.push(`Post ${post.id}: ${errMsg}`);
@@ -458,9 +460,33 @@ export async function GET(request: NextRequest) {
                 errorMessage: isAuthError
                   ? `Auth failed (check integration): ${errMsg}`
                   : newRetryCount >= maxRetries
-                  ? `Max retries (${maxRetries}) exceeded: ${errMsg}`
-                  : errMsg,
+                    ? `Max retries (${maxRetries}) exceeded: ${errMsg}`
+                    : errMsg,
               });
+
+              // ── Release quota — post never published ─────────────────────────
+              try {
+                const usage = await prisma.usage.findUnique({
+                  where: { stackUserId: post.user_id }
+                });
+                const wasAlreadyFailed = post.status === ScheduledPostStatus.FAILED;
+                if (isHardFail) {
+                  try {
+                    const usage = await prisma.usage.findUnique({
+                      where: { stackUserId: post.user_id }
+                    });
+                    if (usage && new Date(post.scheduledAt) >= usage.periodStart) {
+                      await decrementUsage(post.user_id, "scheduledPostsUsed")
+                    }
+                  } catch (e) {
+                    console.error(`Failed to decrement usage for post ${post.id}:`, e);
+                  }
+                }
+              } catch (e) {
+                console.error(`Failed to decrement usage for post ${post.id}:`, e);
+              }
+              // ─────────────────────────────────────────────────────────────────
+
               console.error(`❌ Hard fail post ${post.id}: ${errMsg}`);
             } else {
               // FIX: Reschedule retry with backoff instead of immediate re-pickup
@@ -476,6 +502,8 @@ export async function GET(request: NextRequest) {
               console.log(`🔄 Retry ${newRetryCount}/${maxRetries} for post ${post.id} at ${nextRetryAt.toISOString()}`);
             }
           }
+
+
         });
 
         await Promise.allSettled(batchPromises);

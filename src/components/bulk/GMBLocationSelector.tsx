@@ -3,19 +3,27 @@
 import { useState, useEffect } from "react"
 import axios from "axios"
 import toast from "react-hot-toast"
-import { Card, CardContent } from "@/components/ui/card"
+import { Card, CardContent, CardHeader } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
-import { MapPin, AlertCircle, RefreshCw, Building2, ArrowRight, Loader2, CheckCircle } from "lucide-react"
+import { MapPin, AlertCircle, RefreshCw, Building2, ArrowRight, Loader2, CheckCircle, Lock } from "lucide-react"
 import { GmbBulkPostForm } from "./GMBBulkPostForm"
 import { ScrollArea } from "../ui/scroll-area"
 import { useGMBStore } from "@/store/gmbStore"
 import { Loader } from "../Loader/Loader"
+import { UsageBadge } from "../usage-badge"
+import { Skeleton } from "../ui/skeleton"
+import { useUser } from "@stackframe/stack"
+import { useUsage } from "@/lib/use-usage"
+import { cn } from "@/lib/utils"
+import Link from "next/link"
 
 
 interface Location {
+    id: string
     name: string
     title: string
     location_id: string
+    is_active?: boolean
     formattedAddress: string
     last_rank_updated: string
     profile?: {
@@ -44,7 +52,7 @@ interface LocationDetails {
         name: string
         storeCode?: string
 
-        phoneNumbers?: {   
+        phoneNumbers?: {
             primaryPhone?: null | string
         }
 
@@ -115,7 +123,10 @@ export default function GMBLocationSelector() {
     const [loadingLocations, setLoadingLocations] = useState(true)
     const [loadingDetails, setLoadingDetails] = useState(false)
     const [error, setError] = useState<string | null>(null)
+    const [usage, setUsage] = useState<string | null>(null)
     const [retryCount, setRetryCount] = useState(0)
+    const user = useUser({ or: "redirect" });
+    const { data, isLoading } = useUsage();
 
 
     const gmbAccountId = useGMBStore((state) => state.accountId)
@@ -148,6 +159,7 @@ export default function GMBLocationSelector() {
         try {
             setLoadingLocations(true)
             setError(null)
+
 
             const response = await axios.get(`/api/gmb/locations?accessToken=${accessToken}`, {
                 headers: {
@@ -255,22 +267,25 @@ export default function GMBLocationSelector() {
     }
 
 
-    if (loadingLocations) {
+    if (loadingLocations && isLoading) {
         return (
-            <div className="container mx-auto space-y-6">
-                <Card className="border border-border">
-                    <CardContent className="flex flex-col items-center justify-center py-20">
-                        <div className="flex items-center gap-3 mb-4">
-                            <Loader2 className="h-6 w-6 animate-spin text-primary" />
-                            <div className="text-lg font-medium">Loading your business locations</div>
+            <Card>
+                <CardContent className="space-y-6">
+                    {[1, 2, 3].map((i) => (
+                        <div key={i} className="space-y-3">
+                            <div className="flex items-start gap-3">
+                                <Skeleton className="h-10 w-10 rounded-full" />
+                                <div className="flex-1 space-y-2">
+                                    <Skeleton className="h-4 w-32" />
+                                    <Skeleton className="h-3 w-24" />
+                                </div>
+                            </div>
+                            <Skeleton className="h-16 w-full" />
                         </div>
-                        <p className="text-muted-foreground text-center max-w-md text-sm">
-                            Connecting to your Google My Business account and fetching available locations...
-                        </p>
-                    </CardContent>
-                </Card>
-            </div>
-        )
+                    ))}
+                </CardContent>
+            </Card>
+        );
     }
 
 
@@ -298,6 +313,9 @@ export default function GMBLocationSelector() {
                         Select a location to start creating and managing your posts
                     </p>
                 </div>
+                <div>
+                    <UsageBadge metric="postsUsed" label="Bulk Posting" showBar={true} />
+                </div>
             </div>
 
 
@@ -308,88 +326,108 @@ export default function GMBLocationSelector() {
                 </div>
 
                 <ScrollArea className="h-[400px] sm:h-auto">
-                    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2.5">
                         {locations.length === 0 ? (
-                            <Card className="border-dashed">
+                            <Card className="border-dashed col-span-full">
                                 <CardContent className="flex items-center justify-center py-12">
                                     <div className="text-center space-y-2">
                                         <AlertCircle className="h-8 w-8 text-muted-foreground mx-auto" />
-                                        <p className="text-muted-foreground">No locations found</p>
+                                        <p className="text-sm text-muted-foreground">No locations found</p>
                                     </div>
                                 </CardContent>
                             </Card>
                         ) : (
                             locations.map((location) => {
-                                const isSelected = selectedLocation === location.name
+                                const isSelected = selectedLocation === location.id
+                                const isLocked = location.is_active === false
 
                                 return (
-                                    <Card
+                                    <div
                                         key={location.name}
-                                        onClick={() => handleLocationSelect(location.name)}
-                                        className={`group cursor-pointer border transition-all duration-200
-        ${isSelected
-                                                ? "border-primary border-2 shadow-sm bg-background"
-                                                : "hover:border-primary/40 hover:bg-muted/30"
-                                            }
-      `}
+                                        onClick={() => !isLocked && handleLocationSelect(location.id)}
+                                        className={cn(
+                                            "flex items-center gap-3 rounded-lg border px-3.5 py-3 transition-colors",
+                                            isLocked
+                                                ? "cursor-not-allowed border-border/50 bg-muted/20"
+                                                : isSelected
+                                                    ? "cursor-pointer border-primary bg-primary/5"
+                                                    : "cursor-pointer border-border hover:bg-muted/40"
+                                        )}
                                     >
-                                        <CardContent>
-                                            <div className="flex items-center justify-between">
+                                        {/* Icon */}
+                                        <div className={cn(
+                                            "flex h-8 w-8 shrink-0 items-center justify-center rounded-md",
+                                            isLocked
+                                                ? "bg-muted"
+                                                : isSelected
+                                                    ? "bg-primary/10"
+                                                    : "bg-muted"
+                                        )}>
+                                            {isLocked
+                                                ? <Lock className="h-3.5 w-3.5 text-muted-foreground/50" />
+                                                : <Building2 className={cn(
+                                                    "h-3.5 w-3.5",
+                                                    isSelected ? "text-primary" : "text-muted-foreground"
+                                                )} />
+                                            }
+                                        </div>
 
-                                                {/* Left */}
-                                                <div className="flex items-center gap-3">
-                                                    <div
-                                                        className={`flex h-10 w-10 items-center justify-center rounded-md transition-colors
-                ${isSelected
-                                                                ? "bg-primary text-primary-foreground"
-                                                                : "bg-muted text-muted-foreground group-hover:bg-muted-foreground/10"
-                                                            }
-              `}
-                                                    >
-                                                        <Building2 className="h-4 w-4" />
-                                                    </div>
+                                        {/* Text */}
+                                        <div className="flex-1 min-w-0">
+                                            <p className={cn(
+                                                "text-sm font-medium truncate leading-none",
+                                                isLocked ? "text-muted-foreground/60" : ""
+                                            )}>
+                                                {getLocationDisplayName(location)}
+                                            </p>
+                                            {isLocked ? (
+                                                <Link
+                                                    href="/app/settings/billing"
+                                                    onClick={e => e.stopPropagation()}
+                                                    className="text-xs text-muted-foreground hover:text-primary transition-colors mt-0.5 inline-block"
+                                                >
+                                                    Upgrade to unlock
+                                                </Link>
+                                            ) : location.storefrontAddress ? (
+                                                <p className="text-xs text-muted-foreground truncate mt-0.5">
+                                                    {location.formattedAddress}
+                                                </p>
+                                            ) : null}
+                                        </div>
 
-                                                    <div className="space-y-0.5">
-                                                        <p className="text-sm font-medium leading-none">
-                                                            {getLocationDisplayName(location)}
-                                                        </p>
-
-                                                        {location.storefrontAddress && (
-                                                            <p className="text-xs text-muted-foreground truncate max-w-[240px] line-clamp-4">
-                                                                {location.formattedAddress}
-                                                            </p>
-                                                        )}
-
-                                                    </div>
-                                                </div>
-
-                                                {/* Right */}
-                                                <div className="flex items-center">
-                                                    {isSelected && (
-                                                        <CheckCircle className="h-4 w-4 text-primary" />
-                                                    )}
-                                                </div>
-
-                                            </div>
-                                        </CardContent>
-                                    </Card>
+                                        {/* Right indicator */}
+                                        {!isLocked && isSelected && (
+                                            <CheckCircle className="h-4 w-4 text-primary shrink-0" />
+                                        )}
+                                    </div>
                                 )
                             })
                         )}
                     </div>
                 </ScrollArea>
+
+
             </div>
 
             {loadingDetails && (
                 <Card>
-                    <CardContent className="flex items-center justify-center py-12">
-                        <Loader text="Preparing your workspace..." />
+                    <CardContent className="space-y-4 py-8">
+                        <div className="space-y-2">
+                            <Skeleton className="h-5 w-48" />
+                            <Skeleton className="h-4 w-64" />
+                        </div>
+                        <div className="space-y-2">
+                            <Skeleton className="h-4 w-full" />
+                            <Skeleton className="h-4 w-3/4" />
+                            <Skeleton className="h-4 w-5/6" />
+                        </div>
                     </CardContent>
                 </Card>
             )}
 
             {locationDetails && selectedLocation && (
                 <GmbBulkPostForm
+                    postUsed={data.limits.postsUsed}
                     accountId={gmbAccountId || ""}
                     locationId={selectedLocation}
                     accessToken={accessToken || ""}

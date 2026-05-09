@@ -2,15 +2,20 @@ import { NextRequest, NextResponse } from 'next/server';
 import { z } from 'zod';
 import axios from 'axios';
 import { prisma } from '../../../../lib/prisma';
+import { canUse } from '@/lib/actions/can-use';
+import { canAddSlot } from '@/lib/slots';
+import { stackServerApp } from '@/stack';
 
 export async function GET(req: NextRequest) {
     try {
         const { searchParams } = new URL(req.url);
-        const userId = searchParams.get('userId');
+        const user = await stackServerApp.getUser()
+        if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
+
         const locationId = searchParams.get('locationId');
 
-        const where: any = {};
-        if (userId) where.userId = userId;
+        // ✅ Always scope to authenticated user — no client-provided userId
+        const where: any = { userId: user.id };
         if (locationId) where.locationId = locationId;
 
         const websites = await prisma.website.findMany({
@@ -124,47 +129,58 @@ export async function POST(req: NextRequest) {
         // =========================
         // BASIC FIELDS
         // =========================
-        const userId        = formData.get('userId') as string;
-        const locationId    = formData.get('locationId') as string | null;
-        const accountId     = formData.get('accountId') as string | null;
-        const subdomain     = formData.get('subdomain') as string;
-        const title         = formData.get('title') as string | null;
-        const description   = formData.get('description') as string | null;
-        const primaryColor  = formData.get('primaryColor') as string | null;
+        const userId = formData.get('userId') as string;
+        const locationId = formData.get('locationId') as string | null;
+        const accountId = formData.get('accountId') as string | null;
+        const subdomain = formData.get('subdomain') as string;
+        const title = formData.get('title') as string | null;
+        const description = formData.get('description') as string | null;
+        const primaryColor = formData.get('primaryColor') as string | null;
         const secondaryColor = formData.get('secondaryColor') as string | null;
-        const fontFamily    = formData.get('fontFamily') as string | null;
+        const fontFamily = formData.get('fontFamily') as string | null;
         const enabledSectionsStr = formData.get('enabledSections') as string | null;
-        const logoFile      = formData.get('logo') as File | null;
+        const logoFile = formData.get('logo') as File | null;
 
         // =========================
         // GMB PAYLOAD FIELDS
         // =========================
-        const businessInfoStr  = formData.get('businessInfo') as string | null;
-        const reviewsStr       = formData.get('reviews') as string | null;
-        const mediaStr         = formData.get('media') as string | null;
-        const postsStr         = formData.get('posts') as string | null;
-        const locationStr      = formData.get('location') as string | null;
-        const locationDataStr  = formData.get('locationData') as string | null;
+        const businessInfoStr = formData.get('businessInfo') as string | null;
+        const reviewsStr = formData.get('reviews') as string | null;
+        const mediaStr = formData.get('media') as string | null;
+        const postsStr = formData.get('posts') as string | null;
+        const locationStr = formData.get('location') as string | null;
+        const locationDataStr = formData.get('locationData') as string | null;
+
+        const slot = await canAddSlot(userId, "websites");
+        if (!slot.ok) return NextResponse.json({
+            hasPermission: false,
+            success: false,
+            exist: false,
+            message: '',
+            error: "Website limit reached",
+        }, { status: 403 });
+
+
 
         // =========================
         // PARSE ALL JSON FIELDS
         // =========================
-        let businessInfo: any   = {};
+        let businessInfo: any = {};
         let reviewsToSave: any[] = [];
-        let mediaToSave: any[]   = [];
-        let postsToSave: any[]   = [];
-        let fullLocation: any    = null;
-        let locationData: any    = null;
+        let mediaToSave: any[] = [];
+        let postsToSave: any[] = [];
+        let fullLocation: any = null;
+        let locationData: any = null;
         // ✅ Parse enabledSections ONCE here — not inline in the object below
         let enabledSections: string[] = ['hero', 'reviews', 'gallery', 'contact'];
 
         try {
-            if (businessInfoStr)  businessInfo    = JSON.parse(businessInfoStr);
-            if (reviewsStr)       reviewsToSave   = JSON.parse(reviewsStr);
-            if (mediaStr)         mediaToSave     = JSON.parse(mediaStr);
-            if (postsStr)         postsToSave     = JSON.parse(postsStr);
-            if (locationStr)      fullLocation    = JSON.parse(locationStr);
-            if (locationDataStr)  locationData    = JSON.parse(locationDataStr);
+            if (businessInfoStr) businessInfo = JSON.parse(businessInfoStr);
+            if (reviewsStr) reviewsToSave = JSON.parse(reviewsStr);
+            if (mediaStr) mediaToSave = JSON.parse(mediaStr);
+            if (postsStr) postsToSave = JSON.parse(postsStr);
+            if (locationStr) fullLocation = JSON.parse(locationStr);
+            if (locationDataStr) locationData = JSON.parse(locationDataStr);
             if (enabledSectionsStr) enabledSections = JSON.parse(enabledSectionsStr);
         } catch (err: any) {
             return NextResponse.json(
@@ -177,7 +193,7 @@ export async function POST(req: NextRequest) {
         // VALIDATION
         // =========================
         const errors: string[] = [];
-        if (!userId)    errors.push('userId is required');
+        if (!userId) errors.push('userId is required');
         if (!subdomain) errors.push('subdomain is required');
         if (subdomain && !/^[a-z0-9-]+$/.test(subdomain))
             errors.push('subdomain must be lowercase alphanumeric and hyphens only');
@@ -226,17 +242,17 @@ export async function POST(req: NextRequest) {
         const websiteData = {
             userId,
             locationId: locationId || '',   // schema has String (non-optional)
-            accountId:  accountId  || '',   // schema has String (non-optional)
-            subdomain:  finalSubdomain,
+            accountId: accountId || '',   // schema has String (non-optional)
+            subdomain: finalSubdomain,
 
-            title:       title || businessInfo?.displayName || 'My Business',
+            title: title || businessInfo?.displayName || 'My Business',
             description: description || '',
 
             logoUrl,
 
-            primaryColor:   primaryColor   || '#10b981',
+            primaryColor: primaryColor || '#10b981',
             secondaryColor: secondaryColor || '#f59e0b',
-            fontFamily:     fontFamily     || 'Inter',
+            fontFamily: fontFamily || 'Inter',
 
             // ✅ Already parsed above — no double JSON.parse
             enabledSections,
@@ -252,8 +268,8 @@ export async function POST(req: NextRequest) {
         // so nothing is silently discarded (schema has no separate column for them)
         const fullBusinessInfo = {
             ...businessInfo,
-            ...(fullLocation   ? { _rawLocation:     fullLocation   } : {}),
-            ...(locationData   ? { _rawLocationData: locationData   } : {}),
+            ...(fullLocation ? { _rawLocation: fullLocation } : {}),
+            ...(locationData ? { _rawLocationData: locationData } : {}),
         };
 
         // =========================
@@ -273,11 +289,11 @@ export async function POST(req: NextRequest) {
 
                     // ✅ Always save arrays — never coerce to null
                     reviews: reviewsToSave,
-                    photos:  mediaToSave,
-                    posts:   postsToSave,
+                    photos: mediaToSave,
+                    posts: postsToSave,
 
                     lastSyncedAt: new Date(),
-                    nextSyncAt:   new Date(Date.now() + 24 * 60 * 60 * 1000),
+                    nextSyncAt: new Date(Date.now() + 24 * 60 * 60 * 1000),
                     syncInterval: 24,
                 },
             });
@@ -291,17 +307,17 @@ export async function POST(req: NextRequest) {
         return NextResponse.json(
             {
                 message: 'Website created successfully',
-                website:    result.website,
+                website: result.website,
                 cachedData: result.cachedData,
                 logoUrl,
                 summary: {
-                    name:           businessInfo?.displayName,
-                    address:        businessInfo?.formattedAddress,
-                    rating:         businessInfo?.rating,
-                    reviewsSaved:   reviewsToSave.length,
-                    mediaSaved:     mediaToSave.length,
-                    postsSaved:     postsToSave.length,
-                    subdomain:      finalSubdomain,
+                    name: businessInfo?.displayName,
+                    address: businessInfo?.formattedAddress,
+                    rating: businessInfo?.rating,
+                    reviewsSaved: reviewsToSave.length,
+                    mediaSaved: mediaToSave.length,
+                    postsSaved: postsToSave.length,
+                    subdomain: finalSubdomain,
                     enabledSections,
                 },
             },

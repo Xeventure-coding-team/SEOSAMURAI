@@ -3,6 +3,9 @@ import { Separator } from "@/components/ui/separator"
 import { SidebarTrigger } from "@/components/ui/sidebar"
 import { usePageStore } from "@/store/usePageStore"
 import { Skeleton } from "./ui/skeleton"
+import { UsageRemaining } from "./subscription/UsageRemaining"
+import { SubscriptionBadge } from "./subscription/SubscriptionBadge"
+import { Button } from "./ui/button"
 
 export function SiteHeader() {
   const pathname = usePathname()
@@ -32,8 +35,10 @@ export function SiteHeader() {
           )}
         </h1>
 
-        <div className="ml-auto flex items-center gap-2">
+        <div className="ml-auto flex items-center gap-4">
           {/* right-side actions */}
+          <UsageRemaining showExpiry />
+          <SubscriptionBadge size="md" />
         </div>
       </div>
     </header>

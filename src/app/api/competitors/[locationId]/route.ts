@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import { stackServerApp } from "@/stack";
 import { prisma } from "../../../../../lib/prisma";
+import { canUse, canUseErrorMessage } from "@/lib/actions/can-use";
+import { getLocationById, cleanGmbLocationId } from "@/lib/getLocationById"
 
 interface GooglePlacesResult {
   id: string;
@@ -261,7 +263,7 @@ async function enrichCompetitor(
 
         const placeTypes: string[] = place.types || [];
         if (!isBusinessTypeMatch(placeTypes, businessType)) {
-          competitor.address = undefined; 
+          competitor.address = undefined;
           return;
         }
 
@@ -479,9 +481,6 @@ async function getCompetitors(
       },
     });
 
-    console.log("💾 Saved new competitor analysis to database");
-    console.log("⏰ Next update time:", nextUpdate.toISOString());
-
     return {
       competitors,
       nextUpdateTime: nextUpdate,
@@ -538,7 +537,7 @@ export async function GET(
   { params }: { params: { locationId: string } }
 ) {
   try {
-    console.log("🔍 Enhanced Competitor API called:", params.locationId);
+
 
     const user = await stackServerApp.getUser();
     if (!user) {
@@ -552,10 +551,19 @@ export async function GET(
       );
     }
 
+    const check = await canUse(user.id, "competitor-insights");
+    if (!check.ok) {
+      return NextResponse.json({ error: canUseErrorMessage(check, "competitor-insights") }, { status: 200 });
+    }
+
+    const dbLocation = await getLocationById(params.locationId)
+    if (!dbLocation) {
+      return NextResponse.json({ success: false, error: "Location not found" }, { status: 404 })
+    }
+
+    const cleanLocationId = cleanGmbLocationId(dbLocation.location_id)
     const userId = user.id;
-    console.log(user.id, "user id from competitors.!");
     const searchParams = request.nextUrl.searchParams;
-    console.log(searchParams, "searchParams..!");
     let businessName = searchParams.get("businessName");
     const businessType = searchParams.get("businessType") || "";
 
@@ -595,7 +603,7 @@ export async function GET(
     const trackedKeywords = await prisma.keywordTracking.findMany({
       where: {
         userId,
-        locationId: params.locationId,
+        locationId: cleanLocationId,
         isActive: true,
       },
     });
@@ -605,7 +613,7 @@ export async function GET(
       return NextResponse.json({
         success: true,
         data: {
-          locationId: params.locationId,
+          locationId: cleanLocationId,
           coordinates: { lat: latitude, lng: longitude },
           competitors: [],
           hasKeywords: false,
@@ -765,7 +773,6 @@ export async function GET(
       });
     }
 
-    console.log(`🏢 Found ${competitorMap.size} unique competitors`);
 
     // Enrich with Google Places if apiKey available and location string exists
     if (apiKey && trackedKeywords.length > 0) {
@@ -784,7 +791,7 @@ export async function GET(
       return NextResponse.json({
         success: true,
         data: {
-          locationId: params.locationId,
+          locationId: cleanLocationId,
           coordinates: { lat: latitude, lng: longitude },
           competitors: [],
           hasKeywords: true,
@@ -798,31 +805,8 @@ export async function GET(
       });
     }
 
-    // Calculate averages and sort competitors
-    // const competitors: EnhancedCompetitor[] = Array.from(competitorMap.values())
-    //   .map((competitor) => {
-    //     const totalRank = competitor.keywordRankings.reduce((sum, kr) => sum + kr.rank, 0);
-    //     const avgRank = totalRank / competitor.keywordRankings.length;
-
-    //     return {
-    //       ...competitor,
-    //       totalKeywordsRanked: competitor.keywordRankings.length,
-    //       averageRank: Math.round(avgRank * 100) / 100,
-    //       rank: 0 // Will be assigned based on sort position
-    //     };
-    //   })
-    //   .sort((a, b) => {
-    //     // Sort by best rank first, then by average rank
-    //     if (a.bestRank !== b.bestRank) {
-    //       return a.bestRank - b.bestRank;
-    //     }
-    //     return a.averageRank - b.averageRank;
-    //   })
-    //   .map((competitor, index) => ({
-    //     ...competitor,
-    //     rank: index + 1
-    //   }))
-    //   .slice(0, 20); // Top 20 competitors
+    const locationString = trackedKeywords[0]?.location || ""
+    const regionHint = locationString.split(",").pop()?.trim().toLowerCase() || ""
 
     // Calculate averages, filter only those with valid address, then sort and rank
     const competitors: EnhancedCompetitor[] = Array.from(competitorMap.values())
@@ -846,9 +830,8 @@ export async function GET(
           competitor.address &&
           competitor.address.trim() !== "" &&
           !competitor.address.includes("No address available") &&
-          competitor.address.toLowerCase().includes("kerala"); // Extra safety
-
-        return hasAddress;
+          (regionHint ? competitor.address.toLowerCase().includes(regionHint) : true) // ✅ dynamic
+        return hasAddress
       })
       // Sort by best rank → average rank
       .sort((a, b) => {
@@ -913,6 +896,12 @@ export async function POST(
     const body = await request.json();
     const { businessType, lat, lng, forceUpdate = false } = body;
 
+    const dbLocation = await getLocationById(params.locationId)
+    if (!dbLocation) {
+      return NextResponse.json({ success: false, error: "Location not found" }, { status: 404 })
+    }
+    const cleanLocationId = cleanGmbLocationId(dbLocation.location_id)
+
     if (!businessType || !lat || !lng) {
       return NextResponse.json(
         {
@@ -935,7 +924,7 @@ export async function POST(
     }
 
     const result = await getCompetitors(
-      params.locationId,
+      cleanLocationId,
       businessType,
       { lat: parseFloat(lat), lng: parseFloat(lng) },
       apiKey,
