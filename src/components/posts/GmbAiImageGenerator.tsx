@@ -265,29 +265,6 @@ export function GmbAiImageGenerator({
         </div>
       </div>
 
-      {/* ── Size Picker ────────────────────────────────────────────────── */}
-      <div className="space-y-2">
-        <Label className="text-sm font-medium">Size</Label>
-        <div className="flex gap-2">
-          {IMAGE_SIZES.map((s) => (
-            <button
-              key={s.value}
-              type="button"
-              onClick={() => setSize(s.value)}
-              className={cn(
-                "flex-1 rounded-lg border py-2 px-3 text-center text-sm transition-all",
-                size === s.value
-                  ? "border-primary bg-primary/10"
-                  : "border-border hover:border-primary/50"
-              )}
-            >
-              <p className="font-medium">{s.label}</p>
-              <p className="text-xs text-muted-foreground">{s.aspect}</p>
-            </button>
-          ))}
-        </div>
-      </div>
-
       {/* ── CTA Text ───────────────────────────────────────────────────── */}
       <div className="space-y-2">
         <Label htmlFor="cta-text" className="text-sm font-medium">
@@ -347,7 +324,7 @@ export function GmbAiImageGenerator({
               <div className="space-y-2">
                 <Label htmlFor="language-select" className="text-sm font-medium">Language</Label>
                 <Select value={language} onValueChange={setLanguage} disabled={isGenerating}>
-                  <SelectTrigger id="language-select" className="text-sm">
+                  <SelectTrigger id="language-select" className="text-sm w-full">
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
@@ -362,7 +339,7 @@ export function GmbAiImageGenerator({
               <div className="space-y-2">
                 <Label htmlFor="color-select" className="text-sm font-medium">Colors</Label>
                 <Select value={colorPreset} onValueChange={setColorPreset} disabled={isGenerating}>
-                  <SelectTrigger id="color-select" className="text-sm">
+                  <SelectTrigger id="color-select" className="text-sm w-full">
                     <SelectValue placeholder="Auto" />
                   </SelectTrigger>
                   <SelectContent>

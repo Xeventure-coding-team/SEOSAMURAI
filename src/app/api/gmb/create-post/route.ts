@@ -205,15 +205,14 @@ function buildImagePrompt(ctx: GmbContext, body: ImagePostRequestBody): string {
     color_preference,
     image_style = "promotional",
     cta_text,
-    include_logo = true,
     instructions,
-  } = body
+  } = body   // ← removed include_logo, it's no longer needed
 
   const cleanUrl = (url: string) => {
     try {
       const u = new URL(url)
-        ;["utm_source", "utm_medium", "utm_campaign", "utm_content", "utm_term"]
-          .forEach(p => u.searchParams.delete(p))
+      ;["utm_source", "utm_medium", "utm_campaign", "utm_content", "utm_term"]
+        .forEach(p => u.searchParams.delete(p))
       return u.toString()
     } catch { return url }
   }
@@ -225,51 +224,47 @@ function buildImagePrompt(ctx: GmbContext, body: ImagePostRequestBody): string {
     elegant: "luxury editorial, aspirational",
   }
 
-  const data = [
-    `Business: ${ctx.businessName}`,
-    ctx.primaryCategory && `Category: ${ctx.primaryCategory}`,
-    ctx.description && `Context (do not paste on poster): ${ctx.description.slice(0, 200)}`,
-    color_preference && `Color palette: ${color_preference}`,
-    (include_logo && ctx.logoUrl)
-      ? `Official logo image: ${ctx.logoUrl}
-Use ONLY this exact logo.
-Do not redesign, recreate, stylize, or replace it.`
-      : `CRITICAL:
-Do NOT generate any logo, icon, symbol, emblem, badge, watermark, monogram, mascot, or brand mark.
-Do NOT invent branding elements.
-Display ONLY plain text for the business name:
-"${ctx.businessName}"
-No graphical logo of any kind.`,
-    ctx.rating && Number(ctx.rating) > 0 && `Google Rating: ${ctx.rating} ★`,
-    cta_text && `CTA: "${cta_text.slice(0, 50)}"`,
-    ctx.phoneNumber && ctx.phoneNumber,
-    ctx.website && cleanUrl(ctx.website),
-    ctx.address && ctx.address.slice(0, 80),
-  ].filter(Boolean).join("\n")
+const data = [
+  `Business name: "${ctx.businessName}" — display as plain bold white text at the top of the poster`,
+  ctx.primaryCategory && `Category: ${ctx.primaryCategory}`,
+  ctx.description && `Context (do not paste on poster): ${ctx.description.slice(0, 200)}`,
+  color_preference && `Color palette: ${color_preference}`,
+  ctx.rating && Number(ctx.rating) > 0 && `Google Rating: ${ctx.rating} ★`,
+  cta_text && `CTA: "${cta_text.slice(0, 50)}"`,
+  ctx.phoneNumber && ctx.phoneNumber,
+  ctx.website && cleanUrl(ctx.website),
+  ctx.address && ctx.address.slice(0, 80),
+].filter(Boolean).join("\n")
 
 return `
-You are a professional social media designer creating a real business poster.
+You are a world-class social media designer with creative freedom.
 
 Promote: "${post_content.slice(0, 200)}"
-Style: ${styleVibes[image_style]}
 Language: ${language}
 ${["Arabic", "Urdu"].includes(language) ? "Layout: RTL\n" : ""}
 ${data}
 ${instructions ? `\nPriority: ${instructions.slice(0, 500)}` : ""}
 
-IMPORTANT RULES:
-- Use only provided business assets
-- Do not invent logos or icons
-- Do not create fake branding
-- No watermark
-- No random symbols
-- Text must be sharp and readable
-- Keep layout clean and realistic
+You have full creative freedom. Choose your own:
+- Layout direction and composition
+- Typography pairing and sizing
+- Color treatment within the palette
+- Use of texture, light, or depth
+- How and where to place each element
 
-If no logo image is provided, use ONLY the business name as plain typography.
+The only fixed constraints are:
+- Business name small and subtle — it is not the hero
+- Main message is the hero — make it impossible to ignore  
+- Single clean contact strip at the bottom
+- Full bleed — no borders, no frames, no cards
+- No badges, no bullet icons, no rating widgets, no scattered shapes
 
-Stay strictly within the provided business assets and text.
+Think like a designer, not a template engine.
+Make something that stops the scroll.
+Canvas: 1536x1024px landscape — Google My Business post format
+Fill the entire canvas edge to edge, full bleed
 `.trim()
+
 }
 
 // ── Image generator ───────────────────────────────────────
@@ -279,7 +274,7 @@ async function generateImage(prompt: string, body: ImagePostRequestBody) {
     const hfToken = process.env.HF_TOKEN
     if (!hfToken) throw new Error("HF_TOKEN is not set")
 
-    const [width, height] = (body.image_size ?? "1024x1024").split("x").map(Number)
+    const [width, height] = (body.image_size ?? "1536x1024").split("x").map(Number)
 
     const res = await fetch(HF_URL, {
       method: "POST",

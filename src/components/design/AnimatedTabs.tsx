@@ -38,10 +38,10 @@ const transition = {
 }
 
 const getHoverAnimationProps = (hoveredRect: DOMRect, navRect: DOMRect) => ({
-  x: hoveredRect.left - navRect.left - 10,
+  x: hoveredRect.left - navRect.left - 8,
   y: hoveredRect.top - navRect.top - 4,
-  width: hoveredRect.width + 20,
-  height: hoveredRect.height + 10,
+  width: hoveredRect.width + 16,
+  height: hoveredRect.height + 8,
 })
 
 const TabContent = ({ children, noPadding }: { children: React.ReactNode; noPadding: boolean }) => {
@@ -104,7 +104,7 @@ const TabNavigation = ({
           <button
             key={item.value}
             className={cn(
-              "relative flex items-center px-6 py-3 rounded-md transition-colors font-medium z-20",
+              "relative flex items-center px-6 py-2 rounded-md transition-colors font-medium z-20 text-md",
               {
                 "text-muted-foreground hover:text-foreground": !isActive && !isDangerZone,
                 "text-foreground": isActive && !isDangerZone,
@@ -156,8 +156,8 @@ const TabNavigation = ({
             }`}
             initial={false}
             animate={{
-              width: selectedRect.width + 18,
-              x: `calc(${selectedRect.left - navRect.left - 9}px)`,
+              width: selectedRect.width,
+              x: selectedRect.left - navRect.left,
               opacity: 1,
             }}
             transition={transition}

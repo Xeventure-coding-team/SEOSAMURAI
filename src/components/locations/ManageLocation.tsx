@@ -603,7 +603,7 @@ export default function ManageLocation() {
 
                     {(postsLoading && posts.length === 0) || postsInitialLoad ? (
                       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-                        {Array.from({ length: 6 }).map((_, i) => (
+                        {Array.from({ length: 8 }).map((_, i) => (
                           <Card key={i} className="overflow-hidden p-0">
                             <div className="aspect-[4/3]">
                               <Skeleton className="w-full h-full" />
@@ -645,34 +645,43 @@ export default function ManageLocation() {
                       </div>
                     ) : (
                       <div className="space-y-6">
-                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+
+                        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4 gap-5">
                           {posts.map((post, index) => (
-                            <Card key={`${post.name}-${index}`} className="overflow-hidden p-0">
-                              <div className="relative aspect-[4/3]">
+                            <Card
+                              key={`${post.name}-${index}`}
+                              className="group overflow-hidden rounded-2xl border bg-background p-0 shadow-sm transition-all duration-300 hover:-translate-y-1 hover:shadow-lg"
+                            >
+                              {/* Image */}
+                              <div className="relative overflow-hidden">
                                 {post.media && post.media.length > 0 ? (
-                                  <div className="relative w-full h-full">
+                                  <div className="relative aspect-[4/3] bg-muted">
                                     {imageLoadingStates[post.name] && (
-                                      <div className="absolute inset-0 flex items-center justify-center bg-muted">
-                                        <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+                                      <div className="absolute inset-0 z-10 flex items-center justify-center bg-background/80 backdrop-blur-sm">
+                                        <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
                                       </div>
                                     )}
+
                                     {imageErrorStates[post.name] ? (
-                                      <div
-                                        className="w-full h-full flex flex-col items-center justify-center bg-muted"
-                                        style={{ height: "280px" }}
-                                      >
-                                        <ImageOff className="h-12 w-12 text-muted-foreground mb-2" />
-                                        <span className="text-sm text-muted-foreground">No image available</span>
+                                      <div className="flex h-full w-full flex-col items-center justify-center gap-2 bg-muted">
+                                        <div className="flex h-14 w-14 items-center justify-center rounded-full bg-background shadow-sm">
+                                          <ImageOff className="h-6 w-6 text-muted-foreground" />
+                                        </div>
+                                        <span className="text-sm text-muted-foreground">
+                                          No image available
+                                        </span>
                                       </div>
                                     ) : (
                                       <img
-                                        src={post.media[0].googleUrl ?
-                                          `https://images.weserv.nl/?url=${encodeURIComponent(post.media[0].googleUrl)}` :
-                                          "/placeholder.svg"
+                                        src={
+                                          post.media[0].googleUrl
+                                            ? `https://images.weserv.nl/?url=${encodeURIComponent(
+                                              post.media[0].googleUrl
+                                            )}`
+                                            : "/placeholder.svg"
                                         }
                                         alt={`${getPostType(post)} post`}
-                                        style={{ height: "280px" }}
-                                        className="w-full h-full object-cover"
+                                        className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
                                         loading="lazy"
                                         referrerPolicy="no-referrer"
                                         crossOrigin="anonymous"
@@ -681,115 +690,184 @@ export default function ManageLocation() {
                                         onLoadStart={() => handleImageLoadStart(post.name)}
                                       />
                                     )}
+
+                                    {/* Gradient Overlay */}
+                                    <div className="absolute inset-x-0 bottom-0 h-24 bg-gradient-to-t from-black/60 to-transparent" />
+
+                                    {/* Top Badges */}
+                                    <div className="absolute left-3 top-3 flex items-center gap-2">
+                                      <Badge
+                                        className="rounded-full border-0 bg-background/90 text-xs font-medium backdrop-blur"
+                                        variant="secondary"
+                                      >
+                                        {getPostType(post)}
+                                      </Badge>
+
+                                      <Badge
+                                        className="rounded-full border-0 bg-black/60 text-white backdrop-blur"
+                                        variant="secondary"
+                                      >
+                                        {post.state}
+                                      </Badge>
+                                    </div>
+
+                                    {/* More Images */}
                                     {post.media.length > 1 && (
-                                      <Badge className="absolute top-2 right-2" variant="secondary">
+                                      <Badge
+                                        className="absolute bottom-3 left-3 rounded-full bg-black/70 text-white backdrop-blur"
+                                        variant="secondary"
+                                      >
                                         +{post.media.length - 1} more
                                       </Badge>
                                     )}
+
+                                    {/* Date Badge */}
+                                    <div className="absolute bottom-3 right-3">
+                                      <Badge
+                                        variant="secondary"
+                                        className="flex items-center gap-1 rounded-full border-0 bg-black/65 px-2.5 py-1 text-[11px] font-medium text-white backdrop-blur-md"
+                                      >
+                                        <Clock className="h-3 w-3" />
+                                        {formatDate(post.createTime)}
+                                      </Badge>
+                                    </div>
+
+                                    {/* Actions */}
+                                    <div className="absolute right-3 top-3">
+                                      <DropdownMenu
+                                        onOpenChange={(open) => {
+                                          if (!open) {
+                                            setTimeout(() => {
+                                              document.body.style.pointerEvents = ""
+                                            }, 50)
+                                          }
+                                        }}
+                                      >
+                                        <DropdownMenuTrigger asChild>
+                                          <Button
+                                            variant="ghost"
+                                            size="icon"
+                                            className="h-8 w-8 rounded-full bg-background/80 backdrop-blur hover:bg-background"
+                                          >
+                                            <MoreHorizontal className="h-4 w-4" />
+                                          </Button>
+                                        </DropdownMenuTrigger>
+
+                                        <DropdownMenuContent align="end" className="w-44 rounded-xl">
+                                          <DropdownMenuLabel>Actions</DropdownMenuLabel>
+
+                                          <DropdownMenuItem onClick={() => handleEditPostClick(post)}>
+                                            <Edit3 className="mr-2 h-4 w-4" />
+                                            Edit Post
+                                          </DropdownMenuItem>
+
+                                          <DropdownMenuSeparator />
+
+                                          <DropdownMenuItem
+                                            className="text-destructive focus:text-destructive"
+                                            onClick={() => handleDeletePostClick(post)}
+                                          >
+                                            <Trash2 className="mr-2 h-4 w-4" />
+                                            Delete Post
+                                          </DropdownMenuItem>
+                                        </DropdownMenuContent>
+                                      </DropdownMenu>
+                                    </div>
                                   </div>
                                 ) : (
-                                  <div className="w-full h-full flex flex-col items-center justify-center bg-muted">
-                                    <div className="w-16 h-16 rounded-full bg-background shadow-sm flex items-center justify-center mb-4">
+                                  <div className="flex aspect-[4/3] flex-col items-center justify-center gap-3 bg-muted p-6 text-center">
+                                    <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-background shadow-sm">
                                       {post.event ? (
-                                        <Calendar className="h-8 w-8 text-muted-foreground" />
+                                        <Calendar className="h-7 w-7 text-muted-foreground" />
                                       ) : post.offer ? (
-                                        <Sparkles className="h-8 w-8 text-muted-foreground" />
+                                        <Sparkles className="h-7 w-7 text-muted-foreground" />
                                       ) : (
-                                        <MessageCircle className="h-8 w-8 text-muted-foreground" />
+                                        <MessageCircle className="h-7 w-7 text-muted-foreground" />
                                       )}
                                     </div>
-                                    <h3 className="font-semibold mb-2 text-center">
-                                      {post.event?.title || getPostType(post)}
-                                    </h3>
-                                    <p className="text-sm text-muted-foreground line-clamp-2 text-center px-4">
-                                      {post.summary}
-                                    </p>
+
+                                    <div>
+                                      <h3 className="font-semibold">
+                                        {post.event?.title || getPostType(post)}
+                                      </h3>
+
+                                      <p className="mt-1 line-clamp-2 text-sm text-muted-foreground">
+                                        {post.summary}
+                                      </p>
+                                    </div>
                                   </div>
                                 )}
-
-                                <div className="absolute top-2 left-2 flex gap-2">
-                                  <Badge className={getPostTypeColor(post)} variant="secondary">
-                                    {getPostType(post)}
-                                  </Badge>
-                                  <Badge className={getStateColor(post.state)} variant="secondary">
-                                    {post.state}
-                                  </Badge>
-                                </div>
-
-                                <div className="absolute top-2 right-2">
-                                  <DropdownMenu
-                                    onOpenChange={(open) => {
-                                      if (!open) {
-                                        setTimeout(() => {
-                                          document.body.style.pointerEvents = ""
-                                        }, 50)
-                                      }
-                                    }}
-                                  >
-                                    <DropdownMenuTrigger asChild>
-                                      <Button variant="ghost" size="sm" className="bg-background/80 backdrop-blur-sm">
-                                        <MoreHorizontal className="h-4 w-4" />
-                                      </Button>
-                                    </DropdownMenuTrigger>
-                                    <DropdownMenuContent align="end" className="w-48">
-                                      <DropdownMenuLabel>Actions</DropdownMenuLabel>
-                                      <DropdownMenuItem onClick={() => handleEditPostClick(post)}>
-                                        <Edit3 className="h-4 w-4 mr-2" />
-                                        Edit Post
-                                      </DropdownMenuItem>
-                                      <DropdownMenuSeparator />
-                                      <DropdownMenuItem
-                                        className="text-destructive focus:text-destructive"
-                                        onClick={() => handleDeletePostClick(post)}
-                                      >
-                                        <Trash2 className="h-4 w-4 mr-2" />
-                                        Delete Post
-                                      </DropdownMenuItem>
-                                    </DropdownMenuContent>
-                                  </DropdownMenu>
-                                </div>
                               </div>
+                              {/* Content */}
+                              <CardContent className="flex flex-col gap-4 ">
+                                {/* Summary */}
+                                <div className="space-y-2">
+                                  <p className="line-clamp-3 text-sm leading-6 text-muted-foreground">
+                                    {post.summary}
+                                  </p>
+                                </div>
 
-                              <CardContent className="p-4">
-                                <div className="space-y-3">
-                                  <p className="text-sm line-clamp-3">{post.summary}</p>
-
+                                {/* Meta Blocks */}
+                                <div className="space-y-2">
                                   {post.event && (
-                                    <div className="flex items-center gap-2 p-2 bg-muted rounded-md">
-                                      <Calendar className="h-4 w-4" />
-                                      <span className="text-sm font-medium">{post.event.title}</span>
+                                    <div className="flex items-center gap-3 rounded-2xl border bg-muted/30 px-3 py-2.5 transition-colors hover:bg-muted/50">
+                                      <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-background shadow-sm">
+                                        <Calendar className="h-4 w-4 text-muted-foreground" />
+                                      </div>
+
+                                      <div className="min-w-0 flex-1">
+                                        <p className="text-xs text-muted-foreground">Event</p>
+                                        <p className="truncate text-sm font-medium">
+                                          {post.event.title}
+                                        </p>
+                                      </div>
                                     </div>
                                   )}
 
-                                  {post.offer && post.offer.couponCode && (
-                                    <div className="flex items-center gap-2 p-2 bg-muted rounded-md">
-                                      <Sparkles className="h-4 w-4" />
-                                      <span className="text-sm font-medium">Code: {post.offer.couponCode}</span>
+                                  {post.offer?.couponCode && (
+                                    <div className="flex items-center gap-3 rounded-2xl border bg-muted/30 px-3 py-2.5 transition-colors hover:bg-muted/50">
+                                      <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-background shadow-sm">
+                                        <Sparkles className="h-4 w-4 text-muted-foreground" />
+                                      </div>
+
+                                      <div className="min-w-0 flex-1">
+                                        <p className="text-xs text-muted-foreground">Coupon Code</p>
+                                        <p className="text-sm font-semibold tracking-wide">
+                                          {post.offer.couponCode}
+                                        </p>
+                                      </div>
                                     </div>
                                   )}
+                                </div>
 
-                                  <div className="flex items-center justify-between pt-2 border-t">
-                                    <div className="flex items-center gap-4">
-                                      {post.insights && (
-                                        <>
-                                          <div className="flex items-center gap-1 text-muted-foreground">
-                                            <Eye className="h-4 w-4" />
-                                            <span className="text-sm">{post.insights.viewCount.toLocaleString()}</span>
-                                          </div>
-                                          <div className="flex items-center gap-1 text-muted-foreground">
-                                            <Heart className="h-4 w-4" />
-                                            <span className="text-sm">{post.insights.clickCount.toLocaleString()}</span>
-                                          </div>
-                                        </>
-                                      )}
-                                    </div>
-                                    <div className="flex items-center gap-1 text-xs text-muted-foreground">
-                                      <Clock className="h-3 w-3" />
-                                      <span>{formatDate(post.createTime)}</span>
-                                    </div>
+                                {/* Footer */}
+                                <div className="mt-auto flex items-center justify-between">
+                                  {/* Insights */}
+                                  <div className="flex items-center gap-3">
+                                    {post.insights && (
+                                      <>
+                                        <div className="flex items-center gap-1.5 rounded-full bg-muted px-2.5 py-1 text-muted-foreground">
+                                          <Eye className="h-3.5 w-3.5" />
+                                          <span className="text-xs font-medium">
+                                            {post.insights.viewCount.toLocaleString()}
+                                          </span>
+                                        </div>
+
+                                        <div className="flex items-center gap-1.5 rounded-full bg-muted px-2.5 py-1 text-muted-foreground">
+                                          <Heart className="h-3.5 w-3.5" />
+                                          <span className="text-xs font-medium">
+                                            {post.insights.clickCount.toLocaleString()}
+                                          </span>
+                                        </div>
+                                      </>
+                                    )}
                                   </div>
+
+
                                 </div>
                               </CardContent>
+
+
                             </Card>
                           ))}
                         </div>
