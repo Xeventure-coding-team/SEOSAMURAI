@@ -41,6 +41,7 @@ import { useGmbPosts } from "@/hooks/useGmbPosts"
 import { ScrollArea } from "../ui/scroll-area"
 import { Tooltip, TooltipContent, TooltipTrigger } from "../ui/tooltip"
 import { Alert, AlertDescription, AlertTitle } from "../ui/alert"
+import { LegendSection } from "../ui/legend-section"
 
 interface GMBPost {
   name: string
@@ -549,53 +550,54 @@ export function GmbEditPostForm({
                   <Form {...form}>
                     <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
                       {/* Post Content */}
-                      <FormField
-                        control={form.control}
-                        name="postContent"
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel className="flex items-center justify-between">
-                              <span>Post Content</span>
-                              <div className="flex items-center gap-2">
-                                <Badge variant={characterCount > 1200 ? "destructive" : "secondary"}>
-                                  {characterCount}/1500
-                                </Badge>
-                                <Tooltip>
-                                  <TooltipTrigger asChild>
-                                    <Button
-                                      type="button"
-                                      variant="outline"
-                                      size="sm"
-                                      onClick={handleEnhanceContent}
-                                      disabled={isEnhancing || !field.value?.trim()}
-                                    >
-                                      {isEnhancing ? (
-                                        <Loader2 className="h-3 w-3 animate-spin" />
-                                      ) : (
-                                        <Wand2 className="h-3 w-3" />
-                                      )}
-                                    </Button>
-                                  </TooltipTrigger>
-                                  <TooltipContent>
-                                    <p>Enhance Description</p>
-                                  </TooltipContent>
-                                </Tooltip>
-                              </div>
-                            </FormLabel>
-                            <FormControl>
-                              <Textarea
-                                placeholder="Write your post content here..."
-                                className="min-h-[120px] resize-none"
-                                {...field}
-                              />
-                            </FormControl>
-                            <FormDescription>
-                              Update your post content. Use the magic wand to generate an image from your content!
-                            </FormDescription>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
+                      <LegendSection legend="Post Content">
+                        <FormField
+                          control={form.control}
+                          name="postContent"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel className="flex items-center justify-between">
+                                <div className="flex items-center gap-2">
+                                  <Badge variant={characterCount > 1200 ? "destructive" : "secondary"}>
+                                    {characterCount}/1500
+                                  </Badge>
+                                  <Tooltip>
+                                    <TooltipTrigger asChild>
+                                      <Button
+                                        type="button"
+                                        variant="outline"
+                                        size="sm"
+                                        onClick={handleEnhanceContent}
+                                        disabled={isEnhancing || !field.value?.trim()}
+                                      >
+                                        {isEnhancing ? (
+                                          <Loader2 className="h-3 w-3 animate-spin" />
+                                        ) : (
+                                          <Wand2 className="h-3 w-3" />
+                                        )}
+                                      </Button>
+                                    </TooltipTrigger>
+                                    <TooltipContent>
+                                      <p>Enhance Description</p>
+                                    </TooltipContent>
+                                  </Tooltip>
+                                </div>
+                              </FormLabel>
+                              <FormControl>
+                                <Textarea
+                                  placeholder="Write your post content here..."
+                                  className="min-h-[120px] resize-none"
+                                  {...field}
+                                />
+                              </FormControl>
+                              <FormDescription>
+                                Update your post content. Use the magic wand to generate an image from your content!
+                              </FormDescription>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+                      </LegendSection>
 
                       {/* Media Section - Same as create form */}
                       <div className="space-y-4">
@@ -875,7 +877,7 @@ export function GmbEditPostForm({
                                     Phone Number
                                   </FormLabel>
                                   <FormControl>
-                                    <Input placeholder="+1234567890" {...field} disabled/>
+                                    <Input placeholder="+1234567890" {...field} disabled />
                                   </FormControl>
                                   <FormDescription>
                                     Phone number users can call when they click the action button

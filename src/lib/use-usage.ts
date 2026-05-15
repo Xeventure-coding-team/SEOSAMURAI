@@ -6,29 +6,32 @@ export type UsageMetric =
   | "aiReviewRepliesUsed"
   | "scheduledPostsUsed"
   | "geoGridScansUsed"
-  | "reviewPostersUsed"
   | "keywordTrackingUsed";
 
 
+export type SlotMetric = "locationsUsed" | "websitesUsed" | "reviewPostersUsed";
+
 export interface UsageData {
-  used:        Record<UsageMetric, number>;
-  limits:      Record<UsageMetric, number>;
-  periodEnd:   string;
-  plan:        string | null;
+  used: Record<UsageMetric, number>;
+  limits: Record<UsageMetric, number>;
+  slots: Record<SlotMetric, number>; 
+  slotLimits: Record<SlotMetric, number>;
+  periodEnd: string;
+  plan: string | null;
   periodStale: boolean;
 }
 
 const FEATURE_ALIAS: Record<string, string> = {
-  "bulk-posts":           "bulkPosts",
-  "competitor-insights":  "competitorInsights",
-  "advanced-analytics":   "analytics",
-  "media-upload":         "mediaUpload",
-  "review-tracking":      "reviewTracking",
-  "tasks":                "tasks",
-  bulkPosts:              "bulkPosts",
-  competitorInsights:     "competitorInsights",
-  mediaUpload:            "mediaUpload",
-  reviewTracking:         "reviewTracking",
+  "bulk-posts": "bulkPosts",
+  "competitor-insights": "competitorInsights",
+  "advanced-analytics": "analytics",
+  "media-upload": "mediaUpload",
+  "review-tracking": "reviewTracking",
+  "tasks": "tasks",
+  bulkPosts: "bulkPosts",
+  competitorInsights: "competitorInsights",
+  mediaUpload: "mediaUpload",
+  reviewTracking: "reviewTracking",
 };
 
 
@@ -44,8 +47,8 @@ export type UsageStatus = "ok" | "warning" | "exceeded";
 
 export function getMetricStatus(used: number, limit: number): UsageStatus {
   const pct = used / limit;
-  if (pct >= 1)    return "exceeded";
-  if (pct >= 0.8)  return "warning";
+  if (pct >= 1) return "exceeded";
+  if (pct >= 0.8) return "warning";
   return "ok";
 }
 

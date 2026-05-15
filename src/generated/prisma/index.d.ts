@@ -168,6 +168,11 @@ export type Usage = $Result.DefaultSelection<Prisma.$UsagePayload>
  * 
  */
 export type LocationChoice = $Result.DefaultSelection<Prisma.$LocationChoicePayload>
+/**
+ * Model GmbContextCache
+ * 
+ */
+export type GmbContextCache = $Result.DefaultSelection<Prisma.$GmbContextCachePayload>
 
 /**
  * Enums
@@ -659,6 +664,16 @@ export class PrismaClient<
     * ```
     */
   get locationChoice(): Prisma.LocationChoiceDelegate<ExtArgs, ClientOptions>;
+
+  /**
+   * `prisma.gmbContextCache`: Exposes CRUD operations for the **GmbContextCache** model.
+    * Example usage:
+    * ```ts
+    * // Fetch zero or more GmbContextCaches
+    * const gmbContextCaches = await prisma.gmbContextCache.findMany()
+    * ```
+    */
+  get gmbContextCache(): Prisma.GmbContextCacheDelegate<ExtArgs, ClientOptions>;
 }
 
 export namespace Prisma {
@@ -1129,7 +1144,8 @@ export namespace Prisma {
     SyncQueue: 'SyncQueue',
     Subscription: 'Subscription',
     Usage: 'Usage',
-    LocationChoice: 'LocationChoice'
+    LocationChoice: 'LocationChoice',
+    GmbContextCache: 'GmbContextCache'
   };
 
   export type ModelName = (typeof ModelName)[keyof typeof ModelName]
@@ -1148,7 +1164,7 @@ export namespace Prisma {
       omit: GlobalOmitOptions
     }
     meta: {
-      modelProps: "version" | "locations" | "scheduledPost" | "gmbIntegration" | "competitorAnalysis" | "keywords" | "keywordRank" | "keywordTracking" | "batchUpdate" | "userSettings" | "rankAlert" | "task" | "completedTask" | "taskExclusion" | "userProgress" | "locationProgress" | "milestone" | "locationMilestone" | "locationAchievement" | "userTaskRefresh" | "googleReviewPoster" | "gmb_reviews" | "chat" | "message" | "website" | "websiteCachedData" | "syncHistory" | "syncQueue" | "subscription" | "usage" | "locationChoice"
+      modelProps: "version" | "locations" | "scheduledPost" | "gmbIntegration" | "competitorAnalysis" | "keywords" | "keywordRank" | "keywordTracking" | "batchUpdate" | "userSettings" | "rankAlert" | "task" | "completedTask" | "taskExclusion" | "userProgress" | "locationProgress" | "milestone" | "locationMilestone" | "locationAchievement" | "userTaskRefresh" | "googleReviewPoster" | "gmb_reviews" | "chat" | "message" | "website" | "websiteCachedData" | "syncHistory" | "syncQueue" | "subscription" | "usage" | "locationChoice" | "gmbContextCache"
       txIsolationLevel: never
     }
     model: {
@@ -3446,6 +3462,80 @@ export namespace Prisma {
           }
         }
       }
+      GmbContextCache: {
+        payload: Prisma.$GmbContextCachePayload<ExtArgs>
+        fields: Prisma.GmbContextCacheFieldRefs
+        operations: {
+          findUnique: {
+            args: Prisma.GmbContextCacheFindUniqueArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$GmbContextCachePayload> | null
+          }
+          findUniqueOrThrow: {
+            args: Prisma.GmbContextCacheFindUniqueOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$GmbContextCachePayload>
+          }
+          findFirst: {
+            args: Prisma.GmbContextCacheFindFirstArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$GmbContextCachePayload> | null
+          }
+          findFirstOrThrow: {
+            args: Prisma.GmbContextCacheFindFirstOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$GmbContextCachePayload>
+          }
+          findMany: {
+            args: Prisma.GmbContextCacheFindManyArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$GmbContextCachePayload>[]
+          }
+          create: {
+            args: Prisma.GmbContextCacheCreateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$GmbContextCachePayload>
+          }
+          createMany: {
+            args: Prisma.GmbContextCacheCreateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          delete: {
+            args: Prisma.GmbContextCacheDeleteArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$GmbContextCachePayload>
+          }
+          update: {
+            args: Prisma.GmbContextCacheUpdateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$GmbContextCachePayload>
+          }
+          deleteMany: {
+            args: Prisma.GmbContextCacheDeleteManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          updateMany: {
+            args: Prisma.GmbContextCacheUpdateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          upsert: {
+            args: Prisma.GmbContextCacheUpsertArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$GmbContextCachePayload>
+          }
+          aggregate: {
+            args: Prisma.GmbContextCacheAggregateArgs<ExtArgs>
+            result: $Utils.Optional<AggregateGmbContextCache>
+          }
+          groupBy: {
+            args: Prisma.GmbContextCacheGroupByArgs<ExtArgs>
+            result: $Utils.Optional<GmbContextCacheGroupByOutputType>[]
+          }
+          findRaw: {
+            args: Prisma.GmbContextCacheFindRawArgs<ExtArgs>
+            result: JsonObject
+          }
+          aggregateRaw: {
+            args: Prisma.GmbContextCacheAggregateRawArgs<ExtArgs>
+            result: JsonObject
+          }
+          count: {
+            args: Prisma.GmbContextCacheCountArgs<ExtArgs>
+            result: $Utils.Optional<GmbContextCacheCountAggregateOutputType> | number
+          }
+        }
+      }
     }
   } & {
     other: {
@@ -3556,6 +3646,7 @@ export namespace Prisma {
     subscription?: SubscriptionOmit
     usage?: UsageOmit
     locationChoice?: LocationChoiceOmit
+    gmbContextCache?: GmbContextCacheOmit
   }
 
   /* Types for Logging */
@@ -36071,6 +36162,923 @@ export namespace Prisma {
 
 
   /**
+   * Model GmbContextCache
+   */
+
+  export type AggregateGmbContextCache = {
+    _count: GmbContextCacheCountAggregateOutputType | null
+    _min: GmbContextCacheMinAggregateOutputType | null
+    _max: GmbContextCacheMaxAggregateOutputType | null
+  }
+
+  export type GmbContextCacheMinAggregateOutputType = {
+    id: string | null
+    locationId: string | null
+    cachedAt: Date | null
+  }
+
+  export type GmbContextCacheMaxAggregateOutputType = {
+    id: string | null
+    locationId: string | null
+    cachedAt: Date | null
+  }
+
+  export type GmbContextCacheCountAggregateOutputType = {
+    id: number
+    locationId: number
+    data: number
+    cachedAt: number
+    _all: number
+  }
+
+
+  export type GmbContextCacheMinAggregateInputType = {
+    id?: true
+    locationId?: true
+    cachedAt?: true
+  }
+
+  export type GmbContextCacheMaxAggregateInputType = {
+    id?: true
+    locationId?: true
+    cachedAt?: true
+  }
+
+  export type GmbContextCacheCountAggregateInputType = {
+    id?: true
+    locationId?: true
+    data?: true
+    cachedAt?: true
+    _all?: true
+  }
+
+  export type GmbContextCacheAggregateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which GmbContextCache to aggregate.
+     */
+    where?: GmbContextCacheWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of GmbContextCaches to fetch.
+     */
+    orderBy?: GmbContextCacheOrderByWithRelationInput | GmbContextCacheOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the start position
+     */
+    cursor?: GmbContextCacheWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` GmbContextCaches from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` GmbContextCaches.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Count returned GmbContextCaches
+    **/
+    _count?: true | GmbContextCacheCountAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the minimum value
+    **/
+    _min?: GmbContextCacheMinAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the maximum value
+    **/
+    _max?: GmbContextCacheMaxAggregateInputType
+  }
+
+  export type GetGmbContextCacheAggregateType<T extends GmbContextCacheAggregateArgs> = {
+        [P in keyof T & keyof AggregateGmbContextCache]: P extends '_count' | 'count'
+      ? T[P] extends true
+        ? number
+        : GetScalarType<T[P], AggregateGmbContextCache[P]>
+      : GetScalarType<T[P], AggregateGmbContextCache[P]>
+  }
+
+
+
+
+  export type GmbContextCacheGroupByArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: GmbContextCacheWhereInput
+    orderBy?: GmbContextCacheOrderByWithAggregationInput | GmbContextCacheOrderByWithAggregationInput[]
+    by: GmbContextCacheScalarFieldEnum[] | GmbContextCacheScalarFieldEnum
+    having?: GmbContextCacheScalarWhereWithAggregatesInput
+    take?: number
+    skip?: number
+    _count?: GmbContextCacheCountAggregateInputType | true
+    _min?: GmbContextCacheMinAggregateInputType
+    _max?: GmbContextCacheMaxAggregateInputType
+  }
+
+  export type GmbContextCacheGroupByOutputType = {
+    id: string
+    locationId: string
+    data: JsonValue
+    cachedAt: Date
+    _count: GmbContextCacheCountAggregateOutputType | null
+    _min: GmbContextCacheMinAggregateOutputType | null
+    _max: GmbContextCacheMaxAggregateOutputType | null
+  }
+
+  type GetGmbContextCacheGroupByPayload<T extends GmbContextCacheGroupByArgs> = Prisma.PrismaPromise<
+    Array<
+      PickEnumerable<GmbContextCacheGroupByOutputType, T['by']> &
+        {
+          [P in ((keyof T) & (keyof GmbContextCacheGroupByOutputType))]: P extends '_count'
+            ? T[P] extends boolean
+              ? number
+              : GetScalarType<T[P], GmbContextCacheGroupByOutputType[P]>
+            : GetScalarType<T[P], GmbContextCacheGroupByOutputType[P]>
+        }
+      >
+    >
+
+
+  export type GmbContextCacheSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    locationId?: boolean
+    data?: boolean
+    cachedAt?: boolean
+  }, ExtArgs["result"]["gmbContextCache"]>
+
+
+
+  export type GmbContextCacheSelectScalar = {
+    id?: boolean
+    locationId?: boolean
+    data?: boolean
+    cachedAt?: boolean
+  }
+
+  export type GmbContextCacheOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "locationId" | "data" | "cachedAt", ExtArgs["result"]["gmbContextCache"]>
+
+  export type $GmbContextCachePayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    name: "GmbContextCache"
+    objects: {}
+    scalars: $Extensions.GetPayloadResult<{
+      id: string
+      locationId: string
+      data: Prisma.JsonValue
+      cachedAt: Date
+    }, ExtArgs["result"]["gmbContextCache"]>
+    composites: {}
+  }
+
+  type GmbContextCacheGetPayload<S extends boolean | null | undefined | GmbContextCacheDefaultArgs> = $Result.GetResult<Prisma.$GmbContextCachePayload, S>
+
+  type GmbContextCacheCountArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> =
+    Omit<GmbContextCacheFindManyArgs, 'select' | 'include' | 'distinct' | 'omit'> & {
+      select?: GmbContextCacheCountAggregateInputType | true
+    }
+
+  export interface GmbContextCacheDelegate<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> {
+    [K: symbol]: { types: Prisma.TypeMap<ExtArgs>['model']['GmbContextCache'], meta: { name: 'GmbContextCache' } }
+    /**
+     * Find zero or one GmbContextCache that matches the filter.
+     * @param {GmbContextCacheFindUniqueArgs} args - Arguments to find a GmbContextCache
+     * @example
+     * // Get one GmbContextCache
+     * const gmbContextCache = await prisma.gmbContextCache.findUnique({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUnique<T extends GmbContextCacheFindUniqueArgs>(args: SelectSubset<T, GmbContextCacheFindUniqueArgs<ExtArgs>>): Prisma__GmbContextCacheClient<$Result.GetResult<Prisma.$GmbContextCachePayload<ExtArgs>, T, "findUnique", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find one GmbContextCache that matches the filter or throw an error with `error.code='P2025'`
+     * if no matches were found.
+     * @param {GmbContextCacheFindUniqueOrThrowArgs} args - Arguments to find a GmbContextCache
+     * @example
+     * // Get one GmbContextCache
+     * const gmbContextCache = await prisma.gmbContextCache.findUniqueOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUniqueOrThrow<T extends GmbContextCacheFindUniqueOrThrowArgs>(args: SelectSubset<T, GmbContextCacheFindUniqueOrThrowArgs<ExtArgs>>): Prisma__GmbContextCacheClient<$Result.GetResult<Prisma.$GmbContextCachePayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find the first GmbContextCache that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {GmbContextCacheFindFirstArgs} args - Arguments to find a GmbContextCache
+     * @example
+     * // Get one GmbContextCache
+     * const gmbContextCache = await prisma.gmbContextCache.findFirst({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirst<T extends GmbContextCacheFindFirstArgs>(args?: SelectSubset<T, GmbContextCacheFindFirstArgs<ExtArgs>>): Prisma__GmbContextCacheClient<$Result.GetResult<Prisma.$GmbContextCachePayload<ExtArgs>, T, "findFirst", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find the first GmbContextCache that matches the filter or
+     * throw `PrismaKnownClientError` with `P2025` code if no matches were found.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {GmbContextCacheFindFirstOrThrowArgs} args - Arguments to find a GmbContextCache
+     * @example
+     * // Get one GmbContextCache
+     * const gmbContextCache = await prisma.gmbContextCache.findFirstOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirstOrThrow<T extends GmbContextCacheFindFirstOrThrowArgs>(args?: SelectSubset<T, GmbContextCacheFindFirstOrThrowArgs<ExtArgs>>): Prisma__GmbContextCacheClient<$Result.GetResult<Prisma.$GmbContextCachePayload<ExtArgs>, T, "findFirstOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find zero or more GmbContextCaches that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {GmbContextCacheFindManyArgs} args - Arguments to filter and select certain fields only.
+     * @example
+     * // Get all GmbContextCaches
+     * const gmbContextCaches = await prisma.gmbContextCache.findMany()
+     * 
+     * // Get first 10 GmbContextCaches
+     * const gmbContextCaches = await prisma.gmbContextCache.findMany({ take: 10 })
+     * 
+     * // Only select the `id`
+     * const gmbContextCacheWithIdOnly = await prisma.gmbContextCache.findMany({ select: { id: true } })
+     * 
+     */
+    findMany<T extends GmbContextCacheFindManyArgs>(args?: SelectSubset<T, GmbContextCacheFindManyArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$GmbContextCachePayload<ExtArgs>, T, "findMany", GlobalOmitOptions>>
+
+    /**
+     * Create a GmbContextCache.
+     * @param {GmbContextCacheCreateArgs} args - Arguments to create a GmbContextCache.
+     * @example
+     * // Create one GmbContextCache
+     * const GmbContextCache = await prisma.gmbContextCache.create({
+     *   data: {
+     *     // ... data to create a GmbContextCache
+     *   }
+     * })
+     * 
+     */
+    create<T extends GmbContextCacheCreateArgs>(args: SelectSubset<T, GmbContextCacheCreateArgs<ExtArgs>>): Prisma__GmbContextCacheClient<$Result.GetResult<Prisma.$GmbContextCachePayload<ExtArgs>, T, "create", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Create many GmbContextCaches.
+     * @param {GmbContextCacheCreateManyArgs} args - Arguments to create many GmbContextCaches.
+     * @example
+     * // Create many GmbContextCaches
+     * const gmbContextCache = await prisma.gmbContextCache.createMany({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     *     
+     */
+    createMany<T extends GmbContextCacheCreateManyArgs>(args?: SelectSubset<T, GmbContextCacheCreateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Delete a GmbContextCache.
+     * @param {GmbContextCacheDeleteArgs} args - Arguments to delete one GmbContextCache.
+     * @example
+     * // Delete one GmbContextCache
+     * const GmbContextCache = await prisma.gmbContextCache.delete({
+     *   where: {
+     *     // ... filter to delete one GmbContextCache
+     *   }
+     * })
+     * 
+     */
+    delete<T extends GmbContextCacheDeleteArgs>(args: SelectSubset<T, GmbContextCacheDeleteArgs<ExtArgs>>): Prisma__GmbContextCacheClient<$Result.GetResult<Prisma.$GmbContextCachePayload<ExtArgs>, T, "delete", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Update one GmbContextCache.
+     * @param {GmbContextCacheUpdateArgs} args - Arguments to update one GmbContextCache.
+     * @example
+     * // Update one GmbContextCache
+     * const gmbContextCache = await prisma.gmbContextCache.update({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    update<T extends GmbContextCacheUpdateArgs>(args: SelectSubset<T, GmbContextCacheUpdateArgs<ExtArgs>>): Prisma__GmbContextCacheClient<$Result.GetResult<Prisma.$GmbContextCachePayload<ExtArgs>, T, "update", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Delete zero or more GmbContextCaches.
+     * @param {GmbContextCacheDeleteManyArgs} args - Arguments to filter GmbContextCaches to delete.
+     * @example
+     * // Delete a few GmbContextCaches
+     * const { count } = await prisma.gmbContextCache.deleteMany({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     * 
+     */
+    deleteMany<T extends GmbContextCacheDeleteManyArgs>(args?: SelectSubset<T, GmbContextCacheDeleteManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Update zero or more GmbContextCaches.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {GmbContextCacheUpdateManyArgs} args - Arguments to update one or more rows.
+     * @example
+     * // Update many GmbContextCaches
+     * const gmbContextCache = await prisma.gmbContextCache.updateMany({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    updateMany<T extends GmbContextCacheUpdateManyArgs>(args: SelectSubset<T, GmbContextCacheUpdateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Create or update one GmbContextCache.
+     * @param {GmbContextCacheUpsertArgs} args - Arguments to update or create a GmbContextCache.
+     * @example
+     * // Update or create a GmbContextCache
+     * const gmbContextCache = await prisma.gmbContextCache.upsert({
+     *   create: {
+     *     // ... data to create a GmbContextCache
+     *   },
+     *   update: {
+     *     // ... in case it already exists, update
+     *   },
+     *   where: {
+     *     // ... the filter for the GmbContextCache we want to update
+     *   }
+     * })
+     */
+    upsert<T extends GmbContextCacheUpsertArgs>(args: SelectSubset<T, GmbContextCacheUpsertArgs<ExtArgs>>): Prisma__GmbContextCacheClient<$Result.GetResult<Prisma.$GmbContextCachePayload<ExtArgs>, T, "upsert", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find zero or more GmbContextCaches that matches the filter.
+     * @param {GmbContextCacheFindRawArgs} args - Select which filters you would like to apply.
+     * @example
+     * const gmbContextCache = await prisma.gmbContextCache.findRaw({
+     *   filter: { age: { $gt: 25 } }
+     * })
+     */
+    findRaw(args?: GmbContextCacheFindRawArgs): Prisma.PrismaPromise<JsonObject>
+
+    /**
+     * Perform aggregation operations on a GmbContextCache.
+     * @param {GmbContextCacheAggregateRawArgs} args - Select which aggregations you would like to apply.
+     * @example
+     * const gmbContextCache = await prisma.gmbContextCache.aggregateRaw({
+     *   pipeline: [
+     *     { $match: { status: "registered" } },
+     *     { $group: { _id: "$country", total: { $sum: 1 } } }
+     *   ]
+     * })
+     */
+    aggregateRaw(args?: GmbContextCacheAggregateRawArgs): Prisma.PrismaPromise<JsonObject>
+
+
+    /**
+     * Count the number of GmbContextCaches.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {GmbContextCacheCountArgs} args - Arguments to filter GmbContextCaches to count.
+     * @example
+     * // Count the number of GmbContextCaches
+     * const count = await prisma.gmbContextCache.count({
+     *   where: {
+     *     // ... the filter for the GmbContextCaches we want to count
+     *   }
+     * })
+    **/
+    count<T extends GmbContextCacheCountArgs>(
+      args?: Subset<T, GmbContextCacheCountArgs>,
+    ): Prisma.PrismaPromise<
+      T extends $Utils.Record<'select', any>
+        ? T['select'] extends true
+          ? number
+          : GetScalarType<T['select'], GmbContextCacheCountAggregateOutputType>
+        : number
+    >
+
+    /**
+     * Allows you to perform aggregations operations on a GmbContextCache.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {GmbContextCacheAggregateArgs} args - Select which aggregations you would like to apply and on what fields.
+     * @example
+     * // Ordered by age ascending
+     * // Where email contains prisma.io
+     * // Limited to the 10 users
+     * const aggregations = await prisma.user.aggregate({
+     *   _avg: {
+     *     age: true,
+     *   },
+     *   where: {
+     *     email: {
+     *       contains: "prisma.io",
+     *     },
+     *   },
+     *   orderBy: {
+     *     age: "asc",
+     *   },
+     *   take: 10,
+     * })
+    **/
+    aggregate<T extends GmbContextCacheAggregateArgs>(args: Subset<T, GmbContextCacheAggregateArgs>): Prisma.PrismaPromise<GetGmbContextCacheAggregateType<T>>
+
+    /**
+     * Group by GmbContextCache.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {GmbContextCacheGroupByArgs} args - Group by arguments.
+     * @example
+     * // Group by city, order by createdAt, get count
+     * const result = await prisma.user.groupBy({
+     *   by: ['city', 'createdAt'],
+     *   orderBy: {
+     *     createdAt: true
+     *   },
+     *   _count: {
+     *     _all: true
+     *   },
+     * })
+     * 
+    **/
+    groupBy<
+      T extends GmbContextCacheGroupByArgs,
+      HasSelectOrTake extends Or<
+        Extends<'skip', Keys<T>>,
+        Extends<'take', Keys<T>>
+      >,
+      OrderByArg extends True extends HasSelectOrTake
+        ? { orderBy: GmbContextCacheGroupByArgs['orderBy'] }
+        : { orderBy?: GmbContextCacheGroupByArgs['orderBy'] },
+      OrderFields extends ExcludeUnderscoreKeys<Keys<MaybeTupleToUnion<T['orderBy']>>>,
+      ByFields extends MaybeTupleToUnion<T['by']>,
+      ByValid extends Has<ByFields, OrderFields>,
+      HavingFields extends GetHavingFields<T['having']>,
+      HavingValid extends Has<ByFields, HavingFields>,
+      ByEmpty extends T['by'] extends never[] ? True : False,
+      InputErrors extends ByEmpty extends True
+      ? `Error: "by" must not be empty.`
+      : HavingValid extends False
+      ? {
+          [P in HavingFields]: P extends ByFields
+            ? never
+            : P extends string
+            ? `Error: Field "${P}" used in "having" needs to be provided in "by".`
+            : [
+                Error,
+                'Field ',
+                P,
+                ` in "having" needs to be provided in "by"`,
+              ]
+        }[HavingFields]
+      : 'take' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "take", you also need to provide "orderBy"'
+      : 'skip' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "skip", you also need to provide "orderBy"'
+      : ByValid extends True
+      ? {}
+      : {
+          [P in OrderFields]: P extends ByFields
+            ? never
+            : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+        }[OrderFields]
+    >(args: SubsetIntersection<T, GmbContextCacheGroupByArgs, OrderByArg> & InputErrors): {} extends InputErrors ? GetGmbContextCacheGroupByPayload<T> : Prisma.PrismaPromise<InputErrors>
+  /**
+   * Fields of the GmbContextCache model
+   */
+  readonly fields: GmbContextCacheFieldRefs;
+  }
+
+  /**
+   * The delegate class that acts as a "Promise-like" for GmbContextCache.
+   * Why is this prefixed with `Prisma__`?
+   * Because we want to prevent naming conflicts as mentioned in
+   * https://github.com/prisma/prisma-client-js/issues/707
+   */
+  export interface Prisma__GmbContextCacheClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
+    readonly [Symbol.toStringTag]: "PrismaPromise"
+    /**
+     * Attaches callbacks for the resolution and/or rejection of the Promise.
+     * @param onfulfilled The callback to execute when the Promise is resolved.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of which ever callback is executed.
+     */
+    then<TResult1 = T, TResult2 = never>(onfulfilled?: ((value: T) => TResult1 | PromiseLike<TResult1>) | undefined | null, onrejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>) | undefined | null): $Utils.JsPromise<TResult1 | TResult2>
+    /**
+     * Attaches a callback for only the rejection of the Promise.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of the callback.
+     */
+    catch<TResult = never>(onrejected?: ((reason: any) => TResult | PromiseLike<TResult>) | undefined | null): $Utils.JsPromise<T | TResult>
+    /**
+     * Attaches a callback that is invoked when the Promise is settled (fulfilled or rejected). The
+     * resolved value cannot be modified from the callback.
+     * @param onfinally The callback to execute when the Promise is settled (fulfilled or rejected).
+     * @returns A Promise for the completion of the callback.
+     */
+    finally(onfinally?: (() => void) | undefined | null): $Utils.JsPromise<T>
+  }
+
+
+
+
+  /**
+   * Fields of the GmbContextCache model
+   */
+  interface GmbContextCacheFieldRefs {
+    readonly id: FieldRef<"GmbContextCache", 'String'>
+    readonly locationId: FieldRef<"GmbContextCache", 'String'>
+    readonly data: FieldRef<"GmbContextCache", 'Json'>
+    readonly cachedAt: FieldRef<"GmbContextCache", 'DateTime'>
+  }
+    
+
+  // Custom InputTypes
+  /**
+   * GmbContextCache findUnique
+   */
+  export type GmbContextCacheFindUniqueArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the GmbContextCache
+     */
+    select?: GmbContextCacheSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the GmbContextCache
+     */
+    omit?: GmbContextCacheOmit<ExtArgs> | null
+    /**
+     * Filter, which GmbContextCache to fetch.
+     */
+    where: GmbContextCacheWhereUniqueInput
+  }
+
+  /**
+   * GmbContextCache findUniqueOrThrow
+   */
+  export type GmbContextCacheFindUniqueOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the GmbContextCache
+     */
+    select?: GmbContextCacheSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the GmbContextCache
+     */
+    omit?: GmbContextCacheOmit<ExtArgs> | null
+    /**
+     * Filter, which GmbContextCache to fetch.
+     */
+    where: GmbContextCacheWhereUniqueInput
+  }
+
+  /**
+   * GmbContextCache findFirst
+   */
+  export type GmbContextCacheFindFirstArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the GmbContextCache
+     */
+    select?: GmbContextCacheSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the GmbContextCache
+     */
+    omit?: GmbContextCacheOmit<ExtArgs> | null
+    /**
+     * Filter, which GmbContextCache to fetch.
+     */
+    where?: GmbContextCacheWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of GmbContextCaches to fetch.
+     */
+    orderBy?: GmbContextCacheOrderByWithRelationInput | GmbContextCacheOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for GmbContextCaches.
+     */
+    cursor?: GmbContextCacheWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` GmbContextCaches from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` GmbContextCaches.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of GmbContextCaches.
+     */
+    distinct?: GmbContextCacheScalarFieldEnum | GmbContextCacheScalarFieldEnum[]
+  }
+
+  /**
+   * GmbContextCache findFirstOrThrow
+   */
+  export type GmbContextCacheFindFirstOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the GmbContextCache
+     */
+    select?: GmbContextCacheSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the GmbContextCache
+     */
+    omit?: GmbContextCacheOmit<ExtArgs> | null
+    /**
+     * Filter, which GmbContextCache to fetch.
+     */
+    where?: GmbContextCacheWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of GmbContextCaches to fetch.
+     */
+    orderBy?: GmbContextCacheOrderByWithRelationInput | GmbContextCacheOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for GmbContextCaches.
+     */
+    cursor?: GmbContextCacheWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` GmbContextCaches from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` GmbContextCaches.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of GmbContextCaches.
+     */
+    distinct?: GmbContextCacheScalarFieldEnum | GmbContextCacheScalarFieldEnum[]
+  }
+
+  /**
+   * GmbContextCache findMany
+   */
+  export type GmbContextCacheFindManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the GmbContextCache
+     */
+    select?: GmbContextCacheSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the GmbContextCache
+     */
+    omit?: GmbContextCacheOmit<ExtArgs> | null
+    /**
+     * Filter, which GmbContextCaches to fetch.
+     */
+    where?: GmbContextCacheWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of GmbContextCaches to fetch.
+     */
+    orderBy?: GmbContextCacheOrderByWithRelationInput | GmbContextCacheOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for listing GmbContextCaches.
+     */
+    cursor?: GmbContextCacheWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` GmbContextCaches from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` GmbContextCaches.
+     */
+    skip?: number
+    distinct?: GmbContextCacheScalarFieldEnum | GmbContextCacheScalarFieldEnum[]
+  }
+
+  /**
+   * GmbContextCache create
+   */
+  export type GmbContextCacheCreateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the GmbContextCache
+     */
+    select?: GmbContextCacheSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the GmbContextCache
+     */
+    omit?: GmbContextCacheOmit<ExtArgs> | null
+    /**
+     * The data needed to create a GmbContextCache.
+     */
+    data: XOR<GmbContextCacheCreateInput, GmbContextCacheUncheckedCreateInput>
+  }
+
+  /**
+   * GmbContextCache createMany
+   */
+  export type GmbContextCacheCreateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to create many GmbContextCaches.
+     */
+    data: GmbContextCacheCreateManyInput | GmbContextCacheCreateManyInput[]
+  }
+
+  /**
+   * GmbContextCache update
+   */
+  export type GmbContextCacheUpdateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the GmbContextCache
+     */
+    select?: GmbContextCacheSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the GmbContextCache
+     */
+    omit?: GmbContextCacheOmit<ExtArgs> | null
+    /**
+     * The data needed to update a GmbContextCache.
+     */
+    data: XOR<GmbContextCacheUpdateInput, GmbContextCacheUncheckedUpdateInput>
+    /**
+     * Choose, which GmbContextCache to update.
+     */
+    where: GmbContextCacheWhereUniqueInput
+  }
+
+  /**
+   * GmbContextCache updateMany
+   */
+  export type GmbContextCacheUpdateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to update GmbContextCaches.
+     */
+    data: XOR<GmbContextCacheUpdateManyMutationInput, GmbContextCacheUncheckedUpdateManyInput>
+    /**
+     * Filter which GmbContextCaches to update
+     */
+    where?: GmbContextCacheWhereInput
+    /**
+     * Limit how many GmbContextCaches to update.
+     */
+    limit?: number
+  }
+
+  /**
+   * GmbContextCache upsert
+   */
+  export type GmbContextCacheUpsertArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the GmbContextCache
+     */
+    select?: GmbContextCacheSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the GmbContextCache
+     */
+    omit?: GmbContextCacheOmit<ExtArgs> | null
+    /**
+     * The filter to search for the GmbContextCache to update in case it exists.
+     */
+    where: GmbContextCacheWhereUniqueInput
+    /**
+     * In case the GmbContextCache found by the `where` argument doesn't exist, create a new GmbContextCache with this data.
+     */
+    create: XOR<GmbContextCacheCreateInput, GmbContextCacheUncheckedCreateInput>
+    /**
+     * In case the GmbContextCache was found with the provided `where` argument, update it with this data.
+     */
+    update: XOR<GmbContextCacheUpdateInput, GmbContextCacheUncheckedUpdateInput>
+  }
+
+  /**
+   * GmbContextCache delete
+   */
+  export type GmbContextCacheDeleteArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the GmbContextCache
+     */
+    select?: GmbContextCacheSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the GmbContextCache
+     */
+    omit?: GmbContextCacheOmit<ExtArgs> | null
+    /**
+     * Filter which GmbContextCache to delete.
+     */
+    where: GmbContextCacheWhereUniqueInput
+  }
+
+  /**
+   * GmbContextCache deleteMany
+   */
+  export type GmbContextCacheDeleteManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which GmbContextCaches to delete
+     */
+    where?: GmbContextCacheWhereInput
+    /**
+     * Limit how many GmbContextCaches to delete.
+     */
+    limit?: number
+  }
+
+  /**
+   * GmbContextCache findRaw
+   */
+  export type GmbContextCacheFindRawArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The query predicate filter. If unspecified, then all documents in the collection will match the predicate. ${@link https://docs.mongodb.com/manual/reference/operator/query MongoDB Docs}.
+     */
+    filter?: InputJsonValue
+    /**
+     * Additional options to pass to the `find` command ${@link https://docs.mongodb.com/manual/reference/command/find/#command-fields MongoDB Docs}.
+     */
+    options?: InputJsonValue
+  }
+
+  /**
+   * GmbContextCache aggregateRaw
+   */
+  export type GmbContextCacheAggregateRawArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * An array of aggregation stages to process and transform the document stream via the aggregation pipeline. ${@link https://docs.mongodb.com/manual/reference/operator/aggregation-pipeline MongoDB Docs}.
+     */
+    pipeline?: InputJsonValue[]
+    /**
+     * Additional options to pass to the `aggregate` command ${@link https://docs.mongodb.com/manual/reference/command/aggregate/#command-fields MongoDB Docs}.
+     */
+    options?: InputJsonValue
+  }
+
+  /**
+   * GmbContextCache without action
+   */
+  export type GmbContextCacheDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the GmbContextCache
+     */
+    select?: GmbContextCacheSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the GmbContextCache
+     */
+    omit?: GmbContextCacheOmit<ExtArgs> | null
+  }
+
+
+  /**
    * Enums
    */
 
@@ -36633,6 +37641,16 @@ export namespace Prisma {
   };
 
   export type LocationChoiceScalarFieldEnum = (typeof LocationChoiceScalarFieldEnum)[keyof typeof LocationChoiceScalarFieldEnum]
+
+
+  export const GmbContextCacheScalarFieldEnum: {
+    id: 'id',
+    locationId: 'locationId',
+    data: 'data',
+    cachedAt: 'cachedAt'
+  };
+
+  export type GmbContextCacheScalarFieldEnum = (typeof GmbContextCacheScalarFieldEnum)[keyof typeof GmbContextCacheScalarFieldEnum]
 
 
   export const SortOrder: {
@@ -39602,6 +40620,53 @@ export namespace Prisma {
     confirmedAt?: DateTimeWithAggregatesFilter<"LocationChoice"> | Date | string
     periodStart?: DateTimeWithAggregatesFilter<"LocationChoice"> | Date | string
     periodEnd?: DateTimeWithAggregatesFilter<"LocationChoice"> | Date | string
+  }
+
+  export type GmbContextCacheWhereInput = {
+    AND?: GmbContextCacheWhereInput | GmbContextCacheWhereInput[]
+    OR?: GmbContextCacheWhereInput[]
+    NOT?: GmbContextCacheWhereInput | GmbContextCacheWhereInput[]
+    id?: StringFilter<"GmbContextCache"> | string
+    locationId?: StringFilter<"GmbContextCache"> | string
+    data?: JsonFilter<"GmbContextCache">
+    cachedAt?: DateTimeFilter<"GmbContextCache"> | Date | string
+  }
+
+  export type GmbContextCacheOrderByWithRelationInput = {
+    id?: SortOrder
+    locationId?: SortOrder
+    data?: SortOrder
+    cachedAt?: SortOrder
+  }
+
+  export type GmbContextCacheWhereUniqueInput = Prisma.AtLeast<{
+    id?: string
+    locationId?: string
+    AND?: GmbContextCacheWhereInput | GmbContextCacheWhereInput[]
+    OR?: GmbContextCacheWhereInput[]
+    NOT?: GmbContextCacheWhereInput | GmbContextCacheWhereInput[]
+    data?: JsonFilter<"GmbContextCache">
+    cachedAt?: DateTimeFilter<"GmbContextCache"> | Date | string
+  }, "id" | "locationId">
+
+  export type GmbContextCacheOrderByWithAggregationInput = {
+    id?: SortOrder
+    locationId?: SortOrder
+    data?: SortOrder
+    cachedAt?: SortOrder
+    _count?: GmbContextCacheCountOrderByAggregateInput
+    _max?: GmbContextCacheMaxOrderByAggregateInput
+    _min?: GmbContextCacheMinOrderByAggregateInput
+  }
+
+  export type GmbContextCacheScalarWhereWithAggregatesInput = {
+    AND?: GmbContextCacheScalarWhereWithAggregatesInput | GmbContextCacheScalarWhereWithAggregatesInput[]
+    OR?: GmbContextCacheScalarWhereWithAggregatesInput[]
+    NOT?: GmbContextCacheScalarWhereWithAggregatesInput | GmbContextCacheScalarWhereWithAggregatesInput[]
+    id?: StringWithAggregatesFilter<"GmbContextCache"> | string
+    locationId?: StringWithAggregatesFilter<"GmbContextCache"> | string
+    data?: JsonWithAggregatesFilter<"GmbContextCache">
+    cachedAt?: DateTimeWithAggregatesFilter<"GmbContextCache"> | Date | string
   }
 
   export type VersionCreateInput = {
@@ -42765,6 +43830,51 @@ export namespace Prisma {
     periodEnd?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
+  export type GmbContextCacheCreateInput = {
+    id?: string
+    locationId: string
+    data: InputJsonValue
+    cachedAt: Date | string
+  }
+
+  export type GmbContextCacheUncheckedCreateInput = {
+    id?: string
+    locationId: string
+    data: InputJsonValue
+    cachedAt: Date | string
+  }
+
+  export type GmbContextCacheUpdateInput = {
+    locationId?: StringFieldUpdateOperationsInput | string
+    data?: InputJsonValue | InputJsonValue
+    cachedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type GmbContextCacheUncheckedUpdateInput = {
+    locationId?: StringFieldUpdateOperationsInput | string
+    data?: InputJsonValue | InputJsonValue
+    cachedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type GmbContextCacheCreateManyInput = {
+    id?: string
+    locationId: string
+    data: InputJsonValue
+    cachedAt: Date | string
+  }
+
+  export type GmbContextCacheUpdateManyMutationInput = {
+    locationId?: StringFieldUpdateOperationsInput | string
+    data?: InputJsonValue | InputJsonValue
+    cachedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type GmbContextCacheUncheckedUpdateManyInput = {
+    locationId?: StringFieldUpdateOperationsInput | string
+    data?: InputJsonValue | InputJsonValue
+    cachedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
   export type StringFilter<$PrismaModel = never> = {
     equals?: string | StringFieldRefInput<$PrismaModel>
     in?: string[] | ListStringFieldRefInput<$PrismaModel>
@@ -44862,6 +45972,25 @@ export namespace Prisma {
     confirmedAt?: SortOrder
     periodStart?: SortOrder
     periodEnd?: SortOrder
+  }
+
+  export type GmbContextCacheCountOrderByAggregateInput = {
+    id?: SortOrder
+    locationId?: SortOrder
+    data?: SortOrder
+    cachedAt?: SortOrder
+  }
+
+  export type GmbContextCacheMaxOrderByAggregateInput = {
+    id?: SortOrder
+    locationId?: SortOrder
+    cachedAt?: SortOrder
+  }
+
+  export type GmbContextCacheMinOrderByAggregateInput = {
+    id?: SortOrder
+    locationId?: SortOrder
+    cachedAt?: SortOrder
   }
 
   export type StringFieldUpdateOperationsInput = {

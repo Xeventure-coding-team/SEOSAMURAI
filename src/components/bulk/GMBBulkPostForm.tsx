@@ -35,6 +35,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Badge } from "@/components/ui/badge"
 import { Alert, AlertDescription, AlertTitle } from "../ui/alert"
 import { UsageGate } from "../usage-gate"
+import { LegendSection } from "../ui/legend-section"
 
 interface GmbPostFormProps {
   postUsed?: number | null
@@ -692,219 +693,225 @@ export function GmbBulkPostForm({
                           </CardHeader>
 
                           <CardContent className="space-y-4">
-                            <div className="space-y-2">
-                              <div className="flex items-center justify-between">
-                                <Label htmlFor={`content-${post.id}`}>Post Content</Label>
-                                <Button
-                                  type="button"
-                                  variant="outline"
-                                  size="sm"
-                                  onClick={() => enhanceBulkPostContent(post.id, post.postContent)}
-                                  disabled={enhancingPosts.has(post.id) || !post.postContent.trim()}
-                                  className="h-8"
-                                >
-                                  {enhancingPosts.has(post.id) ? (
-                                    <Loader2 className="h-3 w-3 mr-1 animate-spin" />
-                                  ) : (
-                                    <Sparkles className="h-3 w-3 mr-1" />
-                                  )}
-                                  Enhance
-                                </Button>
-                              </div>
-                              <Textarea
-                                id={`content-${post.id}`}
-                                value={post.postContent}
-                                onChange={(e) => updateBulkPost(post.id, "postContent", e.target.value)}
-                                placeholder="What's happening at your business?"
-                                className="h-[120px] resize-none"
-                                maxLength={1500}
-                              />
-                            </div>
-
-                            <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+                            <LegendSection legend="Post Content">
                               <div className="space-y-2">
-                                <Label>Action Button</Label>
-                                <Select
-                                  value={post.actionButton || "NO_ACTION"}
-                                  onValueChange={(value) => {
-                                    setBulkPosts((prevPosts) =>
-                                      prevPosts.map((p) =>
-                                        p.id === post.id
-                                          ? {
-                                            ...p,
-                                            actionButton: value,
-                                            // Clear related fields when NO_ACTION is selected
-                                            ...(value === "NO_ACTION" ? { actionLink: "", callPhone: "" } : {}),
-                                          }
-                                          : p,
-                                      ),
-                                    )
-                                  }}
-                                >
-                                  <SelectTrigger>
-                                    <SelectValue placeholder="Select an action" />
-                                  </SelectTrigger>
-                                  <SelectContent>
-                                    <SelectItem value="NO_ACTION">No Action</SelectItem>
-                                    {actionButtonOptions.map((option) => (
-                                      <SelectItem key={option.value} value={option.value}>
-                                        <div className="flex items-center gap-2">
-                                          <option.icon className="h-4 w-4" />
-                                          {option.label}
-                                        </div>
-                                      </SelectItem>
-                                    ))}
-                                  </SelectContent>
-                                </Select>
-                              </div>
-
-                              {post.actionButton === "CALL" && (
-                                <div className="space-y-2">
-                                  <Label>Phone Number</Label>
-                                  <Input
-                                    placeholder="+1234567890"
-                                    value={post.callPhone || ""}
-                                    disabled
-                                  />
-                                </div>
-                              )}
-
-                              {post.actionButton &&
-                                post.actionButton !== "NO_ACTION" &&
-                                post.actionButton !== "CALL" && (
-                                  <div className="space-y-2">
-                                    <Label>Action Link</Label>
-                                    <Input
-                                      placeholder="https://example.com"
-                                      value={post.actionLink || ""}
-                                      onChange={(e) => updateBulkPost(post.id, "actionLink", e.target.value)}
-                                    />
-                                  </div>
-                                )}
-                            </div>
-
-                            {post.actionButton === "CALL" && (
-                              <>
-                                {/* ⚠️ Warning Alert */}
-                                <Alert className="border-yellow-300 bg-yellow-50 text-yellow-800">
-                                  <AlertTriangle className="h-4 w-4 text-yellow-800" />
-                                  <AlertTitle>Heads up!</AlertTitle>
-                                  <AlertDescription>
-                                    The Call button may not appear after publishing your post.
-                                    You may need to verify your phone number in your Google Business Profile.
-                                  </AlertDescription>
-                                </Alert>
-                              </>
-                            )}
-
-                            <div className="space-y-3">
-                              <Label>Image (Optional)</Label>
-                              <Tabs defaultValue="url" className="w-full">
-                                <TabsList className="grid w-full grid-cols-2">
-                                  <TabsTrigger value="upload">Upload File</TabsTrigger>
-                                  <TabsTrigger value="url">Image URL</TabsTrigger>
-                                </TabsList>
-
-                                <TabsContent value="upload" className="space-y-3">
-                                  <div
-                                    className="border-2 border-dashed rounded-lg p-4 text-center transition-colors hover:border-primary/50 cursor-pointer"
-                                    onClick={() => {
-                                      const input = document.createElement("input")
-                                      input.type = "file"
-                                      input.accept = "image/jpeg,image/jpg,image/png,image/webp"
-                                      input.multiple = false
-
-                                      input.onchange = (e) => {
-                                        const target = e.target as HTMLInputElement
-                                        const file = target.files?.[0]
-                                        if (file) {
-                                          handleBulkFileSelect(post.id, file)
-                                        }
-                                      }
-
-                                      input.click()
-                                    }}
-                                    onDragOver={(e) => {
-                                      e.preventDefault()
-                                      e.stopPropagation()
-                                    }}
-                                    onDragEnter={(e) => {
-                                      e.preventDefault()
-                                      e.stopPropagation()
-                                    }}
-                                    onDragLeave={(e) => {
-                                      e.preventDefault()
-                                      e.stopPropagation()
-                                    }}
-                                    onDrop={(e) => {
-                                      e.preventDefault()
-                                      e.stopPropagation()
-
-                                      const files = Array.from(e.dataTransfer.files)
-                                      if (files.length > 0) {
-                                        const file = files[0]
-                                        if (file.type.startsWith("image/")) {
-                                          handleBulkFileSelect(post.id, file)
-                                        } else {
-                                          toast.error("Please drop an image file")
-                                        }
-                                      }
-                                    }}
+                                <div className="flex items-center justify-between">
+                                  <Button
+                                    type="button"
+                                    variant="outline"
+                                    size="sm"
+                                    onClick={() => enhanceBulkPostContent(post.id, post.postContent)}
+                                    disabled={enhancingPosts.has(post.id) || !post.postContent.trim()}
+                                    className="h-8"
                                   >
-                                    <Upload className="h-8 w-8 mx-auto mb-2 text-muted-foreground" />
-                                    <p className="text-sm text-muted-foreground mb-2">
-                                      Drag and drop an image here, or click to select
-                                    </p>
-                                    <p className="text-xs text-muted-foreground">Supports JPEG, PNG, WebP up to 10MB</p>
-                                  </div>
-                                </TabsContent>
+                                    {enhancingPosts.has(post.id) ? (
+                                      <Loader2 className="h-3 w-3 mr-1 animate-spin" />
+                                    ) : (
+                                      <Sparkles className="h-3 w-3 mr-1" />
+                                    )}
+                                    Enhance
+                                  </Button>
+                                </div>
+                                <Textarea
+                                  id={`content-${post.id}`}
+                                  value={post.postContent}
+                                  onChange={(e) => updateBulkPost(post.id, "postContent", e.target.value)}
+                                  placeholder="What's happening at your business?"
+                                  className="h-[120px] resize-none"
+                                  maxLength={1500}
+                                />
+                              </div>
+                            </LegendSection>
 
-                                <TabsContent value="url" className="space-y-3">
-                                  <Input
-                                    placeholder="Enter image URL"
-                                    value={post.image_url || ""}
-                                    onChange={(e) => {
-                                      const url = e.target.value
+                            <LegendSection legend="Actions">
+                              <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+                                <div className="space-y-2">
+                                  <Label>Action Button</Label>
+                                  <Select
+                                    value={post.actionButton || "NO_ACTION"}
+                                    onValueChange={(value) => {
                                       setBulkPosts((prevPosts) =>
                                         prevPosts.map((p) =>
                                           p.id === post.id
                                             ? {
                                               ...p,
-                                              image_url: url,
-                                              // Clear file and preview URL when entering image URL
-                                              ...(url ? { file: undefined, previewUrl: undefined } : {}),
+                                              actionButton: value,
+                                              // Clear related fields when NO_ACTION is selected
+                                              ...(value === "NO_ACTION" ? { actionLink: "", callPhone: "" } : {}),
                                             }
                                             : p,
                                         ),
                                       )
                                     }}
-                                  />
-                                </TabsContent>
-                              </Tabs>
-
-                              {(post.image_url || post.previewUrl) && (
-                                <div className="relative inline-block max-w-full">
-                                  <img
-                                    src={post.previewUrl || post.image_url || "/placeholder.svg"}
-                                    alt="Post preview"
-                                    className="w-full max-w-sm h-32 rounded-lg object-cover border"
-                                    onError={(e) => {
-                                      const target = e.target as HTMLImageElement
-                                      target.src = "/placeholder.svg"
-                                    }}
-                                  />
-                                  <Button
-                                    type="button"
-                                    variant="destructive"
-                                    size="sm"
-                                    className="absolute top-2 right-2 h-8 w-8 p-0 shadow-lg"
-                                    onClick={() => removeBulkPostImage(post.id)}
                                   >
-                                    <X className="h-4 w-4" />
-                                  </Button>
+                                    <SelectTrigger>
+                                      <SelectValue placeholder="Select an action" />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                      <SelectItem value="NO_ACTION">No Action</SelectItem>
+                                      {actionButtonOptions.map((option) => (
+                                        <SelectItem key={option.value} value={option.value}>
+                                          <div className="flex items-center gap-2">
+                                            <option.icon className="h-4 w-4" />
+                                            {option.label}
+                                          </div>
+                                        </SelectItem>
+                                      ))}
+                                    </SelectContent>
+                                  </Select>
                                 </div>
+
+                                {post.actionButton === "CALL" && (
+                                  <div className="space-y-2">
+                                    <Label>Phone Number</Label>
+                                    <Input
+                                      placeholder="+1234567890"
+                                      value={post.callPhone || ""}
+                                      disabled
+                                    />
+                                  </div>
+                                )}
+
+                                {post.actionButton &&
+                                  post.actionButton !== "NO_ACTION" &&
+                                  post.actionButton !== "CALL" && (
+                                    <div className="space-y-2">
+                                      <Label>Action Link</Label>
+                                      <Input
+                                        placeholder="https://example.com"
+                                        value={post.actionLink || ""}
+                                        onChange={(e) => updateBulkPost(post.id, "actionLink", e.target.value)}
+                                      />
+                                    </div>
+                                  )}
+                              </div>
+
+
+                              {post.actionButton === "CALL" && (
+                                <>
+                                  {/* ⚠️ Warning Alert */}
+                                  <Alert className="border-yellow-300 bg-yellow-50 text-yellow-800">
+                                    <AlertTriangle className="h-4 w-4 text-yellow-800" />
+                                    <AlertTitle>Heads up!</AlertTitle>
+                                    <AlertDescription>
+                                      The Call button may not appear after publishing your post.
+                                      You may need to verify your phone number in your Google Business Profile.
+                                    </AlertDescription>
+                                  </Alert>
+                                </>
                               )}
-                            </div>
+                            </LegendSection>
+
+                            <LegendSection legend="Media">
+                              <div className="space-y-3">
+                                <Label>Image (Optional)</Label>
+                                <Tabs defaultValue="url" className="w-full">
+                                  <TabsList className="grid w-full grid-cols-2">
+                                    <TabsTrigger value="upload">Upload File</TabsTrigger>
+                                    <TabsTrigger value="url">Image URL</TabsTrigger>
+                                  </TabsList>
+
+                                  <TabsContent value="upload" className="space-y-3">
+                                    <div
+                                      className="border-2 border-dashed rounded-lg p-4 text-center transition-colors hover:border-primary/50 cursor-pointer"
+                                      onClick={() => {
+                                        const input = document.createElement("input")
+                                        input.type = "file"
+                                        input.accept = "image/jpeg,image/jpg,image/png,image/webp"
+                                        input.multiple = false
+
+                                        input.onchange = (e) => {
+                                          const target = e.target as HTMLInputElement
+                                          const file = target.files?.[0]
+                                          if (file) {
+                                            handleBulkFileSelect(post.id, file)
+                                          }
+                                        }
+
+                                        input.click()
+                                      }}
+                                      onDragOver={(e) => {
+                                        e.preventDefault()
+                                        e.stopPropagation()
+                                      }}
+                                      onDragEnter={(e) => {
+                                        e.preventDefault()
+                                        e.stopPropagation()
+                                      }}
+                                      onDragLeave={(e) => {
+                                        e.preventDefault()
+                                        e.stopPropagation()
+                                      }}
+                                      onDrop={(e) => {
+                                        e.preventDefault()
+                                        e.stopPropagation()
+
+                                        const files = Array.from(e.dataTransfer.files)
+                                        if (files.length > 0) {
+                                          const file = files[0]
+                                          if (file.type.startsWith("image/")) {
+                                            handleBulkFileSelect(post.id, file)
+                                          } else {
+                                            toast.error("Please drop an image file")
+                                          }
+                                        }
+                                      }}
+                                    >
+                                      <Upload className="h-8 w-8 mx-auto mb-2 text-muted-foreground" />
+                                      <p className="text-sm text-muted-foreground mb-2">
+                                        Drag and drop an image here, or click to select
+                                      </p>
+                                      <p className="text-xs text-muted-foreground">Supports JPEG, PNG, WebP up to 10MB</p>
+                                    </div>
+                                  </TabsContent>
+
+                                  <TabsContent value="url" className="space-y-3">
+                                    <Input
+                                      placeholder="Enter image URL"
+                                      value={post.image_url || ""}
+                                      onChange={(e) => {
+                                        const url = e.target.value
+                                        setBulkPosts((prevPosts) =>
+                                          prevPosts.map((p) =>
+                                            p.id === post.id
+                                              ? {
+                                                ...p,
+                                                image_url: url,
+                                                // Clear file and preview URL when entering image URL
+                                                ...(url ? { file: undefined, previewUrl: undefined } : {}),
+                                              }
+                                              : p,
+                                          ),
+                                        )
+                                      }}
+                                    />
+                                  </TabsContent>
+                                </Tabs>
+
+                                {(post.image_url || post.previewUrl) && (
+                                  <div className="relative inline-block max-w-full">
+                                    <img
+                                      src={post.previewUrl || post.image_url || "/placeholder.svg"}
+                                      alt="Post preview"
+                                      className="w-full max-w-sm h-32 rounded-lg object-cover border"
+                                      onError={(e) => {
+                                        const target = e.target as HTMLImageElement
+                                        target.src = "/placeholder.svg"
+                                      }}
+                                    />
+                                    <Button
+                                      type="button"
+                                      variant="destructive"
+                                      size="sm"
+                                      className="absolute top-2 right-2 h-8 w-8 p-0 shadow-lg"
+                                      onClick={() => removeBulkPostImage(post.id)}
+                                    >
+                                      <X className="h-4 w-4" />
+                                    </Button>
+                                  </div>
+                                )}
+                              </div>
+                            </LegendSection>
                           </CardContent>
                         </Card>
                       ))}

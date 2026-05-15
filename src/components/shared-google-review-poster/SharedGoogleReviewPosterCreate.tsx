@@ -13,6 +13,7 @@ import axios from "axios"
 import Link from "next/link"
 import { usePageStore } from "@/store/usePageStore"
 import { PlanGate } from "../PlanGate"
+import { UsageGate } from "../usage-gate"
 
 interface Location {
   name: string
@@ -231,7 +232,7 @@ export default function GoogleReviewPosterCreate() {
   ]
 
   return (
-    <PlanGate mode={{ type: "metric", metric: "reviewPostersUsed" }} featureName="Review Poster">
+    <PlanGate mode={{ type: "slot", slot: "reviewPosters" }} featureName="Review Poster">
       <div className="min-h-screen">
         <div className="container mx-auto space-y-8">
 
@@ -381,23 +382,27 @@ export default function GoogleReviewPosterCreate() {
                       <QrCode className="h-4 w-4 mr-2" />
                       Preview
                     </Button>
-                    <Button
-                      onClick={handleSave}
-                      disabled={saving || !businessName || !reviewUrl}
-                      className="flex-1"
-                    >
-                      {saving ? (
-                        <>
-                          <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                          Saving...
-                        </>
-                      ) : (
-                        <>
-                          <Save className="h-4 w-4 mr-2" />
-                          Save
-                        </>
-                      )}
-                    </Button>
+
+                    <UsageGate slot="reviewPosters">
+                      <Button
+                        onClick={handleSave}
+                        disabled={saving || !businessName || !reviewUrl}
+                        className="flex-1"
+                      >
+                        {saving ? (
+                          <>
+                            <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                            Saving...
+                          </>
+                        ) : (
+                          <>
+                            <Save className="h-4 w-4 mr-2" />
+                            Save
+                          </>
+                        )}
+                      </Button>
+                    </UsageGate>
+
                   </div>
                 </CardContent>
               </Card>

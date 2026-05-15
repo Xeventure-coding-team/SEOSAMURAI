@@ -16,3 +16,5 @@ npx prisma studio
 
 
 cloudflared tunnel --url http://localhost:3000
+
+npx prisma db push

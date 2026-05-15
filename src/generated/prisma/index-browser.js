@@ -581,6 +581,13 @@ exports.Prisma.LocationChoiceScalarFieldEnum = {
   periodEnd: 'periodEnd'
 };
 
+exports.Prisma.GmbContextCacheScalarFieldEnum = {
+  id: 'id',
+  locationId: 'locationId',
+  data: 'data',
+  cachedAt: 'cachedAt'
+};
+
 exports.Prisma.SortOrder = {
   asc: 'asc',
   desc: 'desc'
@@ -670,7 +677,8 @@ exports.Prisma.ModelName = {
   SyncQueue: 'SyncQueue',
   Subscription: 'Subscription',
   Usage: 'Usage',
-  LocationChoice: 'LocationChoice'
+  LocationChoice: 'LocationChoice',
+  GmbContextCache: 'GmbContextCache'
 };
 
 /**

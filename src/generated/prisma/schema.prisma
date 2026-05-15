@@ -730,6 +730,15 @@ model LocationChoice {
   @@map("location_choices")
 }
 
+model GmbContextCache {
+  id         String   @id @default(auto()) @map("_id") @db.ObjectId
+  locationId String   @unique
+  data       Json
+  cachedAt   DateTime
+
+  @@map("gmb_context_cache")
+}
+
 enum SubscriptionStatus {
   ACTIVE
   CANCELED

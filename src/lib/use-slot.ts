@@ -1,6 +1,6 @@
 import useSWR from "swr";
 
-export type SlotResource = "locations" | "websites";
+export type SlotResource = "locations" | "websites" | "reviewPosters";
 
 export interface SlotData {
   current:   number;

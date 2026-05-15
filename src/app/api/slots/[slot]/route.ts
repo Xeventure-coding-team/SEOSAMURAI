@@ -4,17 +4,21 @@ import { getPlanLimits, PlanId } from "@/lib/stripe";
 import { prisma } from "../../../../../lib/prisma";
 
 const SLOT_COUNTERS = {
-  locations: (userId: string) => prisma.locations.count({ 
-    where: { user_id: userId, is_deleted: false } 
+  locations: (userId: string) => prisma.locations.count({
+    where: { user_id: userId, is_deleted: false }
   }),
-  websites: (userId: string) => prisma.website.count({ 
-    where: { userId } 
+  websites: (userId: string) => prisma.website.count({
+    where: { userId }
+  }),
+  reviewPosters: (userId: string) => prisma.googleReviewPoster.count({
+    where: { userId },
   }),
 };
 
 const SLOT_LIMIT_KEY = {
   locations: "locations",
-  websites:  "websites",
+  websites: "websites",
+  reviewPosters: "reviewPoster",
 } as const;
 
 const empty = { current: 0, limit: 0, remaining: 0 };
@@ -47,10 +51,10 @@ export async function GET(
     return NextResponse.json({ current, limit: 0, remaining: 0 });
   }
 
-  const planId    = subscription.plan.toLowerCase() as PlanId;
-  const limits    = getPlanLimits(planId);
-  const limitKey  = SLOT_LIMIT_KEY[slot as keyof typeof SLOT_LIMIT_KEY];
-  const limit     = limits[limitKey] as number;
+  const planId = subscription.plan.toLowerCase() as PlanId;
+  const limits = getPlanLimits(planId);
+  const limitKey = SLOT_LIMIT_KEY[slot as keyof typeof SLOT_LIMIT_KEY];
+  const limit = limits[limitKey] as number;
   const remaining = Math.max(0, limit - current);
 
   return NextResponse.json({ current, limit, remaining });

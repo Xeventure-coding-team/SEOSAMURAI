@@ -43,7 +43,6 @@ export default function WebsiteClient({ website }: { website: WebsiteData }) {
         hasGallery && "gallery",
         hasHours && "hours",
         hasContact && "contact",
-        hasHero && "hero",
     ].filter(Boolean) as string[];
 
 
@@ -427,7 +426,7 @@ export default function WebsiteClient({ website }: { website: WebsiteData }) {
 
             {/* Map Card - Separate */}
             {bi.formattedAddress && (
-                <div className="bg-white rounded-xl border border-gray-100 overflow-hidden">
+                <div className="bg-white rounded-xl border  overflow-hidden">
                     <div className="p-4 border-b border-gray-100 bg-gray-50/50">
                         <h3 className="font-semibold text-gray-900 flex items-center gap-2">
                             <svg className="w-5 h-5" style={{ color: primary }} fill="none" stroke="currentColor" viewBox="0 0 24 24">

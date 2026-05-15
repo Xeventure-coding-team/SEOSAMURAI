@@ -225,10 +225,11 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
         <div className="px-4 py-4 mb-4 border rounded-2xl border-neutral-600">
           <UsageRemaining
             compact
-            metrics={["postsUsed", "aiReviewRepliesUsed", "geoGridScansUsed", "scheduledPostsUsed" , "reviewPostersUsed"]}
+            metrics={["postsUsed", "aiReviewRepliesUsed", "geoGridScansUsed", "scheduledPostsUsed"]}
+            slots={["reviewPosters"]}
           />
         </div>
-
+        
         <NavUser user={{
           name: user?.displayName ?? undefined,
           email: user?.primaryEmail ?? undefined,

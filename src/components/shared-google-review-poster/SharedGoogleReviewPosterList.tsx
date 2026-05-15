@@ -202,9 +202,9 @@ export default function SharedGoogleReviewPosterList() {
 
 
           <div className='flex gap-4 items-center flex-wrap'>
-            <UsageBadge metric="reviewPostersUsed" label="Review Posters" />
+            <UsageBadge slot="reviewPosters" label="Review Posters" />
 
-            <UsageGate metric="reviewPostersUsed">
+            <UsageGate slot="reviewPosters">
               <Button asChild size="lg" className="shrink-0">
                 <Link href="/app/shared-google-review-poster/create">
                   <Plus className="h-5 w-5" />

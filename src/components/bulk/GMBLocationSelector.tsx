@@ -121,6 +121,7 @@ export default function GMBLocationSelector() {
     const [selectedLocation, setSelectedLocation] = useState<string>("")
     const [locationDetails, setLocationDetails] = useState<LocationDetails | null>(null)
     const [loadingLocations, setLoadingLocations] = useState(true)
+    const [isAuthLoading, setIsAuthLoading] = useState(true)
     const [loadingDetails, setLoadingDetails] = useState(false)
     const [error, setError] = useState<string | null>(null)
     const [usage, setUsage] = useState<string | null>(null)
@@ -134,71 +135,56 @@ export default function GMBLocationSelector() {
 
     const hasValidCredentials = gmbAccountId && accessToken
 
+
+
     useEffect(() => {
-        if (hasValidCredentials) {
-            fetchLocations()
-        } else {
-            toast.error("Please authenticate with Google My Business first", {
-                duration: 4000,
-                position: "top-center",
-            })
-            setLoadingLocations(false)
-        }
-    }, [hasValidCredentials])
+        if (!gmbAccountId || !accessToken) return;
+        fetchLocations();
+    }, [gmbAccountId, accessToken]);
+
 
     const fetchLocations = async () => {
-        if (!accessToken) {
-            toast.error("Access token missing. Please re-authenticate.", {
-                duration: 4000,
-                position: "top-center",
-            })
-            setLoadingLocations(false)
-            return
-        }
-
         try {
-            setLoadingLocations(true)
-            setError(null)
+            setLoadingLocations(true);
+            setError(null);
 
-
+            if (!hasValidCredentials || !accessToken) {
+                toast.error("Please authenticate with Google My Business first", {
+                    duration: 4000,
+                    position: "top-center",
+                });
+                setLoadingLocations(false); // ← was missing, caused infinite loading
+                return;
+            }
             const response = await axios.get(`/api/gmb/locations?accessToken=${accessToken}`, {
                 headers: {
                     Authorization: `Bearer ${accessToken}`,
                 },
-            })
+            });
 
             if (response.data.accounts && response.data.accounts.length > 0) {
-                setLocations(response.data.accounts)
+                setLocations(response.data.accounts);
             } else {
                 toast.error("No business locations found. Check your GMB account.", {
                     duration: 5000,
                     position: "top-center",
-                })
+                });
             }
         } catch (err: any) {
-            const errorMessage = err.response?.data?.error || err.message || "Failed to fetch locations"
+            const errorMessage = err.response?.data?.error || err.message || "Failed to fetch locations";
 
             if (err.response?.status === 401) {
-                toast.error("Authentication expired. Please re-authenticate.", {
-                    duration: 5000,
-                    position: "top-center",
-                })
+                toast.error("Authentication expired. Please re-authenticate.", { duration: 5000, position: "top-center" });
             } else if (err.response?.status === 403) {
-                toast.error("Access denied. Check your GMB permissions.", {
-                    duration: 5000,
-                    position: "top-center",
-                })
+                toast.error("Access denied. Check your GMB permissions.", { duration: 5000, position: "top-center" });
             } else {
-                toast.error(`Unable to load locations: ${errorMessage}`, {
-                    duration: 5000,
-                    position: "top-center",
-                })
+                toast.error(`Unable to load locations: ${errorMessage}`, { duration: 5000, position: "top-center" });
             }
-            setError(errorMessage)
+            setError(errorMessage);
         } finally {
-            setLoadingLocations(false)
+            setLoadingLocations(false);
         }
-    }
+    };
 
     const fetchLocationDetails = async (locationName: string) => {
         if (!accessToken || !gmbAccountId) {
@@ -267,22 +253,15 @@ export default function GMBLocationSelector() {
     }
 
 
-    if (loadingLocations && isLoading) {
+    if (loadingLocations || isLoading) {
         return (
             <Card>
-                <CardContent className="space-y-6">
-                    {[1, 2, 3].map((i) => (
-                        <div key={i} className="space-y-3">
-                            <div className="flex items-start gap-3">
-                                <Skeleton className="h-10 w-10 rounded-full" />
-                                <div className="flex-1 space-y-2">
-                                    <Skeleton className="h-4 w-32" />
-                                    <Skeleton className="h-3 w-24" />
-                                </div>
-                            </div>
-                            <Skeleton className="h-16 w-full" />
-                        </div>
-                    ))}
+                <CardContent className="p-6 space-y-3">
+                    <Skeleton className="h-4 w-full" />
+                    <Skeleton className="h-4 w-5/6" />
+                    <Skeleton className="h-4 w-4/6" />
+                    <Skeleton className="h-4 w-full" />
+                    <Skeleton className="h-4 w-3/6" />
                 </CardContent>
             </Card>
         );
@@ -411,16 +390,12 @@ export default function GMBLocationSelector() {
 
             {loadingDetails && (
                 <Card>
-                    <CardContent className="space-y-4 py-8">
-                        <div className="space-y-2">
-                            <Skeleton className="h-5 w-48" />
-                            <Skeleton className="h-4 w-64" />
-                        </div>
-                        <div className="space-y-2">
-                            <Skeleton className="h-4 w-full" />
-                            <Skeleton className="h-4 w-3/4" />
-                            <Skeleton className="h-4 w-5/6" />
-                        </div>
+                    <CardContent className="p-6 space-y-3">
+                        <Skeleton className="h-4 w-full" />
+                        <Skeleton className="h-4 w-5/6" />
+                        <Skeleton className="h-4 w-4/6" />
+                        <Skeleton className="h-4 w-full" />
+                        <Skeleton className="h-4 w-3/6" />
                     </CardContent>
                 </Card>
             )}

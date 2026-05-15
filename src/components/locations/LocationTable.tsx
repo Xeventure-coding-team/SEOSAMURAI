@@ -63,7 +63,7 @@ const LockedActions: React.FC = () => {
         className="bg-primary hover:bg-primary/90 relative z-10 opacity-100"
         style={{ opacity: 200 }}
       >
-        <Link href="/app/settings/billing">
+        <Link href="/app/locations/settings/billing">
           Upgrade
         </Link>
       </Button>
@@ -150,22 +150,21 @@ const LockedActionButtons: React.FC = () => {
   );
 };
 
-interface Location {
-  id: any;
-  _id: any;
-  location_id?: string;
-  name: string;
-  title?: string;
-  is_active?: boolean;
+type Location = {
+  _id?: string
+  id?: string
+  name: string
+  title: string
+  formattedAddress: string
   profile?: {
-    description?: string;
-  };
-  categories?: {
-    primaryCategory?: {
-      displayName: string;
-    };
-  };
-  websiteUri?: string;
+    description?: string
+  }
+  websiteUri?: string
+  categories?: { primaryCategory?: { displayName: string } }
+  storefrontAddress?: { addressLines?: string[]; locality?: string }
+  location_id?: string
+  location_name?: string
+  is_active?: boolean
 }
 
 interface LocationTableProps {
@@ -212,7 +211,7 @@ const LocationTable: React.FC<LocationTableProps> = ({
               </Button>
             ) : (
               <Button asChild size="lg">
-                <Link href="/app/locations/add">
+                <Link href="/app/locations/locations/add">
                   <Plus className="h-4 w-4 mr-2" />
                   Add Your First Location
                 </Link>
@@ -453,7 +452,7 @@ const ActionButtons: React.FC<{ location: Location }> = ({ location }) => {
   return (
     <div className="flex items-center justify-start gap-2">
       {/* Primary Action: View Details */}
-      <Link href={`/app/locations/${locationSlug}`}>
+      <Link href={`/app/locations/locations/${locationSlug}`}>
         <Button variant="outline" size="sm" asChild>
           <span>
             <Eye className="h-3.5 w-3.5 mr-1.5" />
@@ -463,7 +462,7 @@ const ActionButtons: React.FC<{ location: Location }> = ({ location }) => {
       </Link>
 
       {/* Secondary Action: Manage */}
-      <Link href={`/app/locations/${locationSlug}/manage`}>
+      <Link href={`/app/locations/locations/${locationSlug}/manage`}>
         <Button variant="default" size="sm" asChild>
           <span>
             <Wrench className="h-3.5 w-3.5 mr-1.5" />
@@ -496,39 +495,39 @@ const QuickNavDropdown: React.FC<{ locationSlug: string }> = ({
           View
         </div>
         <DropdownMenuItem asChild>
-          <Link href={`/app/${locationSlug}#overview`} className="flex items-center gap-2">
+          <Link href={`/app/locations/${locationSlug}#overview`} className="flex items-center gap-2">
             <Eye className="h-4 w-4" />
             <span>Overview</span>
           </Link>
         </DropdownMenuItem>
         <DropdownMenuItem asChild>
-          <Link href={`/app/${locationSlug}#reviews`} className="flex items-center gap-2">
+          <Link href={`/app/locations/${locationSlug}#reviews`} className="flex items-center gap-2">
             <MessageSquare className="h-4 w-4" />
             <span>Reviews</span>
           </Link>
         </DropdownMenuItem>
         <DropdownMenuItem asChild>
-          <Link href={`/app/${locationSlug}#hours`} className="flex items-center gap-2">
+          <Link href={`/app/locations/${locationSlug}#hours`} className="flex items-center gap-2">
             <Clock className="h-4 w-4" />
             <span>Hours</span>
           </Link>
         </DropdownMenuItem>
 
         <DropdownMenuItem asChild>
-          <Link href={`/app/${locationSlug}#media`} className="flex items-center gap-2">
+          <Link href={`/app/locations/${locationSlug}#media`} className="flex items-center gap-2">
             <Image className="h-4 w-4" />
             <span>Media</span>
           </Link>
         </DropdownMenuItem>
         <DropdownMenuItem asChild>
-          <Link href={`/app/${locationSlug}#location-map`} className="flex items-center gap-2">
+          <Link href={`/app/locations/${locationSlug}#location-map`} className="flex items-center gap-2">
             <MapPinned className="h-4 w-4" />
             <span>Location Map</span>
           </Link>
         </DropdownMenuItem>
 
         <DropdownMenuItem asChild>
-          <Link href={`/app/${locationSlug}#health`} className="flex items-center gap-2">
+          <Link href={`/app/locations/${locationSlug}#health`} className="flex items-center gap-2">
             <Activity className="h-4 w-4" />
             <span>Health</span>
           </Link>
@@ -541,37 +540,37 @@ const QuickNavDropdown: React.FC<{ locationSlug: string }> = ({
           Manage
         </div>
         <DropdownMenuItem asChild>
-          <Link href={`/app/${locationSlug}/manage#tasks`} className="flex items-center gap-2">
+          <Link href={`/app/locations/${locationSlug}/manage#tasks`} className="flex items-center gap-2">
             <Zap className="h-4 w-4" />
             <span>Tasks</span>
           </Link>
         </DropdownMenuItem>
         <DropdownMenuItem asChild>
-          <Link href={`/app/${locationSlug}/manage#keywords`} className="flex items-center gap-2">
+          <Link href={`/app/locations/${locationSlug}/manage#keywords`} className="flex items-center gap-2">
             <FileText className="h-4 w-4" />
             <span>Keywords</span>
           </Link>
         </DropdownMenuItem>
         <DropdownMenuItem asChild>
-          <Link href={`/app/${locationSlug}/manage#analytics`} className="flex items-center gap-2">
+          <Link href={`/app/locations/${locationSlug}/manage#analytics`} className="flex items-center gap-2">
             <BarChart3 className="h-4 w-4" />
             <span>Analytics</span>
           </Link>
         </DropdownMenuItem>
         <DropdownMenuItem asChild>
-          <Link href={`/app/${locationSlug}/manage#competitor-insights`} className="flex items-center gap-2">
+          <Link href={`/app/locations/${locationSlug}/manage#competitor-insights`} className="flex items-center gap-2">
             <TrendingUp className="h-4 w-4" />
             <span>Competitor Insights</span>
           </Link>
         </DropdownMenuItem>
         <DropdownMenuItem asChild>
-          <Link href={`/app/${locationSlug}/manage#social-posts`} className="flex items-center gap-2">
+          <Link href={`/app/locations/${locationSlug}/manage#social-posts`} className="flex items-center gap-2">
             <Share2 className="h-4 w-4" />
             <span>Social Posts</span>
           </Link>
         </DropdownMenuItem>
         <DropdownMenuItem asChild>
-          <Link href={`/app/${locationSlug}/manage#customer-reviews`} className="flex items-center gap-2">
+          <Link href={`/app/locations/${locationSlug}/manage#customer-reviews`} className="flex items-center gap-2">
             <MessageSquare className="h-4 w-4" />
             <span>Customer Reviews</span>
           </Link>

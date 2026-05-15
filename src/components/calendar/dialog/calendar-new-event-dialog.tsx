@@ -57,6 +57,7 @@ import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
 
 import { useCalendarStore } from '@/store/calendarStore'
 import { UsageGate } from "@/components/usage-gate"
+import { LegendSection } from "@/components/ui/legend-section"
 
 interface GmbPostFormProps {
   selectedLocation?: string | undefined
@@ -653,383 +654,384 @@ export default function CalendarNewEventDialog({
 
                     <CardContent>
                       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-                        {/* Post Content */}
-                        <FormField
-                          control={form.control}
-                          name="postContent"
-                          render={({ field }) => (
-                            <FormItem>
-                              <FormLabel className="flex items-center justify-between">
-                                <span>Post Content</span>
-                                <div className="flex items-center gap-2">
-                                  <Badge variant={characterCount > 1200 ? "destructive" : "secondary"}>
-                                    {characterCount}/1500
-                                  </Badge>
-                                  <Button
-                                    type="button"
-                                    variant="outline"
-                                    size="sm"
-                                    onClick={handleEnhanceContent}
-                                    disabled={isEnhancing || !field.value?.trim()}
-                                  >
-                                    {isEnhancing ? (
-                                      <Loader2 className="h-3 w-3 animate-spin" />
-                                    ) : (
-                                      <Wand2 className="h-3 w-3" />
-                                    )}
-                                  </Button>
-                                </div>
-                              </FormLabel>
-                              <FormControl>
-                                <Textarea
-                                  placeholder="Write your post content here..."
-                                  className="min-h-[120px] resize-none"
-                                  {...field}
-                                />
-                              </FormControl>
-                              <FormDescription>
-                                Share updates, promotions, or news about your business. Use the magic wand to generate
-                                an image from your content!
-                              </FormDescription>
-                              <FormMessage />
-                            </FormItem>
-                          )}
-                        />
+                        <LegendSection legend="Post Content">
+                          {/* Post Content */}
+                          <FormField
+                            control={form.control}
+                            name="postContent"
+                            render={({ field }) => (
+                              <FormItem>
+                                <FormLabel className="flex items-center justify-between">
+                                  <div className="flex items-center gap-2">
+                                    <Badge variant={characterCount > 1200 ? "destructive" : "secondary"}>
+                                      {characterCount}/1500
+                                    </Badge>
+                                    <Button
+                                      type="button"
+                                      variant="outline"
+                                      size="sm"
+                                      onClick={handleEnhanceContent}
+                                      disabled={isEnhancing || !field.value?.trim()}
+                                    >
+                                      {isEnhancing ? (
+                                        <Loader2 className="h-3 w-3 animate-spin" />
+                                      ) : (
+                                        <Wand2 className="h-3 w-3" />
+                                      )}
+                                    </Button>
+                                  </div>
+                                </FormLabel>
+                                <FormControl>
+                                  <Textarea
+                                    placeholder="Write your post content here..."
+                                    className="min-h-[120px] resize-none"
+                                    {...field}
+                                  />
+                                </FormControl>
+                                <FormDescription>
+                                  Share updates, promotions, or news about your business. Use the magic wand to generate
+                                  an image from your content!
+                                </FormDescription>
+                                <FormMessage />
+                              </FormItem>
+                            )}
+                          />
+                        </LegendSection>
 
 
                         {/* Color Field */}
-                        <FormField
-                          control={form.control}
-                          name="color"
-                          render={({ field }) => (
-                            <FormItem>
-                              <FormLabel>Event Color</FormLabel>
-                              <FormControl>
-                                <div className="flex gap-2 items-center">
-                                  <input
-                                    type="color"
-                                    value={field.value || "#3b82f6"}
-                                    onChange={field.onChange}
-                                    className="w-12 h-10 rounded border border-input cursor-pointer"
-                                  />
-                                  <Input
-                                    value={field.value || "#3b82f6"}
-                                    onChange={field.onChange}
-                                    placeholder="#3b82f6"
-                                    className="flex-1"
-                                  />
-                                </div>
-                              </FormControl>
-                              <FormDescription>Choose a color for this event in the calendar</FormDescription>
-                              <FormMessage />
-                            </FormItem>
-                          )}
-                        />
+                        <LegendSection legend="Event Color">
+                          <FormField
+                            control={form.control}
+                            name="color"
+                            render={({ field }) => (
+                              <FormItem>
+                                <FormControl>
+                                  <div className="flex gap-2 items-center">
+                                    <input
+                                      type="color"
+                                      value={field.value || "#3b82f6"}
+                                      onChange={field.onChange}
+                                      className="w-12 h-10 rounded border border-input cursor-pointer"
+                                    />
+                                    <Input
+                                      value={field.value || "#3b82f6"}
+                                      onChange={field.onChange}
+                                      placeholder="#3b82f6"
+                                      className="flex-1"
+                                    />
+                                  </div>
+                                </FormControl>
+                                <FormDescription>Choose a color for this event in the calendar</FormDescription>
+                                <FormMessage />
+                              </FormItem>
+                            )}
+                          />
+                        </LegendSection>
 
 
                         {/* Media Section */}
-                        <div className="space-y-4">
-                          <div className="flex items-center justify-between">
-                            <h3 className="text-sm font-medium">Media</h3>
-                            <Badge variant="outline">Optional</Badge>
-                          </div>
+                        <LegendSection legend="Media">
+                          <div className="space-y-4">
+                            {/* Image Upload Section */}
+                            <FormField
+                              control={form.control}
+                              name="image_url"
+                              render={({ field }) => (
+                                <FormItem>
+                                  <FormLabel>Image</FormLabel>
+                                  <FormControl>
+                                    <div className="space-y-4">
+                                      <Tabs defaultValue="upload" className="w-full">
+                                        <TabsList className="grid w-full grid-cols-3">
+                                          <TabsTrigger value="upload">Upload</TabsTrigger>
+                                          <TabsTrigger value="url">URL</TabsTrigger>
+                                          <TabsTrigger value="ai">AI Generate</TabsTrigger>
+                                        </TabsList>
 
-                          {/* Image Upload Section */}
-                          <FormField
-                            control={form.control}
-                            name="image_url"
-                            render={({ field }) => (
-                              <FormItem>
-                                <FormLabel>Image</FormLabel>
-                                <FormControl>
-                                  <div className="space-y-4">
-                                    <Tabs defaultValue="upload" className="w-full">
-                                      <TabsList className="grid w-full grid-cols-3">
-                                        <TabsTrigger value="upload">Upload</TabsTrigger>
-                                        <TabsTrigger value="url">URL</TabsTrigger>
-                                        <TabsTrigger value="ai">AI Generate</TabsTrigger>
-                                      </TabsList>
-
-                                      <TabsContent value="upload" className="space-y-4">
-                                        {/* File Upload Area */}
-                                        <div
-                                          className={`relative border-2 border-dashed rounded-lg p-6 transition-colors ${dragActive
-                                            ? "border-primary bg-primary/5"
-                                            : "border-muted-foreground/25 hover:border-muted-foreground/50"
-                                            }`}
-                                          onDragEnter={handleDrag}
-                                          onDragLeave={handleDrag}
-                                          onDragOver={handleDrag}
-                                          onDrop={handleDrop}
-                                        >
-                                          {selectedFile || previewUrl ? (
-                                            <div className="flex items-center gap-4">
-                                              {displayImageUrl && (
-                                                <div className="relative">
-                                                  <img
-                                                    src={displayImageUrl || "/placeholder.svg"}
-                                                    alt="Preview"
-                                                    className="w-16 h-16 object-cover rounded-lg"
-                                                    onError={(e) => {
-                                                      e.currentTarget.src = "/placeholder.svg"
-                                                    }}
-                                                  />
+                                        <TabsContent value="upload" className="space-y-4">
+                                          {/* File Upload Area */}
+                                          <div
+                                            className={`relative border-2 border-dashed rounded-lg p-6 transition-colors ${dragActive
+                                              ? "border-primary bg-primary/5"
+                                              : "border-muted-foreground/25 hover:border-muted-foreground/50"
+                                              }`}
+                                            onDragEnter={handleDrag}
+                                            onDragLeave={handleDrag}
+                                            onDragOver={handleDrag}
+                                            onDrop={handleDrop}
+                                          >
+                                            {selectedFile || previewUrl ? (
+                                              <div className="flex items-center gap-4">
+                                                {displayImageUrl && (
+                                                  <div className="relative">
+                                                    <img
+                                                      src={displayImageUrl || "/placeholder.svg"}
+                                                      alt="Preview"
+                                                      className="w-16 h-16 object-cover rounded-lg"
+                                                      onError={(e) => {
+                                                        e.currentTarget.src = "/placeholder.svg"
+                                                      }}
+                                                    />
+                                                  </div>
+                                                )}
+                                                <div className="flex-1">
+                                                  <p className="text-sm font-medium">
+                                                    {selectedFile?.name || "Image selected"}
+                                                  </p>
+                                                  <p className="text-xs text-muted-foreground">
+                                                    {selectedFile && `${(selectedFile.size / 1024 / 1024).toFixed(2)} MB`}
+                                                  </p>
                                                 </div>
-                                              )}
-                                              <div className="flex-1">
-                                                <p className="text-sm font-medium">
-                                                  {selectedFile?.name || "Image selected"}
-                                                </p>
-                                                <p className="text-xs text-muted-foreground">
-                                                  {selectedFile && `${(selectedFile.size / 1024 / 1024).toFixed(2)} MB`}
-                                                </p>
+                                                <Button type="button" variant="outline" size="sm" onClick={removeFile}>
+                                                  <X className="h-4 w-4" />
+                                                </Button>
                                               </div>
-                                              <Button type="button" variant="outline" size="sm" onClick={removeFile}>
-                                                <X className="h-4 w-4" />
+                                            ) : (
+                                              <div className="text-center">
+                                                <Upload className="mx-auto h-8 w-8 text-muted-foreground mb-2" />
+                                                <p className="text-sm text-muted-foreground mb-1">
+                                                  Drag and drop an image here, or{" "}
+                                                  <button
+                                                    type="button"
+                                                    className="text-primary hover:underline"
+                                                    onClick={() => fileInputRef.current?.click()}
+                                                  >
+                                                    browse
+                                                  </button>
+                                                </p>
+                                                <p className="text-xs text-muted-foreground">PNG, JPG, WebP up to 10MB</p>
+                                              </div>
+                                            )}
+                                            <input
+                                              ref={fileInputRef}
+                                              type="file"
+                                              accept={ACCEPTED_IMAGE_TYPES.join(",")}
+                                              onChange={(e) => e.target.files?.[0] && handleFileSelect(e.target.files[0])}
+                                              className="hidden"
+                                            />
+                                          </div>
+                                        </TabsContent>
+
+                                        <TabsContent value="url" className="space-y-4">
+                                          <FormField
+                                            control={form.control}
+                                            name="image_url"
+                                            render={({ field }) => (
+                                              <FormItem>
+                                                <FormControl>
+                                                  <Input
+                                                    placeholder="https://example.com/image.jpg"
+                                                    disabled={!!selectedFile}
+                                                    {...field}
+                                                  />
+                                                </FormControl>
+                                                <FormMessage />
+                                              </FormItem>
+                                            )}
+                                          />
+                                        </TabsContent>
+
+                                        <TabsContent value="ai" className="space-y-4">
+                                          <div className="space-y-4">
+                                            <div className="flex gap-2">
+                                              <Button
+                                                type="button"
+                                                variant="outline"
+                                                onClick={generateImageFromContent}
+                                                disabled={isGeneratingImage || !form.watch("postContent")?.trim()}
+                                                className="flex-1 bg-transparent"
+                                              >
+                                                {isGeneratingImage ? (
+                                                  <Loader2 className="h-4 w-4 animate-spin mr-2" />
+                                                ) : (
+                                                  <Wand2 className="h-4 w-4 mr-2" />
+                                                )}
+                                                Generate from Content
                                               </Button>
                                             </div>
-                                          ) : (
-                                            <div className="text-center">
-                                              <Upload className="mx-auto h-8 w-8 text-muted-foreground mb-2" />
-                                              <p className="text-sm text-muted-foreground mb-1">
-                                                Drag and drop an image here, or{" "}
-                                                <button
-                                                  type="button"
-                                                  className="text-primary hover:underline"
-                                                  onClick={() => fileInputRef.current?.click()}
-                                                >
-                                                  browse
-                                                </button>
-                                              </p>
-                                              <p className="text-xs text-muted-foreground">PNG, JPG, WebP up to 10MB</p>
+
+                                            <div className="relative">
+                                              <div className="absolute inset-0 flex items-center">
+                                                <span className="w-full border-t" />
+                                              </div>
+                                              <div className="relative flex justify-center text-xs uppercase">
+                                                <span className="bg-background px-2 text-muted-foreground">Or</span>
+                                              </div>
+                                            </div>
+
+                                            <div className="flex gap-2">
+                                              <Input
+                                                placeholder="Describe the image you want to generate..."
+                                                value={imagePrompt}
+                                                onChange={(e) => setImagePrompt(e.target.value)}
+                                                disabled={isGeneratingImage}
+                                              />
+                                              <Button
+                                                type="button"
+                                                onClick={generateImage}
+                                                disabled={isGeneratingImage || !imagePrompt.trim()}
+                                              >
+                                                {isGeneratingImage ? (
+                                                  <Loader2 className="h-4 w-4 animate-spin" />
+                                                ) : (
+                                                  <Sparkles className="h-4 w-4" />
+                                                )}
+                                              </Button>
+                                            </div>
+                                          </div>
+                                          {watchedImageUrl && (
+                                            <div className="mt-2">
+                                              <img
+                                                src={watchedImageUrl || "/placeholder.svg"}
+                                                alt="Generated"
+                                                className="w-32 h-32 object-cover rounded-lg"
+                                                onError={(e) => {
+                                                  e.currentTarget.src = "/placeholder.svg"
+                                                }}
+                                              />
                                             </div>
                                           )}
-                                          <input
-                                            ref={fileInputRef}
-                                            type="file"
-                                            accept={ACCEPTED_IMAGE_TYPES.join(",")}
-                                            onChange={(e) => e.target.files?.[0] && handleFileSelect(e.target.files[0])}
-                                            className="hidden"
-                                          />
-                                        </div>
-                                      </TabsContent>
-
-                                      <TabsContent value="url" className="space-y-4">
-                                        <FormField
-                                          control={form.control}
-                                          name="image_url"
-                                          render={({ field }) => (
-                                            <FormItem>
-                                              <FormControl>
-                                                <Input
-                                                  placeholder="https://example.com/image.jpg"
-                                                  disabled={!!selectedFile}
-                                                  {...field}
-                                                />
-                                              </FormControl>
-                                              <FormMessage />
-                                            </FormItem>
-                                          )}
-                                        />
-                                      </TabsContent>
-
-                                      <TabsContent value="ai" className="space-y-4">
-                                        <div className="space-y-4">
-                                          <div className="flex gap-2">
-                                            <Button
-                                              type="button"
-                                              variant="outline"
-                                              onClick={generateImageFromContent}
-                                              disabled={isGeneratingImage || !form.watch("postContent")?.trim()}
-                                              className="flex-1 bg-transparent"
-                                            >
-                                              {isGeneratingImage ? (
-                                                <Loader2 className="h-4 w-4 animate-spin mr-2" />
-                                              ) : (
-                                                <Wand2 className="h-4 w-4 mr-2" />
-                                              )}
-                                              Generate from Content
-                                            </Button>
-                                          </div>
-
-                                          <div className="relative">
-                                            <div className="absolute inset-0 flex items-center">
-                                              <span className="w-full border-t" />
-                                            </div>
-                                            <div className="relative flex justify-center text-xs uppercase">
-                                              <span className="bg-background px-2 text-muted-foreground">Or</span>
-                                            </div>
-                                          </div>
-
-                                          <div className="flex gap-2">
-                                            <Input
-                                              placeholder="Describe the image you want to generate..."
-                                              value={imagePrompt}
-                                              onChange={(e) => setImagePrompt(e.target.value)}
-                                              disabled={isGeneratingImage}
-                                            />
-                                            <Button
-                                              type="button"
-                                              onClick={generateImage}
-                                              disabled={isGeneratingImage || !imagePrompt.trim()}
-                                            >
-                                              {isGeneratingImage ? (
-                                                <Loader2 className="h-4 w-4 animate-spin" />
-                                              ) : (
-                                                <Sparkles className="h-4 w-4" />
-                                              )}
-                                            </Button>
-                                          </div>
-                                        </div>
-                                        {watchedImageUrl && (
-                                          <div className="mt-2">
-                                            <img
-                                              src={watchedImageUrl || "/placeholder.svg"}
-                                              alt="Generated"
-                                              className="w-32 h-32 object-cover rounded-lg"
-                                              onError={(e) => {
-                                                e.currentTarget.src = "/placeholder.svg"
-                                              }}
-                                            />
-                                          </div>
-                                        )}
-                                      </TabsContent>
-                                    </Tabs>
-                                  </div>
-                                </FormControl>
-                                <FormMessage />
-                              </FormItem>
-                            )}
-                          />
-                        </div>
+                                        </TabsContent>
+                                      </Tabs>
+                                    </div>
+                                  </FormControl>
+                                  <FormMessage />
+                                </FormItem>
+                              )}
+                            />
+                          </div>
+                        </LegendSection>
 
                         {/* Call to Action */}
-                        <div className="space-y-4">
-                          <h3 className="text-sm font-medium">Call to Action</h3>
+                        <LegendSection legend="Call to Action">
+                          <div className="space-y-4">
 
+                            <FormField
+                              control={form.control}
+                              name="actionButton"
+                              render={({ field }) => (
+                                <FormItem>
+                                  <FormLabel>Action Button</FormLabel>
+                                  <Select onValueChange={field.onChange} value={field.value}>
+                                    <FormControl>
+                                      <SelectTrigger>
+                                        <SelectValue placeholder="Select an action" />
+                                      </SelectTrigger>
+                                    </FormControl>
+                                    <SelectContent>
+                                      <SelectItem value="NO_ACTION">No action button</SelectItem>
+                                      {availableActionOptions.map((option) => {
+                                        const Icon = option.icon
+                                        return (
+                                          <SelectItem key={option.value} value={option.value}>
+                                            <div className="flex items-center gap-2">
+                                              <Icon className="h-4 w-4" />
+                                              {option.label}
+                                            </div>
+                                          </SelectItem>
+                                        )
+                                      })}
+                                    </SelectContent>
+                                  </Select>
+                                  <FormMessage />
+                                </FormItem>
+                              )}
+                            />
+
+                            {/* FIX 4: Show actionLink for all non-CALL, non-NO_ACTION buttons (including BOOK) */}
+                            {watchedActionButton &&
+                              watchedActionButton !== "CALL" &&
+                              watchedActionButton !== "NO_ACTION" && (
+                                <FormField
+                                  control={form.control}
+                                  name="actionLink"
+                                  render={({ field }) => (
+                                    <FormItem>
+                                      <FormLabel className="flex items-center gap-2">
+                                        <ExternalLink className="h-4 w-4" />
+                                        Action Link
+                                      </FormLabel>
+                                      <FormControl>
+                                        <Input placeholder="https://your-website.com" {...field} />
+                                      </FormControl>
+                                      <FormDescription>
+                                        URL users will be directed to when they click the action button
+                                      </FormDescription>
+                                      <FormMessage />
+                                    </FormItem>
+                                  )}
+                                />
+                              )}
+
+                            {/* FIX 5: CALL phone — uses react-hook-form field so form value stays in sync */}
+                            {watchedActionButton === "CALL" && (
+                              <>
+                                <FormField
+                                  control={form.control}
+                                  name="callPhone"
+                                  render={({ field }) => (
+                                    <FormItem>
+                                      <FormLabel className="flex items-center gap-2">
+                                        <Phone className="h-4 w-4" />
+                                        Phone Number (from Google profile)
+                                        {isLoadingDetails && (
+                                          <Loader2 className="h-3 w-3 animate-spin text-muted-foreground" />
+                                        )}
+                                      </FormLabel>
+                                      <FormControl>
+                                        {/* Use {...field} so the form value is properly registered & validated */}
+                                        <Input
+                                          {...field}
+                                          disabled
+                                          className="bg-muted cursor-not-allowed"
+                                        />
+                                      </FormControl>
+                                      <FormDescription className="text-muted-foreground">
+                                        {isLoadingDetails
+                                          ? "Fetching business phone number..."
+                                          : "This number is taken directly from your Google Business Profile and cannot be changed here."}
+                                      </FormDescription>
+                                      <FormMessage />
+                                    </FormItem>
+                                  )}
+                                />
+
+                                {/* ⚠️ Warning Alert */}
+                                <Alert className="border-yellow-300 bg-yellow-50 text-yellow-800">
+                                  <AlertTriangle className="h-4 w-4 text-yellow-800" />
+                                  <AlertTitle>Heads up!</AlertTitle>
+                                  <AlertDescription>
+                                    The Call button may not appear after publishing your post.
+                                    You may need to verify your phone number in your Google Business Profile.
+                                  </AlertDescription>
+                                </Alert>
+
+                              </>
+                            )}
+                          </div>
+                        </LegendSection>
+
+                        <LegendSection legend="Scheduled Date & Time">
                           <FormField
                             control={form.control}
-                            name="actionButton"
+                            name="scheduled"
                             render={({ field }) => (
                               <FormItem>
-                                <FormLabel>Action Button</FormLabel>
-                                <Select onValueChange={field.onChange} value={field.value}>
-                                  <FormControl>
-                                    <SelectTrigger>
-                                      <SelectValue placeholder="Select an action" />
-                                    </SelectTrigger>
-                                  </FormControl>
-                                  <SelectContent>
-                                    <SelectItem value="NO_ACTION">No action button</SelectItem>
-                                    {availableActionOptions.map((option) => {
-                                      const Icon = option.icon
-                                      return (
-                                        <SelectItem key={option.value} value={option.value}>
-                                          <div className="flex items-center gap-2">
-                                            <Icon className="h-4 w-4" />
-                                            {option.label}
-                                          </div>
-                                        </SelectItem>
-                                      )
-                                    })}
-                                  </SelectContent>
-                                </Select>
+                                <FormControl>
+                                  <DateTimePicker
+                                    field={field}
+                                    minDate={new Date()}
+                                  />
+                                </FormControl>
+                                <FormDescription>
+                                  When this post should be published to Google My Business
+                                </FormDescription>
                                 <FormMessage />
                               </FormItem>
                             )}
                           />
-
-                          {/* FIX 4: Show actionLink for all non-CALL, non-NO_ACTION buttons (including BOOK) */}
-                          {watchedActionButton &&
-                            watchedActionButton !== "CALL" &&
-                            watchedActionButton !== "NO_ACTION" && (
-                              <FormField
-                                control={form.control}
-                                name="actionLink"
-                                render={({ field }) => (
-                                  <FormItem>
-                                    <FormLabel className="flex items-center gap-2">
-                                      <ExternalLink className="h-4 w-4" />
-                                      Action Link
-                                    </FormLabel>
-                                    <FormControl>
-                                      <Input placeholder="https://your-website.com" {...field} />
-                                    </FormControl>
-                                    <FormDescription>
-                                      URL users will be directed to when they click the action button
-                                    </FormDescription>
-                                    <FormMessage />
-                                  </FormItem>
-                                )}
-                              />
-                            )}
-
-                          {/* FIX 5: CALL phone — uses react-hook-form field so form value stays in sync */}
-                          {watchedActionButton === "CALL" && (
-                            <>
-                              <FormField
-                                control={form.control}
-                                name="callPhone"
-                                render={({ field }) => (
-                                  <FormItem>
-                                    <FormLabel className="flex items-center gap-2">
-                                      <Phone className="h-4 w-4" />
-                                      Phone Number (from Google profile)
-                                      {isLoadingDetails && (
-                                        <Loader2 className="h-3 w-3 animate-spin text-muted-foreground" />
-                                      )}
-                                    </FormLabel>
-                                    <FormControl>
-                                      {/* Use {...field} so the form value is properly registered & validated */}
-                                      <Input
-                                        {...field}
-                                        disabled
-                                        className="bg-muted cursor-not-allowed"
-                                      />
-                                    </FormControl>
-                                    <FormDescription className="text-muted-foreground">
-                                      {isLoadingDetails
-                                        ? "Fetching business phone number..."
-                                        : "This number is taken directly from your Google Business Profile and cannot be changed here."}
-                                    </FormDescription>
-                                    <FormMessage />
-                                  </FormItem>
-                                )}
-                              />
-
-                              {/* ⚠️ Warning Alert */}
-                              <Alert className="border-yellow-300 bg-yellow-50 text-yellow-800">
-                                <AlertTriangle className="h-4 w-4 text-yellow-800" />
-                                <AlertTitle>Heads up!</AlertTitle>
-                                <AlertDescription>
-                                  The Call button may not appear after publishing your post.
-                                  You may need to verify your phone number in your Google Business Profile.
-                                </AlertDescription>
-                              </Alert>
-
-                            </>
-                          )}
-                        </div>
-
-                        <FormField
-                          control={form.control}
-                          name="scheduled"
-                          render={({ field }) => (
-                            <FormItem>
-                              <FormLabel className="font-bold">Scheduled Date & Time</FormLabel>
-                              <FormControl>
-                                <DateTimePicker
-                                  field={field}
-                                  minDate={new Date()}
-                                />
-                              </FormControl>
-                              <FormDescription>
-                                When this post should be published to Google My Business
-                              </FormDescription>
-                              <FormMessage />
-                            </FormItem>
-                          )}
-                        />
+                        </LegendSection>
 
                         <div className="grid grid-cols-2 gap-2">
                           {/* Image (upload or URL) is required to submit */}

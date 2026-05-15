@@ -34,6 +34,7 @@ import { usePlanLimits } from "@/lib/use-plan-limits"
 import { useRouter } from "next/navigation"
 
 type Location = {
+  _id?: string
   id?: string
   name: string
   title: string
