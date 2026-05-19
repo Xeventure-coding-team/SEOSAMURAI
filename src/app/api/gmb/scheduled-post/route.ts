@@ -51,6 +51,25 @@ const updateScheduledPostSchema = z.object({
 
 const POST_RELEASES_QUOTA = ["scheduled", "failed", "cancelled"] as const;
 
+
+// Helper function to handle base64 data URLs
+async function processBase64Image(dataUrl: string): Promise<string> {
+  const matches = dataUrl.match(/^data:([A-Za-z-+\/]+);base64,(.+)$/)
+  if (!matches || matches.length !== 3) {
+    throw new Error('Invalid base64 data URL')
+  }
+
+  const mimeType = matches[1]
+  const base64Data = matches[2]
+  const buffer = Buffer.from(base64Data, 'base64')
+
+  const ext = mimeType.split('/')[1] || 'jpg'
+  const fileName = `ai-generated-${Date.now()}.${ext}`
+
+  return await uploadToImgKit(buffer, fileName)
+}
+
+
 // Helper function to delete image from ImageKit
 async function deleteFromImageKit(imageUrl: string): Promise<void> {
     try {
@@ -130,41 +149,45 @@ async function uploadToImgKit(file: Buffer, fileName: string): Promise<string> {
 
 // Helper function to download and upload external images
 async function downloadAndUploadImage(imageUrl: string): Promise<string> {
-    try {
-        // Try direct URL first
-        const response = await axios.head(imageUrl);
-        if (response.status === 200) {
-            return imageUrl;
-        }
-    } catch {
-        // Continue to download and upload
+  // Handle base64 data URLs directly
+  if (imageUrl.startsWith('data:')) {
+    return await processBase64Image(imageUrl)
+  }
+
+  try {
+    const response = await axios.head(imageUrl)
+    if (response.status === 200) {
+      return imageUrl
+    }
+  } catch {
+    // Continue to download and upload
+  }
+
+  try {
+    const response = await axios.get(imageUrl, {
+      responseType: 'arraybuffer',
+      timeout: 10000
+    })
+    const buffer = Buffer.from(response.data)
+
+    const url = new URL(imageUrl)
+    let fileName = url.pathname.split('/').pop() || 'scheduled-image'
+
+    if (!fileName.includes('.')) {
+      const contentType = response.headers['content-type']
+      if (contentType?.includes('jpeg') || contentType?.includes('jpg')) {
+        fileName += '.jpg'
+      } else if (contentType?.includes('png')) {
+        fileName += '.png'
+      } else {
+        fileName += '.jpg'
+      }
     }
 
-    try {
-        const response = await axios.get(imageUrl, {
-            responseType: 'arraybuffer',
-            timeout: 10000
-        });
-        const buffer = Buffer.from(response.data);
-
-        const url = new URL(imageUrl);
-        let fileName = url.pathname.split('/').pop() || 'scheduled-image';
-
-        if (!fileName.includes('.')) {
-            const contentType = response.headers['content-type'];
-            if (contentType?.includes('jpeg') || contentType?.includes('jpg')) {
-                fileName += '.jpg';
-            } else if (contentType?.includes('png')) {
-                fileName += '.png';
-            } else {
-                fileName += '.jpg';
-            }
-        }
-
-        return await uploadToImgKit(buffer, fileName);
-    } catch (error: any) {
-        throw new Error('Failed to process image: ' + error.message);
-    }
+    return await uploadToImgKit(buffer, fileName)
+  } catch (error: any) {
+    throw new Error('Failed to process image: ' + error.message)
+  }
 }
 
 // Helper to clean account/location IDs

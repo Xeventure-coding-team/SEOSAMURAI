@@ -4,7 +4,15 @@ export default function CalendarHeaderActions({
   children: React.ReactNode
 }) {
   return (
-    <div className="flex md:justify-start justify-between items-center gap-2">
+    <div
+      className="
+        flex flex-wrap
+        w-full sm:w-auto
+        items-center
+        justify-between sm:justify-start
+        gap-2
+      "
+    >
       {children}
     </div>
   )

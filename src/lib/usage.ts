@@ -7,7 +7,8 @@ export type UsageMetric =
   | "scheduledPostsUsed"
   | "geoGridScansUsed"
   | "reviewPostersUsed"
-  | "keywordTrackingUsed";
+  | "keywordTrackingUsed"
+  | "aiImageUsed";
 
 // Maps each UsageMetric → the corresponding PlanLimits key
 const METRIC_TO_LIMIT: Record<UsageMetric, string> = {
@@ -17,6 +18,7 @@ const METRIC_TO_LIMIT: Record<UsageMetric, string> = {
   geoGridScansUsed: "geoGridScans",
   reviewPostersUsed: "reviewPoster",
   keywordTrackingUsed: "keywordTracking",
+  aiImageUsed: "aiImage",
 };
 
 export type IncrementResult =

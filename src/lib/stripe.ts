@@ -33,6 +33,7 @@ export const CURRENCY_CONFIG: Record<
 export type PlanId = "starter" | "growth" | "pro";
 
 export interface PlanLimits {
+  aiImage: number
   locations: number;
   postsPerMonth: number;
   aiReviewReplies: number;
@@ -87,6 +88,7 @@ export const PLANS: Plan[] = [
     price: 129900,
     interval: "month",
     limits: {
+      aiImage: 5,
       locations: 1,
       postsPerMonth: 8,
       aiReviewReplies: 15,
@@ -109,6 +111,7 @@ export const PLANS: Plan[] = [
       "1 Location",
       "8 Posts/month",
       "15 AI Review Replies/month",
+      "5 AI Poster/month",
       "5 Scheduled Posts/month",
       "2 Geo Grid Scans/month",
       "10 Keywords per Location",
@@ -139,6 +142,7 @@ export const PLANS: Plan[] = [
     interval: "month",
     highlight: true,
     limits: {
+      aiImage: 10,
       locations: 3,
       postsPerMonth: 30,
       aiReviewReplies: 75,
@@ -161,6 +165,7 @@ export const PLANS: Plan[] = [
       "3 Locations",
       "30 Posts/month",
       "75 AI Review Replies/month",
+      "10 AI Poster/month",
       "15 Scheduled Posts/month",
       "5 Geo Grid Scans/month",
       "20 Keywords per Location",
@@ -191,6 +196,7 @@ export const PLANS: Plan[] = [
     price: 899900,
     interval: "month",
     limits: {
+      aiImage: 15,
       locations: 10,
       postsPerMonth: 100,
       aiReviewReplies: 200,
@@ -213,6 +219,7 @@ export const PLANS: Plan[] = [
       "10 Locations",
       "100 Posts/month",
       "200 AI Review Replies/month",
+      "15 AI Poster/month",
       "50 Scheduled Posts/month",
       "Bulk Posting",
       "10 Geo Grid Scans/month",

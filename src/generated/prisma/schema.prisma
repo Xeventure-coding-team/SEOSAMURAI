@@ -710,6 +710,7 @@ model Usage {
   periodEnd   DateTime
 
   postsUsed           Int @default(0)
+  aiPostersUsed       Int @default(0)
   aiReviewRepliesUsed Int @default(0)
   scheduledPostsUsed  Int @default(0)
   geoGridScansUsed    Int @default(0)

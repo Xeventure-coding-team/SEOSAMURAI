@@ -304,7 +304,7 @@ export default function GMBLocationSelector() {
                     <span className="font-medium">Available Locations ({locations.length})</span>
                 </div>
 
-                <ScrollArea className="h-[400px] sm:h-auto">
+                <ScrollArea className="sm:h-auto">
                     <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2.5">
                         {locations.length === 0 ? (
                             <Card className="border-dashed col-span-full">

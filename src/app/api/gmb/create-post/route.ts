@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from "next/server"
 import { stackServerApp } from "@/stack"
 import { prisma } from "../../../../../lib/prisma"
+import { canUse, canUseErrorMessage } from "@/lib/actions/can-use"
+import { decrementUsage, incrementUsage } from "@/lib/usage"
 
 // ─────────────────────────────────────────────────────────
 //  TOGGLE: true  → Pollinations + gptimage model (testing)
@@ -206,44 +208,53 @@ function buildImagePrompt(ctx: GmbContext, body: ImagePostRequestBody): string {
     image_style = "promotional",
     cta_text,
     instructions,
-  } = body   // ← removed include_logo, it's no longer needed
+  } = body
 
   const cleanUrl = (url: string) => {
     try {
       const u = new URL(url)
-      ;["utm_source", "utm_medium", "utm_campaign", "utm_content", "utm_term"]
-        .forEach(p => u.searchParams.delete(p))
+        ;["utm_source", "utm_medium", "utm_campaign", "utm_content", "utm_term"]
+          .forEach(p => u.searchParams.delete(p))
       return u.toString()
     } catch { return url }
   }
 
   const styleVibes: Record<string, string> = {
-    promotional: "bold, energetic, scroll-stopping",
-    minimal: "striking minimal, not boring",
-    bold: "raw, fearless, typographically dominant",
-    elegant: "luxury editorial, aspirational",
+    promotional: "vibrant and eye-catching — use saturated color pops, dynamic diagonals, and high-energy composition that demands attention",
+    minimal: "clean and simple — breathable whitespace, a single dominant typographic moment, restrained palette, nothing decorative that isn't earning its place",
+    bold: "high contrast — raw typographic dominance, stark black/white tension with one brutal accent color, zero softness",
+    elegant: "refined and polished — luxury editorial feel, sophisticated serif or refined sans, muted tones with gold or cream accents, aspirational stillness",
   }
 
-const data = [
-  `Business name: "${ctx.businessName}" — display as plain bold white text at the top of the poster`,
-  ctx.primaryCategory && `Category: ${ctx.primaryCategory}`,
-  ctx.description && `Context (do not paste on poster): ${ctx.description.slice(0, 200)}`,
-  color_preference && `Color palette: ${color_preference}`,
-  ctx.rating && Number(ctx.rating) > 0 && `Google Rating: ${ctx.rating} ★`,
-  cta_text && `CTA: "${cta_text.slice(0, 50)}"`,
-  ctx.phoneNumber && ctx.phoneNumber,
-  ctx.website && cleanUrl(ctx.website),
-  ctx.address && ctx.address.slice(0, 80),
-].filter(Boolean).join("\n")
+  const vibeInstruction = styleVibes[image_style] ?? styleVibes.promotional
 
-return `
+  const data = [
+    ctx.primaryCategory && `Category: ${ctx.primaryCategory}`,
+    ctx.description && `Context (do not paste on poster): ${ctx.description.slice(0, 200)}`,
+    color_preference && `Color palette: ${color_preference}`,
+    ctx.rating && Number(ctx.rating) > 0 && `Google Rating: ${ctx.rating} ★`,
+    cta_text && `CTA: "${cta_text.slice(0, 50)}"`,
+    ctx.phoneNumber && ctx.phoneNumber,
+    ctx.website && cleanUrl(ctx.website),
+    ctx.address && ctx.address.slice(0, 80),
+  ].filter(Boolean).join("\n")
+
+  return `
 You are a world-class social media designer with creative freedom.
 
 Promote: "${post_content.slice(0, 200)}"
 Language: ${language}
 ${["Arabic", "Urdu"].includes(language) ? "Layout: RTL\n" : ""}
+Style: ${vibeInstruction}
+
 ${data}
 ${instructions ? `\nPriority: ${instructions.slice(0, 500)}` : ""}
+
+Business name: "${ctx.businessName}"
+- Typeset as plain text, bold weight, white or light color
+- Small-to-medium size — readable but subordinate to the main headline
+- Top of the poster, left-aligned or slightly offset
+- Typography only: adjust font, weight, letter-spacing — nothing else
 
 You have full creative freedom. Choose your own:
 - Layout direction and composition
@@ -252,18 +263,27 @@ You have full creative freedom. Choose your own:
 - Use of texture, light, or depth
 - How and where to place each element
 
-The only fixed constraints are:
-- Business name small and subtle — it is not the hero
-- Main message is the hero — make it impossible to ignore  
+Fixed constraints:
+- Business name is plain typeset text only (see above)
+- Main message is the hero — make it impossible to ignore
 - Single clean contact strip at the bottom
 - Full bleed — no borders, no frames, no cards
 - No badges, no bullet icons, no rating widgets, no scattered shapes
 
 Think like a designer, not a template engine.
-Make something that stops the scroll.
-Canvas: 1536x1024px landscape — Google My Business post format
-Fill the entire canvas edge to edge, full bleed
+
+Canvas: 1200x900px — Google My Business post format (4:3 ratio)
+
+CRITICAL — Square crop safe zone:
+Google crops to a 900x900 square when shown on Maps and mobile.
+The safe zone runs from x=150 to x=1050 (horizontally centered).
+Place ALL text, the business name, CTA, and contact strip within x=150–1050.
+The left 150px and right 150px are decoration only — no critical content there.
+Background and visual design can bleed to all edges.
+Fill the entire 1200x900 canvas edge to edge, full bleed.
+
 `.trim()
+
 
 }
 
@@ -348,10 +368,19 @@ async function generateImage(prompt: string, body: ImagePostRequestBody) {
 
 // ── Route handler ─────────────────────────────────────────
 export async function POST(req: NextRequest) {
+
+  const user = await stackServerApp.getUser()
+  if (!user?.id) {
+    return NextResponse.json({ error: "User authentication required" }, { status: 401 })
+  }
+
   try {
-    const user = await stackServerApp.getUser()
-    if (!user?.id) {
-      return NextResponse.json({ error: "User authentication required" }, { status: 401 })
+    // ── Usage gate ─────────────────────────────────────────
+    const canGenerate = await canUse(user.id, "ai-image")
+    if (!canGenerate.ok) {
+      return NextResponse.json({
+        error: canUseErrorMessage(canGenerate, "ai-image")
+      }, { status: 403 })
     }
 
     const body: ImagePostRequestBody = await req.json()
@@ -385,6 +414,8 @@ export async function POST(req: NextRequest) {
     const imagePrompt = buildImagePrompt(gmbContext, body)
     const image = await generateImage(imagePrompt, body)
 
+    await incrementUsage(user.id, "aiImageUsed")
+
     return NextResponse.json({
       image: {
         url: image.url,
@@ -412,6 +443,7 @@ export async function POST(req: NextRequest) {
       },
     })
   } catch (error: any) {
+    await decrementUsage(user.id, "aiImageUsed")
     return NextResponse.json(
       {
         error: "Image generation failed",

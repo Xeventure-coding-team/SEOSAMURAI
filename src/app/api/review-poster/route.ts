@@ -2,13 +2,12 @@ import { NextRequest, NextResponse } from "next/server";
 import { stackServerApp } from "@/stack";
 import { prisma } from "../../../../lib/prisma";
 import { canUse, canUseErrorMessage } from "@/lib/actions/can-use";
-import { incrementUsage } from "@/lib/usage";
+import { decrementUsage, incrementUsage } from "@/lib/usage";
 
 export async function POST(request: NextRequest) {
+  // Get authenticated user
+  const user = await stackServerApp.getUser();
   try {
-    // Get authenticated user
-    const user = await stackServerApp.getUser();
-
     if (!user) {
       return NextResponse.json(
         { error: "Unauthorized. Please sign in." },
@@ -94,6 +93,7 @@ export async function POST(request: NextRequest) {
     );
   } catch (error: any) {
     console.error("Error saving review poster:", error);
+    await decrementUsage(user.id, "reviewPostersUsed").catch(() => { })
     return NextResponse.json(
       { error: error.message || "Failed to save review poster" },
       { status: 500 }

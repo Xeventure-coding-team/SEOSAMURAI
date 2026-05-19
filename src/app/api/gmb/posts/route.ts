@@ -4,7 +4,7 @@ import { z } from 'zod';
 import FormData from 'form-data';
 import { stackServerApp } from '@/stack';
 import { canUse, canUseErrorMessage } from '@/lib/actions/can-use';
-import { incrementUsage } from '@/lib/usage';
+import { decrementUsage, incrementUsage } from '@/lib/usage';
 import { cleanGmbLocationId, getLocationById } from '@/lib/getLocationById';
 
 // Validation schemas
@@ -291,12 +291,13 @@ export async function GET(request: NextRequest) {
 
 // POST - Create new post
 export async function POST(request: NextRequest) {
+    const user = await stackServerApp.getUser();
     try {
         const contentType = request.headers.get('content-type');
         let body: any;
         let file: Buffer | null = null;
         let fileName: string | null = null;
-        const user = await stackServerApp.getUser();
+
 
 
         const F = await canUse(user.id, "posts")
@@ -431,6 +432,7 @@ export async function POST(request: NextRequest) {
 
     } catch (error: any) {
         console.error('Error creating GMB post:', error.message);
+        await decrementUsage(user.id, "postsUsed").catch(() => { })
 
         if (error.response) {
             console.error('Error Response Data:', JSON.stringify(error.response.data, null, 2));

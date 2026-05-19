@@ -171,8 +171,18 @@ export default function UsagePage() {
                 <div className="grid grid-cols-3 gap-4 mt-8">
                     {[
                         { label: "Total used", value: isLoading ? "—" : String(totalUsed), sub: "actions across all metrics" },
-                        { label: "Most consumed", value: isLoading ? "—" : topMetric ? METRIC_CONFIG[topMetric].label : "—", sub: isLoading ? "—" : `${topPct}% of limit used` },
-                        { label: "Resets in", value: isLoading ? "—" : daysLeft !== null ? `${daysLeft} days` : "—", sub: isLoading ? "—" : resetDate },
+                        {
+                            label: "Most consumed",
+                            value: isLoading
+                                ? "—"
+                                : topMetric
+                                    ? METRIC_CONFIG[topMetric].label
+                                    : "—",
+                            sub: isLoading
+                                ? "—"
+                                : `${Number.isFinite(topPct) ? topPct : 0}% of limit used`,
+                        },
+                         { label: "Resets in", value: isLoading ? "—" : daysLeft !== null ? `${daysLeft} days` : "—", sub: isLoading ? "—" : resetDate },
                     ].map((s) => (
                         <div key={s.label} className="flex flex-col gap-1 p-5 rounded-xl bg-muted/50 border">
                             <span className="text-xs text-muted-foreground uppercase tracking-wide">{s.label}</span>

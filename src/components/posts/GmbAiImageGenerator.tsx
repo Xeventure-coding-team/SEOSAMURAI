@@ -20,6 +20,7 @@ import { Badge } from "@/components/ui/badge"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { cn } from "@/lib/utils"
 import toast from "react-hot-toast"
+import { UsageGate } from "../usage-gate"
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -372,24 +373,26 @@ export function GmbAiImageGenerator({
 
       {/* ── Generate Button ─────────────────────────────────────────────── */}
       {!result && (
-        <Button
-          type="button"
-          onClick={handleGenerate}
-          disabled={isGenerating || !topic.trim()}
-          className="w-full"
-        >
-          {isGenerating ? (
-            <>
-              <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-              Generating image…
-            </>
-          ) : (
-            <>
-              <Wand2 className="h-4 w-4 mr-2" />
-              Generate Image
-            </>
-          )}
-        </Button>
+        <UsageGate metric="aiImageUsed">
+          <Button
+            type="button"
+            onClick={handleGenerate}
+            disabled={isGenerating || !topic.trim()}
+            className="w-full"
+          >
+            {isGenerating ? (
+              <>
+                <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                Generating image…
+              </>
+            ) : (
+              <>
+                <Wand2 className="h-4 w-4 mr-2" />
+                Generate Image
+              </>
+            )}
+          </Button>
+        </UsageGate>
       )}
 
       {/* ── Error ──────────���───────────────────────────────────────────── */}

@@ -142,12 +142,6 @@ export function GmbPostForm({
   const watchedImageUrl = form.watch("image_url")
   const displayImageUrl = aiGeneratedImageUrl || previewUrl || watchedImageUrl
 
-
-
-
-
-
-
   const enhanceContent = async () => {
     const postContent = form.getValues("postContent")
     if (!postContent.trim()) {
@@ -329,6 +323,24 @@ export function GmbPostForm({
     }
 
     try {
+      let fileToUpload: File | undefined = selectedFile || undefined
+
+      // Convert AI-generated image URL → File blob before submitting.
+      // AI URLs are often temporary/proxied and the backend can't fetch them.
+      if (aiGeneratedImageUrl && !selectedFile) {
+        try {
+          toast.loading("Preparing AI image…", { id: "ai-img-prep" })
+          const res = await fetch(aiGeneratedImageUrl)
+          const blob = await res.blob()
+          fileToUpload = new File([blob], "ai-generated.jpg", { type: blob.type || "image/jpeg" })
+          toast.dismiss("ai-img-prep")
+        } catch (err) {
+          toast.dismiss("ai-img-prep")
+          console.error("AI image fetch failed, falling back to URL:", err)
+          // Falls back to passing the URL string below
+        }
+      }
+
       const postData: CreatePostData = {
         postContent: data.postContent,
         actionButton: data.actionButton || null,
@@ -337,8 +349,11 @@ export function GmbPostForm({
         account: accountId,
         location: locationId,
         accessToken: accessToken,
-        image_url: aiGeneratedImageUrl || data.image_url || undefined,
-        file: selectedFile || undefined,
+        file: fileToUpload,
+        // Only pass image_url if File conversion failed
+        image_url: fileToUpload
+          ? undefined
+          : (aiGeneratedImageUrl || data.image_url || undefined),
       }
 
       const result = await createPost(postData)
@@ -476,18 +491,18 @@ export function GmbPostForm({
                     {/* Post Content */}
                     <div className="space-y-3">
                       {watchedPostContent ? (
-                        <p className="text-gray-900 whitespace-pre-wrap line-clamp-6">{watchedPostContent}</p>
+                        <p className="text-gray-900  line-clamp-6">{watchedPostContent}</p>
                       ) : (
                         <p className="text-gray-400 italic">Your post content will appear here...</p>
                       )}
 
                       {/* Image Preview */}
                       {(watchedImageUrl || previewUrl || aiGeneratedImageUrl) && (
-                        <div className="rounded-lg overflow-hidden">
+                        <div className="rounded-lg overflow-hidden h-[350px]">
                           <img
                             src={displayImageUrl || "/placeholder.svg"}
                             alt="Post image"
-                            className="w-full h-48 object-cover"
+                            className="w-full h-full object-cover"
                             onError={(e) => {
                               e.currentTarget.src = "/placeholder.svg"
                             }}
@@ -865,7 +880,7 @@ export function GmbPostForm({
                                             locationId={locationId!}
                                             accessToken={accessToken!}
                                             accountId={accountId!}
-                                            postContent={form.watch("postContent")}
+                                            postContent={''}
                                             onImageGenerated={(url) => {
                                               removeFile()
                                               setAiGeneratedImageUrl(url)

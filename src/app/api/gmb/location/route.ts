@@ -241,7 +241,7 @@ export async function GET(req: Request) {
     if (withPosts) {
       scheduledPosts = await prisma.scheduledPost.findMany({
         where: {
-          locationId: dbLocation.location_id, // "locations/xxx" from DB
+          locationId: mongoId, // "locations/xxx" from DB
           accountId: cleanAccountId,
           user_id: user.id,
         },

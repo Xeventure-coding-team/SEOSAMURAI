@@ -58,6 +58,7 @@ import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
 import { useCalendarStore } from '@/store/calendarStore'
 import { UsageGate } from "@/components/usage-gate"
 import { LegendSection } from "@/components/ui/legend-section"
+import { GmbAiImageGenerator } from "@/components/posts/GmbAiImageGenerator"
 
 interface GmbPostFormProps {
   selectedLocation?: string | undefined
@@ -199,6 +200,7 @@ export default function CalendarNewEventDialog({
   const fileInputRef = useRef<HTMLInputElement>(null)
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [isLoadingDetails, setIsLoadingDetails] = useState(false)
+  const [aiGeneratedImageUrl, setAiGeneratedImageUrl] = useState<string | null>(null)
 
   const { createPost, loading, refreshPosts } = useGmbPostsScheduled()
   const { addEvent } = useCalendarStore()
@@ -273,49 +275,8 @@ export default function CalendarNewEventDialog({
   }, [defaultPhone, form])
 
 
-  const displayImageUrl = previewUrl || form.watch("image_url")
   const watchedImageUrl = form.watch("image_url")
-
-  const generateImageFromContent = async () => {
-    const postContent = form.getValues("postContent")
-    if (!postContent.trim()) {
-      toast.error("Please enter post content first")
-      return
-    }
-
-    setIsGeneratingImage(true)
-    try {
-      const response = await fetch("/api/generate-image", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          occasion: `${postContent}`,
-        }),
-      })
-
-      const result = await response.json()
-
-      if (result.success) {
-        // Clear any uploaded file first (this is the missing piece)
-        if (selectedFile) {
-          removeFile() // This clears the file and preview
-        }
-
-        // Set the image URL - this will update watchedImageUrl automatically
-        form.setValue("image_url", result.imageUrl)
-
-        toast.success("Image generated from content!")
-      } else {
-        toast.error(result.message || "Failed to generate image")
-      }
-    } catch (error) {
-      toast.error("Failed to generate image")
-      console.error("Image generation error:", error)
-    } finally {
-      setIsGeneratingImage(false)
-    }
-  }
-
+  const displayImageUrl = aiGeneratedImageUrl || previewUrl || watchedImageUrl
 
   const enhanceContent = async () => {
     const postContent = form.getValues("postContent")
@@ -349,45 +310,6 @@ export default function CalendarNewEventDialog({
       setIsEnhancing(false)
     }
   }
-
-  const generateImage = async () => {
-    if (!imagePrompt.trim()) {
-      toast.error("Please enter a prompt for image generation")
-      return
-    }
-
-    setIsGeneratingImage(true)
-    try {
-      const response = await fetch("/api/generate-image", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ occasion: imagePrompt }),
-      })
-
-      const result = await response.json()
-
-      if (result.success) {
-        // Clear any uploaded file first (this is the missing piece)
-        if (selectedFile) {
-          removeFile() // This clears the file and preview
-        }
-
-        // Set the image URL - this will update watchedImageUrl automatically
-        form.setValue("image_url", result.imageUrl)
-        setImagePrompt("")
-
-        toast.success("Image generated successfully!")
-      } else {
-        toast.error(result.message || "Failed to generate image")
-      }
-    } catch (error) {
-      toast.error("Failed to generate image")
-      console.error("Image generation error:", error)
-    } finally {
-      setIsGeneratingImage(false)
-    }
-  }
-
 
   const handleFileSelect = useCallback(
     (file: File) => {
@@ -483,6 +405,7 @@ export default function CalendarNewEventDialog({
 
   const removeFile = useCallback(() => {
     setSelectedFile(null)
+    setAiGeneratedImageUrl(null)
     if (previewUrl) {
       URL.revokeObjectURL(previewUrl)
       setPreviewUrl(null)
@@ -499,6 +422,26 @@ export default function CalendarNewEventDialog({
     }
 
     try {
+      let fileToUpload = selectedFile
+
+      // Convert AI image (base64 or blob URL) → File
+      if (aiGeneratedImageUrl && !selectedFile) {
+        try {
+          toast.loading("Preparing AI image…", { id: "ai-img-prep" })
+          const res = await fetch(aiGeneratedImageUrl)
+          const blob = await res.blob()
+          fileToUpload = new File([blob], "ai-generated.png", {
+            type: blob.type || "image/png",
+          })
+          toast.dismiss("ai-img-prep")
+        } catch (err) {
+          toast.dismiss("ai-img-prep")
+          toast.error("Failed to prepare AI image")
+          console.error("AI image conversion error:", err)
+          return
+        }
+      }
+
       const postData: CreatePostData = {
         selectedLocation: selectedLocation,
         postContent: data.postContent,
@@ -508,8 +451,8 @@ export default function CalendarNewEventDialog({
         account: accountId,
         location: locationId,
         accessToken: accessToken,
-        image_url: data.image_url || undefined,
-        file: selectedFile || undefined,
+        image_url: fileToUpload ? undefined : (data.image_url || undefined), // ✅ never send base64
+        file: fileToUpload || undefined, 
         scheduled: data.scheduled || undefined,
         color: data.color || undefined,
       }
@@ -520,6 +463,7 @@ export default function CalendarNewEventDialog({
         addEvent(result.data)
         form.reset()
         removeFile()
+        setAiGeneratedImageUrl(null)
         increaseKey()
         onPostCreated?.(result.data)
         toast.success("Post created successfully!")
@@ -601,25 +545,24 @@ export default function CalendarNewEventDialog({
                         {/* Post Content */}
                         <div className="space-y-3">
                           {watchedPostContent ? (
-                            <p className="text-gray-900 whitespace-pre-wrap line-clamp-6">{watchedPostContent}</p>
+                            <p className="text-gray-900 line-clamp-6">{watchedPostContent}</p>
                           ) : (
                             <p className="text-gray-400 italic">Your post content will appear here...</p>
                           )}
 
                           {/* Image Preview */}
-                          {(watchedImageUrl || previewUrl) && (
-                            <div className="rounded-lg overflow-hidden">
+                          {(watchedImageUrl || previewUrl || aiGeneratedImageUrl) && (
+                            <div className="rounded-lg overflow-hidden h-[350px]">
                               <img
                                 src={displayImageUrl || "/placeholder.svg"}
                                 alt="Post image"
-                                className="w-full h-48 object-cover"
+                                className="w-full h-full object-cover"
                                 onError={(e) => {
                                   e.currentTarget.src = "/placeholder.svg"
                                 }}
                               />
                             </div>
                           )}
-
                           {/* Action Button Preview */}
                           {watchedActionButton && watchedActionButton !== "NO_ACTION" && (
                             <div className="pt-2">
@@ -833,65 +776,17 @@ export default function CalendarNewEventDialog({
                                         </TabsContent>
 
                                         <TabsContent value="ai" className="space-y-4">
-                                          <div className="space-y-4">
-                                            <div className="flex gap-2">
-                                              <Button
-                                                type="button"
-                                                variant="outline"
-                                                onClick={generateImageFromContent}
-                                                disabled={isGeneratingImage || !form.watch("postContent")?.trim()}
-                                                className="flex-1 bg-transparent"
-                                              >
-                                                {isGeneratingImage ? (
-                                                  <Loader2 className="h-4 w-4 animate-spin mr-2" />
-                                                ) : (
-                                                  <Wand2 className="h-4 w-4 mr-2" />
-                                                )}
-                                                Generate from Content
-                                              </Button>
-                                            </div>
-
-                                            <div className="relative">
-                                              <div className="absolute inset-0 flex items-center">
-                                                <span className="w-full border-t" />
-                                              </div>
-                                              <div className="relative flex justify-center text-xs uppercase">
-                                                <span className="bg-background px-2 text-muted-foreground">Or</span>
-                                              </div>
-                                            </div>
-
-                                            <div className="flex gap-2">
-                                              <Input
-                                                placeholder="Describe the image you want to generate..."
-                                                value={imagePrompt}
-                                                onChange={(e) => setImagePrompt(e.target.value)}
-                                                disabled={isGeneratingImage}
-                                              />
-                                              <Button
-                                                type="button"
-                                                onClick={generateImage}
-                                                disabled={isGeneratingImage || !imagePrompt.trim()}
-                                              >
-                                                {isGeneratingImage ? (
-                                                  <Loader2 className="h-4 w-4 animate-spin" />
-                                                ) : (
-                                                  <Sparkles className="h-4 w-4" />
-                                                )}
-                                              </Button>
-                                            </div>
-                                          </div>
-                                          {watchedImageUrl && (
-                                            <div className="mt-2">
-                                              <img
-                                                src={watchedImageUrl || "/placeholder.svg"}
-                                                alt="Generated"
-                                                className="w-32 h-32 object-cover rounded-lg"
-                                                onError={(e) => {
-                                                  e.currentTarget.src = "/placeholder.svg"
-                                                }}
-                                              />
-                                            </div>
-                                          )}
+                                          <GmbAiImageGenerator
+                                            locationId={locationId!}
+                                            accessToken={accessToken!}
+                                            accountId={accountId!}
+                                            postContent={''}
+                                            onImageGenerated={(url) => {
+                                              removeFile()
+                                              setAiGeneratedImageUrl(url)
+                                              form.setValue("image_url", "")
+                                            }}
+                                          />
                                         </TabsContent>
                                       </Tabs>
                                     </div>
@@ -1043,7 +938,7 @@ export default function CalendarNewEventDialog({
                               disabled={
                                 loading ||
                                 !form.formState.isValid ||
-                                (!form.watch("image_url") && !selectedFile)
+                                (!form.watch("image_url") && !selectedFile && !aiGeneratedImageUrl)
                               }
                             >
                               {loading ? (

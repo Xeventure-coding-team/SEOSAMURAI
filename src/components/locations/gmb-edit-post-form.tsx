@@ -42,6 +42,7 @@ import { ScrollArea } from "../ui/scroll-area"
 import { Tooltip, TooltipContent, TooltipTrigger } from "../ui/tooltip"
 import { Alert, AlertDescription, AlertTitle } from "../ui/alert"
 import { LegendSection } from "../ui/legend-section"
+import { GmbAiImageGenerator } from "../posts/GmbAiImageGenerator"
 
 interface GMBPost {
   name: string
@@ -136,6 +137,7 @@ export function GmbEditPostForm({
   const [isEnhancing, setIsEnhancing] = useState(false)
   const [isUpdating, setIsUpdating] = useState(false)
   const fileInputRef = useRef<HTMLInputElement>(null)
+  const [aiGeneratedImageUrl, setAiGeneratedImageUrl] = useState<string | null>(null)
 
   const form = useForm<PostFormData>({
     resolver: zodResolver(postSchema),
@@ -166,7 +168,7 @@ export function GmbEditPostForm({
     }
   }, [editPost, form])
 
-  const displayImageUrl = previewUrl || form.watch("image_url")
+  const displayImageUrl = aiGeneratedImageUrl || previewUrl || form.watch("image_url")
   const watchedImageUrl = form.watch("image_url")
   const { updatePost, loading } = useGmbPosts()
 
@@ -320,6 +322,7 @@ export function GmbEditPostForm({
 
   const removeFile = useCallback(() => {
     setSelectedFile(null)
+    setAiGeneratedImageUrl(null)
     if (previewUrl) {
       URL.revokeObjectURL(previewUrl)
       setPreviewUrl(null)
@@ -352,8 +355,43 @@ export function GmbEditPostForm({
         payload.callToAction = null
       }
 
-      // Handle image URL if provided
-      if (data.image_url) {
+      // ✅ Fix
+      if (aiGeneratedImageUrl && !selectedFile) {
+        try {
+          toast.loading("Preparing AI image…", { id: "ai-img-prep" })
+          const res = await fetch(aiGeneratedImageUrl)
+          const blob = await res.blob()
+          const aiFile = new File([blob], "ai-generated.jpg", { type: blob.type || "image/jpeg" })
+          toast.dismiss("ai-img-prep")
+          // Override selectedFile with the converted blob
+          setSelectedFile(aiFile) // won't help synchronously, so use local var
+          const formData = new FormData()
+          formData.append("file", aiFile)
+          formData.append("summary", payload.summary)
+          if (payload.callToAction) {
+            formData.append("callToAction", JSON.stringify(payload.callToAction))
+          } else {
+            formData.append("callToAction", "null")
+          }
+          const url = `/api/gmb/posts?accessToken=${encodeURIComponent(accessToken)}&account=${encodeURIComponent(accountId)}&location=${encodeURIComponent(locationId)}&postName=${encodeURIComponent(editPost.name)}`
+          const response = await fetch(url, { method: 'PATCH', body: formData })
+          const result = await response.json()
+          if (result.success) {
+            toast.success("Post updated successfully!")
+            form.reset()
+            removeFile()
+            onPostUpdated?.(result.data)
+            onClose()
+          } else {
+            toast.error(result.message || "Failed to update post")
+          }
+          return // exit early, handled
+        } catch (err) {
+          toast.dismiss("ai-img-prep")
+          console.error("AI image fetch failed, falling back to URL:", err)
+          payload.image_url = aiGeneratedImageUrl // fallback
+        }
+      } else if (data.image_url) {
         payload.image_url = data.image_url
       }
 
@@ -492,7 +530,7 @@ export function GmbEditPostForm({
                         <p className="text-gray-400 italic">Your updated post content will appear here...</p>
                       )}
 
-                      {(watchedImageUrl || previewUrl) && (
+                      {(watchedImageUrl || previewUrl || aiGeneratedImageUrl) && (
                         <div className="rounded-lg overflow-hidden">
                           <img
                             src={displayImageUrl ?
@@ -703,72 +741,32 @@ export function GmbEditPostForm({
                                     </TabsContent>
 
                                     <TabsContent value="url" className="space-y-4">
-                                      <FormField
-                                        control={form.control}
-                                        name="image_url"
-                                        render={({ field }) => (
-                                          <FormItem>
-                                            <FormControl>
-                                              <Input
-                                                placeholder="https://example.com/image.jpg"
-                                                disabled={!!selectedFile}
-                                                {...field}
-                                              />
-                                            </FormControl>
-                                            <FormMessage />
-                                          </FormItem>
-                                        )}
+                                      <Input
+                                        placeholder="https://example.com/image.jpg"
+                                        disabled={!!selectedFile}
+                                        value={field.value}
+                                        onChange={(e) => {
+                                          field.onChange(e)
+                                          setAiGeneratedImageUrl(null)
+                                        }}
                                       />
+                                      <FormMessage />
                                     </TabsContent>
 
                                     <TabsContent value="ai" className="space-y-4">
-                                      <div className="space-y-4">
-                                        <div className="flex gap-2">
-                                          <Button
-                                            type="button"
-                                            variant="outline"
-                                            onClick={generateImageFromContent}
-                                            disabled={isGeneratingImage || !form.watch("postContent")?.trim()}
-                                            className="flex-1 bg-transparent"
-                                          >
-                                            {isGeneratingImage ? (
-                                              <Loader2 className="h-4 w-4 animate-spin mr-2" />
-                                            ) : (
-                                              <Wand2 className="h-4 w-4 mr-2" />
-                                            )}
-                                            Generate from Content
-                                          </Button>
-                                        </div>
 
-                                        <div className="relative">
-                                          <div className="absolute inset-0 flex items-center">
-                                            <span className="w-full border-t" />
-                                          </div>
-                                          <div className="relative flex justify-center text-xs uppercase">
-                                            <span className="bg-background px-2 text-muted-foreground">Or</span>
-                                          </div>
-                                        </div>
+                                      <GmbAiImageGenerator
+                                        locationId={locationId!}
+                                        accessToken={accessToken!}
+                                        accountId={accountId!}
+                                        postContent={''}
+                                        onImageGenerated={(url) => {
+                                          removeFile()
+                                          setAiGeneratedImageUrl(url)
+                                          form.setValue("image_url", "")
+                                        }}
+                                      />
 
-                                        <div className="flex gap-2">
-                                          <Input
-                                            placeholder="Describe the image you want to generate..."
-                                            value={imagePrompt}
-                                            onChange={(e) => setImagePrompt(e.target.value)}
-                                            disabled={isGeneratingImage}
-                                          />
-                                          <Button
-                                            type="button"
-                                            onClick={generateImage}
-                                            disabled={isGeneratingImage || !imagePrompt.trim()}
-                                          >
-                                            {isGeneratingImage ? (
-                                              <Loader2 className="h-4 w-4 animate-spin" />
-                                            ) : (
-                                              <Sparkles className="h-4 w-4" />
-                                            )}
-                                          </Button>
-                                        </div>
-                                      </div>
                                       {watchedImageUrl && (
                                         <div className="mt-2">
                                           <img

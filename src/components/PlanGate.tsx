@@ -2,11 +2,9 @@
 
 import React from "react";
 import { useRouter } from "next/navigation";
-import { Star, AlertCircle, Lock, ArrowRight, Check, Sparkles } from "lucide-react";
 import { useUsage, UsageMetric, useFeature } from "@/lib/use-usage";
 import { useSlot, SlotResource } from "@/lib/use-slot";
 import { cn } from "@/lib/utils";
-import Radar from './Radar';
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -16,173 +14,297 @@ type PlanGateMode =
   | { type: "slot"; slot: SlotResource }
   | { type: "feature"; feature: string };
 
+/** `full`  – replaces the page area with a rich gate card (default)  */
+/** `small` – renders a compact inline banner; children are hidden     */
+type GateSize = "full" | "small";
+
 interface PlanGateProps {
   mode: PlanGateMode;
   children: React.ReactNode;
+  size?: GateSize;
   featureName?: string;
   description?: string;
   upgradeHref?: string;
   className?: string;
 }
 
-// ─── Variants config ──────────────────────────────────────────────────────────
+// ─── Variant config ───────────────────────────────────────────────────────────
 
 type GateVariant = "premium" | "limit" | "locked";
 
-const variantConfig: Record<
-  GateVariant,
-  {
-    badge: string;
-    badgeClass: string;
-    icon: React.FC<{ className?: string }>;
-    headingColor: string;
-    visualBg: string;
-    ringColor: string;
-    btnClass: string;
-    iconBg: string;
-    labelColor: string;
-  }
-> = {
+interface VariantCfg {
+  label: string;
+  /** Tailwind classes for the small badge pill */
+  pillBg: string;
+  pillText: string;
+  /** Accent line color for the small banner */
+  accentBar: string;
+  /** Icon character rendered via a simple inline svg */
+  Icon: React.FC<{ size?: number }>;
+  /** CTA button bg */
+  btnBg: string;
+  btnHover: string;
+  /** Full-card tint classes */
+  cardBorder: string;
+  iconRingBg: string;
+  iconColor: string;
+  headingColor: string;
+}
+
+const IconStar: React.FC<{ size?: number }> = ({ size = 16 }) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" fill="currentColor" aria-hidden>
+    <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" />
+  </svg>
+);
+
+const IconAlert: React.FC<{ size?: number }> = ({ size = 16 }) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
+    <circle cx="12" cy="12" r="10" />
+    <line x1="12" y1="8" x2="12" y2="12" />
+    <line x1="12" y1="16" x2="12.01" y2="16" />
+  </svg>
+);
+
+const IconLock: React.FC<{ size?: number }> = ({ size = 16 }) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
+    <rect x="3" y="11" width="18" height="11" rx="2" ry="2" />
+    <path d="M7 11V7a5 5 0 0 1 10 0v4" />
+  </svg>
+);
+
+const variantCfg: Record<GateVariant, VariantCfg> = {
   premium: {
-    badge: "Premium Feature",
-    badgeClass: "bg-primary/10 text-primary-dark",
-    icon: ({ className }) => (
-      <Star className={className} fill="currentColor" />
-    ),
-    headingColor: "text-primary",
-    visualBg:
-      "bg-gradient-to-br from-primary/10 to-[#E6F1FB] dark:from-[#26215C]/60 dark:to-[#042C53]/60",
-    ringColor: "border-primary/15",
-    btnClass:
-      "bg-primary hover:bg-primary-dark shadow-[0_2px_8px_rgba(83,74,183,0.25)] hover:shadow-[0_4px_14px_rgba(83,74,183,0.3)]",
-    iconBg: "bg-primary",
-    labelColor: "text-primary dark:text-primary-light",
+    label: "Premium feature",
+    pillBg: "bg-[#EEEDFE]",
+    pillText: "text-[#3C3489]",
+    accentBar: "bg-[#534AB7]",
+    Icon: IconStar,
+    btnBg: "bg-[#534AB7]",
+    btnHover: "hover:bg-[#3C3489]",
+    cardBorder: "border-[#AFA9EC]/40",
+    iconRingBg: "bg-[#EEEDFE]",
+    iconColor: "text-[#534AB7]",
+    headingColor: "text-[#26215C] dark:text-[#CECBF6]",
   },
   limit: {
-    badge: "Limit Reached",
-    badgeClass: "bg-[#FCEBEB] text-[#A32D2D] dark:bg-[#501313]/60 dark:text-[#F09595]",
-    icon: ({ className }) => <AlertCircle className={className} />,
-    headingColor: "text-[#A32D2D] dark:text-[#F09595]",
-    visualBg:
-      "bg-gradient-to-br from-[#FCEBEB] to-[#FAEEDA] dark:from-[#501313]/60 dark:to-[#412402]/60",
-    ringColor: "border-[#A32D2D]/15",
-    btnClass:
-      "bg-[#A32D2D] hover:bg-[#791F1F] shadow-[0_2px_8px_rgba(163,45,45,0.2)]",
-    iconBg: "bg-[#A32D2D]",
-    labelColor: "text-[#A32D2D] dark:text-[#F09595]",
+    label: "Limit reached",
+    pillBg: "bg-[#FCEBEB]",
+    pillText: "text-[#791F1F]",
+    accentBar: "bg-[#E24B4A]",
+    Icon: IconAlert,
+    btnBg: "bg-[#A32D2D]",
+    btnHover: "hover:bg-[#791F1F]",
+    cardBorder: "border-[#F09595]/40",
+    iconRingBg: "bg-[#FCEBEB]",
+    iconColor: "text-[#A32D2D]",
+    headingColor: "text-[#501313] dark:text-[#F7C1C1]",
   },
   locked: {
-    badge: "Not on your plan",
-    badgeClass: "bg-[#FAEEDA] text-[#633806] dark:bg-[#412402]/60 dark:text-[#FAC775]",
-    icon: ({ className }) => <Lock className={className} />,
-    headingColor: "text-[#854F0B] dark:text-[#FAC775]",
-    visualBg:
-      "bg-gradient-to-br from-[#FAEEDA] to-[#EAF3DE] dark:from-[#412402]/60 dark:to-[#173404]/60",
-    ringColor: "border-[#BA7517]/15",
-    btnClass:
-      "bg-[#BA7517] hover:bg-[#854F0B] shadow-[0_2px_8px_rgba(186,117,23,0.2)]",
-    iconBg: "bg-[#BA7517]",
-    labelColor: "text-[#854F0B] dark:text-[#FAC775]",
+    label: "Not on your plan",
+    pillBg: "bg-[#FAEEDA]",
+    pillText: "text-[#633806]",
+    accentBar: "bg-[#BA7517]",
+    Icon: IconLock,
+    btnBg: "bg-[#854F0B]",
+    btnHover: "hover:bg-[#633806]",
+    cardBorder: "border-[#EF9F27]/30",
+    iconRingBg: "bg-[#FAEEDA]",
+    iconColor: "text-[#854F0B]",
+    headingColor: "text-[#412402] dark:text-[#FAC775]",
   },
 };
 
-// ─── Ring decoration ──────────────────────────────────────────────────────────
+// ─── Shared: upgrade button ───────────────────────────────────────────────────
 
-function VisualRings({ ringColor }: { ringColor: string }) {
+function UpgradeBtn({
+  href,
+  variant,
+  label = "Upgrade plan",
+  small,
+}: {
+  href: string;
+  variant: GateVariant;
+  label?: string;
+  small?: boolean;
+}) {
+  const router = useRouter();
+  const cfg = variantCfg[variant];
   return (
-    <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-      {[120, 180, 260].map((size) => (
-        <div
-          key={size}
-          className={cn("absolute rounded-full border", ringColor)}
-          style={{ width: size, height: size }}
-        />
-      ))}
+    <button
+      onClick={() => router.push(href)}
+      className={cn(
+        "inline-flex items-center gap-2 font-medium text-white rounded-lg transition-all duration-150",
+        "active:scale-[0.97]",
+        cfg.btnBg,
+        cfg.btnHover,
+        small ? "text-xs px-3 py-1.5" : "text-sm px-4 py-2.5"
+      )}
+    >
+      {label}
+      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
+        <path d="M5 12h14M12 5l7 7-7 7" />
+      </svg>
+    </button>
+  );
+}
+
+// ─── Small variant ────────────────────────────────────────────────────────────
+// Inline banner — doesn't replace children, just floats above them.
+
+interface SmallGateProps {
+  variant: GateVariant;
+  featureName?: string;
+  description?: string;
+  upgradeHref: string;
+  usageData?: { used: number; total: number };
+}
+
+function SmallGate({ variant, featureName, description, upgradeHref, usageData }: SmallGateProps) {
+  const cfg = variantCfg[variant];
+  const pct = usageData ? Math.min(Math.round((usageData.used / usageData.total) * 100), 100) : null;
+
+  return (
+    <div
+      className={cn(
+        "flex items-center gap-3 rounded-xl border px-4 py-3",
+        "bg-white dark:bg-gray-950",
+        cfg.cardBorder
+      )}
+    >
+      {/* Accent bar */}
+      <div className={cn("w-0.5 self-stretch rounded-full shrink-0", cfg.accentBar)} />
+
+      {/* Icon */}
+      <span className={cn("flex items-center justify-center w-7 h-7 rounded-lg shrink-0", cfg.iconRingBg, cfg.iconColor)}>
+        <cfg.Icon size={14} />
+      </span>
+
+      {/* Text */}
+      <div className="flex-1 min-w-0">
+        <div className="flex items-center gap-2 flex-wrap">
+          <span className={cn("text-[11px] font-semibold uppercase tracking-widest", cfg.pillText)}>
+            {cfg.label}
+          </span>
+          {featureName && (
+            <span className="text-[13px] font-medium text-gray-800 dark:text-gray-100 truncate">
+              {featureName}
+            </span>
+          )}
+        </div>
+        {description && (
+          <p className="text-[12px] text-gray-500 dark:text-gray-400 mt-0.5 leading-snug">{description}</p>
+        )}
+        {pct != null && (
+          <div className="mt-1.5 flex items-center gap-2">
+            <div className="flex-1 h-1 rounded-full bg-gray-100 dark:bg-gray-800 overflow-hidden">
+              <div
+                className={cn("h-full rounded-full", cfg.accentBar)}
+                style={{ width: `${pct}%` }}
+              />
+            </div>
+            <span className="text-[11px] tabular-nums text-gray-400">
+              {usageData!.used.toLocaleString()} / {usageData!.total.toLocaleString()}
+            </span>
+          </div>
+        )}
+      </div>
+
+      {/* CTA */}
+      <div className="shrink-0">
+        <UpgradeBtn href={upgradeHref} variant={variant} small />
+      </div>
     </div>
   );
 }
 
-// ─── Gate Shell ───────────────────────────────────────────────────────────────
+// ─── Full variant ─────────────────────────────────────────────────────────────
+// Rich two-column card that replaces the page content.
 
-interface GateShellProps {
+interface FullGateProps {
   variant: GateVariant;
   heading: React.ReactNode;
   description: string;
-  cta: React.ReactNode;
+  upgradeHref: string;
+  ctaLabel?: string;
   chips?: React.ReactNode;
   meta?: React.ReactNode;
-  visualContent: React.ReactNode;
 }
 
-function GateShell({
-  variant,
-  heading,
-  description,
-  cta,
-  chips,
-  meta,
-  visualContent,
-}: GateShellProps) {
-  const cfg = variantConfig[variant];
+function FullGate({ variant, heading, description, upgradeHref, ctaLabel, chips, meta }: FullGateProps) {
+  const cfg = variantCfg[variant];
 
   return (
-    <div className="w-full h-full overflow-hidden rounded-2xl border border-gray-200/80 dark:border-gray-800/80 bg-white dark:bg-gray-950 shadow-sm">
-      <div className="grid grid-cols-2 sm:grid-cols-[1fr_280px] lg:grid-cols-[1fr_320px] min-h-[340px]">
+    <div
+      className={cn(
+        "w-full rounded-2xl border overflow-hidden",
+        "bg-white dark:bg-gray-950",
+        cfg.cardBorder
+      )}
+    >
+      <div className="grid grid-cols-1 sm:grid-cols-[1fr_260px] min-h-[300px]">
 
-        {/* Left: Content */}
+        {/* Left: content */}
         <div className="flex flex-col justify-center gap-5 p-8 sm:p-10">
 
-          {/* Badge */}
-          <span
-            className={cn(
-              "inline-flex items-center gap-1.5 w-fit rounded-full px-3 py-1 text-[11px] font-semibold tracking-widest uppercase",
-              cfg.badgeClass
-            )}
-          >
-            <cfg.icon className="h-3 w-3" />
-            {cfg.badge}
+          {/* Pill */}
+          <span className={cn(
+            "inline-flex items-center gap-1.5 w-fit rounded-full px-3 py-1",
+            "text-[10px] font-semibold tracking-[0.08em] uppercase",
+            cfg.pillBg, cfg.pillText
+          )}>
+            <cfg.Icon size={11} />
+            {cfg.label}
           </span>
 
           {/* Heading */}
-          <h3 className="font-serif text-[1.85rem] sm:text-[2rem] font-normal text-gray-900 dark:text-gray-50 leading-[1.2]">
+          <h3 className={cn(
+            "font-serif text-[1.75rem] sm:text-[2rem] font-normal leading-[1.18]",
+            cfg.headingColor
+          )}>
             {heading}
           </h3>
 
           {/* Description */}
-          <p className="text-sm sm:text-[15px] leading-relaxed text-gray-500 dark:text-gray-400 max-w-sm">
+          <p className="text-[14px] sm:text-[15px] leading-relaxed text-gray-500 dark:text-gray-400 max-w-sm">
             {description}
           </p>
 
-          {/* Meta (progress bar, plan chips, etc.) */}
           {meta && <div>{meta}</div>}
-
-          {/* Feature chips */}
           {chips && <div className="flex flex-wrap gap-2">{chips}</div>}
 
-          {/* CTA row */}
-          <div className="flex items-center gap-3 flex-wrap mt-1">{cta}</div>
+          {/* Actions */}
+          <div className="flex items-center gap-4 flex-wrap mt-1">
+            <UpgradeBtn href={upgradeHref} variant={variant} label={ctaLabel ?? "Upgrade plan"} />
+            <a
+              href="/settings/billing"
+              className="text-[13px] text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors"
+            >
+              Learn more
+            </a>
+          </div>
         </div>
 
-
-        <div className="relative hidden sm:flex items-center justify-center overflow-hidden bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-900 dark:to-gray-800">
-          <div className="relative">
-            <div className="absolute inset-0 flex items-center justify-center">
-              {[60, 100, 140, 180, 220, 260, 300].map((size, index) => (
-                <div
-                  key={size}
-                  className="absolute rounded-full border border-blue-300/50 dark:border-blue-600/30 animate-ping"
-                  style={{
-                    width: size,
-                    height: size,
-                    animationDuration: `${3 + index * 0.5}s`,
-                    animationDelay: `${index * 0.3}s`
-                  }}
-                />
-              ))}
-            </div>
-            <div className="relative z-10 p-4 rounded-full bg-white dark:bg-gray-800 shadow-lg">
-              <Sparkles className="h-10 w-10 text-blue-500 dark:text-blue-400" />
-            </div>
+        {/* Right: geometric decoration */}
+        <div
+          className={cn(
+            "hidden sm:flex items-center justify-center relative overflow-hidden",
+            "bg-gray-50 dark:bg-gray-900/60"
+          )}
+        >
+          {/* Concentric rings */}
+          {[200, 152, 104, 64].map((s, i) => (
+            <div
+              key={s}
+              className={cn("absolute rounded-full border", cfg.cardBorder)}
+              style={{ width: s, height: s, opacity: 1 - i * 0.18 }}
+            />
+          ))}
+          {/* Icon center */}
+          <div className={cn(
+            "relative z-10 w-14 h-14 rounded-2xl flex items-center justify-center",
+            cfg.iconRingBg, cfg.iconColor
+          )}>
+            <cfg.Icon size={24} />
           </div>
         </div>
 
@@ -191,388 +313,191 @@ function GateShell({
   );
 }
 
-// ─── Upgrade Button ───────────────────────────────────────────────────────────
+// ─── Feature chip ─────────────────────────────────────────────────────────────
 
-export function UpgradeButton({
-  variant = "upgrade",
-  href = "/settings/billing",
-  className,
-  gateVariant = "premium",
-}: {
-  variant?: "no_plan" | "upgrade";
-  href?: string;
-  className?: string;
-  gateVariant?: GateVariant;
-}) {
-  const router = useRouter();
-  const label = variant === "no_plan" ? "Choose a plan" : "Upgrade plan";
-  const cfg = variantConfig[gateVariant];
-
+function Chip({ children }: { children: React.ReactNode }) {
   return (
-    <button
-      onClick={() => router.push(href)}
-      className={cn(
-        "inline-flex items-center gap-2 font-semibold text-sm rounded-xl px-5 py-2.5 text-white",
-        "transition-all duration-200 hover:-translate-y-[1px] active:translate-y-0 active:scale-[0.98]",
-        cfg.btnClass,
-        className
-      )}
-    >
-      {label}
-      <ArrowRight className="h-3.5 w-3.5 opacity-80" />
-    </button>
-  );
-}
-
-// ─── Chip helper ──────────────────────────────────────────────────────────────
-
-function Chip({ children, muted }: { children: React.ReactNode; muted?: boolean }) {
-  return (
-    <span
-      className={cn(
-        "inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-[12px] font-medium",
-        muted
-          ? "bg-gray-100 dark:bg-gray-800 text-gray-500 dark:text-gray-400"
-          : "bg-primary/10 text-primary-dark dark:bg-primary-dark/40 dark:text-primary-light"
-      )}
-    >
-      {!muted && <Check className="h-3 w-3" />}
+    <span className="inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-[12px] font-medium bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-300">
+      <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
+        <polyline points="20 6 9 17 4 12" />
+      </svg>
       {children}
     </span>
   );
 }
 
-// ─── Progress bar ─────────────────────────────────────────────────────────────
+// ─── Usage progress bar ───────────────────────────────────────────────────────
 
-function UsageProgressBar({
-  used,
-  total,
-  label,
-}: {
-  used: number;
-  total: number;
-  label: string;
-}) {
-  const pct = Math.min((used / total) * 100, 100);
+function UsageBar({ used, total, label, variant }: { used: number; total: number; label: string; variant: GateVariant }) {
+  const pct = Math.min(Math.round((used / total) * 100), 100);
+  const cfg = variantCfg[variant];
   return (
     <div className="flex flex-col gap-1.5">
-      <div className="flex items-center justify-between">
-        <span className="text-xs text-gray-500 dark:text-gray-400">{label}</span>
-        <span className="text-xs font-semibold text-[#A32D2D] dark:text-[#F09595]">
-          {used.toLocaleString()} / {total.toLocaleString()}
-        </span>
+      <div className="flex justify-between text-xs text-gray-500">
+        <span>{label}</span>
+        <span className="tabular-nums font-medium">{used.toLocaleString()} / {total.toLocaleString()}</span>
       </div>
       <div className="h-1.5 rounded-full bg-gray-100 dark:bg-gray-800 overflow-hidden">
-        <div
-          className="h-full rounded-full bg-[#E24B4A] dark:bg-[#F09595] transition-all"
-          style={{ width: `${pct}%` }}
-        />
+        <div className={cn("h-full rounded-full transition-all", cfg.accentBar)} style={{ width: `${pct}%` }} />
       </div>
     </div>
   );
 }
 
-// ─── Visual icons ─────────────────────────────────────────────────────────────
+// ─── Block builders ───────────────────────────────────────────────────────────
 
-function PremiumVisualIcon() {
-  return (
-    <div className="h-16 w-16 rounded-2xl bg-primary] flex items-center justify-center shadow-lg">
-      <Star className="h-7 w-7 text-white" fill="white" />
-    </div>
-  );
-}
-
-function LimitVisualIcon() {
-  return (
-    <div className="h-16 w-16 rounded-2xl bg-[#A32D2D] flex items-center justify-center shadow-lg">
-      <AlertCircle className="h-7 w-7 text-white" />
-    </div>
-  );
-}
-
-function LockedVisualIcon() {
-  return (
-    <div className="h-16 w-16 rounded-2xl bg-[#BA7517] flex items-center justify-center shadow-lg">
-      <Lock className="h-7 w-7 text-white" />
-    </div>
-  );
-}
-
-// ─── Block variants ───────────────────────────────────────────────────────────
-
-function NoPlanBlock({
+function NoPlanContent({
+  size,
   featureName,
   description,
   upgradeHref,
 }: {
+  size: GateSize;
   featureName?: string;
   description?: string;
   upgradeHref: string;
 }) {
-  const router = useRouter();
+  const desc = description ?? "Choose a plan to unlock advanced features, deeper insights, and powerful tools.";
+  if (size === "small") {
+    return <SmallGate variant="premium" featureName={featureName} description={desc} upgradeHref={upgradeHref} />;
+  }
   return (
-    <div className="w-full max-w-6xl mx-auto min-h-screen flex items-center justify-center">
-      <GateShell
-        variant="premium"
-        heading={
-          <>
-            Unlock{" "}
-            <em className="not-italic text-primary dark:text-primary-light">
-              {featureName ?? "premium features"}
-            </em>{" "}
-            for your workspace
-          </>
-        }
-        description={
-          description ??
-          "Choose a plan to unlock advanced reporting, deeper insights, and powerful tools to grow your business."
-        }
-        chips={
-          <>
-            <Chip>Unlimited access</Chip>
-            <Chip>Priority support</Chip>
-            <Chip muted>+ more</Chip>
-          </>
-        }
-        cta={
-          <>
-            <UpgradeButton variant="no_plan" href={upgradeHref} gateVariant="premium" />
-          </>
-        }
-        visualContent={<PremiumVisualIcon />}
-      />
-    </div>
+    <FullGate
+      variant="premium"
+      heading={<>Unlock <em className="not-italic">{featureName ?? "premium features"}</em> for your workspace</>}
+      description={desc}
+      ctaLabel="Choose a plan"
+      chips={<><Chip>Unlimited access</Chip><Chip>Priority support</Chip><Chip>Advanced analytics</Chip></>}
+      upgradeHref={upgradeHref}
+    />
   );
 }
 
-function UsageExceededBlock({
+function UsageExceededContent({
+  size,
   featureName,
   description,
   upgradeHref,
   isSlot,
   usageData,
 }: {
+  size: GateSize;
   featureName?: string;
   description?: string;
   upgradeHref: string;
   isSlot: boolean;
   usageData?: { used: number; total: number; label: string };
 }) {
-  const heading = featureName
-    ? `Your ${featureName} limit is reached`
-    : isSlot
-      ? "Slot limit reached"
-      : "Usage limit reached";
-
-  const defaultDesc = isSlot
+  const desc = description ?? (isSlot
     ? "You've hit the maximum slots on your current plan. Upgrade to add more."
-    : "You've used all your quota this billing cycle. Upgrade to restore access immediately.";
+    : "You've used all your quota this billing cycle. Upgrade to restore access immediately.");
 
-  return (
-    <div className="w-full max-w-6xl mx-auto min-h-screen flex items-center justify-center">
-      <GateShell
+  if (size === "small") {
+    return (
+      <SmallGate
         variant="limit"
-        heading={
-          <>
-            Your{" "}
-            <em className="not-italic text-[#A32D2D] dark:text-[#F09595]">
-              {featureName ?? (isSlot ? "slot" : "usage")} limit
-            </em>{" "}
-            is reached
-          </>
-        }
-        description={description ?? defaultDesc}
-        meta={
-          usageData ? (
-            <UsageProgressBar
-              used={usageData.used}
-              total={usageData.total}
-              label={usageData.label}
-            />
-          ) : null
-        }
-        cta={
-          <>
-            <UpgradeButton variant="upgrade" href={upgradeHref} gateVariant="limit" />
-            <a
-              href="#"
-              className="text-sm text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 transition-colors"
-            >
-              View usage →
-            </a>
-          </>
-        }
-        visualContent={<LimitVisualIcon />}
+        featureName={featureName ?? (isSlot ? "Slot limit" : "Usage limit")}
+        description={desc}
+        upgradeHref={upgradeHref}
+        usageData={usageData}
       />
-    </div>
+    );
+  }
+  return (
+    <FullGate
+      variant="limit"
+      heading={<>Your <em className="not-italic">{featureName ?? (isSlot ? "slot" : "usage")} limit</em> is reached</>}
+      description={desc}
+      meta={usageData ? <UsageBar {...usageData} variant="limit" /> : null}
+      upgradeHref={upgradeHref}
+    />
   );
 }
 
-function FeatureLockedBlock({
+function FeatureLockedContent({
+  size,
   featureName,
   description,
   upgradeHref,
   availableOn,
 }: {
+  size: GateSize;
   featureName?: string;
   description?: string;
   upgradeHref: string;
   availableOn?: string[];
 }) {
   const plans = availableOn ?? ["Pro plan", "Enterprise plan"];
+  const desc = description ?? `${featureName ?? "This feature"} is not included in your current plan. Upgrade to unlock it.`;
+
+  if (size === "small") {
+    return <SmallGate variant="locked" featureName={featureName} description={desc} upgradeHref={upgradeHref} />;
+  }
   return (
-    <div className="w-full max-w-6xl mx-auto min-h-screen flex items-center justify-center">
-      <GateShell
-        variant="locked"
-        heading={
-          <>
-            <em className="not-italic text-[#854F0B] dark:text-[#FAC775]">
-              {featureName ?? "This feature"}
-            </em>{" "}
-            requires a higher plan
-          </>
-        }
-        description={
-          description ??
-          `${featureName ?? "This feature"} is not included in your current plan. Upgrade to unlock it.`
-        }
-        meta={
-          <div className="flex items-center gap-2 text-xs text-gray-400">
-            <span>Available on</span>
-            <div className="h-px flex-1 bg-gray-200 dark:bg-gray-700" />
-          </div>
-        }
-        chips={
-          <>
-            {plans.map((p) => (
-              <Chip key={p} muted>
-                <Check className="h-3 w-3" />
-                {p}
-              </Chip>
-            ))}
-          </>
-        }
-        cta={
-          <>
-            <UpgradeButton variant="upgrade" href={upgradeHref} gateVariant="locked" />
-            <a
-              href="#"
-              className="text-sm text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 transition-colors"
-            >
-              Learn more
-            </a>
-          </>
-        }
-        visualContent={<LockedVisualIcon />}
-      />
-    </div>
+    <FullGate
+      variant="locked"
+      heading={<><em className="not-italic">{featureName ?? "This feature"}</em> requires a higher plan</>}
+      description={desc}
+      chips={plans.map((p) => <Chip key={p}>{p}</Chip>)}
+      meta={
+        <div className="flex items-center gap-2 text-xs text-gray-400 dark:text-gray-600">
+          <span className="whitespace-nowrap">Available on</span>
+          <div className="h-px flex-1 bg-gray-200 dark:bg-gray-700" />
+        </div>
+      }
+      upgradeHref={upgradeHref}
+    />
   );
 }
 
-// ─── Inner gates ──────────────────────────────────────────────────────────────
+// ─── Inner gate wrappers ──────────────────────────────────────────────────────
 
-function MetricPlanGate({
-  metric,
-  featureName,
-  description,
-  upgradeHref,
-  children,
-}: {
-  metric: UsageMetric;
-  featureName?: string;
-  description?: string;
-  upgradeHref: string;
-  children: React.ReactNode;
+function MetricPlanGate({ metric, size, featureName, description, upgradeHref, children }: {
+  metric: UsageMetric; size: GateSize; featureName?: string; description?: string; upgradeHref: string; children: React.ReactNode;
 }) {
   const { data, isLoading, statusFor } = useUsage();
-
   if (isLoading || !data) return <>{children}</>;
-
-  if (!data.plan) {
-    return <NoPlanBlock featureName={featureName} description={description} upgradeHref={upgradeHref} />;
-  }
-
+  if (!data.plan) return <NoPlanContent size={size} featureName={featureName} description={description} upgradeHref={upgradeHref} />;
   if (statusFor(metric) === "exceeded") {
+    const used = data.used[metric];
+    const total = data.limits[metric];
     return (
-      <UsageExceededBlock
-        featureName={featureName}
-        description={description}
-        upgradeHref={upgradeHref}
-        isSlot={false}
+      <UsageExceededContent
+        size={size} featureName={featureName} description={description} upgradeHref={upgradeHref}
+        isSlot={false} usageData={{ used, total, label: "This month" }}
       />
     );
   }
-
   return <>{children}</>;
 }
 
-function SlotPlanGate({
-  slot,
-  featureName,
-  description,
-  upgradeHref,
-  children,
-}: {
-  slot: SlotResource;
-  featureName?: string;
-  description?: string;
-  upgradeHref: string;
-  children: React.ReactNode;
+function SlotPlanGate({ slot, size, featureName, description, upgradeHref, children }: {
+  slot: SlotResource; size: GateSize; featureName?: string; description?: string; upgradeHref: string; children: React.ReactNode;
 }) {
   const { isLoading, canAdd, data } = useSlot(slot);
-
   if (isLoading) return <>{children}</>;
-
-  if (!data) {
-    return <NoPlanBlock featureName={featureName} description={description} upgradeHref={upgradeHref} />;
-  }
-
-  if (!canAdd) {
-    return (
-      <UsageExceededBlock
-        featureName={featureName}
-        description={description}
-        upgradeHref={upgradeHref}
-        isSlot
-      />
-    );
-  }
-
+  if (!data) return <NoPlanContent size={size} featureName={featureName} description={description} upgradeHref={upgradeHref} />;
+  if (!canAdd) return <UsageExceededContent size={size} featureName={featureName} description={description} upgradeHref={upgradeHref} isSlot />;
   return <>{children}</>;
 }
 
-function FeaturePlanGate({
-  feature,
-  featureName,
-  description,
-  upgradeHref,
-  children,
-}: {
-  feature: string;
-  featureName?: string;
-  description?: string;
-  upgradeHref: string;
-  children: React.ReactNode;
+function FeaturePlanGate({ feature, size, featureName, description, upgradeHref, children, availableOn }: {
+  feature: string; size: GateSize; featureName?: string; description?: string; upgradeHref: string; children: React.ReactNode; availableOn?: string[];
 }) {
   const { data, isLoading } = useUsage();
   const allowed = useFeature(feature);
-
   if (isLoading || !data) return <>{children}</>;
+  if (!data.plan) return <NoPlanContent size={size} featureName={featureName} description={description} upgradeHref={upgradeHref} />;
+  if (!allowed) return <FeatureLockedContent size={size} featureName={featureName} description={description} upgradeHref={upgradeHref} availableOn={availableOn} />;
+  return <>{children}</>;
+}
 
-  if (!data.plan) {
-    return <NoPlanBlock featureName={featureName} description={description} upgradeHref={upgradeHref} />;
-  }
-
-  if (!allowed) {
-    return (
-      <FeatureLockedBlock
-        featureName={featureName}
-        description={description}
-        upgradeHref={upgradeHref}
-      />
-    );
-  }
-
+function NoPlanGateInner({ size, featureName, description, upgradeHref, children }: {
+  size: GateSize; featureName?: string; description?: string; upgradeHref: string; children: React.ReactNode;
+}) {
+  const { data, isLoading } = useUsage();
+  if (isLoading) return <>{children}</>;
+  if (!data?.plan) return <NoPlanContent size={size} featureName={featureName} description={description} upgradeHref={upgradeHref} />;
   return <>{children}</>;
 }
 
@@ -581,76 +506,48 @@ function FeaturePlanGate({
 export function PlanGate({
   mode,
   children,
+  size = "full",
   featureName,
   description,
   upgradeHref = "/settings/billing",
   className,
 }: PlanGateProps) {
-  const wrapper = (node: React.ReactNode) => (
-    <div className={cn("w-full", className)}>{node}</div>
-  );
+  const inner = (() => {
+    if (mode.type === "no_plan") {
+      return (
+        <NoPlanGateInner size={size} featureName={featureName} description={description} upgradeHref={upgradeHref}>
+          {children}
+        </NoPlanGateInner>
+      );
+    }
+    if (mode.type === "metric") {
+      return (
+        <MetricPlanGate metric={mode.metric} size={size} featureName={featureName} description={description} upgradeHref={upgradeHref}>
+          {children}
+        </MetricPlanGate>
+      );
+    }
+    if (mode.type === "slot") {
+      return (
+        <SlotPlanGate slot={mode.slot} size={size} featureName={featureName} description={description} upgradeHref={upgradeHref}>
+          {children}
+        </SlotPlanGate>
+      );
+    }
+    if (mode.type === "feature") {
+      return (
+        <FeaturePlanGate feature={mode.feature} size={size} featureName={featureName} description={description} upgradeHref={upgradeHref}>
+          {children}
+        </FeaturePlanGate>
+      );
+    }
+    return <>{children}</>;
+  })();
 
-  if (mode.type === "no_plan") {
-    return wrapper(
-      <NoPlanGate featureName={featureName} description={description} upgradeHref={upgradeHref}>
-        {children}
-      </NoPlanGate>
-    );
-  }
-
-  if (mode.type === "metric") {
-    return wrapper(
-      <MetricPlanGate metric={mode.metric} featureName={featureName} description={description} upgradeHref={upgradeHref}>
-        {children}
-      </MetricPlanGate>
-    );
-  }
-
-  if (mode.type === "slot") {
-    return wrapper(
-      <SlotPlanGate slot={mode.slot} featureName={featureName} description={description} upgradeHref={upgradeHref}>
-        {children}
-      </SlotPlanGate>
-    );
-  }
-
-  if (mode.type === "feature") {
-    return wrapper(
-      <FeaturePlanGate feature={mode.feature} featureName={featureName} description={description} upgradeHref={upgradeHref}>
-        {children}
-      </FeaturePlanGate>
-    );
-  }
-
-  return <>{children}</>;
+  return <div className={cn("w-full", className)}>{inner}</div>;
 }
 
-// ─── No-plan gate ─────────────────────────────────────────────────────────────
+// ─── Re-export for convenience ────────────────────────────────────────────────
 
-function NoPlanGate({
-  featureName,
-  description,
-  upgradeHref,
-  className,
-  children,
-}: {
-  featureName?: string;
-  description?: string;
-  upgradeHref: string;
-  className?: string;
-  children: React.ReactNode;
-}) {
-  const { data, isLoading } = useUsage();
-
-  if (isLoading) return <>{children}</>;
-
-  return (
-    <div className={cn("w-full", className)}>
-      {data?.plan ? (
-        children
-      ) : (
-        <NoPlanBlock featureName={featureName} description={description} upgradeHref={upgradeHref} />
-      )}
-    </div>
-  );
-}
+export { UpgradeBtn as UpgradeButton };
+export type { GateSize, GateVariant, PlanGateProps };

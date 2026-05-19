@@ -565,6 +565,7 @@ exports.Prisma.UsageScalarFieldEnum = {
   periodStart: 'periodStart',
   periodEnd: 'periodEnd',
   postsUsed: 'postsUsed',
+  aiPostersUsed: 'aiPostersUsed',
   aiReviewRepliesUsed: 'aiReviewRepliesUsed',
   scheduledPostsUsed: 'scheduledPostsUsed',
   geoGridScansUsed: 'geoGridScansUsed',

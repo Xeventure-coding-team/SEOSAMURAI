@@ -1,7 +1,7 @@
 // app/api/generate-reply/route.ts
 import { NextRequest, NextResponse } from 'next/server'
 import { GoogleGenAI } from '@google/genai'
-import { incrementUsage } from '@/lib/usage';
+import { decrementUsage, incrementUsage } from '@/lib/usage';
 import { stackServerApp } from '@/stack';
 import { canUse, canUseErrorMessage, getCode } from '@/lib/actions/can-use';
 
@@ -26,6 +26,7 @@ interface SuccessResponse {
 }
 
 export async function POST(request: NextRequest): Promise<NextResponse<SuccessResponse | ErrorResponse>> {
+  const user = await stackServerApp.getUser();
   try {
     // Validate environment variable
     if (!process.env.GEMINI_API_KEY && !process.env.AI_KEY) {
@@ -38,9 +39,6 @@ export async function POST(request: NextRequest): Promise<NextResponse<SuccessRe
         { status: 500 }
       )
     }
-
-
-    const user = await stackServerApp.getUser();
 
     if (!user) {
       return NextResponse.json({
@@ -396,6 +394,7 @@ Write ONLY the reply text. Be human, not a corporate bot.`;
 
   } catch (error) {
     console.error('Error in generate-reply API route:', error)
+    await decrementUsage(user.id, "aiReviewRepliesUsed").catch(() => { })
 
     // Handle specific Gemini API errors
     if (error instanceof Error) {

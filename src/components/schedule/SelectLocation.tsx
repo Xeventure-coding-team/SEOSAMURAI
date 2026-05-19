@@ -315,14 +315,23 @@ export default function SelectLocation() {
             )}
 
             <div className="flex flex-col gap-6 sm:flex-row sm:items-start sm:justify-between">
-                <div className="space-y-2">
-                    <h1 className="text-4xl font-bold tracking-tight">
-                        Schedule Posts for Your Business Location
+
+                <div className="space-y-3">
+                    <div className="inline-flex items-center gap-1.5 bg-blue-50 text-blue-600 text-xs font-medium px-3 py-1.5 rounded-full">
+                        <MapPin className="h-3.5 w-3.5" />
+                        Business scheduling
+                    </div>
+
+                    <h1 className="text-4xl md:text-5xl font-semibold tracking-tight leading-tight">
+                        Schedule posts for
+                        your business locations
                     </h1>
-                    <p className="text-lg text-muted-foreground max-w-2xl">
-                        Select a location to start scheduling and managing your posts
+
+                    <p className="text-lg text-muted-foreground max-w-xl leading-relaxed">
+                        Pick a location to start publishing and managing posts — all in one place.
                     </p>
                 </div>
+
                 <div>
                     <div>
                         <UsageBadge metric="scheduledPostsUsed" label="Schedule Posts" showBar={true} />
@@ -331,12 +340,25 @@ export default function SelectLocation() {
             </div>
 
             <div className="space-y-4">
-                <div className="flex items-center gap-2 mb-4">
-                    <MapPin className="h-5 w-5 text-primary" />
-                    <span className="font-medium">Available Locations ({locations.length})</span>
-                </div>
 
-                <ScrollArea className="h-[400px] sm:h-auto">
+<div className="flex items-center justify-between mb-5">
+  <div className="flex items-center gap-3">
+    <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary/10">
+      <MapPin className="h-5 w-5 text-primary" />
+    </div>
+
+    <div>
+      <h3 className="text-lg font-semibold leading-none">
+        Available Locations
+      </h3>
+      <p className="text-sm text-muted-foreground mt-1">
+        {locations.length} locations ready for scheduling
+      </p>
+    </div>
+  </div>
+</div>
+
+                <ScrollArea className="sm:h-auto">
                     <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2.5">
                         {locations.length === 0 ? (
                             <Card className="border-dashed col-span-full">

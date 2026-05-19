@@ -34133,6 +34133,7 @@ export namespace Prisma {
 
   export type UsageAvgAggregateOutputType = {
     postsUsed: number | null
+    aiPostersUsed: number | null
     aiReviewRepliesUsed: number | null
     scheduledPostsUsed: number | null
     geoGridScansUsed: number | null
@@ -34142,6 +34143,7 @@ export namespace Prisma {
 
   export type UsageSumAggregateOutputType = {
     postsUsed: number | null
+    aiPostersUsed: number | null
     aiReviewRepliesUsed: number | null
     scheduledPostsUsed: number | null
     geoGridScansUsed: number | null
@@ -34156,6 +34158,7 @@ export namespace Prisma {
     periodStart: Date | null
     periodEnd: Date | null
     postsUsed: number | null
+    aiPostersUsed: number | null
     aiReviewRepliesUsed: number | null
     scheduledPostsUsed: number | null
     geoGridScansUsed: number | null
@@ -34171,6 +34174,7 @@ export namespace Prisma {
     periodStart: Date | null
     periodEnd: Date | null
     postsUsed: number | null
+    aiPostersUsed: number | null
     aiReviewRepliesUsed: number | null
     scheduledPostsUsed: number | null
     geoGridScansUsed: number | null
@@ -34186,6 +34190,7 @@ export namespace Prisma {
     periodStart: number
     periodEnd: number
     postsUsed: number
+    aiPostersUsed: number
     aiReviewRepliesUsed: number
     scheduledPostsUsed: number
     geoGridScansUsed: number
@@ -34198,6 +34203,7 @@ export namespace Prisma {
 
   export type UsageAvgAggregateInputType = {
     postsUsed?: true
+    aiPostersUsed?: true
     aiReviewRepliesUsed?: true
     scheduledPostsUsed?: true
     geoGridScansUsed?: true
@@ -34207,6 +34213,7 @@ export namespace Prisma {
 
   export type UsageSumAggregateInputType = {
     postsUsed?: true
+    aiPostersUsed?: true
     aiReviewRepliesUsed?: true
     scheduledPostsUsed?: true
     geoGridScansUsed?: true
@@ -34221,6 +34228,7 @@ export namespace Prisma {
     periodStart?: true
     periodEnd?: true
     postsUsed?: true
+    aiPostersUsed?: true
     aiReviewRepliesUsed?: true
     scheduledPostsUsed?: true
     geoGridScansUsed?: true
@@ -34236,6 +34244,7 @@ export namespace Prisma {
     periodStart?: true
     periodEnd?: true
     postsUsed?: true
+    aiPostersUsed?: true
     aiReviewRepliesUsed?: true
     scheduledPostsUsed?: true
     geoGridScansUsed?: true
@@ -34251,6 +34260,7 @@ export namespace Prisma {
     periodStart?: true
     periodEnd?: true
     postsUsed?: true
+    aiPostersUsed?: true
     aiReviewRepliesUsed?: true
     scheduledPostsUsed?: true
     geoGridScansUsed?: true
@@ -34353,6 +34363,7 @@ export namespace Prisma {
     periodStart: Date
     periodEnd: Date
     postsUsed: number
+    aiPostersUsed: number
     aiReviewRepliesUsed: number
     scheduledPostsUsed: number
     geoGridScansUsed: number
@@ -34387,6 +34398,7 @@ export namespace Prisma {
     periodStart?: boolean
     periodEnd?: boolean
     postsUsed?: boolean
+    aiPostersUsed?: boolean
     aiReviewRepliesUsed?: boolean
     scheduledPostsUsed?: boolean
     geoGridScansUsed?: boolean
@@ -34405,6 +34417,7 @@ export namespace Prisma {
     periodStart?: boolean
     periodEnd?: boolean
     postsUsed?: boolean
+    aiPostersUsed?: boolean
     aiReviewRepliesUsed?: boolean
     scheduledPostsUsed?: boolean
     geoGridScansUsed?: boolean
@@ -34413,7 +34426,7 @@ export namespace Prisma {
     updatedAt?: boolean
   }
 
-  export type UsageOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "subscriptionId" | "stackUserId" | "periodStart" | "periodEnd" | "postsUsed" | "aiReviewRepliesUsed" | "scheduledPostsUsed" | "geoGridScansUsed" | "reviewPostersUsed" | "keywordTrackingUsed" | "updatedAt", ExtArgs["result"]["usage"]>
+  export type UsageOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "subscriptionId" | "stackUserId" | "periodStart" | "periodEnd" | "postsUsed" | "aiPostersUsed" | "aiReviewRepliesUsed" | "scheduledPostsUsed" | "geoGridScansUsed" | "reviewPostersUsed" | "keywordTrackingUsed" | "updatedAt", ExtArgs["result"]["usage"]>
   export type UsageInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     subscription?: boolean | SubscriptionDefaultArgs<ExtArgs>
   }
@@ -34430,6 +34443,7 @@ export namespace Prisma {
       periodStart: Date
       periodEnd: Date
       postsUsed: number
+      aiPostersUsed: number
       aiReviewRepliesUsed: number
       scheduledPostsUsed: number
       geoGridScansUsed: number
@@ -34835,6 +34849,7 @@ export namespace Prisma {
     readonly periodStart: FieldRef<"Usage", 'DateTime'>
     readonly periodEnd: FieldRef<"Usage", 'DateTime'>
     readonly postsUsed: FieldRef<"Usage", 'Int'>
+    readonly aiPostersUsed: FieldRef<"Usage", 'Int'>
     readonly aiReviewRepliesUsed: FieldRef<"Usage", 'Int'>
     readonly scheduledPostsUsed: FieldRef<"Usage", 'Int'>
     readonly geoGridScansUsed: FieldRef<"Usage", 'Int'>
@@ -37621,6 +37636,7 @@ export namespace Prisma {
     periodStart: 'periodStart',
     periodEnd: 'periodEnd',
     postsUsed: 'postsUsed',
+    aiPostersUsed: 'aiPostersUsed',
     aiReviewRepliesUsed: 'aiReviewRepliesUsed',
     scheduledPostsUsed: 'scheduledPostsUsed',
     geoGridScansUsed: 'geoGridScansUsed',
@@ -40487,6 +40503,7 @@ export namespace Prisma {
     periodStart?: DateTimeFilter<"Usage"> | Date | string
     periodEnd?: DateTimeFilter<"Usage"> | Date | string
     postsUsed?: IntFilter<"Usage"> | number
+    aiPostersUsed?: IntFilter<"Usage"> | number
     aiReviewRepliesUsed?: IntFilter<"Usage"> | number
     scheduledPostsUsed?: IntFilter<"Usage"> | number
     geoGridScansUsed?: IntFilter<"Usage"> | number
@@ -40503,6 +40520,7 @@ export namespace Prisma {
     periodStart?: SortOrder
     periodEnd?: SortOrder
     postsUsed?: SortOrder
+    aiPostersUsed?: SortOrder
     aiReviewRepliesUsed?: SortOrder
     scheduledPostsUsed?: SortOrder
     geoGridScansUsed?: SortOrder
@@ -40522,6 +40540,7 @@ export namespace Prisma {
     periodStart?: DateTimeFilter<"Usage"> | Date | string
     periodEnd?: DateTimeFilter<"Usage"> | Date | string
     postsUsed?: IntFilter<"Usage"> | number
+    aiPostersUsed?: IntFilter<"Usage"> | number
     aiReviewRepliesUsed?: IntFilter<"Usage"> | number
     scheduledPostsUsed?: IntFilter<"Usage"> | number
     geoGridScansUsed?: IntFilter<"Usage"> | number
@@ -40538,6 +40557,7 @@ export namespace Prisma {
     periodStart?: SortOrder
     periodEnd?: SortOrder
     postsUsed?: SortOrder
+    aiPostersUsed?: SortOrder
     aiReviewRepliesUsed?: SortOrder
     scheduledPostsUsed?: SortOrder
     geoGridScansUsed?: SortOrder
@@ -40561,6 +40581,7 @@ export namespace Prisma {
     periodStart?: DateTimeWithAggregatesFilter<"Usage"> | Date | string
     periodEnd?: DateTimeWithAggregatesFilter<"Usage"> | Date | string
     postsUsed?: IntWithAggregatesFilter<"Usage"> | number
+    aiPostersUsed?: IntWithAggregatesFilter<"Usage"> | number
     aiReviewRepliesUsed?: IntWithAggregatesFilter<"Usage"> | number
     scheduledPostsUsed?: IntWithAggregatesFilter<"Usage"> | number
     geoGridScansUsed?: IntWithAggregatesFilter<"Usage"> | number
@@ -43684,6 +43705,7 @@ export namespace Prisma {
     periodStart: Date | string
     periodEnd: Date | string
     postsUsed?: number
+    aiPostersUsed?: number
     aiReviewRepliesUsed?: number
     scheduledPostsUsed?: number
     geoGridScansUsed?: number
@@ -43700,6 +43722,7 @@ export namespace Prisma {
     periodStart: Date | string
     periodEnd: Date | string
     postsUsed?: number
+    aiPostersUsed?: number
     aiReviewRepliesUsed?: number
     scheduledPostsUsed?: number
     geoGridScansUsed?: number
@@ -43713,6 +43736,7 @@ export namespace Prisma {
     periodStart?: DateTimeFieldUpdateOperationsInput | Date | string
     periodEnd?: DateTimeFieldUpdateOperationsInput | Date | string
     postsUsed?: IntFieldUpdateOperationsInput | number
+    aiPostersUsed?: IntFieldUpdateOperationsInput | number
     aiReviewRepliesUsed?: IntFieldUpdateOperationsInput | number
     scheduledPostsUsed?: IntFieldUpdateOperationsInput | number
     geoGridScansUsed?: IntFieldUpdateOperationsInput | number
@@ -43728,6 +43752,7 @@ export namespace Prisma {
     periodStart?: DateTimeFieldUpdateOperationsInput | Date | string
     periodEnd?: DateTimeFieldUpdateOperationsInput | Date | string
     postsUsed?: IntFieldUpdateOperationsInput | number
+    aiPostersUsed?: IntFieldUpdateOperationsInput | number
     aiReviewRepliesUsed?: IntFieldUpdateOperationsInput | number
     scheduledPostsUsed?: IntFieldUpdateOperationsInput | number
     geoGridScansUsed?: IntFieldUpdateOperationsInput | number
@@ -43743,6 +43768,7 @@ export namespace Prisma {
     periodStart: Date | string
     periodEnd: Date | string
     postsUsed?: number
+    aiPostersUsed?: number
     aiReviewRepliesUsed?: number
     scheduledPostsUsed?: number
     geoGridScansUsed?: number
@@ -43756,6 +43782,7 @@ export namespace Prisma {
     periodStart?: DateTimeFieldUpdateOperationsInput | Date | string
     periodEnd?: DateTimeFieldUpdateOperationsInput | Date | string
     postsUsed?: IntFieldUpdateOperationsInput | number
+    aiPostersUsed?: IntFieldUpdateOperationsInput | number
     aiReviewRepliesUsed?: IntFieldUpdateOperationsInput | number
     scheduledPostsUsed?: IntFieldUpdateOperationsInput | number
     geoGridScansUsed?: IntFieldUpdateOperationsInput | number
@@ -43770,6 +43797,7 @@ export namespace Prisma {
     periodStart?: DateTimeFieldUpdateOperationsInput | Date | string
     periodEnd?: DateTimeFieldUpdateOperationsInput | Date | string
     postsUsed?: IntFieldUpdateOperationsInput | number
+    aiPostersUsed?: IntFieldUpdateOperationsInput | number
     aiReviewRepliesUsed?: IntFieldUpdateOperationsInput | number
     scheduledPostsUsed?: IntFieldUpdateOperationsInput | number
     geoGridScansUsed?: IntFieldUpdateOperationsInput | number
@@ -45889,6 +45917,7 @@ export namespace Prisma {
     periodStart?: SortOrder
     periodEnd?: SortOrder
     postsUsed?: SortOrder
+    aiPostersUsed?: SortOrder
     aiReviewRepliesUsed?: SortOrder
     scheduledPostsUsed?: SortOrder
     geoGridScansUsed?: SortOrder
@@ -45899,6 +45928,7 @@ export namespace Prisma {
 
   export type UsageAvgOrderByAggregateInput = {
     postsUsed?: SortOrder
+    aiPostersUsed?: SortOrder
     aiReviewRepliesUsed?: SortOrder
     scheduledPostsUsed?: SortOrder
     geoGridScansUsed?: SortOrder
@@ -45913,6 +45943,7 @@ export namespace Prisma {
     periodStart?: SortOrder
     periodEnd?: SortOrder
     postsUsed?: SortOrder
+    aiPostersUsed?: SortOrder
     aiReviewRepliesUsed?: SortOrder
     scheduledPostsUsed?: SortOrder
     geoGridScansUsed?: SortOrder
@@ -45928,6 +45959,7 @@ export namespace Prisma {
     periodStart?: SortOrder
     periodEnd?: SortOrder
     postsUsed?: SortOrder
+    aiPostersUsed?: SortOrder
     aiReviewRepliesUsed?: SortOrder
     scheduledPostsUsed?: SortOrder
     geoGridScansUsed?: SortOrder
@@ -45938,6 +45970,7 @@ export namespace Prisma {
 
   export type UsageSumOrderByAggregateInput = {
     postsUsed?: SortOrder
+    aiPostersUsed?: SortOrder
     aiReviewRepliesUsed?: SortOrder
     scheduledPostsUsed?: SortOrder
     geoGridScansUsed?: SortOrder
@@ -46893,6 +46926,7 @@ export namespace Prisma {
     periodStart: Date | string
     periodEnd: Date | string
     postsUsed?: number
+    aiPostersUsed?: number
     aiReviewRepliesUsed?: number
     scheduledPostsUsed?: number
     geoGridScansUsed?: number
@@ -46907,6 +46941,7 @@ export namespace Prisma {
     periodStart: Date | string
     periodEnd: Date | string
     postsUsed?: number
+    aiPostersUsed?: number
     aiReviewRepliesUsed?: number
     scheduledPostsUsed?: number
     geoGridScansUsed?: number
@@ -46936,6 +46971,7 @@ export namespace Prisma {
     periodStart?: DateTimeFieldUpdateOperationsInput | Date | string
     periodEnd?: DateTimeFieldUpdateOperationsInput | Date | string
     postsUsed?: IntFieldUpdateOperationsInput | number
+    aiPostersUsed?: IntFieldUpdateOperationsInput | number
     aiReviewRepliesUsed?: IntFieldUpdateOperationsInput | number
     scheduledPostsUsed?: IntFieldUpdateOperationsInput | number
     geoGridScansUsed?: IntFieldUpdateOperationsInput | number
@@ -46949,6 +46985,7 @@ export namespace Prisma {
     periodStart?: DateTimeFieldUpdateOperationsInput | Date | string
     periodEnd?: DateTimeFieldUpdateOperationsInput | Date | string
     postsUsed?: IntFieldUpdateOperationsInput | number
+    aiPostersUsed?: IntFieldUpdateOperationsInput | number
     aiReviewRepliesUsed?: IntFieldUpdateOperationsInput | number
     scheduledPostsUsed?: IntFieldUpdateOperationsInput | number
     geoGridScansUsed?: IntFieldUpdateOperationsInput | number

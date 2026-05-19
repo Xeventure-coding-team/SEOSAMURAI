@@ -1,8 +1,7 @@
 "use client";
 
-import React, { cloneElement, isValidElement } from "react";
+import React, { cloneElement, isValidElement, useEffect, useRef } from "react";
 import * as Tooltip from "@radix-ui/react-tooltip";
-import { Lock } from "lucide-react";
 import { useUsage, UsageMetric, UsageStatus } from "@/lib/use-usage";
 import { cn } from "@/lib/utils";
 import { SlotResource, useSlot } from "@/lib/use-slot";
@@ -22,7 +21,6 @@ type SlotGateProps = {
 type UsageGateProps = (MetricGateProps | SlotGateProps) & {
   children: React.ReactElement;
   tooltipText?: string;
-  /** Show warning at 80%+ but still allow action (metric only) */
   warnOnly?: boolean;
   onBlocked?: () => void;
   className?: string;
@@ -34,8 +32,7 @@ const STATUS_TOOLTIP: Record<UsageStatus, string> = {
   exceeded: "Monthly limit reached — upgrade to continue",
 };
 
-// ─── Loading skeleton ─────────────────────────────────────────────────────────
-// Renders while SWR is fetching so there's zero layout shift or flash.
+// ─── Shimmer skeleton ─────────────────────────────────────────────────────────
 
 function LoadingSkeleton({ children }: { children: React.ReactElement }) {
   const muted = isValidElement(children)
@@ -46,7 +43,8 @@ function LoadingSkeleton({ children }: { children: React.ReactElement }) {
           "aria-disabled": true,
           className: cn(
             (children.props as { className?: string }).className,
-            "opacity-40 pointer-events-none cursor-not-allowed"
+            "opacity-30 pointer-events-none cursor-not-allowed",
+            "animate-pulse"
           ),
         }
       )
@@ -55,100 +53,215 @@ function LoadingSkeleton({ children }: { children: React.ReactElement }) {
   return <span className="inline-flex">{muted}</span>;
 }
 
-// ─── Internal: monthly metric gate ───────────────────────────────────────────
+// ─── Usage ring indicator ─────────────────────────────────────────────────────
 
-function MetricGate({
-  metric,
-  children,
-  tooltipText,
-  warnOnly = false,
-  onBlocked,
-  className,
-}: MetricGateProps & Omit<UsageGateProps, "metric" | "slot">) {
-  const { canUse, statusFor, data, isLoading, error } = useUsage();
+function UsageRing({
+  pct,
+  status,
+  size = 32,
+}: {
+  pct: number;
+  status: UsageStatus;
+  size?: number;
+}) {
+  const r = (size - 4) / 2;
+  const circ = 2 * Math.PI * r;
+  const fill = Math.min(pct / 100, 1) * circ;
 
-  // Show muted skeleton while loading — prevents the 2-second naked-button flash
-  if (isLoading || !data) {
-    return <LoadingSkeleton>{children}</LoadingSkeleton>;
-  }
-
-  // Fail open on transient network errors — don't gate users due to a blip
-  if (error) {
-    return <>{children}</>;
-  }
-
-  const status = statusFor(metric);
-  // FIX: was hardcoded `true` — now correctly derived from hook
-  const blocked = warnOnly ? false : !canUse(metric);
-
-  const used      = data.used[metric];
-  const limit     = data.limits[metric];
-  const remaining = Math.max(0, limit - used);
-
-  const tip =
-    tooltipText ??
-    (blocked
-      ? `Monthly limit reached — upgrade to continue (${used}/${limit})`
+  const trackColor =
+    status === "exceeded"
+      ? "stroke-red-200 dark:stroke-red-900"
       : status === "warning"
-        ? `${STATUS_TOOLTIP.warning} — ${remaining} left`
-        : `${remaining} of ${limit} remaining this month`);
+        ? "stroke-amber-200 dark:stroke-amber-900"
+        : "stroke-gray-200 dark:stroke-gray-700";
+
+  const progressColor =
+    status === "exceeded"
+      ? "#ef4444"
+      : status === "warning"
+        ? "#f59e0b"
+        : "#10b981";
 
   return (
-    <GateShell
-      blocked={blocked}
-      status={status}
-      tip={tip}
-      onBlocked={onBlocked}
-      className={className}
+    <svg
+      width={size}
+      height={size}
+      viewBox={`0 0 ${size} ${size}`}
+      fill="none"
+      aria-hidden
+      className="shrink-0"
     >
-      {children}
-    </GateShell>
+      <circle
+        cx={size / 2}
+        cy={size / 2}
+        r={r}
+        strokeWidth={3}
+        className={trackColor}
+        stroke="currentColor"
+      />
+      <circle
+        cx={size / 2}
+        cy={size / 2}
+        r={r}
+        strokeWidth={3}
+        stroke={progressColor}
+        strokeDasharray={circ}
+        strokeDashoffset={circ - fill}
+        strokeLinecap="round"
+        transform={`rotate(-90 ${size / 2} ${size / 2})`}
+        style={{ transition: "stroke-dashoffset 0.5s ease" }}
+      />
+    </svg>
   );
 }
 
-// ─── Internal: slot resource gate ────────────────────────────────────────────
+// ─── Tooltip content ──────────────────────────────────────────────────────────
 
-function SlotGate({
-  slot,
-  children,
-  tooltipText,
-  onBlocked,
-  className,
-}: SlotGateProps & Omit<UsageGateProps, "metric" | "slot">) {
-  const { canAdd, remaining, isLoading } = useSlot(slot);
+interface TooltipBodyProps {
+  blocked: boolean;
+  status: UsageStatus;
+  tip: string;
+  used?: number;
+  limit?: number;
+}
 
-  if (isLoading) {
-    return <LoadingSkeleton>{children}</LoadingSkeleton>;
-  }
-
-  const blocked = !canAdd;
-  const label   = slot === "locations" ? "location" : "website";
-
-  const tip =
-    tooltipText ??
-    (blocked
-      ? `${label} limit reached — upgrade to continue`
-      : `${remaining} ${label} slot${remaining === 1 ? "" : "s"} remaining`);
+function TooltipBody({ blocked, status, tip, used, limit }: TooltipBodyProps) {
+  const pct = used != null && limit ? Math.round((used / limit) * 100) : null;
 
   return (
-    <GateShell
-      blocked={blocked}
-      status={blocked ? "exceeded" : "ok"}
-      tip={tip}
-      onBlocked={onBlocked}
-      className={className}
-    >
-      {children}
-    </GateShell>
+    <div className="flex flex-col gap-3 max-w-[172px]">
+      {/* Header row */}
+      <div className="flex items-center gap-2.5">
+        {pct != null && limit != null && (
+          <UsageRing
+            pct={pct}
+            status={status}
+            size={34}
+          />
+        )}
+        <div className="flex flex-col gap-0.5">
+          <p className="text-[14px] font-medium leading-tight text-white/95">
+            {blocked ? "Limit reached" : status === "warning" ? "Almost there" : "Usage"}
+          </p>
+          {pct != null && limit != null && (
+            <p className="text-[12px] text-white/55 tabular-nums">
+              {used?.toLocaleString()} / {limit.toLocaleString()} used
+            </p>
+          )}
+        </div>
+      </div>
+
+      {/* Tip text */}
+      <p className="text-[14px] leading-relaxed text-white/75 border-t border-white/10 pt-2.5">
+        {tip}
+      </p>
+
+      {/* Progress bar (if we have data) */}
+      {pct != null && (
+        <div className="h-1 w-full rounded-full bg-white/10 overflow-hidden -mt-1">
+          <div
+            className={cn(
+              "h-full rounded-full transition-all duration-500",
+              status === "exceeded" && "bg-red-400",
+              status === "warning"  && "bg-amber-400",
+              status === "ok"       && "bg-emerald-400"
+            )}
+            style={{ width: `${Math.min(pct, 100)}%` }}
+          />
+        </div>
+      )}
+
+      {/* CTA */}
+      {blocked && (
+        <a
+          href="/settings/billing"
+          className={cn(
+            "inline-flex items-center justify-center gap-1.5",
+            "rounded-lg px-3 py-2 text-[12px] font-medium",
+            "bg-white text-gray-900 hover:bg-white/90",
+            "transition-all duration-150 active:scale-[0.98]",
+            "shadow-sm"
+          )}
+        >
+          <svg
+            width="12"
+            height="12"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2.5"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            aria-hidden
+          >
+            <path d="M12 2L2 7l10 5 10-5-10-5z" />
+            <path d="M2 17l10 5 10-5" />
+            <path d="M2 12l10 5 10-5" />
+          </svg>
+          Upgrade plan
+        </a>
+      )}
+    </div>
   );
 }
 
-// ─── Internal: shared shell ───────────────────────────────────────────────────
+// ─── Lock badge ───────────────────────────────────────────────────────────────
+
+function LockBadge() {
+  return (
+    <span
+      className={cn(
+        "absolute -top-1.5 -right-1.5 z-10",
+        "flex items-center justify-center",
+        "w-[18px] h-[18px] rounded-full",
+        "bg-red-500 ring-2 ring-white dark:ring-gray-900",
+        "shadow-sm pointer-events-none",
+        "animate-in zoom-in-75 duration-200"
+      )}
+    >
+      <svg
+        width="9"
+        height="9"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="white"
+        strokeWidth="3"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        aria-hidden
+      >
+        <rect x="3" y="11" width="18" height="11" rx="2" ry="2" />
+        <path d="M7 11V7a5 5 0 0 1 10 0v4" />
+      </svg>
+    </span>
+  );
+}
+
+// ─── Warning dot ──────────────────────────────────────────────────────────────
+
+function WarningDot() {
+  return (
+    <span
+      className={cn(
+        "absolute -top-1 -right-1 z-10",
+        "w-[10px] h-[10px] rounded-full",
+        "bg-amber-400 ring-2 ring-white dark:ring-gray-900",
+        "pointer-events-none",
+        "animate-pulse"
+      )}
+      aria-hidden
+    />
+  );
+}
+
+// ─── Shared gate shell ────────────────────────────────────────────────────────
 
 interface GateShellProps {
   blocked: boolean;
   status: UsageStatus;
   tip: string;
+  used?: number;
+  limit?: number;
   onBlocked?: () => void;
   className?: string;
   children: React.ReactElement;
@@ -158,6 +271,8 @@ function GateShell({
   blocked,
   status,
   tip,
+  used,
+  limit,
   onBlocked,
   className,
   children,
@@ -177,7 +292,9 @@ function GateShell({
           className: cn(
             (children.props as { className?: string }).className,
             blocked && "opacity-50 cursor-not-allowed pointer-events-none",
-            !blocked && status === "warning" && "border-amber-400 text-amber-800 bg-amber-50",
+            !blocked &&
+              status === "warning" &&
+              "ring-1 ring-amber-400/60 ring-offset-1",
             className
           ),
         }
@@ -185,7 +302,7 @@ function GateShell({
     : children;
 
   return (
-    <Tooltip.Provider delayDuration={150}>
+    <Tooltip.Provider delayDuration={120}>
       <Tooltip.Root>
         <Tooltip.Trigger asChild>
           <span
@@ -196,11 +313,8 @@ function GateShell({
             tabIndex={blocked ? 0 : undefined}
             aria-label={blocked ? tip : undefined}
           >
-            {blocked && (
-              <span className="absolute -top-2 -right-2 z-10 flex items-center justify-center w-5 h-5 rounded-full bg-red-500 shadow-md ring-2 ring-white pointer-events-none">
-                <Lock className="w-3 h-3 text-white" aria-hidden />
-              </span>
-            )}
+            {blocked && <LockBadge />}
+            {!blocked && status === "warning" && <WarningDot />}
             {gatedChild}
           </span>
         </Tooltip.Trigger>
@@ -209,26 +323,41 @@ function GateShell({
           <Tooltip.Content
             side="top"
             align="center"
-            sideOffset={8}
+            sideOffset={10}
             className={cn(
-              "z-50 max-w-[260px] rounded-lg px-4 py-3 text-sm shadow-lg",
-              "bg-primary text-primary-foreground leading-relaxed",
-              "animate-in fade-in-0 zoom-in-95",
-              "data-[state=closed]:animate-out data-[state=closed]:fade-out-0"
+              "z-50 rounded-xl px-3 py-3 shadow-xl",
+              "border border-white/10",
+              // Contextual background tinting
+              blocked
+                ? "bg-gray-900 dark:bg-gray-800"
+                : status === "warning"
+                  ? "bg-amber-900/95 dark:bg-amber-950/95"
+                  : "bg-gray-900 dark:bg-gray-800",
+              "backdrop-blur-sm",
+              "will-change-transform",
+              "data-[state=open]:animate-in data-[state=open]:fade-in-0 data-[state=open]:zoom-in-95",
+              "data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=closed]:zoom-out-95",
+              "data-[side=top]:slide-in-from-bottom-1",
+              "data-[side=bottom]:slide-in-from-top-1",
+              "duration-150"
             )}
           >
-            <div className="flex flex-col gap-2">
-              <span>{tip}</span>
-              {blocked && (
-                <a
-                  href="/settings/billing"
-                  className="inline-flex items-center justify-center rounded-md bg-white/90 px-3 py-1.5 text-xs font-medium text-primary hover:bg-white transition"
-                >
-                  Upgrade Plan
-                </a>
+            <TooltipBody
+              blocked={blocked}
+              status={status}
+              tip={tip}
+              used={used}
+              limit={limit}
+            />
+            <Tooltip.Arrow
+              className={cn(
+                blocked
+                  ? "fill-gray-900 dark:fill-gray-800"
+                  : status === "warning"
+                    ? "fill-amber-900/95"
+                    : "fill-gray-900 dark:fill-gray-800"
               )}
-            </div>
-            <Tooltip.Arrow className="fill-primary" />
+            />
           </Tooltip.Content>
         </Tooltip.Portal>
       </Tooltip.Root>
@@ -236,18 +365,93 @@ function GateShell({
   );
 }
 
-// ─── Public: unified gate ─────────────────────────────────────────────────────
+// ─── Metric gate ──────────────────────────────────────────────────────────────
+
+function MetricGate({
+  metric,
+  children,
+  tooltipText,
+  warnOnly = false,
+  onBlocked,
+  className,
+}: MetricGateProps & Omit<UsageGateProps, "metric" | "slot">) {
+  const { canUse, statusFor, data, isLoading, error } = useUsage();
+
+  if (isLoading || !data) return <LoadingSkeleton>{children}</LoadingSkeleton>;
+  if (error) return <>{children}</>;
+
+  const status  = statusFor(metric);
+  const blocked = warnOnly ? false : !canUse(metric);
+
+  const used      = data.used[metric];
+  const limit     = data.limits[metric];
+  const remaining = Math.max(0, limit - used);
+
+  const tip =
+    tooltipText ??
+    (blocked
+      ? `You've used all ${limit.toLocaleString()} available this month.`
+      : status === "warning"
+        ? `${STATUS_TOOLTIP.warning} — ${remaining.toLocaleString()} remaining.`
+        : `${remaining.toLocaleString()} of ${limit.toLocaleString()} remaining this month.`);
+
+  return (
+    <GateShell
+      blocked={blocked}
+      status={status}
+      tip={tip}
+      used={used}
+      limit={limit}
+      onBlocked={onBlocked}
+      className={className}
+    >
+      {children}
+    </GateShell>
+  );
+}
+
+// ─── Slot gate ────────────────────────────────────────────────────────────────
+
+function SlotGate({
+  slot,
+  children,
+  tooltipText,
+  onBlocked,
+  className,
+}: SlotGateProps & Omit<UsageGateProps, "metric" | "slot">) {
+  const { canAdd, remaining, isLoading } = useSlot(slot);
+
+  if (isLoading) return <LoadingSkeleton>{children}</LoadingSkeleton>;
+
+  const blocked = !canAdd;
+  const label   = slot === "locations" ? "location" : "website";
+
+  const tip =
+    tooltipText ??
+    (blocked
+      ? `Your ${label} limit has been reached. Upgrade to add more.`
+      : `${remaining} ${label} slot${remaining === 1 ? "" : "s"} remaining.`);
+
+  return (
+    <GateShell
+      blocked={blocked}
+      status={blocked ? "exceeded" : "ok"}
+      tip={tip}
+      onBlocked={onBlocked}
+      className={className}
+    >
+      {children}
+    </GateShell>
+  );
+}
+
+// ─── Public API ───────────────────────────────────────────────────────────────
 
 export function UsageGate(props: UsageGateProps) {
   if (props.slot) {
     const { slot, children, tooltipText, onBlocked, className } = props;
     return (
-      <SlotGate
-        slot={slot}
-        onBlocked={onBlocked}
-        tooltipText={tooltipText}
-        className={className}
-      >
+      <SlotGate slot={slot} onBlocked={onBlocked} tooltipText={tooltipText} className={className}>
         {children}
       </SlotGate>
     );

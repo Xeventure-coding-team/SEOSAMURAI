@@ -54,6 +54,8 @@ import PostPublished from "./PostPublished"
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
 import { useGMBStore } from "@/store/gmbStore"
 import axios from "axios"
+import { GmbAiImageGenerator } from "@/components/posts/GmbAiImageGenerator"
+import { LegendSection } from "@/components/ui/legend-section"
 
 const MAX_FILE_SIZE = 10 * 1024 * 1024 // 10MB
 const ACCEPTED_IMAGE_TYPES = ["image/jpeg", "image/jpg", "image/png", "image/webp"]
@@ -222,6 +224,7 @@ export default function CalendarManageEventDialog({
   const [imagePrompt, setImagePrompt] = useState("")
   const fileInputRef = useRef<HTMLInputElement>(null)
   const [localLocationDetails, setLocalLocationDetails] = useState<LocationDetails | null>(null);
+  const [aiGeneratedImageUrl, setAiGeneratedImageUrl] = useState<string | null>(null)
 
 
   const { updatePost, deletePost, loading, refreshPosts } = useGmbPostsScheduled()
@@ -274,7 +277,7 @@ export default function CalendarManageEventDialog({
     }
   }, [selectedEvent, form])
 
-  const displayImageUrl = previewUrl || form.watch("image_url")
+  const displayImageUrl = aiGeneratedImageUrl || previewUrl || form.watch("image_url")
   const watchedImageUrl = form.watch("image_url")
   const watchedActionButton = form.watch("actionButton")
   const watchedPostContent = form.watch("postContent")
@@ -327,40 +330,6 @@ export default function CalendarManageEventDialog({
     fetchDetails()
   }, [locationId, accessToken, gmbAccountId])
 
-
-  const generateImageFromContent = async () => {
-    const postContent = form.getValues("postContent")
-    if (!postContent.trim()) {
-      toast.error("Please enter post content first")
-      return
-    }
-
-    setIsGeneratingImage(true)
-    try {
-      const response = await fetch("/api/generate-image", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          occasion: `${postContent}`,
-        }),
-      })
-
-      const result = await response.json()
-
-      if (result.success) {
-        form.setValue("image_url", result.imageUrl)
-        toast.success("Image generated from content!")
-      } else {
-        toast.error(result.message || "Failed to generate image")
-      }
-    } catch (error) {
-      toast.error("Failed to generate image")
-      console.error("Image generation error:", error)
-    } finally {
-      setIsGeneratingImage(false)
-    }
-  }
-
   const enhanceContent = async () => {
     const postContent = form.getValues("postContent")
     if (!postContent.trim()) {
@@ -391,37 +360,6 @@ export default function CalendarManageEventDialog({
       console.error("Enhancement error:", error)
     } finally {
       setIsEnhancing(false)
-    }
-  }
-
-  const generateImage = async () => {
-    if (!imagePrompt.trim()) {
-      toast.error("Please enter a prompt for image generation")
-      return
-    }
-
-    setIsGeneratingImage(true)
-    try {
-      const response = await fetch("/api/generate-image", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ occasion: imagePrompt }),
-      })
-
-      const result = await response.json()
-
-      if (result.success) {
-        form.setValue("image_url", result.imageUrl)
-        setImagePrompt("")
-        toast.success("Image generated successfully!")
-      } else {
-        toast.error(result.message || "Failed to generate image")
-      }
-    } catch (error) {
-      toast.error("Failed to generate image")
-      console.error("Image generation error:", error)
-    } finally {
-      setIsGeneratingImage(false)
     }
   }
 
@@ -471,13 +409,12 @@ export default function CalendarManageEventDialog({
 
   const removeFile = useCallback(() => {
     setSelectedFile(null)
+    setAiGeneratedImageUrl(null) // ← add this
     if (previewUrl) {
       URL.revokeObjectURL(previewUrl)
       setPreviewUrl(null)
     }
-    if (fileInputRef.current) {
-      fileInputRef.current.value = ""
-    }
+    if (fileInputRef.current) fileInputRef.current.value = ""
   }, [previewUrl])
 
   const handleEnhanceContent = async (e: React.MouseEvent) => {
@@ -544,13 +481,23 @@ export default function CalendarManageEventDialog({
       // Add file if selected
       if (selectedFile) {
         updateData.file = selectedFile
+      } else if (aiGeneratedImageUrl && !selectedFile) {
+        // Convert AI image to File, same as create model
+        try {
+          toast.loading("Preparing AI image…", { id: "ai-img-prep" })
+          const res = await fetch(aiGeneratedImageUrl)
+          const blob = await res.blob()
+          updateData.file = new File([blob], "ai-generated.png", {
+            type: blob.type || "image/png",
+          })
+          toast.dismiss("ai-img-prep")
+        } catch (err) {
+          toast.dismiss("ai-img-prep")
+          toast.error("Failed to prepare AI image")
+          return
+        }
       } else if (values.image_url) {
-        updateData.media = [
-          {
-            mediaFormat: "PHOTO",
-            sourceUrl: values.image_url,
-          },
-        ]
+        updateData.media = [{ mediaFormat: "PHOTO", sourceUrl: values.image_url }]
       }
 
       // Call the update API
@@ -600,7 +547,9 @@ export default function CalendarManageEventDialog({
     setSelectedEvent(null)
     form.reset()
     removeFile()
+    setAiGeneratedImageUrl(null)
   }
+
 
   return (
     <Dialog open={manageEventDialogOpen} onOpenChange={handleClose}>
@@ -642,6 +591,8 @@ export default function CalendarManageEventDialog({
 
               <div className="w-full max-w-none">
                 <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+
+
                   {/* Post Preview Panel */}
                   <Card className="lg:sticky lg:top-4 h-fit lg:col-span-3">
                     <CardHeader>
@@ -667,18 +618,18 @@ export default function CalendarManageEventDialog({
                         {/* Post Content */}
                         <div className="space-y-3">
                           {watchedPostContent ? (
-                            <p className="text-gray-900 whitespace-pre-wrap line-clamp-6">{watchedPostContent}</p>
+                            <p className="text-gray-900 line-clamp-6">{watchedPostContent}</p>
                           ) : (
                             <p className="text-gray-400 italic">Your post content will appear here...</p>
                           )}
 
                           {/* Image Preview */}
                           {(watchedImageUrl || previewUrl) && (
-                            <div className="rounded-lg overflow-hidden">
+                            <div className="rounded-lg overflow-hidden h-[350px]">
                               <img
                                 src={displayImageUrl || "/placeholder.svg"}
                                 alt="Post image"
-                                className="w-full h-48 object-cover"
+                                className="w-full h-full object-cover"
                                 onError={(e) => {
                                   e.currentTarget.src = "/placeholder.svg"
                                 }}
@@ -761,55 +712,57 @@ export default function CalendarManageEventDialog({
                         <PostPublished />
                       </> : <>
                         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-                          {/* Post Content */}
-                          <FormField
-                            control={form.control}
-                            name="postContent"
-                            render={({ field }) => (
-                              <FormItem>
-                                <FormLabel className="flex items-center justify-between">
-                                  <span>Post Content</span>
-                                  <div className="flex items-center gap-2">
-                                    <Badge variant={characterCount > 1200 ? "destructive" : "secondary"}>
-                                      {characterCount}/1500
-                                    </Badge>
-                                    <Button
-                                      type="button"
-                                      variant="outline"
-                                      size="sm"
-                                      onClick={handleEnhanceContent}
-                                      disabled={isEnhancing || !field.value?.trim()}
-                                    >
-                                      {isEnhancing ? (
-                                        <Loader2 className="h-3 w-3 animate-spin" />
-                                      ) : (
-                                        <Wand2 className="h-3 w-3" />
-                                      )}
-                                    </Button>
-                                  </div>
-                                </FormLabel>
-                                <FormControl>
-                                  <Textarea
-                                    placeholder="Write your post content here..."
-                                    className="min-h-[120px] resize-none"
-                                    {...field}
-                                  />
-                                </FormControl>
-                                <FormDescription>
-                                  Share updates, promotions, or news about your business. Use the magic wand to enhance
-                                  your content!
-                                </FormDescription>
-                                <FormMessage />
-                              </FormItem>
-                            )}
-                          />
 
+                          {/* Post Content */}
+                          <LegendSection legend="Post Content">
+                            <FormField
+                              control={form.control}
+                              name="postContent"
+                              render={({ field }) => (
+                                <FormItem>
+                                  <FormLabel className="flex items-center justify-between">
+                                    <div className="flex items-center gap-2">
+                                      <Badge variant={characterCount > 1200 ? "destructive" : "secondary"}>
+                                        {characterCount}/1500
+                                      </Badge>
+                                      <Button
+                                        type="button"
+                                        variant="outline"
+                                        size="sm"
+                                        onClick={handleEnhanceContent}
+                                        disabled={isEnhancing || !field.value?.trim()}
+                                      >
+                                        {isEnhancing ? (
+                                          <Loader2 className="h-3 w-3 animate-spin" />
+                                        ) : (
+                                          <Wand2 className="h-3 w-3" />
+                                        )}
+                                      </Button>
+                                    </div>
+                                  </FormLabel>
+                                  <FormControl>
+                                    <Textarea
+                                      placeholder="Write your post content here..."
+                                      className="min-h-[120px] resize-none"
+                                      {...field}
+                                    />
+                                  </FormControl>
+                                  <FormDescription>
+                                    Share updates, promotions, or news about your business. Use the magic wand to enhance
+                                    your content!
+                                  </FormDescription>
+                                  <FormMessage />
+                                </FormItem>
+                              )}
+                            />
+                          </LegendSection>
+
+                          <LegendSection legend="Scheduled Date & Time">
                           <FormField
                             control={form.control}
                             name="scheduled"
                             render={({ field }) => (
                               <FormItem>
-                                <FormLabel className="font-bold">Scheduled Date & Time</FormLabel>
                                 <FormControl>
                                   <DateTimePicker field={field} />
                                 </FormControl>
@@ -819,15 +772,16 @@ export default function CalendarManageEventDialog({
                                 <FormMessage />
                               </FormItem>
                             )}
-                          />
+                            />
+                            </LegendSection>
 
                           {/* Color Field */}
+                          <LegendSection legend="Event Color">
                           <FormField
                             control={form.control}
                             name="viewColor"
                             render={({ field }) => (
                               <FormItem>
-                                <FormLabel>Event Color</FormLabel>
                                 <FormControl>
                                   <div className="flex gap-2 items-center">
                                     <input
@@ -849,14 +803,11 @@ export default function CalendarManageEventDialog({
                               </FormItem>
                             )}
                           />
+                          </LegendSection>
 
                           {/* Media Section */}
+                          <LegendSection legend="Media">
                           <div className="space-y-4">
-                            <div className="flex items-center justify-between">
-                              <h3 className="text-sm font-medium">Media</h3>
-                              <Badge variant="outline">Optional</Badge>
-                            </div>
-
                             {/* Image Upload Section */}
                             <FormField
                               control={form.control}
@@ -956,53 +907,19 @@ export default function CalendarManageEventDialog({
                                         </TabsContent>
 
                                         <TabsContent value="ai" className="space-y-4">
-                                          <div className="space-y-4">
-                                            <div className="flex gap-2">
-                                              <Button
-                                                type="button"
-                                                variant="outline"
-                                                onClick={generateImageFromContent}
-                                                disabled={isGeneratingImage || !form.watch("postContent")?.trim()}
-                                                className="flex-1 bg-transparent"
-                                              >
-                                                {isGeneratingImage ? (
-                                                  <Loader2 className="h-4 w-4 animate-spin mr-2" />
-                                                ) : (
-                                                  <Wand2 className="h-4 w-4 mr-2" />
-                                                )}
-                                                Generate from Content
-                                              </Button>
-                                            </div>
 
-                                            <div className="relative">
-                                              <div className="absolute inset-0 flex items-center">
-                                                <span className="w-full border-t" />
-                                              </div>
-                                              <div className="relative flex justify-center text-xs uppercase">
-                                                <span className="bg-background px-2 text-muted-foreground">Or</span>
-                                              </div>
-                                            </div>
+                                          <GmbAiImageGenerator
+                                            locationId={locationId!}
+                                            accessToken={accessToken!}
+                                            accountId={accountId!}
+                                            postContent={''}
+                                            onImageGenerated={(url) => {
+                                              removeFile()
+                                              setAiGeneratedImageUrl(url)
+                                              form.setValue("image_url", "")
+                                            }}
+                                          />
 
-                                            <div className="flex gap-2">
-                                              <Input
-                                                placeholder="Describe the image you want to generate..."
-                                                value={imagePrompt}
-                                                onChange={(e) => setImagePrompt(e.target.value)}
-                                                disabled={isGeneratingImage}
-                                              />
-                                              <Button
-                                                type="button"
-                                                onClick={generateImage}
-                                                disabled={isGeneratingImage || !imagePrompt.trim()}
-                                              >
-                                                {isGeneratingImage ? (
-                                                  <Loader2 className="h-4 w-4 animate-spin" />
-                                                ) : (
-                                                  <Sparkles className="h-4 w-4" />
-                                                )}
-                                              </Button>
-                                            </div>
-                                          </div>
                                           {watchedImageUrl && (
                                             <div className="mt-2">
                                               <img
@@ -1024,10 +941,11 @@ export default function CalendarManageEventDialog({
                               )}
                             />
                           </div>
+                          </LegendSection>
 
                           {/* Call to Action */}
+                          <LegendSection legend="Call to Action">
                           <div className="space-y-4">
-                            <h3 className="text-sm font-medium">Call to Action</h3>
 
                             <FormField
                               control={form.control}
@@ -1119,6 +1037,7 @@ export default function CalendarManageEventDialog({
                               </div>
                             )}
                           </div>
+                          </LegendSection>
 
                           {selectedEvent?.status == "PUBLISHED" ? null : <>
                             <div className="flex justify-end">

@@ -6,7 +6,9 @@ export type UsageMetric =
   | "aiReviewRepliesUsed"
   | "scheduledPostsUsed"
   | "geoGridScansUsed"
-  | "keywordTrackingUsed";
+  | "keywordTrackingUsed"
+  | "aiImageUsed"
+  ;
 
 
 export type SlotMetric = "locationsUsed" | "websitesUsed" | "reviewPostersUsed";

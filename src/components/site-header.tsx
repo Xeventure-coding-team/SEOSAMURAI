@@ -5,7 +5,6 @@ import { usePageStore } from "@/store/usePageStore"
 import { Skeleton } from "./ui/skeleton"
 import { UsageRemaining } from "./subscription/UsageRemaining"
 import { SubscriptionBadge } from "./subscription/SubscriptionBadge"
-import { Button } from "./ui/button"
 
 export function SiteHeader() {
   const pathname = usePathname()
@@ -13,34 +12,75 @@ export function SiteHeader() {
 
   if (pathname === "/app/scan") {
     return (
-      <header className="fixed top-4 right-4 z-50 flex h-10 w-10 items-center justify-center border rounded-lg bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 shadow-lg">
-        <SidebarTrigger />
+      <header className="fixed top-4 right-4 z-50">
+        <div
+          className="
+            flex h-10 w-10
+            items-center justify-center
+            rounded-lg border
+            bg-background/95
+            backdrop-blur
+            supports-[backdrop-filter]:bg-background/60
+            shadow-lg
+          "
+        >
+          <SidebarTrigger />
+        </div>
       </header>
     )
   }
 
   return (
-    <header className="flex h-(--header-height) shrink-0 items-center gap-2 border-b transition-[width,height] ease-linear group-has-data-[collapsible=icon]/sidebar-wrapper:h-(--header-height)">
-      <div className="flex w-full items-center gap-1 px-4 lg:gap-2 lg:px-6">
-        <SidebarTrigger className="-ml-1" />
-        <Separator
-          orientation="vertical"
-          className="mx-2 data-[orientation=vertical]:h-4"
-        />
-        <h1 className="text-base font-medium">
-          {pageName === "Unknown Page" ? (
-            <Skeleton className="h-4 w-24 rounded" />
-          ) : (
-            pageName
-          )}
-        </h1>
+     <header
+  className="
+    shrink-0 border-b
+    transition-[width,height]
+    ease-linear
+    group-has-data-[collapsible=icon]/sidebar-wrapper:h-(--header-height)
+  "
+>
+  <div
+    className="
+      flex flex-col
+      lg:flex-row lg:items-center
+      gap-3 lg:gap-2
+      px-3 py-3
+      lg:px-6
+      min-h-(--header-height)
+    "
+  >
+    {/* Left Section */}
+    <div className="flex items-center min-w-0 gap-2">
+      <SidebarTrigger className="shrink-0" />
 
-        <div className="ml-auto flex items-center gap-4">
-          {/* right-side actions */}
-          <UsageRemaining showExpiry />
-          <SubscriptionBadge size="md" />
-        </div>
-      </div>
-    </header>
+      <Separator
+        orientation="vertical"
+        className="hidden lg:block h-4"
+      />
+
+      <h1 className="truncate text-sm lg:text-base font-medium">
+        {pageName === "Unknown Page" ? (
+          <Skeleton className="h-4 w-24 rounded" />
+        ) : (
+          pageName
+        )}
+      </h1>
+    </div>
+
+    {/* Right Section */}
+    <div
+      className="
+        flex flex-wrap
+        items-center
+        gap-2 lg:gap-4
+        lg:ml-auto
+        w-full lg:w-auto
+      "
+    >
+      <UsageRemaining showExpiry />
+      <SubscriptionBadge size="md" />
+    </div>
+  </div>
+</header>
   )
 }

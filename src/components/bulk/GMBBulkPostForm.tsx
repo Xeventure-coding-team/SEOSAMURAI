@@ -530,7 +530,7 @@ export function GmbBulkPostForm({
                     <img
                       src={currentPreviewPost.previewUrl || currentPreviewPost.image_url || "/placeholder.svg"}
                       alt="Post image"
-                      className="w-full h-48 object-cover"
+                       className="rounded-lg overflow-hidden h-[350px]"
                       onError={(e) => {
                         e.currentTarget.src = "/placeholder.svg"
                       }}

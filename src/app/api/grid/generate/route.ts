@@ -1,5 +1,5 @@
 import { canUse, canUseErrorMessage } from '@/lib/actions/can-use';
-import { incrementUsage } from '@/lib/usage';
+import { decrementUsage, incrementUsage } from '@/lib/usage';
 import { stackServerApp } from '@/stack';
 import { NextRequest, NextResponse } from 'next/server';
 
@@ -638,10 +638,8 @@ function delay(ms: number): Promise<void> {
 }
 
 export async function POST(request: NextRequest): Promise<NextResponse<GridRankingResponse>> {
+    const user = await stackServerApp.getUser();
     try {
-
-        const user = await stackServerApp.getUser();
-
         if (!user) {
             return NextResponse.json({
                 success: false,
@@ -962,6 +960,7 @@ export async function POST(request: NextRequest): Promise<NextResponse<GridRanki
         });
 
     } catch (error) {
+        await decrementUsage(user.id, "geoGridScansUsed").catch(() => { })
         console.error('💥 API Error:', error);
         return NextResponse.json({
             success: false,
