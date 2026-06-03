@@ -47,11 +47,11 @@ const getHoverAnimationProps = (hoveredRect: DOMRect, navRect: DOMRect) => ({
 const TabContent = ({ children, noPadding }: { children: React.ReactNode; noPadding: boolean }) => {
   return (
     <motion.div
-      initial={{ opacity: 0, y: 10 }}
+      initial={{ opacity: 0, y: 6 }}
       animate={{ opacity: 1, y: 0 }}
-      exit={{ opacity: 0, y: -10 }}
+      exit={{ opacity: 0, y: -6 }}
       transition={transition}
-      className={`${noPadding == true ? "mt-4" : "mt-4 py-4 md:py-6 px-4 lg:px-6"}`}
+      className={noPadding ? "mt-2" : "mt-2 py-3 md:py-4 px-3 lg:px-4"}
     >
       {children}
     </motion.div>
@@ -93,7 +93,7 @@ const TabNavigation = ({
   return (
     <nav
       ref={navRef}
-      className="flex flex-shrink-0 justify-center items-center relative z-0 py-2"
+      className="flex flex-shrink-0 justify-center items-center relative z-0 py-1.5 gap-1"
       onPointerLeave={() => setHoveredTabIndex(null)}
     >
       {tabs.map((item, i) => {
@@ -104,7 +104,7 @@ const TabNavigation = ({
           <button
             key={item.value}
             className={cn(
-              "relative flex items-center px-6 py-2 rounded-md transition-colors font-medium z-20 text-md",
+              "relative flex items-center px-5 py-2 rounded-md transition-colors font-medium z-20 text-sm tracking-wide",
               {
                 "text-muted-foreground hover:text-foreground": !isActive && !isDangerZone,
                 "text-foreground": isActive && !isDangerZone,
@@ -133,11 +133,10 @@ const TabNavigation = ({
         {hoveredRect && navRect && (
           <motion.div
             key="hover"
-            className={`absolute z-10 top-0 left-0 rounded-md ${
-              hoveredTabIndex === tabs.findIndex(({ value }) => value === "danger-zone")
-                ? "bg-destructive/10"
-                : "bg-muted"
-            }`}
+            className={`absolute z-10 top-0 left-0 rounded-md ${hoveredTabIndex === tabs.findIndex(({ value }) => value === "danger-zone")
+              ? "bg-destructive/10"
+              : "bg-muted"
+              }`}
             initial={{ ...getHoverAnimationProps(hoveredRect, navRect), opacity: 0 }}
             animate={{ ...getHoverAnimationProps(hoveredRect, navRect), opacity: 1 }}
             exit={{ ...getHoverAnimationProps(hoveredRect, navRect), opacity: 0 }}
@@ -149,11 +148,10 @@ const TabNavigation = ({
       <AnimatePresence>
         {selectedRect && navRect && (
           <motion.div
-            className={`absolute z-10 bottom-0 left-0 h-[2px] ${
-              selectedTabIndex === tabs.findIndex(({ value }) => value === "danger-zone")
-                ? "bg-destructive"
-                : "bg-primary"
-            }`}
+            className={`absolute z-10 bottom-0 left-0 h-[2px] ${selectedTabIndex === tabs.findIndex(({ value }) => value === "danger-zone")
+              ? "bg-destructive"
+              : "bg-primary"
+              }`}
             initial={false}
             animate={{
               width: selectedRect.width,

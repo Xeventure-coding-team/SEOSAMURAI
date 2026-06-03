@@ -269,7 +269,7 @@ export default function TaskManager({
   if (isLoading) {
     return (
        <Card>
-        <CardContent className="space-y-4 py-8">
+        <CardContent className="space-y-6 py-8">
           <div className="space-y-2">
             <Skeleton className="h-5 w-48" />
             <Skeleton className="h-4 w-64" />

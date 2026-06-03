@@ -1,123 +1,231 @@
 "use client";
 
+import { AlertTriangle, CheckCircle2, XCircle, Clock, TrendingUp, Users, Flame } from "lucide-react";
 import { useSlot, SlotResource } from "@/lib/use-slot";
 import { cn } from "@/lib/utils";
 
 interface SlotBadgeProps {
   slot: SlotResource;
-  label: string;
+  label?: string;
   showBar?: boolean;
   className?: string;
+  size?: "sm" | "md" | "lg";
+  showDetails?: boolean;
+  showPercentage?: boolean;
+  showRemainingTime?: boolean;
 }
 
-// Shared styles (kept outside to avoid re-creation on each render)
-const STATUS_STYLES = {
+const STYLES = {
   ok: {
-    badge: "bg-emerald-50 text-emerald-700 border-emerald-200 hover:bg-emerald-100 transition-colors",
+    badge: "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20",
     bar: "bg-emerald-500",
-    dot: "bg-emerald-500",
-    text: "",
+    icon: CheckCircle2,
+    text: "Available",
   },
   warning: {
-    badge: "bg-amber-50 text-amber-700 border-amber-200 hover:bg-amber-100 transition-colors",
+    badge: "bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/20",
     bar: "bg-amber-500",
-    dot: "bg-amber-500",
-    text: "text-amber-700",
+    icon: AlertTriangle,
+    text: "Limited",
   },
   exceeded: {
-    badge: "bg-red-50 text-red-700 border-red-200 hover:bg-red-100 transition-colors",
+    badge: "bg-red-500/10 text-red-600 dark:text-red-400 border border-red-500/20",
     bar: "bg-red-500",
-    dot: "bg-red-500",
-    text: "text-red-700",
+    icon: XCircle,
+    text: "Full",
   },
 } as const;
 
-// Small reusable UI pieces
-const Badge = ({ className, children }: any) => (
-  <span
-    className={cn(
-      "inline-flex items-center gap-2 px-3 py-1 rounded-lg text-xs font-medium border",
-      className
-    )}
-  >
-    {children}
-  </span>
-);
+const SIZE_STYLES = {
+  sm: {
+    container: "gap-1",
+    badge: "px-2.5 py-1 text-xs",
+    icon: "h-3 w-3",
+    label: "text-[10px]",
+    count: "text-xs",
+    leftBadge: "text-[10px] px-1 py-0.5",
+    detailsText: "text-[10px]",
+    detailsIcon: "h-2.5 w-2.5",
+  },
+  md: {
+    container: "gap-1.5",
+    badge: "px-3 py-1.5 text-sm",
+    icon: "h-3.5 w-3.5",
+    label: "text-[11px]",
+    count: "text-sm",
+    leftBadge: "text-[11px] px-1.5 py-0.5",
+    detailsText: "text-[11px]",
+    detailsIcon: "h-3 w-3",
+  },
+  lg: {
+    container: "gap-2",
+    badge: "px-4 py-2 text-base",
+    icon: "h-4 w-4",
+    label: "text-xs",
+    count: "text-base",
+    leftBadge: "text-xs px-2 py-0.5",
+    detailsText: "text-xs",
+    detailsIcon: "h-3.5 w-3.5",
+  },
+};
 
-const Dot = ({ className }: { className?: string }) => (
-  <span
-    className={cn("w-2 h-2 rounded-full flex-shrink-0", className)}
-    aria-hidden
-  />
-);
-
-export function SlotBadge({
-  slot,
-  label,
-  showBar = false,
+export function SlotBadge({ 
+  slot, 
+  label, 
+  showBar = false, 
   className,
+  size = "md",
+  showDetails = false,
+  showPercentage = false,
+  showRemainingTime = false,
 }: SlotBadgeProps) {
   const { data, isLoading } = useSlot(slot);
 
-  // Loading
   if (isLoading) {
     return (
-      <Badge className={className}>
-        <span className="w-12 h-2 rounded bg-neutral-200 animate-pulse" />
-      </Badge>
+      <div className={cn("flex flex-col", SIZE_STYLES[size].container)}>
+        <div className={cn(
+          "rounded-lg bg-muted animate-pulse",
+          SIZE_STYLES[size].badge,
+          className
+        )} />
+      </div>
     );
   }
 
-  // Error / no data
-  if (!data) {
-    return (
-      <Badge className="bg-red-50 text-red-700 border-red-200">
-        Not available
-      </Badge>
-    );
-  }
+  if (!data) return null;
 
   const used = data.current;
   const limit = data.limit;
   const hasLimit = limit > 0;
-
-  // Status calculation (cleaner + reusable logic)
   const ratio = hasLimit ? used / limit : 0;
+  const percentage = hasLimit ? Math.min(100, Math.round(ratio * 100)) : 0;
+  const remaining = hasLimit ? limit - used : Infinity;
+  const isUnlimited = !hasLimit || limit === 0;
+  const isOverCapacity = hasLimit && used > limit;
 
-  let status: keyof typeof STATUS_STYLES = "ok";
-  if (hasLimit) {
-    if (used >= limit) status = "exceeded";
-    else if (ratio >= 0.8) status = "warning";
-  }
+  const status: keyof typeof STYLES =
+    hasLimit && used >= limit ? "exceeded"
+    : hasLimit && ratio >= 0.8 ? "warning"
+    : "ok";
 
-  const styles = STATUS_STYLES[status];
-  const pct = hasLimit ? Math.min(100, Math.round(ratio * 100)) : 0;
+  const styles = STYLES[status];
+  const sizeStyles = SIZE_STYLES[size];
+  const Icon = styles.icon;
+
+  const getUrgentRemainingText = () => {
+    if (isUnlimited) return "∞";
+    if (isOverCapacity) return `+${used - limit} over`;
+    if (remaining === 0) return "Full";
+    if (remaining === 1) return "🔥 Last 1!";
+    if (remaining <= 3) return `⚠️ Only ${remaining}!`;
+    if (remaining <= 5) return `${remaining} left`;
+    return `${remaining}`;
+  };
+
+  const getStatusText = () => {
+    if (isOverCapacity) return "Overbooked";
+    if (status === "warning") {
+      if (remaining <= 3) return "Critical!";
+      if (remaining <= 5) return "Urgent";
+      return "Limited";
+    }
+    return styles.text;
+  };
+
+  const getUrgencyHint = () => {
+    if (isUnlimited) return null;
+    if (isOverCapacity) return "No spots available";
+    if (remaining === 0) return "Check back later";
+    if (remaining === 1) return "Last slot! Act now";
+    if (remaining <= 3) return "Almost gone!";
+    if (remaining <= 5) return "Filling fast";
+    if (remaining <= 10) return `${remaining} spots left`;
+    return null;
+  };
 
   return (
-    <div className={cn("inline-flex flex-col gap-1", className)}>
-      <Badge className={styles.badge}>
-        <Dot className={styles.dot} />
-        {label}
-        <span className="opacity-60">·</span>
-        <span className={cn("tabular-nums", styles.text)}>
-          {hasLimit ? `${used}/${limit}` : used}
+    <div className={cn("flex flex-col", sizeStyles.container, className)}>
+      {/* Main Badge */}
+      <div
+        className={cn(
+          "inline-flex items-center gap-2 rounded-lg font-medium transition-all",
+          "backdrop-blur-sm cursor-default",
+          sizeStyles.badge,
+          styles.badge,
+          (remaining === 1 || isOverCapacity) && "animate-pulse"
+        )}
+      >
+        <Icon className={cn("shrink-0", sizeStyles.icon)} />
+        
+        <span className={cn("font-semibold uppercase tracking-wider", sizeStyles.label)}>
+          {label || getStatusText()}
         </span>
-      </Badge>
+        
+        <div className="w-px h-3 bg-current opacity-20" />
+        
+        <span className={cn("font-mono font-bold tabular-nums", sizeStyles.count)}>
+          {isUnlimited ? "∞" : `${used}/${limit}`}
+        </span>
 
-      {showBar && hasLimit && (
-        <div className="h-1.5 w-full rounded-full bg-gray-200 overflow-hidden">
-          <div
-            className={cn(
-              "h-full rounded-full transition-all duration-300",
-              styles.bar
-            )}
-            style={{ width: `${pct}%` }}
-            role="progressbar"
-            aria-valuenow={used}
-            aria-valuemin={0}
-            aria-valuemax={limit}
-            aria-label={`${label}: ${used} of ${limit} used`}
-          />
+        {!isUnlimited && (
+          <span className={cn(
+            "rounded-md font-bold whitespace-nowrap",
+            remaining === 1 ? "bg-red-500/30 text-red-600 dark:text-red-400" :
+            remaining <= 3 ? "bg-orange-500/20 text-orange-600" :
+            "bg-black/5 dark:bg-white/10",
+            sizeStyles.leftBadge
+          )}>
+            {getUrgentRemainingText()}
+          </span>
+        )}
+      </div>
+
+      {/* Compact details - only shows when showDetails is true */}
+      {showDetails && (
+        <div className="space-y-1 mt-0.5">
+          {getUrgencyHint() && (
+            <div className="flex items-center gap-1.5">
+              {remaining <= 3 ? (
+                <Flame className={cn("text-red-500", sizeStyles.detailsIcon)} />
+              ) : (
+                <Clock className={cn("text-amber-500", sizeStyles.detailsIcon)} />
+              )}
+              <span className={cn(
+                "font-medium",
+                remaining === 1 ? "text-red-600 dark:text-red-400" : "text-amber-600 dark:text-amber-400",
+                sizeStyles.detailsText
+              )}>
+                {getUrgencyHint()}
+              </span>
+            </div>
+          )}
+
+          {/* Progress bar */}
+          {showBar && !isUnlimited && !isOverCapacity && (
+            <div className="space-y-0.5">
+              <div className="relative h-1 w-full overflow-hidden rounded-full bg-black/10 dark:bg-white/10">
+                <div
+                  className={cn(
+                    "h-full rounded-full transition-all duration-500",
+                    styles.bar,
+                    percentage >= 90 && "animate-pulse"
+                  )}
+                  style={{ width: `${Math.min(100, percentage)}%` }}
+                />
+              </div>
+              {showPercentage && (
+                <div className="flex justify-end">
+                  <span className={cn(
+                    "font-mono text-muted-foreground",
+                    sizeStyles.detailsText
+                  )}>
+                    {percentage}%
+                  </span>
+                </div>
+              )}
+            </div>
+          )}
         </div>
       )}
     </div>

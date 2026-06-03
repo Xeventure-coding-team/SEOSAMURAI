@@ -400,7 +400,7 @@ async function fetchLocationsBatch(
           displayName: location.location_name || "Unknown Location",
           businessWebsite: location.website || null,
           formattedAddress: null,
-          is_active: location.is_active, 
+          is_active: location.is_active,
         });
       }
     });
@@ -447,7 +447,10 @@ export async function GET(req: Request) {
 
     // Get locations from database
     const dbLocations = await prisma.locations.findMany({
-      where: { user_id: user.id, is_deleted: false },
+      where: {
+        user_id: user.id,
+        is_deleted: false
+      },
       select: {
         id: true,
         location_id: true,
@@ -457,6 +460,9 @@ export async function GET(req: Request) {
         last_rank_updated: true,
         is_active: true
       },
+      orderBy: {
+        is_active: 'desc'
+      }
     });
 
     if (dbLocations.length === 0) {

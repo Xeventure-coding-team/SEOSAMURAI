@@ -1,11 +1,12 @@
 "use client";
 
 import { useTransition } from "react";
-import { createCheckoutSession, createBillingPortalSession } from "@/lib/actions/stripe";
+import toast from "react-hot-toast";
+import { createCheckoutSession, createBillingPortalSession, createUpgradePortalSession } from "@/lib/actions/stripe";
 import { detectCurrency } from "@/lib/stripe";
 import { Button } from "@/components/ui/button";
 import { Loader2 } from "lucide-react";
-import type { PlanId } from "@/lib/stripe";
+import type { PlanId, SupportedCurrency } from "@/lib/stripe";
 import { useRouter } from "next/navigation";
 
 interface CheckoutButtonProps {
@@ -13,6 +14,7 @@ interface CheckoutButtonProps {
   isCurrentPlan: boolean;
   isHighlight?: boolean;
   isLoggedIn: boolean;
+  hasActiveSubscription?: boolean;
   currency?: string;
 }
 
@@ -21,6 +23,7 @@ export function CheckoutButton({
   isCurrentPlan,
   isHighlight,
   isLoggedIn,
+  hasActiveSubscription,
   currency,
 }: CheckoutButtonProps) {
   const [isPending, startTransition] = useTransition();
@@ -33,11 +36,20 @@ export function CheckoutButton({
     }
 
     startTransition(async () => {
-      if (isCurrentPlan) {
-        await createBillingPortalSession();
-      } else {
-        const cur = (currency ?? detectCurrency()) as any;
-      await createCheckoutSession(planId, cur);
+      const cur = (currency ?? detectCurrency()) as SupportedCurrency;
+
+      try {
+        if (isCurrentPlan) {
+          await createBillingPortalSession();
+        } else if (hasActiveSubscription) {
+          await createUpgradePortalSession(planId, cur);
+        } else {
+          await createCheckoutSession(planId, cur);
+        }
+      } catch (err: any) {
+        // Next.js redirect() throws internally — ignore those
+        if (err?.message?.includes("NEXT_REDIRECT")) return;
+        toast.error(err?.message ?? "Something went wrong. Please try again.");
       }
     });
   };
@@ -59,7 +71,10 @@ export function CheckoutButton({
       className="w-full"
     >
       {isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-      {isLoggedIn ? "Subscribe" : "Get Started"}
+      {isLoggedIn
+        ? hasActiveSubscription ? "Switch Plan" : "Subscribe"
+        : "Get Started"
+      }
     </Button>
   );
 }

@@ -499,7 +499,7 @@ export default function Reviews({
   }
 
   return (
-    <Card className={`${className} border-0 shadow-none p-0 m-0`}>
+    <Card className={`${className}`}>
       <CardHeader>
         <div className="flex items-center justify-between">
           <div>

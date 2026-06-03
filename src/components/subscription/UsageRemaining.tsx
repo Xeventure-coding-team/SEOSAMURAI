@@ -6,23 +6,24 @@ import { cn } from "@/lib/utils";
 import Link from "next/link";
 
 const METRIC_CONFIG: Record<UsageMetric, { label: string }> = {
-  postsUsed:           { label: "Posts" },
+  postsUsed: { label: "Posts" },
   aiReviewRepliesUsed: { label: "AI Replies" },
-  scheduledPostsUsed:  { label: "Scheduled" },
-  geoGridScansUsed:    { label: "Geo Scans" },
+  scheduledPostsUsed: { label: "Scheduled" },
+  geoGridScansUsed: { label: "Geo Scans" },
   keywordTrackingUsed: { label: "Keywords" },
+  aiImageUsed: { label: "AI Images" }
 };
 
 const SLOT_CONFIG: Record<SlotResource, { label: string }> = {
-  locations:     { label: "Locations" },
-  websites:      { label: "Websites" },
+  locations: { label: "Locations" },
+  websites: { label: "Websites" },
   reviewPosters: { label: "Review Posters" },
 };
 
 function BarRow({ label, used, limit }: { label: string; used: number; limit: number }) {
-  const pct      = limit > 0 ? Math.min(100, Math.round((used / limit) * 100)) : 0;
+  const pct = limit > 0 ? Math.min(100, Math.round((used / limit) * 100)) : 0;
   const exceeded = used >= limit;
-  const warning  = !exceeded && pct >= 80;
+  const warning = !exceeded && pct >= 80;
 
   return (
     <div className="flex items-center gap-2 font-bold">
@@ -63,20 +64,20 @@ function SlotRow({ slot }: { slot: SlotResource }) {
 }
 
 interface UsageRemainingProps {
-  metrics?:    UsageMetric[];
-  slots?:      SlotResource[];
-  showBadge?:  boolean;
-  compact?:    boolean;
-  title?:      string;
+  metrics?: UsageMetric[];
+  slots?: SlotResource[];
+  showBadge?: boolean;
+  compact?: boolean;
+  title?: string;
   showExpiry?: boolean;
-  className?:  string;
+  className?: string;
 }
 
 export function UsageRemaining({
   metrics,
   slots,
-  showBadge  = true,
-  compact    = false,
+  showBadge = true,
+  compact = false,
   title,
   showExpiry = false,
   className,
@@ -110,8 +111,8 @@ export function UsageRemaining({
           {isLoading || !data
             ? shownMetrics.map((m) => <SkeletonRow key={m} />)
             : shownMetrics.map((m) => (
-                <BarRow key={m} label={METRIC_CONFIG[m].label} used={data.used[m]} limit={data.limits[m]} />
-              ))
+              <BarRow key={m} label={METRIC_CONFIG[m].label} used={data.used[m]} limit={data.limits[m]} />
+            ))
           }
 
           {/* Lifetime slots */}

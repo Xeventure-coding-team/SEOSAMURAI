@@ -131,10 +131,12 @@ export function NavUser({
                   Account
                 </DropdownMenuItem>
               </Link>
+              <Link href={'/app/settings/billing'}>
               <DropdownMenuItem>
                 <IconCreditCard />
                 Billing
               </DropdownMenuItem>
+              </Link>
               <Link href={'/app/settings#notifications'}>
                 <DropdownMenuItem>
                   <IconNotification />

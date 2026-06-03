@@ -1,13 +1,16 @@
 "use client"
 
 import { useEffect, useState, useMemo } from "react"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { Badge } from "@/components/ui/badge"
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select"
 import { Skeleton } from "@/components/ui/skeleton"
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import Link from "next/link"
 import {
   Search,
@@ -18,20 +21,21 @@ import {
   ChevronsLeft,
   ChevronsRight,
   AlertTriangle,
+  MapPin,
+  SlidersHorizontal,
 } from "lucide-react"
 import stringSimilarity from "string-similarity"
 import { toast } from "react-hot-toast"
 import { useGMBStore } from "@/store/gmbStore"
 import ErrorRender from "../Error"
-import {
-  TooltipProvider,
-} from "@/components/ui/tooltip"
-import LocationTable from "./LocationTable"
+import { TooltipProvider } from "@/components/ui/tooltip"
+import LocationCardList from "./LocationTable"
 import { UsageGate } from "../usage-gate"
 import { SlotBadge } from "../slot-badge"
 import { ChooseActiveLocation } from "./ChooseActiveLocation"
 import { usePlanLimits } from "@/lib/use-plan-limits"
 import { useRouter } from "next/navigation"
+import { cn } from "@/lib/utils"
 
 type Location = {
   _id?: string
@@ -39,9 +43,7 @@ type Location = {
   name: string
   title: string
   formattedAddress: string
-  profile?: {
-    description?: string
-  }
+  profile?: { description?: string }
   websiteUri?: string
   categories?: { primaryCategory?: { displayName: string } }
   storefrontAddress?: { addressLines?: string[]; locality?: string }
@@ -50,44 +52,86 @@ type Location = {
   is_active?: boolean
 }
 
-
 type SortOption = "name" | "category" | "location" | "website"
 type SortDirection = "asc" | "desc"
 
 const ITEMS_PER_PAGE_OPTIONS = [10, 25, 50, 100]
 
-const getPreferredLocality = (loc: Location) => {
-  return loc.formattedAddress || loc.storefrontAddress?.locality || loc.storefrontAddress?.addressLines?.join(", ") || "";
-};
+const getPreferredLocality = (loc: Location) =>
+  loc.formattedAddress ||
+  loc.storefrontAddress?.locality ||
+  loc.storefrontAddress?.addressLines?.join(", ") ||
+  ""
 
+// ─── Stat Card ────────────────────────────────────────────────────────────────
+function StatCard({
+  label,
+  value,
+}: {
+  label: string;
+  value: number;
+}) {
+  return (
+    <div className="rounded-xl border bg-card p-5">
+      <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
+        {label}
+      </p>
+
+      <p className="mt-2 text-3xl font-semibold tracking-tight tabular-nums text-foreground">
+        {value}
+      </p>
+    </div>
+  );
+}
+
+// ─── Loading Skeleton ─────────────────────────────────────────────────────────
+function LoadingSkeleton() {
+  return (
+    <div className="min-h-screen  px-4 sm:px-6 py-8 space-y-6 x-auto">
+      <div className="flex items-start justify-between">
+        <div className="space-y-2">
+          <Skeleton className="h-7 w-36" />
+          <Skeleton className="h-4 w-56" />
+        </div>
+        <Skeleton className="h-8 w-28 rounded-full" />
+      </div>
+      <div className="grid grid-cols-3 gap-3">
+        {[...Array(3)].map((_, i) => <Skeleton key={i} className="h-24 rounded-xl" />)}
+      </div>
+      <Skeleton className="h-12 w-full rounded-xl" />
+      {[...Array(3)].map((_, i) => <Skeleton key={i} className="h-36 rounded-xl" />)}
+    </div>
+  )
+}
+
+// ─── Main Component ───────────────────────────────────────────────────────────
 export default function LocationsTable() {
   const [locations, setLocations] = useState<Location[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
-  const [locationChoiceMade, setLocationChoiceMade] = useState<boolean>(false)
+  const [locationChoiceMade, setLocationChoiceMade] = useState(false)
 
   const [currentPage, setCurrentPage] = useState(1)
   const [itemsPerPage, setItemsPerPage] = useState(10)
 
   const [searchTerm, setSearchTerm] = useState("")
-  const [categoryFilter, setCategoryFilter] = useState<string>("all")
-  const [locationFilter, setLocationFilter] = useState<string>("all")
-
-  const [websiteFilter, setWebsiteFilter] = useState<string>("all")
+  const [categoryFilter, setCategoryFilter] = useState("all")
+  const [locationFilter, setLocationFilter] = useState("all")
+  const [websiteFilter, setWebsiteFilter] = useState("all")
   const [sortBy, setSortBy] = useState<SortOption>("name")
   const [sortDirection, setSortDirection] = useState<SortDirection>("asc")
+  const [filtersOpen, setFiltersOpen] = useState(false)
 
   const limits = usePlanLimits()
   const planLimit = limits?.locations ?? 1
   const [showPicker, setShowPicker] = useState(false)
-  const hasInactive = locations.some(l => l.is_active === false)
+
+  const hasInactive = locations.some((l) => l.is_active === false)
   const isOverLimit = locations.length > planLimit
 
-
-  const accountId = useGMBStore((state) => state.accountId)
-  const accessToken = useGMBStore((state) => state.accessToken)
-
-  const router = useRouter();
+  const accountId = useGMBStore((s) => s.accountId)
+  const accessToken = useGMBStore((s) => s.accessToken)
+  const router = useRouter()
 
   const fetchLocations = async () => {
     setLoading(true)
@@ -98,22 +142,17 @@ export default function LocationsTable() {
         setLoading(false)
         return
       }
-
-      const res = await fetch(`/api/gmb/locations?account_id=${accountId}&accessToken=${accessToken}`, {
-        headers: {
-          Authorization: accessToken,
-        },
-      })
-
+      const res = await fetch(
+        `/api/gmb/locations?account_id=${accountId}&accessToken=${accessToken}`,
+        { headers: { Authorization: accessToken } }
+      )
       if (!res.ok) {
         const errData = await res.json()
         throw new Error(errData.error || "Failed to fetch locations.")
       }
-
       const data = await res.json()
-      setLocationChoiceMade(data.locationChoiceMade);
+      setLocationChoiceMade(data.locationChoiceMade)
       setLocations(data.accounts || [])
-
     } catch (err: any) {
       setError(err.message || "Error loading locations.")
       toast.error(err.message || "Error loading locations.")
@@ -122,94 +161,66 @@ export default function LocationsTable() {
     }
   }
 
-  useEffect(() => {
-    fetchLocations()
-  }, [])
+  useEffect(() => { fetchLocations() }, [])
 
   const filterOptions = useMemo(() => {
     const normalize = (str?: string) =>
-      str
-        ?.replace(/\s+/g, " ")
-        ?.replace(/[^\w\s]/g, "")
-        ?.trim()
-        ?.toLowerCase()
+      str?.replace(/\s+/g, " ").replace(/[^\w\s]/g, "").trim().toLowerCase()
 
     const dedupeFuzzy = (list: string[]) => {
       const result: string[] = []
       list.forEach((item) => {
         const norm = normalize(item)
-        const isDuplicate = result.some((existing) => {
-          return stringSimilarity.compareTwoStrings(normalize(existing), norm) > 0.85
-        })
+        const isDuplicate = result.some(
+          (e) => stringSimilarity.compareTwoStrings(normalize(e)!, norm!) > 0.85
+        )
         if (!isDuplicate) result.push(item)
       })
       return result
     }
 
     const categories = dedupeFuzzy(
-      locations
-        .map((loc) => loc.categories?.primaryCategory?.displayName)
-        .filter((name): name is string => Boolean(name))
-        .sort(),
-    )
-
+      locations.map((l) => l.categories?.primaryCategory?.displayName).filter(Boolean) as string[]
+    ).sort()
     const locationsList = dedupeFuzzy(
-      locations
-        .map((loc) => getPreferredLocality(loc))
-        .filter((locality): locality is string => Boolean(locality))
-        .sort(),
-    )
-
+      locations.map((l) => getPreferredLocality(l)).filter(Boolean) as string[]
+    ).sort()
     return { categories, locations: locationsList }
   }, [locations])
 
   const filteredAndSortedLocations = useMemo(() => {
-    const filtered = locations.filter((location) => {
+    const filtered = locations.filter((loc) => {
       const matchesSearch =
         !searchTerm ||
-        location.title?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        location.profile?.description?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        location.categories?.primaryCategory?.displayName?.toLowerCase().includes(searchTerm.toLowerCase())
-
+        loc.title?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        loc.profile?.description?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        loc.categories?.primaryCategory?.displayName?.toLowerCase().includes(searchTerm.toLowerCase())
       const matchesCategory =
-        categoryFilter === "all" || location.categories?.primaryCategory?.displayName === categoryFilter
-
-      const capitalizedLocationName = getPreferredLocality(location)
-      const matchesLocation = locationFilter === "all" || capitalizedLocationName === locationFilter
-
+        categoryFilter === "all" || loc.categories?.primaryCategory?.displayName === categoryFilter
+      const matchesLocation =
+        locationFilter === "all" || getPreferredLocality(loc) === locationFilter
       const matchesWebsite =
         websiteFilter === "all" ||
-        (websiteFilter === "with" && location.websiteUri) ||
-        (websiteFilter === "without" && !location.websiteUri)
-
+        (websiteFilter === "with" && loc.websiteUri) ||
+        (websiteFilter === "without" && !loc.websiteUri)
       return matchesSearch && matchesCategory && matchesLocation && matchesWebsite
     })
 
     filtered.sort((a, b) => {
-      let aValue = ""
-      let bValue = ""
+      // Active always before inactive
+      const aActive = a.is_active !== false ? 0 : 1
+      const bActive = b.is_active !== false ? 0 : 1
+      if (aActive !== bActive) return aActive - bActive
 
+      // Then apply the selected sort within each group
+      let aValue = "", bValue = ""
       switch (sortBy) {
-        case "name":
-          aValue = a.title || ""
-          bValue = b.title || ""
-          break
-        case "category":
-          aValue = a.categories?.primaryCategory?.displayName || ""
-          bValue = b.categories?.primaryCategory?.displayName || ""
-          break
-        case "location":
-          aValue = getPreferredLocality(a)
-          bValue = getPreferredLocality(b)
-          break
-        case "website":
-          aValue = a.websiteUri ? "with" : "without"
-          bValue = b.websiteUri ? "with" : "without"
-          break
+        case "name": aValue = a.title || ""; bValue = b.title || ""; break
+        case "category": aValue = a.categories?.primaryCategory?.displayName || ""; bValue = b.categories?.primaryCategory?.displayName || ""; break
+        case "location": aValue = getPreferredLocality(a); bValue = getPreferredLocality(b); break
+        case "website": aValue = a.websiteUri ? "1" : "0"; bValue = b.websiteUri ? "1" : "0"; break
       }
-
-      const comparison = aValue.localeCompare(bValue)
-      return sortDirection === "asc" ? comparison : -comparison
+      return sortDirection === "asc" ? aValue.localeCompare(bValue) : bValue.localeCompare(aValue)
     })
 
     return filtered
@@ -217,258 +228,185 @@ export default function LocationsTable() {
 
   const totalPages = Math.ceil(filteredAndSortedLocations.length / itemsPerPage)
   const startIndex = (currentPage - 1) * itemsPerPage
-  const endIndex = startIndex + itemsPerPage
-  const paginatedLocations = filteredAndSortedLocations.slice(startIndex, endIndex)
+  const paginatedLocations = filteredAndSortedLocations.slice(startIndex, startIndex + itemsPerPage)
 
-  // Reset to first page when filters change
-  useEffect(() => {
-    setCurrentPage(1)
-  }, [searchTerm, categoryFilter, locationFilter, websiteFilter, itemsPerPage])
+  useEffect(() => { setCurrentPage(1) }, [searchTerm, categoryFilter, locationFilter, websiteFilter, itemsPerPage])
 
   const clearFilters = () => {
-    setSearchTerm("")
-    setCategoryFilter("all")
-    setLocationFilter("all")
-    setWebsiteFilter("all")
-    setSortBy("name")
-    setSortDirection("asc")
-    setCurrentPage(1)
-    toast.success("All filters cleared")
+    setSearchTerm(""); setCategoryFilter("all"); setLocationFilter("all")
+    setWebsiteFilter("all"); setSortBy("name"); setSortDirection("asc")
+    setCurrentPage(1); toast.success("Filters cleared")
   }
 
-  const hasActiveFilters = searchTerm || categoryFilter !== "all" || locationFilter !== "all" || websiteFilter !== "all"
+  const hasActiveFilters = !!(searchTerm || categoryFilter !== "all" || locationFilter !== "all" || websiteFilter !== "all")
 
   const toggleSort = (option: SortOption) => {
-    if (sortBy === option) {
-      setSortDirection(sortDirection === "asc" ? "desc" : "asc")
-    } else {
-      setSortBy(option)
-      setSortDirection("asc")
-    }
+    if (sortBy === option) setSortDirection(sortDirection === "asc" ? "desc" : "asc")
+    else { setSortBy(option); setSortDirection("asc") }
   }
 
-  if (loading) {
-    return (
-      <div className="container mx-auto space-y-6">
-        <div className="flex items-center justify-between">
-          <div className="space-y-3">
-            <Skeleton className="h-9 w-80" />
-            <Skeleton className="h-5 w-96" />
-          </div>
-          <Skeleton className="h-11 w-36" />
-        </div>
-
-        <Card>
-          <CardHeader>
-            <Skeleton className="h-6 w-48" />
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <Skeleton className="h-10 w-full" />
-            <div className="grid gap-4 md:grid-cols-3">
-              {Array.from({ length: 3 }).map((_, i) => (
-                <Skeleton key={i} className="h-10" />
-              ))}
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardContent className="p-0">
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  {Array.from({ length: 5 }).map((_, i) => (
-                    <TableHead key={i}>
-                      <Skeleton className="h-5 w-24" />
-                    </TableHead>
-                  ))}
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {Array.from({ length: 5 }).map((_, i) => (
-                  <TableRow key={i}>
-                    {Array.from({ length: 5 }).map((_, j) => (
-                      <TableCell key={j}>
-                        <Skeleton className="h-5 w-full" />
-                      </TableCell>
-                    ))}
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-          </CardContent>
-        </Card>
-      </div>
-    )
-  }
-
-  if (error) {
-    return <ErrorRender error={"We couldn't load this content. You can retry or report the issue."} />
-  }
-
-  const needsChoice = locations.some(l => l.is_active === false)
   const showBanner = hasInactive && isOverLimit && !locationChoiceMade
+  const inactiveCount = locations.filter((l) => l.is_active === false).length
+  const withWebsite = locations.filter((l) => l.websiteUri).length
+
+  if (loading) return <LoadingSkeleton />
+  if (error) return <ErrorRender error="We couldn't load this content. You can retry or report the issue." />
 
   return (
     <TooltipProvider>
-      <div className="min-h-screen bg-background px-6">
-        <div className="mx-auto space-y-8">
+      <div className="min-h-screen">
+        <div className="max-w-8xl mx-auto m:px-6 space-y-5">
 
-          {/* Header */}
-          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-            <div className="flex-1">
-              <h1 className="text-3xl font-bold tracking-tight">Locations</h1>
-              <p className="text-muted-foreground mt-1">
-                Manage {locations.length > 0 ? `your ${locations.length}` : "your"} Google Business locations
+          {/* ── Header ── */}
+          <div className="flex items-start justify-between gap-4">
+            <div>
+              <h1 className="text-4xl font-bold tracking-tight text-foreground">
+                Locations
+              </h1>
+
+              <p className="mt-2 text-base text-muted-foreground">
+                {locations.length > 0
+                  ? `Managing ${locations.length} Google Business location${locations.length !== 1 ? "s" : ""
+                  }`
+                  : "Manage your Google Business locations"}
               </p>
             </div>
-            <div className="flex items-center gap-3 flex-wrap">
+            <div className="flex items-center gap-2 shrink-0">
               <SlotBadge slot="locations" label="Locations" />
               <UsageGate slot="locations">
-                <Button asChild size="sm">
+                <Button asChild variant="default" className="h-8 rounded-full gap-1.5 text-sm font-medium">
                   <Link href="/app/locations/add">
-                    <Plus className="h-4 w-4 mr-2" />
-                    Add Location
+                    <Plus className="h-3.5 w-3.5" />
+                    Add location
                   </Link>
                 </Button>
               </UsageGate>
-
             </div>
           </div>
 
-          {/* Stats Row */}
+          {/* ── Stat Cards ── */}
           {locations.length > 0 && (
-            <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
-              <div className="bg-card border border-border rounded-lg p-4">
-                <p className="text-xs text-muted-foreground font-medium uppercase tracking-wide">Total Locations</p>
-                <p className="text-2xl font-bold mt-1">{locations.length}</p>
-              </div>
-              {locations.filter((loc) => loc.websiteUri).length > 0 && (
-                <div className="bg-card border border-border rounded-lg p-4">
-                  <p className="text-xs text-muted-foreground font-medium uppercase tracking-wide">With Website</p>
-                  <p className="text-2xl font-bold mt-1">{locations.filter((loc) => loc.websiteUri).length}</p>
-                </div>
-              )}
-              <div className="bg-card border border-border rounded-lg p-4">
-                <p className="text-xs text-muted-foreground font-medium uppercase tracking-wide">Total Categories</p>
-                <p className="text-2xl font-bold mt-1">{filterOptions.categories.length}</p>
-              </div>
+            <div className="grid grid-cols-3 gap-3">
+              <StatCard label="Total" value={locations.length} />
+              <StatCard label="With website" value={withWebsite} />
+              <StatCard label="Categories" value={filterOptions.categories.length} />
             </div>
           )}
 
-          {/* Filters and Controls */}
-          <div className="bg-card border border-border rounded-lg p-4 space-y-4">
-            {/* Primary Search */}
-            <div className="relative">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-              <Input
-                placeholder="Search locations by name, category, or description..."
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                className="pl-10 h-10 text-sm"
-              />
-            </div>
-
-            {/* Filter Dropdowns */}
-            <div className="flex flex-wrap items-center gap-2">
-              <Select value={categoryFilter} onValueChange={setCategoryFilter}>
-                <SelectTrigger className="h-10 text-sm w-[160px]">
-                  <SelectValue placeholder="Category" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">All Categories</SelectItem>
-                  {filterOptions.categories.map((category) => (
-                    <SelectItem key={category} value={category}>
-                      {category}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-
-              <Select value={locationFilter} onValueChange={setLocationFilter}>
-                <SelectTrigger className="h-10 text-sm w-[160px]">
-                  <SelectValue placeholder="Location" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">All Locations</SelectItem>
-                  {filterOptions.locations.map((location) => (
-                    <SelectItem key={location} value={location}>
-                      {location}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-
-              <Select value={websiteFilter} onValueChange={setWebsiteFilter}>
-                <SelectTrigger className="h-10 text-sm w-[160px]">
-                  <SelectValue placeholder="Website" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">All</SelectItem>
-                  <SelectItem value="with">Has Website</SelectItem>
-                  <SelectItem value="without">No Website</SelectItem>
-                </SelectContent>
-              </Select>
-
-              {hasActiveFilters && (
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={clearFilters}
-                  className="h-10 text-sm"
-                >
-                  <RotateCcw className="h-3.5 w-3.5 mr-2" />
-                  Reset
-                </Button>
-              )}
-            </div>
-
-          </div>
-
+          {/* ── Plan limit banner ── */}
           {showBanner && (
-            <div className="flex items-center justify-between gap-4 rounded-xl border border-amber-200 bg-amber-50 dark:bg-amber-950/30 dark:border-amber-800 px-4 py-3">
-              <div className="flex items-center gap-2.5">
-                <AlertTriangle className="h-4 w-4 shrink-0 text-amber-600" />
-                <p className="text-sm text-amber-800 dark:text-amber-400">
-                  <span className="font-medium">{locations.filter(l => l.is_active === false).length} location{locations.filter(l => l.is_active === false).length > 1 ? "s" : ""} inactive</span>
-                  {" "}— your plan allows {planLimit}. Choose which to keep active.
+            <div className="flex items-center justify-between gap-4 rounded-xl border border-red-200 bg-red-50 dark:bg-red-950/20 dark:border-red-800/40 px-4 py-4">
+              <div className="space-y-2 flex-1 min-w-0">
+                <p className="text-sm text-red-800 dark:text-red-300 leading-relaxed">
+                  <span className="font-semibold">Plan limit reached</span>
+                  {" — "}your Starter plan includes {planLimit} active location.{" "}
+                  {inactiveCount} location{inactiveCount !== 1 ? "s are" : " is"} paused until you upgrade.
                 </p>
+                <div className="h-1 w-full rounded-full bg-red-200 dark:bg-red-900">
+                  <div
+                    className="h-1 rounded-full bg-red-500"
+                    style={{ width: `${Math.min((planLimit / locations.length) * 100, 100)}%` }}
+                  />
+                </div>
               </div>
               <Button
                 size="sm"
                 variant="outline"
-                className="shrink-0 border-amber-300 text-amber-800 hover:bg-amber-100"
-                onClick={() => setShowPicker(true)}
+                asChild
+                className="shrink-0 h-9 rounded-xl border-red-300 text-red-800 hover:bg-red-100 dark:border-red-700 dark:text-red-300 font-medium"
               >
-                Manage
+                <Link href="/app/locations/settings/billing">Upgrade plan ↗</Link>
               </Button>
             </div>
           )}
 
-          <ChooseActiveLocation
-            open={showPicker}
-            locations={locations.map(l => ({
-              id: l.location_id ?? l.name,
-              location_id: l.location_id ?? "",
-              location_name: l.title || l.location_name || "Unknown",
-              is_active: l.is_active ?? true
-            }))}
-            limit={planLimit}
-            onConfirm={async (selectedIds) => {
-              await fetch("/api/gmb/locations/set-active", {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ selectedIds })
-              })
-              setShowPicker(false)
-              router.refresh()
-            }}
-            onClose={() => setShowPicker(false)}
-          />
+          {/* ── Search & Filters ── */}
+          <div className="space-y-2">
+            <div className="flex gap-2">
+              <div className="relative flex-1">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground pointer-events-none" />
+                <Input
+                  placeholder="Search by name, category, or location…"
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  className="pl-10 h-11 rounded-xl border-border bg-background text-sm"
+                />
+                {searchTerm && (
+                  <button
+                    onClick={() => setSearchTerm("")}
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+                    aria-label="Clear search"
+                  >
+                    <RotateCcw className="h-3.5 w-3.5" />
+                  </button>
+                )}
+              </div>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setFiltersOpen((v) => !v)}
+                className={cn(
+                  "h-11 px-4 rounded-xl gap-2 text-sm font-medium",
+                  filtersOpen && ""
+                )}
+              >
+                <SlidersHorizontal className="h-4 w-4" />
+                Filter
+                {hasActiveFilters && <span className="w-1.5 h-1.5 rounded-full bg-primary" />}
+              </Button>
+            </div>
 
+            {filtersOpen && (
+              <div className="flex flex-wrap gap-2 p-3 rounded-xl border bg-background">
+                <Select value={categoryFilter} onValueChange={setCategoryFilter}>
+                  <SelectTrigger className="h-9 text-sm w-auto min-w-[140px] rounded-lg">
+                    <SelectValue placeholder="All categories" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">All categories</SelectItem>
+                    {filterOptions.categories.map((c) => <SelectItem key={c} value={c}>{c}</SelectItem>)}
+                  </SelectContent>
+                </Select>
 
-          {/* Table Section */}
-          <LocationTable
+                <Select value={locationFilter} onValueChange={setLocationFilter}>
+                  <SelectTrigger className="h-9 text-sm w-auto min-w-[140px] rounded-lg">
+                    <SelectValue placeholder="All locations" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">All locations</SelectItem>
+                    {filterOptions.locations.map((l) => <SelectItem key={l} value={l}>{l}</SelectItem>)}
+                  </SelectContent>
+                </Select>
+
+                <Select value={websiteFilter} onValueChange={setWebsiteFilter}>
+                  <SelectTrigger className="h-9 text-sm w-auto min-w-[110px] rounded-lg">
+                    <SelectValue placeholder="Website" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">All</SelectItem>
+                    <SelectItem value="with">Has website</SelectItem>
+                    <SelectItem value="without">No website</SelectItem>
+                  </SelectContent>
+                </Select>
+
+                {hasActiveFilters && (
+                  <Button variant="ghost" size="sm" onClick={clearFilters} className="h-9 gap-1.5 text-sm text-muted-foreground rounded-lg">
+                    <RotateCcw className="h-3.5 w-3.5" /> Reset
+                  </Button>
+                )}
+              </div>
+            )}
+
+            {hasActiveFilters && (
+              <p className="text-xs text-muted-foreground px-1">
+                {filteredAndSortedLocations.length} result{filteredAndSortedLocations.length !== 1 ? "s" : ""}
+                {searchTerm && <> for <span className="font-medium text-foreground">"{searchTerm}"</span></>}
+              </p>
+            )}
+          </div>
+
+          {/* ── Location Cards ── */}
+          <LocationCardList
             filteredAndSortedLocations={filteredAndSortedLocations}
             paginatedLocations={paginatedLocations}
             sortBy={sortBy}
@@ -479,113 +417,89 @@ export default function LocationsTable() {
             getPreferredLocality={getPreferredLocality}
           />
 
-          {/* Pagination Section */}
+          {/* ── Pagination ── */}
           {filteredAndSortedLocations.length > 0 && (
-            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 p-4 bg-card border border-border rounded-lg">
-              <p className="text-sm text-muted-foreground">
-                Showing{" "}
-                <span className="font-semibold text-foreground">
-                  {startIndex + 1}–{Math.min(endIndex, filteredAndSortedLocations.length)}
-                </span>{" "}
-                of{" "}
-                <span className="font-semibold text-foreground">
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 pt-2">
+
+              <p className="flex items-center gap-1.5 text-sm text-muted-foreground">
+                Showing
+                <span className="rounded-md bg-muted px-2 py-0.5 font-semibold text-foreground tabular-nums">
+                  {startIndex + 1}–
+                  {Math.min(
+                    startIndex + itemsPerPage,
+                    filteredAndSortedLocations.length
+                  )}
+                </span>
+                of
+                <span className="font-semibold text-foreground tabular-nums">
                   {filteredAndSortedLocations.length}
-                </span>{" "}
+                </span>
                 locations
               </p>
 
-              <div className="flex items-center gap-4">
+              <div className="flex items-center gap-3">
                 <div className="flex items-center gap-2">
-                  <span className="text-sm text-muted-foreground">Show:</span>
-                  <Select value={itemsPerPage.toString()} onValueChange={(value) => setItemsPerPage(Number(value))}>
-                    <SelectTrigger className="h-9 w-16 text-sm">
+                  <span className="text-sm text-muted-foreground">Per page</span>
+                  <Select value={itemsPerPage.toString()} onValueChange={(v) => setItemsPerPage(Number(v))}>
+                    <SelectTrigger className="h-8 w-16 text-sm rounded-lg">
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
-                      {ITEMS_PER_PAGE_OPTIONS.map((option) => (
-                        <SelectItem key={option} value={option.toString()}>
-                          {option}
-                        </SelectItem>
-                      ))}
+                      {ITEMS_PER_PAGE_OPTIONS.map((o) => <SelectItem key={o} value={o.toString()}>{o}</SelectItem>)}
                     </SelectContent>
                   </Select>
                 </div>
 
                 {totalPages > 1 && (
                   <div className="flex items-center gap-1">
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => setCurrentPage(1)}
-                      disabled={currentPage === 1}
-                      className="h-9 w-9 p-0"
-                    >
-                      <ChevronsLeft className="h-4 w-4" />
+                    <Button variant="outline" size="sm" onClick={() => setCurrentPage(1)} disabled={currentPage === 1} className="h-8 w-8 p-0 rounded-lg" aria-label="First">
+                      <ChevronsLeft className="h-3.5 w-3.5" />
                     </Button>
-
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => setCurrentPage(currentPage - 1)}
-                      disabled={currentPage === 1}
-                      className="h-9 w-9 p-0"
-                    >
-                      <ChevronLeft className="h-4 w-4" />
+                    <Button variant="outline" size="sm" onClick={() => setCurrentPage(currentPage - 1)} disabled={currentPage === 1} className="h-8 w-8 p-0 rounded-lg" aria-label="Previous">
+                      <ChevronLeft className="h-3.5 w-3.5" />
                     </Button>
-
-                    <div className="flex items-center gap-0.5 mx-1">
-                      {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
-                        let pageNumber
-                        if (totalPages <= 5) {
-                          pageNumber = i + 1
-                        } else if (currentPage <= 3) {
-                          pageNumber = i + 1
-                        } else if (currentPage >= totalPages - 2) {
-                          pageNumber = totalPages - 4 + i
-                        } else {
-                          pageNumber = currentPage - 2 + i
-                        }
-
-                        return (
-                          <Button
-                            key={pageNumber}
-                            variant={currentPage === pageNumber ? "default" : "outline"}
-                            size="sm"
-                            onClick={() => setCurrentPage(pageNumber)}
-                            className="h-9 w-9 p-0 text-xs"
-                          >
-                            {pageNumber}
-                          </Button>
-                        )
-                      })}
-                    </div>
-
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => setCurrentPage(currentPage + 1)}
-                      disabled={currentPage === totalPages}
-                      className="h-9 w-9 p-0"
-                    >
-                      <ChevronRight className="h-4 w-4" />
+                    {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
+                      let pg = totalPages <= 5 ? i + 1 : currentPage <= 3 ? i + 1 : currentPage >= totalPages - 2 ? totalPages - 4 + i : currentPage - 2 + i
+                      return (
+                        <Button key={pg} variant={currentPage === pg ? "default" : "outline"} size="sm" onClick={() => setCurrentPage(pg)} className="h-8 w-8 p-0 text-xs rounded-lg">
+                          {pg}
+                        </Button>
+                      )
+                    })}
+                    <Button variant="outline" size="sm" onClick={() => setCurrentPage(currentPage + 1)} disabled={currentPage === totalPages} className="h-8 w-8 p-0 rounded-lg" aria-label="Next">
+                      <ChevronRight className="h-3.5 w-3.5" />
                     </Button>
-
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => setCurrentPage(totalPages)}
-                      disabled={currentPage === totalPages}
-                      className="h-9 w-9 p-0"
-                    >
-                      <ChevronsRight className="h-4 w-4" />
+                    <Button variant="outline" size="sm" onClick={() => setCurrentPage(totalPages)} disabled={currentPage === totalPages} className="h-8 w-8 p-0 rounded-lg" aria-label="Last">
+                      <ChevronsRight className="h-3.5 w-3.5" />
                     </Button>
                   </div>
                 )}
               </div>
             </div>
           )}
-
         </div>
+
+        {/* ── Location Picker Modal ── */}
+        <ChooseActiveLocation
+          open={showPicker}
+          locations={locations.map((l) => ({
+            id: l.location_id ?? l.name,
+            location_id: l.location_id ?? "",
+            location_name: l.title || l.location_name || "Unknown",
+            is_active: l.is_active ?? true,
+          }))}
+          limit={planLimit}
+          onConfirm={async (selectedIds) => {
+            await fetch("/api/gmb/locations/set-active", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({ selectedIds }),
+            })
+            setShowPicker(false)
+            router.refresh()
+          }}
+          onClose={() => setShowPicker(false)}
+        />
       </div>
     </TooltipProvider>
   )

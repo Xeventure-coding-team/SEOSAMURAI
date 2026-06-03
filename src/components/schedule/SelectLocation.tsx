@@ -317,7 +317,7 @@ export default function SelectLocation() {
             <div className="flex flex-col gap-6 sm:flex-row sm:items-start sm:justify-between">
 
                 <div className="space-y-3">
-                    <div className="inline-flex items-center gap-1.5 bg-blue-50 text-blue-600 text-xs font-medium px-3 py-1.5 rounded-full">
+                    <div className="inline-flex items-center gap-1.5 bg-blue-50 text-blue-600 border-1 border-blue-600 text-xs font-medium px-3 py-1.5 rounded-full">
                         <MapPin className="h-3.5 w-3.5" />
                         Business scheduling
                     </div>
@@ -343,7 +343,7 @@ export default function SelectLocation() {
 
 <div className="flex items-center justify-between mb-5">
   <div className="flex items-center gap-3">
-    <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary/10">
+    <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary/10 border">
       <MapPin className="h-5 w-5 text-primary" />
     </div>
 

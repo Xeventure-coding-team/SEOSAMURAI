@@ -15,7 +15,7 @@ export type Feature =
   | "scheduled-posts" | "scheduledPosts"
   | "geo-grid-scans" | "geoGridScans"
   | "review-posters" | "reviewPoster"
-  | "keyword-tracking" | "keywordTracking";
+  | "keyword-tracking" | "keywordTracking" | "aiImage";
 
 // Maps any alias → the PlanLimits key
 const TO_LIMIT_KEY: Record<string, string> = {
@@ -37,6 +37,8 @@ const TO_LIMIT_KEY: Record<string, string> = {
   "taskAchievements": "taskAchievements",
   "task-milestones": "taskMilestones",
   "taskMilestones": "taskMilestones",
+  "ai-image": "aiImage",
+  "aiImage": "aiImage",
 };
 
 // Maps numeric limit key → usage row column
@@ -47,6 +49,7 @@ const TO_USAGE_KEY: Record<string, string> = {
   geoGridScans: "geoGridScansUsed",
   reviewPoster: "reviewPostersUsed",
   keywordTracking: "keywordTrackingUsed",
+  aiImage: "aiImagesUsed",
 };
 
 export type CanUseResult =
@@ -142,8 +145,8 @@ export async function requireFeature(
     const reason = (result as { reason: string }).reason;
     const params = new URLSearchParams({
       reason: reason === "no_subscription" ? "subscription_required"
-            : reason === "limit_reached"   ? "usage_limit_reached"
-            : "upgrade_required",
+        : reason === "limit_reached" ? "usage_limit_reached"
+          : "upgrade_required",
       feature,
     });
     redirect(`/pricing?${params}`);
@@ -178,6 +181,8 @@ const FEATURE_LABELS: Record<string, string> = {
   "tasks": "Tasks",
   "task-achievements": "taskAchievements",
   "task-milestones": "taskMilestones",
+  "ai-image": "AI Image Generation",
+  "aiImage": "AI Image Generation",
 };
 
 

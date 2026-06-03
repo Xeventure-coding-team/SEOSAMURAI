@@ -405,25 +405,10 @@ export default function GMBLocationMapInterface() {
 
 
   return (
-    <div className="flex flex-col h-screen bg-background">
+    <div className="flex flex-col h-[100dvh] bg-background">
 
       {/* ── Top Bar ─────────────────────────────────────────────────────────── */}
       <div className="border-b border-border bg-card shrink-0">
-
-        {/* Title row */}
-        <div className="flex items-center gap-3 px-4 py-3 border-b border-border">
-          <Button variant="ghost" size="sm" className="lg:hidden -ml-1" onClick={() => setIsSidebarOpen(!isSidebarOpen)}>
-            <Menu className="h-4 w-4" />
-          </Button>
-          <MapPin className="h-5 w-5 text-primary shrink-0" />
-          <div>
-            <h1 className="text-base font-semibold leading-none">Geo-Grid Rank Tracking</h1>
-            <p className="text-xs text-muted-foreground mt-0.5">Track your business location rankings</p>
-          </div>
-          <div className="ml-auto">
-            <UsageBadge metric="geoGridScansUsed" label="Scans" />
-          </div>
-        </div>
 
         {/* Metrics + scan button row */}
         <div className="flex flex-wrap items-center gap-2 px-4 py-2.5">

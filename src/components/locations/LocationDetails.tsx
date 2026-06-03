@@ -55,6 +55,7 @@ import { MediaTabContent } from "./MediaTabContent"
 import { cn } from "@/lib/utils"
 import { PlanGate } from "../PlanGate"
 import { LocationLocked } from "./LocationLocked"
+import BillingsPage from "../billing/BillingsPage"
 
 interface GMBApiResponse {
   location: {
@@ -161,8 +162,8 @@ export default function LocationDashboard() {
 
         document.title =
           pageName !== 'Location Dashboard'
-            ? `${pageName}d`
-            : 'Location Dashboard';
+            ? `${pageName} | Rankerly`
+            : 'Location Dashboard | Rankerly';
 
         setPageName(pageName);
       }
@@ -1241,6 +1242,8 @@ export default function LocationDashboard() {
           </div>
         </div>
       </>}
+
+
     </TooltipProvider>
   )
 }

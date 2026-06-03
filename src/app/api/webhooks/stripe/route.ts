@@ -25,14 +25,14 @@ function getPeriodEnd(subscription: Stripe.Subscription): Date {
 
 function stripeStatusToPrisma(status: Stripe.Subscription.Status): SubscriptionStatus {
   const map: Record<Stripe.Subscription.Status, SubscriptionStatus> = {
-    active:             "ACTIVE",
-    canceled:           "CANCELED",
-    incomplete:         "INCOMPLETE",
+    active: "ACTIVE",
+    canceled: "CANCELED",
+    incomplete: "INCOMPLETE",
     incomplete_expired: "INCOMPLETE_EXPIRED",
-    past_due:           "PAST_DUE",
-    trialing:           "TRIALING",
-    unpaid:             "UNPAID",
-    paused:             "CANCELED",
+    past_due: "PAST_DUE",
+    trialing: "TRIALING",
+    unpaid: "UNPAID",
+    paused: "CANCELED",
   };
   return map[status] ?? "INCOMPLETE";
 }
@@ -131,7 +131,7 @@ async function handlePlanChange(userId: string, oldPlanId: PlanId, newPlanId: Pl
 
   const isDowngrade =
     newLimits.locations < oldLimits.locations ||
-    newLimits.websites  < oldLimits.websites;
+    newLimits.websites < oldLimits.websites;
 
   console.log(`Plan change for ${userId}: ${oldPlanId} → ${newPlanId} (${isDowngrade ? "downgrade" : "upgrade"})`);
 
@@ -170,58 +170,59 @@ export async function POST(req: Request) {
         const stackUserId = subscription.metadata?.stackUserId;
         const priceId = subscription.items.data[0]?.price.id;
 
-        if (!stackUserId || !priceId) {
-          console.error("Missing stackUserId or priceId");
-          break;
-        }
+        if (!stackUserId || !priceId) break;
 
         const plan = getPlanByPriceId(priceId);
-        if (!plan) {
-          console.error("Unknown price ID:", priceId);
-          break;
-        }
+        if (!plan) break;
 
         const customerId =
           typeof subscription.customer === "string"
             ? subscription.customer
             : subscription.customer.id;
 
-        // Get old plan before upsert
         const existing = await prisma.subscription.findUnique({
           where: { stackUserId },
-          select: { plan: true },
+          select: { plan: true, status: true }, // 👈 also grab old status
         });
 
         await prisma.subscription.upsert({
           where: { stackUserId },
           create: {
             stackUserId,
-            stripeCustomerId:       customerId,
-            stripeSubscriptionId:   subscription.id,
-            stripePriceId:          priceId,
+            stripeCustomerId: customerId,
+            stripeSubscriptionId: subscription.id,
+            stripePriceId: priceId,
             stripeCurrentPeriodEnd: getPeriodEnd(subscription),
-            status:                 stripeStatusToPrisma(subscription.status),
-            plan:                   plan.id.toUpperCase() as PlanType,
-            cancelAtPeriodEnd:      (subscription as any).cancel_at_period_end ?? false,
+            status: stripeStatusToPrisma(subscription.status),
+            plan: plan.id.toUpperCase() as PlanType,
+            cancelAtPeriodEnd: (subscription as any).cancel_at_period_end ?? false,
           },
           update: {
-            stripeCustomerId:       customerId,
-            stripeSubscriptionId:   subscription.id,
-            stripePriceId:          priceId,
+            stripeCustomerId: customerId,
+            stripeSubscriptionId: subscription.id,
+            stripePriceId: priceId,
             stripeCurrentPeriodEnd: getPeriodEnd(subscription),
-            status:                 stripeStatusToPrisma(subscription.status),
-            plan:                   plan.id.toUpperCase() as PlanType,
-            cancelAtPeriodEnd:      (subscription as any).cancel_at_period_end ?? false,
+            status: stripeStatusToPrisma(subscription.status),
+            plan: plan.id.toUpperCase() as PlanType,
+            cancelAtPeriodEnd: (subscription as any).cancel_at_period_end ?? false,
           },
         });
-
-        // Handle plan change if plan actually changed
+        
+        // Plan changed → handle upgrade/downgrade as before
         if (existing?.plan) {
           const oldPlanId = existing.plan.toLowerCase() as PlanId;
           const newPlanId = plan.id as PlanId;
           if (oldPlanId !== newPlanId) {
             await handlePlanChange(stackUserId, oldPlanId, newPlanId);
           }
+        }
+
+        // 👇 Status changed to active (e.g. reactivated, payment recovered)
+        const newStatus = stripeStatusToPrisma(subscription.status);
+        const wasNotActive = existing?.status !== "ACTIVE";
+        if (newStatus === "ACTIVE" && wasNotActive) {
+          await handleUpgrade(stackUserId, plan.id as PlanId);
+          console.log(`Reactivated resources for user ${stackUserId}`);
         }
 
         break;

@@ -226,7 +226,7 @@ export default function ManageLocation() {
         setActiveState(isActive);
 
         if (data?.location.locationData?.name) {
-          document.title = `${data?.location?.locationData.name} | Location Dashboard`
+          document.title = `${data?.location?.locationData.name} | Rankerly`
           setPageName(`${data?.location?.locationData.name}`)
           setLoading(false);
         }
@@ -525,7 +525,7 @@ export default function ManageLocation() {
 
         <div>
           <div>
-            {payload?.location?.locationData === null || undefined ? <LoadingSpinner /> : <AnimatedTabs syncHash items={items} defaultTab={activeTab}>
+            {payload?.location?.locationData === null || undefined ? <LoadingSpinner /> : <AnimatedTabs syncHash items={items} defaultTab={activeTab} main>
               <AnimatedTabItem value="tasks">
 
                 {payload ? <TaskManager

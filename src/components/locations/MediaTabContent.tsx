@@ -194,7 +194,7 @@ function MediaUploadDialog({
           size="sm"
           className="gap-1.5"
           disabled={!canUploadMedia}
-          onClick={canUploadMedia ? handleUpload : () => router.push("/settings/billing")}
+          onClick={canUploadMedia ? handleUpload : () => router.push("/app/settings/billing")}
         >
           <Upload className="w-3.5 h-3.5" />
           {canUploadMedia ? "Add Photo" : "Upgrade to Upload"}

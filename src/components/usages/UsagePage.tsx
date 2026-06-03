@@ -10,12 +10,45 @@ import { SubscriptionBadge } from '../subscription/SubscriptionBadge';
 
 // ─── Monthly metrics ──────────────────────────────────────────────────────────
 
-const METRIC_CONFIG: Record<UsageMetric, { label: string; icon: React.ElementType; description: string }> = {
-    postsUsed: { label: "Posts", icon: FileText, description: "Published this month" },
-    aiReviewRepliesUsed: { label: "AI replies", icon: MessageSquare, description: "AI-generated review replies" },
-    scheduledPostsUsed: { label: "Scheduled posts", icon: CalendarClock, description: "Posts queued this month" },
-    geoGridScansUsed: { label: "Geo scans", icon: ScanLine, description: "Grid scans run this month" },
-    keywordTrackingUsed: { label: "Keywords", icon: Tags, description: "Keywords currently tracked" },
+const METRIC_CONFIG: Record<
+  UsageMetric,
+  { label: string; icon: React.ElementType; description: string }
+> = {
+  postsUsed: {
+    label: "Posts",
+    icon: FileText,
+    description: "Published this month",
+  },
+
+  aiReviewRepliesUsed: {
+    label: "AI replies",
+    icon: MessageSquare,
+    description: "AI-generated review replies",
+  },
+
+  scheduledPostsUsed: {
+    label: "Scheduled posts",
+    icon: CalendarClock,
+    description: "Posts queued this month",
+  },
+
+  geoGridScansUsed: {
+    label: "Geo scans",
+    icon: ScanLine,
+    description: "Grid scans run this month",
+  },
+
+  keywordTrackingUsed: {
+    label: "Keywords",
+    icon: Tags,
+    description: "Keywords currently tracked",
+  },
+
+  aiImageUsed: {
+    label: "AI images",
+    icon: Image,
+    description: "AI-generated images used this month",
+  },
 };
 
 const METRICS = Object.keys(METRIC_CONFIG) as UsageMetric[];
@@ -184,7 +217,7 @@ export default function UsagePage() {
                         },
                          { label: "Resets in", value: isLoading ? "—" : daysLeft !== null ? `${daysLeft} days` : "—", sub: isLoading ? "—" : resetDate },
                     ].map((s) => (
-                        <div key={s.label} className="flex flex-col gap-1 p-5 rounded-xl bg-muted/50 border">
+                        <div key={s.label} className="flex flex-col gap-1 p-5 rounded-xl bg-background border">
                             <span className="text-xs text-muted-foreground uppercase tracking-wide">{s.label}</span>
                             <span className="text-3xl font-medium mt-1">{s.value}</span>
                             <span className="text-sm text-muted-foreground">{s.sub}</span>

@@ -34139,6 +34139,7 @@ export namespace Prisma {
     geoGridScansUsed: number | null
     reviewPostersUsed: number | null
     keywordTrackingUsed: number | null
+    aiImageUsed: number | null
   }
 
   export type UsageSumAggregateOutputType = {
@@ -34149,6 +34150,7 @@ export namespace Prisma {
     geoGridScansUsed: number | null
     reviewPostersUsed: number | null
     keywordTrackingUsed: number | null
+    aiImageUsed: number | null
   }
 
   export type UsageMinAggregateOutputType = {
@@ -34164,6 +34166,7 @@ export namespace Prisma {
     geoGridScansUsed: number | null
     reviewPostersUsed: number | null
     keywordTrackingUsed: number | null
+    aiImageUsed: number | null
     updatedAt: Date | null
   }
 
@@ -34180,6 +34183,7 @@ export namespace Prisma {
     geoGridScansUsed: number | null
     reviewPostersUsed: number | null
     keywordTrackingUsed: number | null
+    aiImageUsed: number | null
     updatedAt: Date | null
   }
 
@@ -34196,6 +34200,7 @@ export namespace Prisma {
     geoGridScansUsed: number
     reviewPostersUsed: number
     keywordTrackingUsed: number
+    aiImageUsed: number
     updatedAt: number
     _all: number
   }
@@ -34209,6 +34214,7 @@ export namespace Prisma {
     geoGridScansUsed?: true
     reviewPostersUsed?: true
     keywordTrackingUsed?: true
+    aiImageUsed?: true
   }
 
   export type UsageSumAggregateInputType = {
@@ -34219,6 +34225,7 @@ export namespace Prisma {
     geoGridScansUsed?: true
     reviewPostersUsed?: true
     keywordTrackingUsed?: true
+    aiImageUsed?: true
   }
 
   export type UsageMinAggregateInputType = {
@@ -34234,6 +34241,7 @@ export namespace Prisma {
     geoGridScansUsed?: true
     reviewPostersUsed?: true
     keywordTrackingUsed?: true
+    aiImageUsed?: true
     updatedAt?: true
   }
 
@@ -34250,6 +34258,7 @@ export namespace Prisma {
     geoGridScansUsed?: true
     reviewPostersUsed?: true
     keywordTrackingUsed?: true
+    aiImageUsed?: true
     updatedAt?: true
   }
 
@@ -34266,6 +34275,7 @@ export namespace Prisma {
     geoGridScansUsed?: true
     reviewPostersUsed?: true
     keywordTrackingUsed?: true
+    aiImageUsed?: true
     updatedAt?: true
     _all?: true
   }
@@ -34369,6 +34379,7 @@ export namespace Prisma {
     geoGridScansUsed: number
     reviewPostersUsed: number
     keywordTrackingUsed: number
+    aiImageUsed: number
     updatedAt: Date
     _count: UsageCountAggregateOutputType | null
     _avg: UsageAvgAggregateOutputType | null
@@ -34404,6 +34415,7 @@ export namespace Prisma {
     geoGridScansUsed?: boolean
     reviewPostersUsed?: boolean
     keywordTrackingUsed?: boolean
+    aiImageUsed?: boolean
     updatedAt?: boolean
     subscription?: boolean | SubscriptionDefaultArgs<ExtArgs>
   }, ExtArgs["result"]["usage"]>
@@ -34423,10 +34435,11 @@ export namespace Prisma {
     geoGridScansUsed?: boolean
     reviewPostersUsed?: boolean
     keywordTrackingUsed?: boolean
+    aiImageUsed?: boolean
     updatedAt?: boolean
   }
 
-  export type UsageOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "subscriptionId" | "stackUserId" | "periodStart" | "periodEnd" | "postsUsed" | "aiPostersUsed" | "aiReviewRepliesUsed" | "scheduledPostsUsed" | "geoGridScansUsed" | "reviewPostersUsed" | "keywordTrackingUsed" | "updatedAt", ExtArgs["result"]["usage"]>
+  export type UsageOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "subscriptionId" | "stackUserId" | "periodStart" | "periodEnd" | "postsUsed" | "aiPostersUsed" | "aiReviewRepliesUsed" | "scheduledPostsUsed" | "geoGridScansUsed" | "reviewPostersUsed" | "keywordTrackingUsed" | "aiImageUsed" | "updatedAt", ExtArgs["result"]["usage"]>
   export type UsageInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     subscription?: boolean | SubscriptionDefaultArgs<ExtArgs>
   }
@@ -34449,6 +34462,7 @@ export namespace Prisma {
       geoGridScansUsed: number
       reviewPostersUsed: number
       keywordTrackingUsed: number
+      aiImageUsed: number
       updatedAt: Date
     }, ExtArgs["result"]["usage"]>
     composites: {}
@@ -34855,6 +34869,7 @@ export namespace Prisma {
     readonly geoGridScansUsed: FieldRef<"Usage", 'Int'>
     readonly reviewPostersUsed: FieldRef<"Usage", 'Int'>
     readonly keywordTrackingUsed: FieldRef<"Usage", 'Int'>
+    readonly aiImageUsed: FieldRef<"Usage", 'Int'>
     readonly updatedAt: FieldRef<"Usage", 'DateTime'>
   }
     
@@ -37642,6 +37657,7 @@ export namespace Prisma {
     geoGridScansUsed: 'geoGridScansUsed',
     reviewPostersUsed: 'reviewPostersUsed',
     keywordTrackingUsed: 'keywordTrackingUsed',
+    aiImageUsed: 'aiImageUsed',
     updatedAt: 'updatedAt'
   };
 
@@ -40509,6 +40525,7 @@ export namespace Prisma {
     geoGridScansUsed?: IntFilter<"Usage"> | number
     reviewPostersUsed?: IntFilter<"Usage"> | number
     keywordTrackingUsed?: IntFilter<"Usage"> | number
+    aiImageUsed?: IntFilter<"Usage"> | number
     updatedAt?: DateTimeFilter<"Usage"> | Date | string
     subscription?: XOR<SubscriptionScalarRelationFilter, SubscriptionWhereInput>
   }
@@ -40526,6 +40543,7 @@ export namespace Prisma {
     geoGridScansUsed?: SortOrder
     reviewPostersUsed?: SortOrder
     keywordTrackingUsed?: SortOrder
+    aiImageUsed?: SortOrder
     updatedAt?: SortOrder
     subscription?: SubscriptionOrderByWithRelationInput
   }
@@ -40546,6 +40564,7 @@ export namespace Prisma {
     geoGridScansUsed?: IntFilter<"Usage"> | number
     reviewPostersUsed?: IntFilter<"Usage"> | number
     keywordTrackingUsed?: IntFilter<"Usage"> | number
+    aiImageUsed?: IntFilter<"Usage"> | number
     updatedAt?: DateTimeFilter<"Usage"> | Date | string
     subscription?: XOR<SubscriptionScalarRelationFilter, SubscriptionWhereInput>
   }, "id" | "subscriptionId" | "stackUserId">
@@ -40563,6 +40582,7 @@ export namespace Prisma {
     geoGridScansUsed?: SortOrder
     reviewPostersUsed?: SortOrder
     keywordTrackingUsed?: SortOrder
+    aiImageUsed?: SortOrder
     updatedAt?: SortOrder
     _count?: UsageCountOrderByAggregateInput
     _avg?: UsageAvgOrderByAggregateInput
@@ -40587,6 +40607,7 @@ export namespace Prisma {
     geoGridScansUsed?: IntWithAggregatesFilter<"Usage"> | number
     reviewPostersUsed?: IntWithAggregatesFilter<"Usage"> | number
     keywordTrackingUsed?: IntWithAggregatesFilter<"Usage"> | number
+    aiImageUsed?: IntWithAggregatesFilter<"Usage"> | number
     updatedAt?: DateTimeWithAggregatesFilter<"Usage"> | Date | string
   }
 
@@ -43711,6 +43732,7 @@ export namespace Prisma {
     geoGridScansUsed?: number
     reviewPostersUsed?: number
     keywordTrackingUsed?: number
+    aiImageUsed?: number
     updatedAt?: Date | string
     subscription: SubscriptionCreateNestedOneWithoutUsageInput
   }
@@ -43728,6 +43750,7 @@ export namespace Prisma {
     geoGridScansUsed?: number
     reviewPostersUsed?: number
     keywordTrackingUsed?: number
+    aiImageUsed?: number
     updatedAt?: Date | string
   }
 
@@ -43742,6 +43765,7 @@ export namespace Prisma {
     geoGridScansUsed?: IntFieldUpdateOperationsInput | number
     reviewPostersUsed?: IntFieldUpdateOperationsInput | number
     keywordTrackingUsed?: IntFieldUpdateOperationsInput | number
+    aiImageUsed?: IntFieldUpdateOperationsInput | number
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     subscription?: SubscriptionUpdateOneRequiredWithoutUsageNestedInput
   }
@@ -43758,6 +43782,7 @@ export namespace Prisma {
     geoGridScansUsed?: IntFieldUpdateOperationsInput | number
     reviewPostersUsed?: IntFieldUpdateOperationsInput | number
     keywordTrackingUsed?: IntFieldUpdateOperationsInput | number
+    aiImageUsed?: IntFieldUpdateOperationsInput | number
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
@@ -43774,6 +43799,7 @@ export namespace Prisma {
     geoGridScansUsed?: number
     reviewPostersUsed?: number
     keywordTrackingUsed?: number
+    aiImageUsed?: number
     updatedAt?: Date | string
   }
 
@@ -43788,6 +43814,7 @@ export namespace Prisma {
     geoGridScansUsed?: IntFieldUpdateOperationsInput | number
     reviewPostersUsed?: IntFieldUpdateOperationsInput | number
     keywordTrackingUsed?: IntFieldUpdateOperationsInput | number
+    aiImageUsed?: IntFieldUpdateOperationsInput | number
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
@@ -43803,6 +43830,7 @@ export namespace Prisma {
     geoGridScansUsed?: IntFieldUpdateOperationsInput | number
     reviewPostersUsed?: IntFieldUpdateOperationsInput | number
     keywordTrackingUsed?: IntFieldUpdateOperationsInput | number
+    aiImageUsed?: IntFieldUpdateOperationsInput | number
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
@@ -45923,6 +45951,7 @@ export namespace Prisma {
     geoGridScansUsed?: SortOrder
     reviewPostersUsed?: SortOrder
     keywordTrackingUsed?: SortOrder
+    aiImageUsed?: SortOrder
     updatedAt?: SortOrder
   }
 
@@ -45934,6 +45963,7 @@ export namespace Prisma {
     geoGridScansUsed?: SortOrder
     reviewPostersUsed?: SortOrder
     keywordTrackingUsed?: SortOrder
+    aiImageUsed?: SortOrder
   }
 
   export type UsageMaxOrderByAggregateInput = {
@@ -45949,6 +45979,7 @@ export namespace Prisma {
     geoGridScansUsed?: SortOrder
     reviewPostersUsed?: SortOrder
     keywordTrackingUsed?: SortOrder
+    aiImageUsed?: SortOrder
     updatedAt?: SortOrder
   }
 
@@ -45965,6 +45996,7 @@ export namespace Prisma {
     geoGridScansUsed?: SortOrder
     reviewPostersUsed?: SortOrder
     keywordTrackingUsed?: SortOrder
+    aiImageUsed?: SortOrder
     updatedAt?: SortOrder
   }
 
@@ -45976,6 +46008,7 @@ export namespace Prisma {
     geoGridScansUsed?: SortOrder
     reviewPostersUsed?: SortOrder
     keywordTrackingUsed?: SortOrder
+    aiImageUsed?: SortOrder
   }
 
   export type LocationChoiceStackUserIdPeriodEndCompoundUniqueInput = {
@@ -46932,6 +46965,7 @@ export namespace Prisma {
     geoGridScansUsed?: number
     reviewPostersUsed?: number
     keywordTrackingUsed?: number
+    aiImageUsed?: number
     updatedAt?: Date | string
   }
 
@@ -46947,6 +46981,7 @@ export namespace Prisma {
     geoGridScansUsed?: number
     reviewPostersUsed?: number
     keywordTrackingUsed?: number
+    aiImageUsed?: number
     updatedAt?: Date | string
   }
 
@@ -46977,6 +47012,7 @@ export namespace Prisma {
     geoGridScansUsed?: IntFieldUpdateOperationsInput | number
     reviewPostersUsed?: IntFieldUpdateOperationsInput | number
     keywordTrackingUsed?: IntFieldUpdateOperationsInput | number
+    aiImageUsed?: IntFieldUpdateOperationsInput | number
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
@@ -46991,6 +47027,7 @@ export namespace Prisma {
     geoGridScansUsed?: IntFieldUpdateOperationsInput | number
     reviewPostersUsed?: IntFieldUpdateOperationsInput | number
     keywordTrackingUsed?: IntFieldUpdateOperationsInput | number
+    aiImageUsed?: IntFieldUpdateOperationsInput | number
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 

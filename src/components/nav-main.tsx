@@ -1,236 +1,346 @@
-// nav-main.tsx
 "use client"
 
-import * as React from "react"
-import { usePathname } from "next/navigation"
-import { LucideIcon } from "lucide-react"
+import { type Icon } from "@tabler/icons-react"
+import { ChevronRight, Circle } from "lucide-react"
 import Link from "next/link"
+import { usePathname } from "next/navigation"
+import React, { useState, useEffect, useRef } from "react"
 import {
   SidebarGroup,
   SidebarGroupContent,
-  SidebarGroupLabel,
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
+  SidebarMenuSub,
+  SidebarMenuSubButton,
+  SidebarMenuSubItem,
 } from "@/components/ui/sidebar"
 import { cn } from "@/lib/utils"
 
-interface NavBadge {
-  label: string
-  variant?: "default" | "secondary" | "destructive"
+interface NavSubItem {
+  title: string
+  url: string
+  badge?: string | number
+  description?: string
 }
 
 interface NavItem {
   title: string
   url: string
-  icon?: LucideIcon
-  badge?: NavBadge
+  icon?: Icon
+  badge?: string | number
+  children?: NavSubItem[]
   group?: string
+  disabled?: boolean
+  external?: boolean
 }
 
 interface NavMainProps {
   items: NavItem[]
+  collapsed?: boolean
+  onItemClick?: (item: NavItem) => void
 }
 
-const BADGE_STYLES = {
-  default: {
-    base: "bg-blue-500/30 text-blue-200 border-blue-500/40",
-    active: "bg-blue-400/40 text-blue-100 border-blue-400/50",
-  },
-  secondary: {
-    base: "bg-sky-500/25 text-sky-200 border-sky-500/35",
-    active: "bg-sky-400/30 text-sky-100 border-sky-400/40",
-  },
-  destructive: {
-    base: "bg-rose-500/25 text-rose-200 border-rose-500/35",
-    active: "bg-rose-400/30 text-rose-100 border-rose-400/40",
-  },
-} as const
+const isActive = (pathname: string, url: string) => {
+  if (!url || url === "#") return false
+  if (url === "/") return pathname === "/"
+  if (url.includes("#")) return pathname === url.split("#")[0]
+  return pathname === url || pathname.startsWith(url + "/")
+}
 
-const ACTIVE_ITEM_STYLES = {
-  background: "rgba(59, 130, 246, 0.16)",
-  border: "1px solid rgba(96, 165, 250, 0.35)",
-  boxShadow: "inset 0 1px 0 rgba(147, 197, 253, 0.1)",
-} as const
+const hasActiveChild = (pathname: string, children?: NavSubItem[]) =>
+  children?.some((c) => isActive(pathname, c.url)) ?? false
 
-const Badge = React.memo(({ badge, active }: { badge: NavBadge; active: boolean }) => {
-  const variant = badge.variant ?? "default"
-  const styles = BADGE_STYLES[variant]
-  
+const CountBadge = ({ label, variant = "default" }: { label: string | number; variant?: "default" | "success" | "warning" | "error" }) => {
+  const variantStyles = {
+    default: "bg-white/20 text-white",
+    success: "bg-emerald-500/20 text-white",
+    warning: "bg-amber-500/20 text-white",
+    error: "bg-red-500/20 text-white",
+  }
+
   return (
     <span
       className={cn(
-        "px-1.5 py-px rounded text-[10.5px] font-semibold leading-tight",
-        "whitespace-nowrap transition-all duration-100 text-white",
-        styles.base,
-        active && styles.active
+        "ml-auto inline-flex h-5 min-w-5 items-center justify-center",
+        "rounded-full px-1.5 text-[11px] font-semibold tabular-nums",
+        "transition-colors duration-150",
+        variantStyles[variant]
       )}
-      aria-hidden="true"
     >
-      {badge.label}
+      {label}
     </span>
   )
-})
+}
 
-Badge.displayName = "Badge"
+const Tooltip = ({ children, content }: { children: React.ReactNode; content: string }) => {
+  const [show, setShow] = useState(false)
+  const timeoutRef = useRef<NodeJS.Timeout | null>(null)
 
-const NavItemButton = React.memo(({ 
-  item, 
-  isActive 
-}: { 
-  item: NavItem; 
-  isActive: boolean;
-}) => {
+  const handleMouseEnter = () => {
+    timeoutRef.current = setTimeout(() => setShow(true), 300)
+  }
+
+  const handleMouseLeave = () => {
+    if (timeoutRef.current) clearTimeout(timeoutRef.current)
+    setShow(false)
+  }
+
   return (
-    <SidebarMenuItem className="relative">
-      <div
-        className={cn(
-          "pointer-events-none absolute left-0 top-1/2 -translate-y-1/2",
-          "w-[3px] rounded-r-full z-10 transition-all duration-200",
-          isActive ? "opacity-100 scale-y-100" : "opacity-0 scale-y-0"
-        )}
-        style={{
-          height: "55%",
-          background: "linear-gradient(to bottom, #60a5fa, #3b82f6)",
-        }}
-        aria-hidden="true"
-      />
-
-      <SidebarMenuButton
-        asChild
-        isActive={isActive}
-        className={cn(
-          "h-9 w-full rounded-lg text-[15px] font-medium",
-          "transition-all duration-100 ease-in-out",
-          "text-white hover:text-white hover:bg-white/[0.08]",
-          isActive && "text-blue-100 font-semibold hover:text-blue-100",
-          "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500/50"
-        )}
-        style={isActive ? ACTIVE_ITEM_STYLES : undefined}
-      >
-        <Link
-          href={item.url}
-          className="flex items-center gap-2.5 px-3 w-full h-full text-white"
-          aria-current={isActive ? "page" : undefined}
-        >
-          {item.icon && (
-            <item.icon
-              className="size-[18px] shrink-0 transition-all duration-100 text-white"
-              style={{
-                opacity: isActive ? 1 : 0.6,
-                color: isActive ? "#93c5fd" : "white",
-              }}
-              aria-hidden="true"
-            />
-          )}
-          <span className="flex-1 truncate text-white">{item.title}</span>
-          {item.badge && <Badge badge={item.badge} active={isActive} />}
-        </Link>
-      </SidebarMenuButton>
-    </SidebarMenuItem>
-  )
-})
-
-NavItemButton.displayName = "NavItemButton"
-
-const NavGroup = React.memo(({ 
-  group, 
-  items, 
-  isActiveFn 
-}: { 
-  group: string; 
-  items: NavItem[]; 
-  isActiveFn: (url: string) => boolean;
-}) => {
-  return (
-    <SidebarGroup className="px-0 py-0">
-      {group !== "Main" && (
-        <SidebarGroupLabel
-          className={cn(
-            "h-6 px-2 mb-1",
-            "text-[10px] font-semibold uppercase tracking-[0.1em]",
-            "text-white hover:text-white transition-colors",
-          )}
-        >
-          {group}
-        </SidebarGroupLabel>
+    <div className="relative" onMouseEnter={handleMouseEnter} onMouseLeave={handleMouseLeave}>
+      {children}
+      {show && (
+        <div className="absolute left-full ml-2 top-1/2 -translate-y-1/2 z-50 px-2 py-1 text-xs font-medium text-white bg-gray-900 dark:bg-gray-700 rounded-md shadow-lg whitespace-nowrap">
+          {content}
+        </div>
       )}
-      <SidebarGroupContent>
-        <SidebarMenu className="gap-1">
-          {items.map((item) => (
-            <NavItemButton
-              key={`${item.group}-${item.title}`}
-              item={item}
-              isActive={isActiveFn(item.url)}
-            />
-          ))}
-        </SidebarMenu>
-      </SidebarGroupContent>
-    </SidebarGroup>
+    </div>
   )
-})
+}
 
-NavGroup.displayName = "NavGroup"
-
-export function NavMain({ items }: NavMainProps) {
+const FlatItem = ({ item, collapsed, onItemClick }: { item: NavItem; collapsed?: boolean; onItemClick?: (item: NavItem) => void }) => {
   const pathname = usePathname()
+  const active = isActive(pathname, item.url)
 
-  const isActive = React.useCallback((url: string) => {
-    if (url === "/") return pathname === "/"
-    if (url !== "/" && pathname === url) return true
-    return pathname.startsWith(`${url}/`) || pathname === url
-  }, [pathname])
+  const buttonContent = (
+    <SidebarMenuButton
+      asChild
+      isActive={active}
+      disabled={item.disabled}
+        className={cn(
+    "h-10 rounded-md px-3 gap-3 group w-full",
+    "text-[15px] font-medium transition-all duration-100",
+    "text-white hover:text-white",
+    "hover:bg-white/[0.08]",
+    active && [
+      "bg-blue-500/15 text-white font-semibold",
+      "hover:bg-blue-500/20 hover:text-blue-300",
+    ]
+  )}
+    >
+      <Link
+        href={item.disabled ? "#" : item.url}
+        aria-current={active ? "page" : undefined}
+        target={item.external ? "_blank" : undefined}
+        rel={item.external ? "noopener noreferrer" : undefined}
+        onClick={() => onItemClick?.(item)}
+      >
+        {item.icon && (
+          <item.icon
+            className={cn(
+              "size-[19px] shrink-0 transition-all duration-100",
+              active ? "text-blue-400" : "text-white"
+            )}
+          />
+        )}
+        {!collapsed && (
+          <>
+            <span className="truncate flex-1 text-left">{item.title}</span>
+            {item.badge && <CountBadge label={item.badge} />}
+          </>
+        )}
+      </Link>
+    </SidebarMenuButton>
+  )
 
-  const { grouped, groupOrder } = React.useMemo(() => {
-    const groups = new Map<string, NavItem[]>()
-    const order: string[] = []
-    const seen = new Set<string>()
-
-    for (const item of items) {
-      const groupName = item.group ?? "Main"
-      
-      if (!seen.has(groupName)) {
-        seen.add(groupName)
-        order.push(groupName)
-        groups.set(groupName, [])
-      }
-      
-      groups.get(groupName)!.push(item)
-    }
-
-    return {
-      grouped: groups,
-      groupOrder: order,
-    }
-  }, [items])
-
-  if (items.length === 0) {
+  if (collapsed) {
     return (
-      <div className="flex flex-col py-2 px-3 text-white text-sm">
-        No navigation items
-      </div>
+      <SidebarMenuItem className="list-none">
+        <Tooltip content={item.title}>
+          {buttonContent}
+        </Tooltip>
+      </SidebarMenuItem>
+    )
+  }
+
+  return <SidebarMenuItem className="list-none">{buttonContent}</SidebarMenuItem>
+}
+
+const CollapsibleItem = ({ item, collapsed, onItemClick }: { item: NavItem; collapsed?: boolean; onItemClick?: (item: NavItem) => void }) => {
+  const pathname = usePathname()
+  const active = isActive(pathname, item.url)
+  const childActive = hasActiveChild(pathname, item.children)
+  const [open, setOpen] = useState(active || childActive)
+
+  useEffect(() => {
+    if (collapsed) {
+      setOpen(false)
+    } else {
+      setOpen(active || childActive)
+    }
+  }, [collapsed, active, childActive])
+
+  if (collapsed) {
+    return (
+      <SidebarMenuItem className="list-none">
+        <Tooltip content={item.title}>
+          <SidebarMenuButton
+            isActive={active || childActive}
+            className={cn(
+              "h-10 rounded-md px-3 gap-3 cursor-pointer group w-full",
+              "text-[15px] font-medium transition-all duration-100",
+              active || childActive
+                ? "bg-blue-500/15 text-blue-400 font-semibold hover:bg-blue-500/20 hover:text-blue-300"
+                : "text-white hover:bg-white/[0.08] hover:text-white"
+            )}
+          >
+            {item.icon && (
+              <item.icon
+                className={cn(
+                  "size-[19px] shrink-0 transition-all duration-100",
+                  active || childActive
+                    ? "text-blue-400"
+                    : "text-white"
+                )}
+              />
+            )}
+          </SidebarMenuButton>
+        </Tooltip>
+      </SidebarMenuItem>
     )
   }
 
   return (
-    <nav className="flex flex-col py-2" aria-label="Main navigation">
-      {groupOrder.map((groupName) => {
-        const groupItems = grouped.get(groupName)
-        if (!groupItems?.length) return null
-
-        return (
-          <React.Fragment key={groupName}>
-            <NavGroup
-              group={groupName}
-              items={groupItems}
-              isActiveFn={isActive}
-            />
-            {groupOrder.indexOf(groupName) !== groupOrder.length - 1 && (
-              <div className="my-2 h-px bg-white/[0.08]" aria-hidden="true" />
+    <SidebarMenuItem className="list-none">
+      <SidebarMenuButton
+        onClick={() => setOpen((v) => !v)}
+        isActive={active}
+        className={cn(
+          "h-10 rounded-md px-3 gap-3 cursor-pointer group w-full", // Medium height
+          "text-[15px] font-medium transition-colors duration-150",
+          "text-white hover:text-white"
+        )}
+      >
+        {item.icon && (
+          <item.icon
+            className={cn(
+              "size-[19px] shrink-0", // Medium icon size
+              "text-white group-hover:text-white"
             )}
-          </React.Fragment>
-        )
-      })}
+          />
+        )}
+        <span className="flex-1 truncate text-left">{item.title}</span>
+        {item.badge && (
+          <span
+            className={cn(
+              "inline-flex min-w-[20px] items-center justify-center rounded-full px-1.5 py-0.5 text-[11px] font-semibold",
+              "bg-white/20 text-white"
+            )}
+          >
+            {item.badge}
+          </span>
+        )}
+        <ChevronRight
+          className={cn(
+            "size-3.5 shrink-0 transition-transform duration-150",
+            "text-white/60",
+            open && "rotate-90"
+          )}
+        />
+      </SidebarMenuButton>
+
+      <div
+        className={cn(
+          "overflow-hidden transition-all duration-200",
+          open ? "max-h-[1000px]" : "max-h-0"
+        )}
+      >
+        <SidebarMenuSub className="ml-6 mt-2 border-l border-white/20 pl-4 flex flex-col gap-1">
+          {item.children?.map((child) => {
+            const childIsActive = isActive(pathname, child.url)
+            return (
+              <SidebarMenuSubItem key={child.url} className="list-none">
+                <SidebarMenuSubButton
+                  asChild
+                  isActive={childIsActive}
+                  className={cn(
+                    "h-9 rounded-md px-3 gap-2.5", // Medium submenu height
+                    "text-sm font-medium transition-colors duration-150",
+                    "group/sub",
+                    "text-white hover:text-white"
+                  )}
+                >
+                  <Link
+                    href={child.url}
+                    aria-current={childIsActive ? "page" : undefined}
+                    onClick={() => onItemClick?.({ ...item, ...child })}
+                  >
+                    <Circle
+                      className={cn(
+                        "size-1.5 shrink-0",
+                        "text-white/60"
+                      )}
+                    />
+                    <div className="flex-1 min-w-0">
+                      <span className="truncate block">{child.title}</span>
+                      {child.description && (
+                        <span className="text-[10px] opacity-60 truncate block">
+                          {child.description}
+                        </span>
+                      )}
+                    </div>
+                    {child.badge && <CountBadge label={child.badge} variant="default" />}
+                  </Link>
+                </SidebarMenuSubButton>
+              </SidebarMenuSubItem>
+            )
+          })}
+        </SidebarMenuSub>
+      </div>
+    </SidebarMenuItem>
+  )
+}
+
+export function NavMain({ items, collapsed = false, onItemClick }: NavMainProps) {
+  const groups = React.useMemo(() => {
+    const map = new Map<string, typeof items>()
+    for (const item of items) {
+      const key = item.group ?? "Main"
+      if (!map.has(key)) map.set(key, [])
+      map.get(key)!.push(item)
+    }
+    return Array.from(map.entries()).map(([label, items]) => ({ label, items }))
+  }, [items])
+
+  return (
+    <nav className="flex flex-col gap-6 px-2 mt-6" aria-label="Main navigation">
+      {groups.map((group, gi) => (
+        <SidebarGroup key={gi} className="p-0">
+          {group.label && !collapsed && (
+            <p className="mb-2 px-3 text-[10px] font-semibold uppercase tracking-wider text-white/50 select-none flex items-center gap-2">
+              <span className="flex-1">{group.label}</span>
+              {group.items.length > 0 && (
+                <span className="inline-flex min-w-[18px] items-center justify-center rounded-full bg-white/20 px-1.5 py-0.5 text-[9px] font-medium text-white">
+                  {group.items.length}
+                </span>
+              )}
+            </p>
+          )}
+          <SidebarGroupContent>
+            <SidebarMenu className="flex flex-col gap-1">
+              {group.items.map((item) =>
+                item.children?.length ? (
+                  <CollapsibleItem
+                    key={item.url}
+                    item={item}
+                    collapsed={collapsed}
+                    onItemClick={onItemClick}
+                  />
+                ) : (
+                  <FlatItem
+                    key={item.url}
+                    item={item}
+                    collapsed={collapsed}
+                    onItemClick={onItemClick}
+                  />
+                )
+              )}
+            </SidebarMenu>
+          </SidebarGroupContent>
+        </SidebarGroup>
+      ))}
     </nav>
   )
 }
+
+NavMain.displayName = "NavMain"

@@ -219,7 +219,7 @@ export default function GridRankingMap({ data, mapKey, zoomLevel }: GridRankingM
         )}
 
         {/* Legend */}
-        <div className="absolute bottom-3 left-3 z-10">
+        <div className="absolute top-3 right-3 z-10">
           <div className="bg-card/95 backdrop-blur-sm border border-border/60 rounded-xl px-3 py-2.5 shadow-lg space-y-1.5">
             {[
               { color: "#10b981", label: "#1–3  Excellent" },
@@ -234,7 +234,6 @@ export default function GridRankingMap({ data, mapKey, zoomLevel }: GridRankingM
             ))}
           </div>
         </div>
-
         {/* Click hint */}
         {hasPoints && !panelOpen && (
           <div className="absolute bottom-3 right-3 z-10">

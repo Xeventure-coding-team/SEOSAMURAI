@@ -433,15 +433,17 @@ export function GmbAiImageGenerator({
               onClick={handleDownloadImage}
             >
               <Download className="h-4 w-4" />
-            </Button>
-            <Button
-              type="button"
-              variant="outline"
-              onClick={handleGenerate}
-              disabled={isGenerating}
-            >
-              <RefreshCw className="h-4 w-4" />
-            </Button>
+            </Button> 
+            <UsageGate metric="aiImageUsed">
+              <Button
+                type="button"
+                variant="outline"
+                onClick={handleGenerate}
+                disabled={isGenerating}
+              >
+                <RefreshCw className="h-4 w-4" />
+              </Button>
+            </UsageGate>
           </div>
         </div>
       )}

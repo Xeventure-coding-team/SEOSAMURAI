@@ -213,8 +213,8 @@ function buildImagePrompt(ctx: GmbContext, body: ImagePostRequestBody): string {
   const cleanUrl = (url: string) => {
     try {
       const u = new URL(url)
-        ;["utm_source", "utm_medium", "utm_campaign", "utm_content", "utm_term"]
-          .forEach(p => u.searchParams.delete(p))
+      ;["utm_source", "utm_medium", "utm_campaign", "utm_content", "utm_term"]
+        .forEach(p => u.searchParams.delete(p))
       return u.toString()
     } catch { return url }
   }
@@ -226,7 +226,15 @@ function buildImagePrompt(ctx: GmbContext, body: ImagePostRequestBody): string {
     elegant: "refined and polished — luxury editorial feel, sophisticated serif or refined sans, muted tones with gold or cream accents, aspirational stillness",
   }
 
+  const businessNameEffects: Record<string, string> = {
+    promotional: "Use a condensed bold sans-serif. Add a subtle color-matched underline or partial highlight bar behind the name. Keep it punchy and modern.",
+    minimal: "Use a lightweight thin sans-serif in a muted tone. No decoration — let the negative space around the name breathe.",
+    bold: "Use a heavy slab or compressed grotesque. Apply a sharp color block or reversed text (dark background behind the name) for maximum contrast.",
+    elegant: "Use a refined serif or spaced-out small caps. Add a thin rule or delicate flourish underneath. Gold, cream, or off-white coloring.",
+  }
+
   const vibeInstruction = styleVibes[image_style] ?? styleVibes.promotional
+  const nameEffect = businessNameEffects[image_style] ?? businessNameEffects.promotional
 
   const data = [
     ctx.primaryCategory && `Category: ${ctx.primaryCategory}`,
@@ -240,7 +248,7 @@ function buildImagePrompt(ctx: GmbContext, body: ImagePostRequestBody): string {
   ].filter(Boolean).join("\n")
 
   return `
-You are a world-class social media designer with creative freedom.
+You are a world-class social media designer with full creative freedom.
 
 Promote: "${post_content.slice(0, 200)}"
 Language: ${language}
@@ -250,42 +258,46 @@ Style: ${vibeInstruction}
 ${data}
 ${instructions ? `\nPriority: ${instructions.slice(0, 500)}` : ""}
 
-Business name: "${ctx.businessName}"
-- Typeset as plain text, bold weight, white or light color
-- Small-to-medium size — readable but subordinate to the main headline
-- Top of the poster, left-aligned or slightly offset
-- Typography only: adjust font, weight, letter-spacing — nothing else
+━━━ BUSINESS NAME ━━━
+"${ctx.businessName}"
+- Typography treatment: ${nameEffect}
+- Typeset treatment only — no graphic emblems, no symbol marks
+- Position: top of the poster, left-aligned or slightly inset
+- Size: small-to-medium — present and readable, subordinate to the headline
+- This is a designed typographic element, not plain text. Give it visual character that fits the poster's mood.
 
-You have full creative freedom. Choose your own:
+━━━ CREATIVE FREEDOM ━━━
+You choose:
 - Layout direction and composition
-- Typography pairing and sizing
+- Typography pairing and sizing hierarchy
 - Color treatment within the palette
-- Use of texture, light, or depth
-- How and where to place each element
+- Texture, light, or depth effects
+- Element placement and flow
 
-Fixed constraints:
-- Business name is plain typeset text only (see above)
-- Main message is the hero — make it impossible to ignore
+━━━ FIXED RULES ━━━
+- Business name: typeset only, styled per the treatment above
+- Main message is the hero — make it unmissable
 - Single clean contact strip at the bottom
-- Full bleed — no borders, no frames, no cards
-- No badges, no bullet icons, no rating widgets, no scattered shapes
+- Full bleed — no borders, frames, or cards
+- No badges, bullet icons, rating widgets, or scattered decorative shapes
 
-Think like a designer, not a template engine.
+━━━ CANVAS & CROP SAFETY ━━━
+Canvas: 1200×900px (4:3, Google My Business post format)
 
-Canvas: 1200x900px — Google My Business post format (4:3 ratio)
+CRITICAL — Two crop zones to handle:
+1. FEED CROP (4:3): The full 1200×900 canvas. All background and decorative design fills edge to edge.
+2. MAPS/MOBILE CROP (1:1 square): Google crops to a 900×900 square, centered horizontally.
+   Safe zone for ALL critical content: x=150 to x=1050, y=0 to y=900.
+   This means 150px on each side is decoration-only — no text, no CTA, no contact info there.
 
-CRITICAL — Square crop safe zone:
-Google crops to a 900x900 square when shown on Maps and mobile.
-The safe zone runs from x=150 to x=1050 (horizontally centered).
-Place ALL text, the business name, CTA, and contact strip within x=150–1050.
-The left 150px and right 150px are decoration only — no critical content there.
-Background and visual design can bleed to all edges.
-Fill the entire 1200x900 canvas edge to edge, full bleed.
+Treat x=150–1050 as your live area. Everything the viewer must read lives here.
+Background, color, texture, and decorative elements bleed to all four edges.
+Fill the full 1200×900 canvas — no letterboxing, no padding, no white borders.
 
+Think like a designer. Not a template engine.
 `.trim()
-
-
 }
+
 
 // ── Image generator ───────────────────────────────────────
 async function generateImage(prompt: string, body: ImagePostRequestBody) {
@@ -375,8 +387,10 @@ export async function POST(req: NextRequest) {
   }
 
   try {
+    
     // ── Usage gate ─────────────────────────────────────────
     const canGenerate = await canUse(user.id, "ai-image")
+
     if (!canGenerate.ok) {
       return NextResponse.json({
         error: canUseErrorMessage(canGenerate, "ai-image")

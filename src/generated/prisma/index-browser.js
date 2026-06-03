@@ -571,6 +571,7 @@ exports.Prisma.UsageScalarFieldEnum = {
   geoGridScansUsed: 'geoGridScansUsed',
   reviewPostersUsed: 'reviewPostersUsed',
   keywordTrackingUsed: 'keywordTrackingUsed',
+  aiImageUsed: 'aiImageUsed',
   updatedAt: 'updatedAt'
 };
 

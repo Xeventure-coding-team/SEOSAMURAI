@@ -1,52 +1,29 @@
 import { NextRequest, NextResponse } from 'next/server';
 
+const SUBDOMAIN_REGEX = /^([a-zA-Z0-9-]+)\.localhost$/;
+
 export function middleware(request: NextRequest) {
   const hostname = request.headers.get('host') || '';
-  const url = request.nextUrl.clone();
-  const pathname = url.pathname;
-
-  // Skip everything we don't want to touch
-  if (
-    pathname.startsWith('/api') ||
-    pathname.startsWith('/_next') ||
-    pathname.startsWith('/s/') ||     // prevent infinite loop
-    pathname.includes('.') ||         // static files
-    pathname === '/favicon.ico'
-  ) {
-    return NextResponse.next();
-  }
-
-  // Improved subdomain detection for complex names like "thannikode-complex"
-  let subdomain: string | null = null;
   const hostWithoutPort = hostname.split(':')[0];
 
+  // Only rewrite for subdomains — bail early otherwise
+  const match = hostWithoutPort.match(SUBDOMAIN_REGEX);
+  if (!match) return NextResponse.next();
 
-  // This regex handles "anything.localhost" including hyphens
-  const match = hostWithoutPort.match(/^([a-zA-Z0-9-]+)\.localhost$/);
-  
-  if (match) {
-    subdomain = match[1];
-    if (subdomain !== 'www' && subdomain !== 'localhost') {
-    } else {
-      subdomain = null;
-    }
-  }
+  const subdomain = match[1];
+  if (subdomain === 'www') return NextResponse.next();
 
-  if (subdomain) {
-    const newPath = pathname === '/' || pathname === '' 
-      ? `/s/${subdomain}` 
-      : `/s/${subdomain}${pathname}`;
+  const pathname = request.nextUrl.pathname;
 
-    url.pathname = newPath;
+  const newPath = pathname === '/' || pathname === ''
+    ? `/s/${subdomain}`
+    : `/s/${subdomain}${pathname}`;
 
-    return NextResponse.rewrite(url);
-  }
-
-  return NextResponse.next();
+  return NextResponse.rewrite(new URL(newPath, request.url));
 }
 
 export const config = {
   matcher: [
-    '/((?!api|_next/static|_next/image|favicon.ico|.*\\..*).*)',
+    '/((?!api|_next/static|_next/image|favicon.ico|s/|.*\\..*).*)',
   ],
 };

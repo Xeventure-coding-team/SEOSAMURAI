@@ -716,6 +716,7 @@ model Usage {
   geoGridScansUsed    Int @default(0)
   reviewPostersUsed   Int @default(0)
   keywordTrackingUsed Int @default(0)
+  aiImageUsed         Int @default(0)
 
   updatedAt DateTime @updatedAt
 }

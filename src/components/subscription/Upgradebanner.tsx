@@ -172,7 +172,7 @@ export function UpgradeBanner({ className, forceVariant }: UpgradeBannerProps) {
 
       {/* CTA */}
       <Link
-        href="/settings/billing"
+        href="/app/settings/billing"
         className={cn(
           "shrink-0 inline-flex items-center gap-1 rounded-md px-3 py-1.5 text-xs font-semibold transition-colors",
           config.ctaClass

@@ -96,3 +96,98 @@ export async function getUserSubscription(stackUserId: string) {
     },
   });
 }
+
+export async function upgradeSubscription(
+  planId: PlanId,
+  currency: SupportedCurrency = "inr"
+) {
+  const user = await stackServerApp.getUser();
+  if (!user) redirect("/handler/sign-in");
+
+  const plan = PLANS.find((p) => p.id === planId);
+  if (!plan) throw new Error("Invalid plan");
+
+  const priceId = plan.priceIds[currency];
+  if (!priceId) throw new Error(`No price configured for ${currency}`);
+
+  const existingSub = await prisma.subscription.findFirst({
+    where: {
+      stackUserId: user.id,
+      status: { in: ["ACTIVE", "TRIALING"] },
+    },
+  });
+
+  if (!existingSub?.stripeSubscriptionId) {
+    // No active sub — go to normal checkout
+    return createCheckoutSession(planId, currency);
+  }
+
+  // Get current subscription from Stripe
+  const stripeSub = await getStripe().subscriptions.retrieve(
+    existingSub.stripeSubscriptionId
+  );
+
+  // Update to new price — proration handled by Stripe, no refund
+  await getStripe().subscriptions.update(existingSub.stripeSubscriptionId, {
+    items: [{
+      id: stripeSub.items.data[0].id,
+      price: priceId,
+    }],
+    proration_behavior: "create_prorations", // charges difference only, no refund
+  });
+
+  redirect(`${process.env.NEXT_PUBLIC_PUBLIC_URL}/app/dashboard`);
+}
+
+
+export async function createUpgradePortalSession(
+  planId: PlanId,
+  currency: SupportedCurrency = "inr"
+) {
+  const user = await stackServerApp.getUser();
+  if (!user) redirect("/handler/sign-in");
+
+  const plan = PLANS.find((p) => p.id === planId);
+  if (!plan) throw new Error("Invalid plan");
+
+  const priceId = plan.priceIds[currency];
+
+  const sub = await prisma.subscription.findFirst({
+    where: {
+      stackUserId: user.id,
+      status: { in: ["ACTIVE", "TRIALING"] },
+    },
+  });
+
+  if (!sub?.stripeCustomerId || !sub?.stripeSubscriptionId) {
+    return createCheckoutSession(planId, currency);
+  }
+
+  const stripeSub = await getStripe().subscriptions.retrieve(
+    sub.stripeSubscriptionId
+  );
+
+  // ← Guard: already on this price, nothing to change
+  const currentPriceId = stripeSub.items.data[0].price.id;
+  if (currentPriceId === priceId) {
+    redirect(`${process.env.NEXT_PUBLIC_PUBLIC_URL}/pricing`);
+  }
+
+  const portalSession = await getStripe().billingPortal.sessions.create({
+    customer: sub.stripeCustomerId,
+    return_url: `${process.env.NEXT_PUBLIC_PUBLIC_URL}/app/dashboard`,
+    flow_data: {
+      type: "subscription_update_confirm",
+      subscription_update_confirm: {
+        subscription: sub.stripeSubscriptionId,
+        items: [{
+          id: stripeSub.items.data[0].id,
+          price: priceId,
+          quantity: 1,
+        }],
+      },
+    },
+  });
+
+  redirect(portalSession.url);
+}

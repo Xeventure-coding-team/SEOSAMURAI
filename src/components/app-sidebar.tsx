@@ -3,39 +3,41 @@
 import * as React from "react"
 
 import { NavMain } from "@/components/nav-main"
+import { NavSecondary } from "@/components/nav-secondary"
 import { NavUser } from "@/components/nav-user"
 import {
   Sidebar,
   SidebarContent,
   SidebarFooter,
   SidebarHeader,
+  SidebarMenu,
+  SidebarMenuButton,
+  SidebarMenuItem,
 } from "@/components/ui/sidebar"
-import {
-  ChartBar,
-  Circle,
-  LayoutDashboard,
-  MapPin,
-  Star,
-  Camera,
-  FileText,
-  BrainCircuit,
-  Settings,
-  Timer,
-  ExternalLink,
-  Megaphone,
-  Contact,
-  Headset,
-  ScanLine,
-  Eye,
-} from "lucide-react"
 import { useUser } from "@stackframe/stack";
 import { usePathname } from "next/navigation";
 import { usePageStore } from "@/store/usePageStore";
 import Logo from "./Logo";
-import { UsageRemaining } from "./subscription/UsageRemaining";
 
 
-const data = {
+import {
+  BarChart2,
+  CalendarClock,
+  ChartBar,
+  Eye,
+  Globe,
+  HeadphonesIcon,
+  LayoutGrid,
+  MapPin,
+  Megaphone,
+  MessageSquare,
+  ScanLine,
+  Settings,
+  Share2,
+  Star,
+} from "lucide-react"
+
+export const data = {
   user: {
     name: "shadcn",
     email: "m@example.com",
@@ -43,11 +45,10 @@ const data = {
   },
 
   navMain: [
-    // Core
     {
-      title: "Dashboard",
+      title: "Overview",
       url: "/app/dashboard",
-      icon: LayoutDashboard,
+      icon: LayoutGrid,
       group: "Core",
     },
     {
@@ -56,22 +57,20 @@ const data = {
       icon: MapPin,
       group: "Core",
     },
-
-    // Posting & Reputation
     {
       title: "Bulk Posting",
       url: "/app/post/bulk",
-      icon: FileText,
+      icon: Share2,
       group: "Posting & Reputation",
     },
     {
-      title: "Schedule Posting",
+      title: "Scheduled Posts",
       url: "/app/post/schedule",
-      icon: Timer,
+      icon: CalendarClock,
       group: "Posting & Reputation",
     },
     {
-      title: "Unreplied Reviews",
+      title: "Reviews",
       url: "/app/reviews",
       icon: Star,
       group: "Posting & Reputation",
@@ -88,70 +87,36 @@ const data = {
       icon: Eye,
       group: "Posting & Reputation",
     },
-
     {
       title: "Websites",
       url: "/app/websites",
-      icon: LayoutDashboard,
+      icon: Globe,
       group: "Posting & Reputation",
     },
-
-    // Tools & Support
     {
-      title: "Geo-Grid Rank Tracking",
+      title: "Geo-Grid Scan",
       url: "/app/scan",
       icon: ScanLine,
       group: "Tools & Support",
     },
     {
-      title: "Help Desk",
+      title: "Help & Support",
       url: "/app/help-desk",
-      icon: Headset,
+      icon: HeadphonesIcon,
       group: "Tools & Support",
-    },
-  ],
-
-  navClouds: [
-    {
-      title: "Capture",
-      icon: Camera,
-      isActive: true,
-      url: "#",
-      items: [
-        { title: "Active Proposals", url: "#" },
-        { title: "Archived", url: "#" },
-      ],
-    },
-    {
-      title: "Proposal",
-      icon: FileText,
-      url: "#",
-      items: [
-        { title: "Active Proposals", url: "#" },
-        { title: "Archived", url: "#" },
-      ],
-    },
-    {
-      title: "Prompts",
-      icon: BrainCircuit,
-      url: "#",
-      items: [
-        { title: "Active Proposals", url: "#" },
-        { title: "Archived", url: "#" },
-      ],
     },
   ],
 
   navSecondary: [
     {
-      title: "Back to Home",
-      url: "/",
-      icon: ExternalLink,
+      title: "Track Usage",
+      url: "/app/usages",
+      icon: ChartBar,
     },
     {
       title: "Contact Support",
       url: "/app/contact-support",
-      icon: Contact,
+      icon: MessageSquare,
     },
     {
       title: "Settings",
@@ -159,25 +124,8 @@ const data = {
       icon: Settings,
     },
   ],
-
-  documents: [
-    {
-      name: "Data Library",
-      url: "#",
-      icon: Circle,
-    },
-    {
-      name: "Reports",
-      url: "#",
-      icon: Circle,
-    },
-    {
-      name: "Word Assistant",
-      url: "#",
-      icon: Circle,
-    },
-  ],
 }
+
 
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   const user = useUser();
@@ -190,21 +138,15 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
     const allNavItems = [
       ...data.navMain,
       ...data.navSecondary,
-      ...data.documents,
     ];
 
-    const cloudItems = data.navClouds.flatMap((cloud) => [
-      { title: cloud.title, url: cloud.url },
-      ...(cloud.items || []),
-    ]);
-
-    const mergedItems = [...allNavItems, ...cloudItems];
+    const mergedItems = [...allNavItems];
 
     const currentItem = mergedItems.find((item) => item.url === pathname);
 
     setPageName(
       (currentItem && "title" in currentItem && currentItem.title) ||
-      (currentItem && "name" in currentItem && currentItem.name) ||
+      (currentItem && "name" in currentItem && typeof currentItem.name === "string" && currentItem.name) ||
       "Unknown Page"
     );
 
@@ -212,31 +154,30 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
 
 
   return (
-    <Sidebar collapsible="offcanvas" {...props} variant="sidebar">
-      <SidebarHeader className="border-b border-sidebar-border/30 py-4 px-2">
-        <Logo />
+    <Sidebar collapsible="offcanvas" {...props} variant="inset">
+      <SidebarHeader>
+        <SidebarMenu>
+          <SidebarMenuItem>
+            <SidebarMenuButton
+              asChild
+              className="data-[slot=sidebar-menu-button]:!p-1.5"
+            >
+              <Logo />
+            </SidebarMenuButton>
+          </SidebarMenuItem>
+        </SidebarMenu>
       </SidebarHeader>
-      <SidebarContent className="px-2">
+      <SidebarContent>
         <NavMain items={data.navMain} />
+        <NavSecondary items={data.navSecondary} className="mt-auto" />
       </SidebarContent>
-
       <SidebarFooter>
-
-        <div className="px-4 py-4 mb-4 border rounded-2xl border-neutral-600">
-          <UsageRemaining
-            compact
-            metrics={["postsUsed", "aiReviewRepliesUsed", "geoGridScansUsed", "scheduledPostsUsed"]}
-            slots={["reviewPosters"]}
-          />
-        </div>
-        
         <NavUser user={{
           name: user?.displayName ?? undefined,
           email: user?.primaryEmail ?? undefined,
           avatar: user?.profileImageUrl ?? undefined,
         }} />
       </SidebarFooter>
-
     </Sidebar>
   )
 }

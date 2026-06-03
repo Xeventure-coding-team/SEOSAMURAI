@@ -53,7 +53,7 @@ export default function Logo({
 
       {showText && (
         <span
-          className={`text-xl font-semibold tracking-tight text-white`}
+          className={`text-xl font-semibold tracking-tight`}
         >
           Rankerly
         </span>

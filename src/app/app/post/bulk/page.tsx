@@ -1,5 +1,6 @@
 import DashboardLayout from '@/app/layouts/DashboardLayout'
 import GMBLocationSelector from '@/components/bulk/GMBLocationSelector'
+import { PlanGate } from '@/components/PlanGate'
 import React from 'react'
 
 export const metadata = {
@@ -9,7 +10,9 @@ export const metadata = {
 function page() {
   return (
     <DashboardLayout>
-      <GMBLocationSelector />
+      <PlanGate mode={{ type: "feature", feature: "bulkPosting" }} featureName="Bulk Posting">
+        <GMBLocationSelector />
+      </PlanGate>
     </DashboardLayout>
   )
 }

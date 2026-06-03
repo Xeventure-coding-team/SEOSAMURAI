@@ -10,25 +10,6 @@ export function SiteHeader() {
   const pathname = usePathname()
   const pageName = usePageStore((state) => state.pageName)
 
-  if (pathname === "/app/scan") {
-    return (
-      <header className="fixed top-4 right-4 z-50">
-        <div
-          className="
-            flex h-10 w-10
-            items-center justify-center
-            rounded-lg border
-            bg-background/95
-            backdrop-blur
-            supports-[backdrop-filter]:bg-background/60
-            shadow-lg
-          "
-        >
-          <SidebarTrigger />
-        </div>
-      </header>
-    )
-  }
 
   return (
      <header

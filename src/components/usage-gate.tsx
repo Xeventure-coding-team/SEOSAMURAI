@@ -37,17 +37,17 @@ const STATUS_TOOLTIP: Record<UsageStatus, string> = {
 function LoadingSkeleton({ children }: { children: React.ReactElement }) {
   const muted = isValidElement(children)
     ? cloneElement(
-        children as React.ReactElement<React.ButtonHTMLAttributes<HTMLButtonElement>>,
-        {
-          disabled: true,
-          "aria-disabled": true,
-          className: cn(
-            (children.props as { className?: string }).className,
-            "opacity-30 pointer-events-none cursor-not-allowed",
-            "animate-pulse"
-          ),
-        }
-      )
+      children as React.ReactElement<React.ButtonHTMLAttributes<HTMLButtonElement>>,
+      {
+        disabled: true,
+        "aria-disabled": true,
+        className: cn(
+          (children.props as { className?: string }).className,
+          "opacity-30 pointer-events-none cursor-not-allowed",
+          "animate-pulse"
+        ),
+      }
+    )
     : children;
 
   return <span className="inline-flex">{muted}</span>;
@@ -163,8 +163,8 @@ function TooltipBody({ blocked, status, tip, used, limit }: TooltipBodyProps) {
             className={cn(
               "h-full rounded-full transition-all duration-500",
               status === "exceeded" && "bg-red-400",
-              status === "warning"  && "bg-amber-400",
-              status === "ok"       && "bg-emerald-400"
+              status === "warning" && "bg-amber-400",
+              status === "ok" && "bg-emerald-400"
             )}
             style={{ width: `${Math.min(pct, 100)}%` }}
           />
@@ -174,7 +174,7 @@ function TooltipBody({ blocked, status, tip, used, limit }: TooltipBodyProps) {
       {/* CTA */}
       {blocked && (
         <a
-          href="/settings/billing"
+          href="/app/settings/billing"
           className={cn(
             "inline-flex items-center justify-center gap-1.5",
             "rounded-lg px-3 py-2 text-[12px] font-medium",
@@ -279,26 +279,26 @@ function GateShell({
 }: GateShellProps) {
   const gatedChild = isValidElement(children)
     ? cloneElement(
-        children as React.ReactElement<React.ButtonHTMLAttributes<HTMLButtonElement>>,
-        {
-          disabled: blocked || (children.props as { disabled?: boolean }).disabled,
-          "aria-disabled": blocked,
-          onClick: blocked
-            ? (e: React.MouseEvent) => {
-                e.preventDefault();
-                onBlocked?.();
-              }
-            : (children.props as { onClick?: React.MouseEventHandler }).onClick,
-          className: cn(
-            (children.props as { className?: string }).className,
-            blocked && "opacity-50 cursor-not-allowed pointer-events-none",
-            !blocked &&
-              status === "warning" &&
-              "ring-1 ring-amber-400/60 ring-offset-1",
-            className
-          ),
-        }
-      )
+      children as React.ReactElement<React.ButtonHTMLAttributes<HTMLButtonElement>>,
+      {
+        disabled: blocked || (children.props as { disabled?: boolean }).disabled,
+        "aria-disabled": blocked,
+        onClick: blocked
+          ? (e: React.MouseEvent) => {
+            e.preventDefault();
+            onBlocked?.();
+          }
+          : (children.props as { onClick?: React.MouseEventHandler }).onClick,
+        className: cn(
+          (children.props as { className?: string }).className,
+          blocked && "opacity-50 cursor-not-allowed pointer-events-none",
+          !blocked &&
+          status === "warning" &&
+          "ring-1 ring-amber-400/60 ring-offset-1",
+          className
+        ),
+      }
+    )
     : children;
 
   return (
@@ -380,20 +380,26 @@ function MetricGate({
   if (isLoading || !data) return <LoadingSkeleton>{children}</LoadingSkeleton>;
   if (error) return <>{children}</>;
 
-  const status  = statusFor(metric);
+  const status = statusFor(metric);
   const blocked = warnOnly ? false : !canUse(metric);
 
-  const used      = data.used[metric];
-  const limit     = data.limits[metric];
-  const remaining = Math.max(0, limit - used);
+  const used = data.used[metric];
+  const limit = data.limits[metric];
+  const remaining = limit != null ? Math.max(0, limit - used) : null;
 
   const tip =
     tooltipText ??
     (blocked
-      ? `You've used all ${limit.toLocaleString()} available this month.`
+      ? limit != null
+        ? `You've used all ${limit.toLocaleString()} available this month.`
+        : "You've reached your monthly limit."
       : status === "warning"
-        ? `${STATUS_TOOLTIP.warning} — ${remaining.toLocaleString()} remaining.`
-        : `${remaining.toLocaleString()} of ${limit.toLocaleString()} remaining this month.`);
+        ? remaining != null
+          ? `${STATUS_TOOLTIP.warning} — ${remaining.toLocaleString()} remaining.`
+          : STATUS_TOOLTIP.warning
+        : remaining != null && limit != null
+          ? `${remaining.toLocaleString()} of ${limit.toLocaleString()} remaining this month.`
+          : "Usage data unavailable.");
 
   return (
     <GateShell
@@ -419,12 +425,12 @@ function SlotGate({
   onBlocked,
   className,
 }: SlotGateProps & Omit<UsageGateProps, "metric" | "slot">) {
-  const { canAdd, remaining, isLoading } = useSlot(slot);
+  const { canAdd, remaining, isLoading, data } = useSlot(slot);
 
   if (isLoading) return <LoadingSkeleton>{children}</LoadingSkeleton>;
 
   const blocked = !canAdd;
-  const label   = slot === "locations" ? "location" : "website";
+  const label   = slot === "locations" ? "location" : slot === "websites" ? "website" : "review poster";
 
   const tip =
     tooltipText ??
@@ -435,8 +441,10 @@ function SlotGate({
   return (
     <GateShell
       blocked={blocked}
-      status={blocked ? "exceeded" : "ok"}
+      status={blocked ? "exceeded" : remaining <= 1 ? "warning" : "ok"}
       tip={tip}
+      used={data?.current}    
+      limit={data?.limit}     
       onBlocked={onBlocked}
       className={className}
     >
@@ -444,7 +452,6 @@ function SlotGate({
     </GateShell>
   );
 }
-
 // ─── Public API ───────────────────────────────────────────────────────────────
 
 export function UsageGate(props: UsageGateProps) {

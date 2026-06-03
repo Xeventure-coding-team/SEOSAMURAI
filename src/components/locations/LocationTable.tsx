@@ -1,37 +1,25 @@
-import React, { useState } from "react";
-import {
-  Table,
-  TableHeader,
-  TableHead,
-  TableBody,
-  TableRow,
-  TableCell,
-} from "@/components/ui/table";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { Card, CardContent } from "@/components/ui/card";
+import React from "react"
+import { Button } from "@/components/ui/button"
 import {
   DropdownMenu,
   DropdownMenuTrigger,
   DropdownMenuContent,
   DropdownMenuItem,
-} from "@/components/ui/dropdown-menu";
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+} from "@/components/ui/dropdown-menu"
 import {
-  Tooltip,
-  TooltipProvider,
-  TooltipTrigger,
-  TooltipContent,
-} from "@/components/ui/tooltip";
-import {
-  SortAsc,
-  SortDesc,
   MapPin,
   Eye,
-  Wrench,
+  Settings2,
   Building2,
   Plus,
   RotateCcw,
-  ChevronDown,
+  MoreHorizontal,
+  Lock,
+  ArrowUpRight,
+  Globe,
+  Globe2,
   Zap,
   FileText,
   BarChart3,
@@ -42,113 +30,13 @@ import {
   Clock,
   Image,
   Activity,
-  Lock,
-} from "lucide-react";
-import Link from "next/link";
-import { cn } from "@/lib/utils";
-
-// LockedActions with only Upgrade button enabled, all tooltips removed
-const LockedActions: React.FC = () => {
-  return (
-    <div className="flex items-center gap-2">
-      {/* Disabled Inactive indicator - dimmed */}
-      <div className="flex items-center gap-1.5 text-xs text-muted-foreground border rounded-md px-2.5 py-1.5 cursor-not-allowed opacity-50">
-        <Lock className="h-3.5 w-3.5" />
-        Inactive
-      </div>
-      {/* Upgrade button - fully visible, not dimmed */}
-      <Button
-        size="sm"
-        asChild
-        className="bg-primary hover:bg-primary/90 relative z-10 opacity-100"
-        style={{ opacity: 200 }}
-      >
-        <Link href="/app/locations/settings/billing">
-          Upgrade
-        </Link>
-      </Button>
-    </div>
-  )
-};
-
-// Locked version of LocationInfoCell - no tooltips, just static text
-const LockedLocationInfoCell: React.FC<{ location: Location }> = ({ location }) => {
-  return (
-    <div className="opacity-50">
-      <div className="font-medium truncate max-w-[300px]">
-        {location.title || "Untitled Location"}
-      </div>
-
-      {location.profile?.description && (
-        <div className="text-sm text-muted-foreground truncate max-w-[350px] mt-1">
-          {location.profile.description}
-        </div>
-      )}
-    </div>
-  );
-};
-
-// Locked version of CategoryBadge - no interactive elements
-const LockedCategoryBadge: React.FC<{ category: string }> = ({ category }) => {
-  const isUncategorized = category === "Uncategorized";
-
-  return (
-    <Badge variant={isUncategorized ? "outline" : "secondary"} className="opacity-50">
-      {category}
-    </Badge>
-  );
-};
-
-
-// Locked version of LocationCell - no tooltips, just static text
-const LockedLocationCell: React.FC<{
-  location: Location;
-  getPreferredLocality: (location: Location) => string;
-}> = ({ location, getPreferredLocality }) => {
-  const locality = getPreferredLocality(location) || "Not specified";
-
-  return (
-    <div className="flex items-center gap-1.5 opacity-60">
-      <MapPin className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
-      <span className="text-sm capitalize truncate max-w-[180px]">
-        {locality}
-      </span>
-    </div>
-  );
-};
-
-// Locked version of WebsiteLink - no link, just static text
-const LockedWebsiteLink: React.FC<{ uri?: string }> = ({ uri }) => {
-  if (!uri) {
-    return <span className="text-sm text-muted-foreground opacity-60">—</span>;
-  }
-
-  return (
-    <span className="text-sm text-muted-foreground opacity-60 cursor-not-allowed">
-      Visit (Locked)
-    </span>
-  );
-};
-
-// Completely locked version of ActionButtons - no links, no buttons, just a disabled message
-const LockedActionButtons: React.FC = () => {
-  return (
-    <div className="flex items-center gap-2">
-      <Button variant="outline" size="sm" disabled className="opacity-50 cursor-not-allowed">
-        <Eye className="h-3.5 w-3.5 mr-1.5" />
-        Details
-      </Button>
-      <Button variant="default" size="sm" disabled className="opacity-50 cursor-not-allowed">
-        <Wrench className="h-3.5 w-3.5 mr-1.5" />
-        Manage
-      </Button>
-      <Button variant="outline" size="sm" disabled className="opacity-50 cursor-not-allowed">
-        More
-        <ChevronDown className="h-3.5 w-3.5 ml-1" />
-      </Button>
-    </div>
-  );
-};
+  AlertCircle,
+  CheckCircle2,
+  ShoppingBag,
+  Tag,
+} from "lucide-react"
+import Link from "next/link"
+import { cn } from "@/lib/utils"
 
 type Location = {
   _id?: string
@@ -156,9 +44,7 @@ type Location = {
   name: string
   title: string
   formattedAddress: string
-  profile?: {
-    description?: string
-  }
+  profile?: { description?: string }
   websiteUri?: string
   categories?: { primaryCategory?: { displayName: string } }
   storefrontAddress?: { addressLines?: string[]; locality?: string }
@@ -167,417 +53,330 @@ type Location = {
   is_active?: boolean
 }
 
-interface LocationTableProps {
-  filteredAndSortedLocations: Location[];
-  paginatedLocations: Location[];
-  sortBy: string;
-  sortDirection: "asc" | "desc";
-  toggleSort: (field: string) => void;
-  hasActiveFilters: boolean | string;
-  clearFilters: () => void;
-  getPreferredLocality: (location: Location) => string;
+interface LocationCardListProps {
+  filteredAndSortedLocations: Location[]
+  paginatedLocations: Location[]
+  sortBy: string
+  sortDirection: "asc" | "desc"
+  toggleSort: (field: string) => void
+  hasActiveFilters: boolean
+  clearFilters: () => void
+  getPreferredLocality: (location: Location) => string
 }
 
-const LocationTable: React.FC<LocationTableProps> = ({
+// ─── Meta pill ────────────────────────────────────────────────────────────────
+const MetaPill: React.FC<{
+  icon: React.ReactNode
+  label: string
+  variant?: "default" | "category" | "muted"
+}> = ({ icon, label, variant = "default" }) => (
+  <span
+    className={cn(
+      "inline-flex items-center gap-1.5 text-xs font-medium px-2.5 py-1 rounded-full",
+      variant === "category" && "bg-blue-50 text-blue-700 border border-blue-200 dark:bg-blue-950/30 dark:text-blue-400 dark:border-blue-800/40",
+      variant === "default" && "text-muted-foreground",
+      variant === "muted" && "text-muted-foreground/60"
+    )}
+  >
+    {icon}
+    {label}
+  </span>
+)
+
+// ─── Status badge ─────────────────────────────────────────────────────────────
+const StatusBadge: React.FC<{ active: boolean }> = ({ active }) =>
+  active ? (
+    <span className="inline-flex items-center gap-1 text-xs font-medium px-2 py-0.5 rounded-full bg-green-50 text-green-700 border border-green-200 dark:bg-green-950/30 dark:text-green-400 dark:border-green-800/50">
+      <CheckCircle2 className="h-3 w-3" />
+      Active
+    </span>
+  ) : (
+    <span className="inline-flex items-center gap-1 text-xs font-medium px-2 py-0.5 rounded-full bg-red-50 text-red-600 border border-red-200 dark:bg-red-950/30 dark:text-red-400 dark:border-red-800/50">
+      <AlertCircle className="h-3 w-3" />
+      Inactive
+    </span>
+  )
+
+// ─── More dropdown ────────────────────────────────────────────────────────────
+const MoreDropdown: React.FC<{ locationSlug: string }> = ({ locationSlug }) => (
+  <DropdownMenu>
+    <DropdownMenuTrigger asChild>
+      <Button variant="ghost" size="sm" className="h-8 w-8 p-0 rounded-lg" aria-label="More options">
+        <MoreHorizontal className="h-4 w-4" />
+      </Button>
+    </DropdownMenuTrigger>
+    <DropdownMenuContent align="end" className="w-52">
+      <DropdownMenuLabel className="text-xs text-muted-foreground uppercase tracking-wide font-medium">View</DropdownMenuLabel>
+      <DropdownMenuItem asChild>
+        <Link href={`/app/locations/${locationSlug}#overview`} className="flex items-center gap-2.5">
+          <Eye className="h-4 w-4 text-muted-foreground" /> Overview
+        </Link>
+      </DropdownMenuItem>
+      <DropdownMenuItem asChild>
+        <Link href={`/app/locations/${locationSlug}#reviews`} className="flex items-center gap-2.5">
+          <MessageSquare className="h-4 w-4 text-muted-foreground" /> Reviews
+        </Link>
+      </DropdownMenuItem>
+      <DropdownMenuItem asChild>
+        <Link href={`/app/locations/${locationSlug}#hours`} className="flex items-center gap-2.5">
+          <Clock className="h-4 w-4 text-muted-foreground" /> Hours
+        </Link>
+      </DropdownMenuItem>
+      <DropdownMenuItem asChild>
+        <Link href={`/app/locations/${locationSlug}#media`} className="flex items-center gap-2.5">
+          <Image className="h-4 w-4 text-muted-foreground" /> Media
+        </Link>
+      </DropdownMenuItem>
+      <DropdownMenuItem asChild>
+        <Link href={`/app/locations/${locationSlug}#location-map`} className="flex items-center gap-2.5">
+          <MapPinned className="h-4 w-4 text-muted-foreground" /> Location map
+        </Link>
+      </DropdownMenuItem>
+      <DropdownMenuItem asChild>
+        <Link href={`/app/locations/${locationSlug}#health`} className="flex items-center gap-2.5">
+          <Activity className="h-4 w-4 text-muted-foreground" /> Health
+        </Link>
+      </DropdownMenuItem>
+      <DropdownMenuSeparator />
+      <DropdownMenuLabel className="text-xs text-muted-foreground uppercase tracking-wide font-medium">Manage</DropdownMenuLabel>
+      <DropdownMenuItem asChild>
+        <Link href={`/app/locations/${locationSlug}/manage#tasks`} className="flex items-center gap-2.5">
+          <Zap className="h-4 w-4 text-muted-foreground" /> Tasks
+        </Link>
+      </DropdownMenuItem>
+      <DropdownMenuItem asChild>
+        <Link href={`/app/locations/${locationSlug}/manage#keywords`} className="flex items-center gap-2.5">
+          <FileText className="h-4 w-4 text-muted-foreground" /> Keywords
+        </Link>
+      </DropdownMenuItem>
+      <DropdownMenuItem asChild>
+        <Link href={`/app/locations/${locationSlug}/manage#analytics`} className="flex items-center gap-2.5">
+          <BarChart3 className="h-4 w-4 text-muted-foreground" /> Analytics
+        </Link>
+      </DropdownMenuItem>
+      <DropdownMenuItem asChild>
+        <Link href={`/app/locations/${locationSlug}/manage#competitor-insights`} className="flex items-center gap-2.5">
+          <TrendingUp className="h-4 w-4 text-muted-foreground" /> Competitor insights
+        </Link>
+      </DropdownMenuItem>
+      <DropdownMenuItem asChild>
+        <Link href={`/app/locations/${locationSlug}/manage#social-posts`} className="flex items-center gap-2.5">
+          <Share2 className="h-4 w-4 text-muted-foreground" /> Social posts
+        </Link>
+      </DropdownMenuItem>
+      <DropdownMenuItem asChild>
+        <Link href={`/app/locations/${locationSlug}/manage#customer-reviews`} className="flex items-center gap-2.5">
+          <MessageSquare className="h-4 w-4 text-muted-foreground" /> Customer reviews
+        </Link>
+      </DropdownMenuItem>
+    </DropdownMenuContent>
+  </DropdownMenu>
+)
+
+// ─── Active location card ─────────────────────────────────────────────────────
+const ActiveLocationCard: React.FC<{
+  location: Location
+  getPreferredLocality: (l: Location) => string
+}> = ({ location, getPreferredLocality }) => {
+  const slug = location.id
+  const category = location.categories?.primaryCategory?.displayName
+  const locality = getPreferredLocality(location)
+  const hasWebsite = !!location.websiteUri
+
+  return (
+    <div className="bg-card border border-border rounded-xl p-4 space-y-3">
+      {/* Top row */}
+      <div className="flex items-start justify-between gap-3">
+        <div className="flex items-center gap-2.5 min-w-0">
+          <h3 className="font-semibold text-base text-foreground leading-tight truncate">
+            {location.title || "Untitled location"}
+          </h3>
+          <StatusBadge active={true} />
+        </div>
+        <div className="flex items-center gap-1.5 shrink-0">
+          <Button variant="outline" size="sm" asChild className="h-8 rounded-lg gap-1.5 text-sm font-medium">
+            <Link href={`/app/locations/${slug}`}>
+              <Eye className="h-3.5 w-3.5" />
+              Details
+            </Link>
+          </Button>
+          <Button size="sm" asChild className="h-8 rounded-lg gap-1.5 text-sm font-medium">
+            <Link href={`/app/locations/${slug}/manage`}>
+              <Settings2 className="h-3.5 w-3.5" />
+              Manage
+            </Link>
+          </Button>
+          <MoreDropdown locationSlug={slug!} />
+        </div>
+      </div>
+
+      {/* Description */}
+      {location.profile?.description && (
+        <p className="text-sm text-muted-foreground leading-relaxed line-clamp-2">
+          {location.profile.description}
+        </p>
+      )}
+
+      {/* Meta pills */}
+      <div className="flex flex-wrap items-center gap-2">
+        {category && (
+          <MetaPill
+            icon={<Tag className="h-3 w-3" />}
+            label={category}
+            variant="category"
+          />
+        )}
+        {locality && (
+          <MetaPill
+            icon={<MapPin className="h-3 w-3" />}
+            label={locality}
+          />
+        )}
+        <MetaPill
+          icon={<Globe className="h-3 w-3" />}
+          label={hasWebsite ? "Website live" : "No website"}
+          variant={hasWebsite ? "default" : "muted"}
+        />
+      </div>
+    </div>
+  )
+}
+
+// ─── Inactive location card ───────────────────────────────────────────────────
+const InactiveLocationCard: React.FC<{
+  location: Location
+  getPreferredLocality: (l: Location) => string
+}> = ({ location, getPreferredLocality }) => {
+  const category = location.categories?.primaryCategory?.displayName
+  const locality = getPreferredLocality(location)
+  const hasWebsite = !!location.websiteUri
+
+  return (
+    <div className="bg-card border border-border rounded-xl p-4 space-y-3">
+      {/* Top row */}
+      <div className="flex items-start justify-between gap-3">
+        <div className="flex items-center gap-2.5 min-w-0 opacity-70">
+          <h3 className="font-semibold text-base text-foreground leading-tight truncate">
+            {location.title || "Untitled location"}
+          </h3>
+          <StatusBadge active={false} />
+        </div>
+        <Button
+          size="sm"
+          variant="outline"
+          asChild
+          className="shrink-0 h-8 rounded-lg gap-1.5 text-sm font-medium"
+        >
+          <Link href="/app/settings/billing">
+            <ArrowUpRight className="h-3.5 w-3.5" />
+            Upgrade to activate
+          </Link>
+        </Button>
+      </div>
+
+      {/* Description */}
+      {location.profile?.description && (
+        <p className="text-sm text-muted-foreground leading-relaxed line-clamp-2 opacity-70">
+          {location.profile.description}
+        </p>
+      )}
+
+      {/* Meta pills */}
+      <div className="flex flex-wrap items-center gap-2 opacity-60">
+        {category && (
+          <MetaPill
+            icon={<Tag className="h-3 w-3" />}
+            label={category}
+            variant="category"
+          />
+        )}
+        {locality && (
+          <MetaPill
+            icon={<MapPin className="h-3 w-3" />}
+            label={locality}
+          />
+        )}
+        <MetaPill
+          icon={<Globe className="h-3 w-3" />}
+          label={hasWebsite ? "Website locked" : "No website"}
+          variant="muted"
+        />
+      </div>
+
+      {/* Inactive notice */}
+      <div className="flex items-start gap-2 rounded-lg bg-muted/50 border border-border px-3 py-2.5">
+        <AlertCircle className="h-4 w-4 text-muted-foreground shrink-0 mt-0.5" />
+        <p className="text-xs text-muted-foreground leading-relaxed">
+          This location is paused — your Starter plan only includes 1 active location. Upgrade to make it visible on Google Business.
+        </p>
+      </div>
+    </div>
+  )
+}
+
+// ─── Empty state ──────────────────────────────────────────────────────────────
+const EmptyState: React.FC<{ hasFilters: boolean; clearFilters: () => void }> = ({
+  hasFilters,
+  clearFilters,
+}) => (
+  <div className="flex flex-col items-center justify-center py-20 text-center">
+    <div className="w-14 h-14 rounded-2xl bg-muted flex items-center justify-center mb-4">
+      <Building2 className="h-7 w-7 text-muted-foreground" />
+    </div>
+    <h3 className="font-semibold text-base mb-1.5">
+      {hasFilters ? "No matches found" : "No locations yet"}
+    </h3>
+    <p className="text-sm text-muted-foreground max-w-xs mb-6 leading-relaxed">
+      {hasFilters
+        ? "Try adjusting your search or filters to find what you're looking for."
+        : "Get started by adding your first Google Business location."}
+    </p>
+    {hasFilters ? (
+      <Button variant="outline" size="sm" onClick={clearFilters} className="gap-1.5 rounded-xl">
+        <RotateCcw className="h-3.5 w-3.5" /> Clear filters
+      </Button>
+    ) : (
+      <Button size="sm" asChild className="gap-1.5 rounded-xl">
+        <Link href="/app/locations/add">
+          <Plus className="h-3.5 w-3.5" /> Add first location
+        </Link>
+      </Button>
+    )}
+  </div>
+)
+
+// ─── Main export ──────────────────────────────────────────────────────────────
+const LocationCardList: React.FC<LocationCardListProps> = ({
   filteredAndSortedLocations,
   paginatedLocations,
-  sortBy,
-  sortDirection,
-  toggleSort,
   hasActiveFilters,
   clearFilters,
   getPreferredLocality,
 }) => {
-  const [expandedRow, setExpandedRow] = useState<string | null>(null);
-
   if (filteredAndSortedLocations.length === 0) {
-    return (
-      <Card className="border-dashed">
-        <CardContent className="text-center py-16">
-          <Building2 className="h-16 w-16 text-muted-foreground mx-auto mb-6 opacity-50" />
-          <h3 className="font-semibold text-xl mb-3">
-            {hasActiveFilters ? "No matches found" : "No locations yet"}
-          </h3>
-          <p className="text-muted-foreground text-base mb-8 max-w-md mx-auto">
-            {hasActiveFilters
-              ? "Your search didn't find any locations. Try adjusting your filters or search terms."
-              : "You haven't added any business locations yet. Get started by adding your first location to manage it here."}
-          </p>
-          <div className="flex gap-3 justify-center flex-wrap">
-            {hasActiveFilters ? (
-              <Button variant="outline" onClick={clearFilters} size="lg">
-                <RotateCcw className="h-4 w-4 mr-2" />
-                Clear Filters & Try Again
-              </Button>
-            ) : (
-              <Button asChild size="lg">
-                <Link href="/app/locations/locations/add">
-                  <Plus className="h-4 w-4 mr-2" />
-                  Add Your First Location
-                </Link>
-              </Button>
-            )}
-          </div>
-        </CardContent>
-      </Card>
-    );
+    return <EmptyState hasFilters={hasActiveFilters} clearFilters={clearFilters} />
   }
 
   return (
-    <div className="rounded-lg border overflow-hidden">
-      <Table>
-        <TableHeader className="bg-muted/50 sticky top-0">
-          <TableRow>
-            <TableHead className="w-[400px]">
-              <SortButton
-                field="name"
-                label="Business Information"
-                currentSort={sortBy}
-                direction={sortDirection}
-                onSort={toggleSort}
-              />
-            </TableHead>
-            <TableHead className="w-[150px]">
-              <SortButton
-                field="category"
-                label="Category"
-                currentSort={sortBy}
-                direction={sortDirection}
-                onSort={toggleSort}
-              />
-            </TableHead>
-            <TableHead className="w-[180px]">
-              <SortButton
-                field="location"
-                label="Location"
-                currentSort={sortBy}
-                direction={sortDirection}
-                onSort={toggleSort}
-              />
-            </TableHead>
-            <TableHead className="w-[120px]">Website</TableHead>
-            <TableHead className="w-[180px]">Actions</TableHead>
-          </TableRow>
-        </TableHeader>
-        <TableBody>
-          {paginatedLocations.map((location) => (
-            <React.Fragment key={location.location_id || location.name}>
-              <TableRow className={cn(
-                "hover:bg-muted/30",
-                !location.is_active && "bg-muted/20"
-              )}>
-                <TableCell className="py-4">
-                  <div className={cn(!location.is_active && "opacity-60")}>
-                    {location.is_active === false ? (
-                      <LockedLocationInfoCell location={location} />
-                    ) : (
-                      <LocationInfoCell location={location} />
-                    )}
-                  </div>
-                </TableCell>
-                <TableCell>
-                    <div className={cn(!location.is_active && "opacity-60")}>
-                  {location.is_active === false ? (
-                    <LockedCategoryBadge category={location.categories?.primaryCategory?.displayName || "Uncategorized"} />
-                  ) : (
-                    <CategoryBadge category={location.categories?.primaryCategory?.displayName || "Uncategorized"} />
-                  )}
-                  </div>
-                </TableCell>
-                <TableCell>
-                  <div className={cn(!location.is_active && "opacity-60")}>
-                  {location.is_active === false ? (
-                    <LockedLocationCell location={location} getPreferredLocality={getPreferredLocality} />
-                  ) : (
-                    <LocationCell location={location} getPreferredLocality={getPreferredLocality} />
-                  )}
-                  </div>
-                </TableCell>
-                <TableCell>
-                   <div className={cn(!location.is_active && "opacity-60")}>
-                  {location.is_active === false ? (
-                    <LockedWebsiteLink uri={location.websiteUri} />
-                  ) : (
-                    <WebsiteLink uri={location.websiteUri} />
-                  )}
-                  </div>
-                </TableCell>
-                <TableCell>
-                  {location.is_active === false ? (
-                    <LockedActions />
-                  ) : (
-                    <ActionButtons location={location} />
-                  )}
-                </TableCell>
-              </TableRow>
-            </React.Fragment>
-          ))}
-        </TableBody>
-      </Table>
+    <div className="space-y-3">
+      {paginatedLocations.map((location) => {
+        const isActive = location.is_active !== false
+        return isActive ? (
+          <ActiveLocationCard
+            key={location.location_id || location.name}
+            location={location}
+            getPreferredLocality={getPreferredLocality}
+          />
+        ) : (
+          <InactiveLocationCard
+            key={location.location_id || location.name}
+            location={location}
+            getPreferredLocality={getPreferredLocality}
+          />
+        )
+      })}
     </div>
-  );
-};
+  )
+}
 
-// ============================================================================
-// Sub-components for cleaner code (Active only versions)
-// ============================================================================
-
-const SortButton: React.FC<{
-  field: string;
-  label: string;
-  currentSort: string;
-  direction: "asc" | "desc";
-  onSort: (field: string) => void;
-}> = ({ field, label, currentSort, direction, onSort }) => {
-  const isActive = currentSort === field;
-
-  return (
-    <Button
-      variant="ghost"
-      onClick={() => onSort(field)}
-      className="h-8 px-2 font-medium"
-    >
-      {label}
-      {isActive && (
-        <>
-          {direction === "asc" ? (
-            <SortAsc className="h-3 w-3 ml-1" />
-          ) : (
-            <SortDesc className="h-3 w-3 ml-1" />
-          )}
-        </>
-      )}
-    </Button>
-  );
-};
-
-const LocationInfoCell: React.FC<{ location: Location }> = ({ location }) => {
-  return (
-    <div>
-      <TooltipProvider>
-        <Tooltip>
-          <TooltipTrigger asChild>
-            <div className="font-medium truncate max-w-[300px] cursor-pointer">
-              {location.title || "Untitled Location"}
-            </div>
-          </TooltipTrigger>
-          <TooltipContent>
-            <p>{location.title || "Untitled Location"}</p>
-          </TooltipContent>
-        </Tooltip>
-      </TooltipProvider>
-
-      {location.profile?.description && (
-        <TooltipProvider>
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <div className="text-sm text-muted-foreground truncate max-w-[350px] mt-1 cursor-pointer">
-                {location.profile.description}
-              </div>
-            </TooltipTrigger>
-            <TooltipContent className="max-w-xs">
-              <p>{location.profile.description}</p>
-            </TooltipContent>
-          </Tooltip>
-        </TooltipProvider>
-      )}
-    </div>
-  );
-};
-
-const CategoryBadge: React.FC<{ category: string }> = ({ category }) => {
-  const isUncategorized = category === "Uncategorized";
-
-  return (
-    <Badge variant={isUncategorized ? "outline" : "secondary"}>
-      {category}
-    </Badge>
-  );
-};
-
-const LocationCell: React.FC<{
-  location: Location;
-  getPreferredLocality: (location: Location) => string;
-}> = ({ location, getPreferredLocality }) => {
-  const locality = getPreferredLocality(location) || "Not specified";
-  const isLong = locality.length > 35;
-
-  if (!isLong) {
-    return (
-      <div className="flex items-center gap-1.5">
-        <MapPin className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
-        <span className="text-sm capitalize truncate max-w-[180px]">
-          {locality}
-        </span>
-      </div>
-    );
-  }
-
-  return (
-    <TooltipProvider>
-      <Tooltip>
-        <TooltipTrigger asChild>
-          <div className="flex items-center gap-1.5 cursor-pointer">
-            <MapPin className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
-            <span className="text-sm capitalize truncate max-w-[180px]">
-              {locality}
-            </span>
-          </div>
-        </TooltipTrigger>
-        <TooltipContent className="max-w-xs">
-          <p>{locality}</p>
-        </TooltipContent>
-      </Tooltip>
-    </TooltipProvider>
-  );
-};
-
-const WebsiteLink: React.FC<{ uri?: string }> = ({ uri }) => {
-  if (!uri) {
-    return <span className="text-sm text-muted-foreground">—</span>;
-  }
-
-  return (
-    <Button asChild variant="link" size="sm" className="h-auto p-0">
-      <a href={uri} target="_blank" rel="noopener noreferrer">
-        Visit
-      </a>
-    </Button>
-  );
-};
-
-const ActionButtons: React.FC<{ location: Location }> = ({ location }) => {
-  const locationSlug = location.id;
- 
-  return (
-    <div className="flex items-center justify-start gap-2">
-      {/* Primary Action: View Details */}
-      <Link href={`/app/locations/locations/${locationSlug}`}>
-        <Button variant="outline" size="sm" asChild>
-          <span>
-            <Eye className="h-3.5 w-3.5 mr-1.5" />
-            Details
-          </span>
-        </Button>
-      </Link>
-
-      {/* Secondary Action: Manage */}
-      <Link href={`/app/locations/locations/${locationSlug}/manage`}>
-        <Button variant="default" size="sm" asChild>
-          <span>
-            <Wrench className="h-3.5 w-3.5 mr-1.5" />
-            Manage
-          </span>
-        </Button>
-      </Link>
-
-      {/* Quick Navigation Dropdown */}
-      <QuickNavDropdown locationSlug={locationSlug} />
-    </div>
-  );
-};
-
-const QuickNavDropdown: React.FC<{ locationSlug: string }> = ({
-  locationSlug,
-}) => {
-  return (
-    <DropdownMenu>
-      <DropdownMenuTrigger asChild>
-        <Button variant="outline" size="sm">
-          More
-          <ChevronDown className="h-3.5 w-3.5 ml-1" />
-        </Button>
-      </DropdownMenuTrigger>
-
-      <DropdownMenuContent align="end" className="w-56">
-        {/* Details Page Quick Links */}
-        <div className="px-2 py-1.5 text-xs font-semibold text-muted-foreground uppercase tracking-wide">
-          View
-        </div>
-        <DropdownMenuItem asChild>
-          <Link href={`/app/locations/${locationSlug}#overview`} className="flex items-center gap-2">
-            <Eye className="h-4 w-4" />
-            <span>Overview</span>
-          </Link>
-        </DropdownMenuItem>
-        <DropdownMenuItem asChild>
-          <Link href={`/app/locations/${locationSlug}#reviews`} className="flex items-center gap-2">
-            <MessageSquare className="h-4 w-4" />
-            <span>Reviews</span>
-          </Link>
-        </DropdownMenuItem>
-        <DropdownMenuItem asChild>
-          <Link href={`/app/locations/${locationSlug}#hours`} className="flex items-center gap-2">
-            <Clock className="h-4 w-4" />
-            <span>Hours</span>
-          </Link>
-        </DropdownMenuItem>
-
-        <DropdownMenuItem asChild>
-          <Link href={`/app/locations/${locationSlug}#media`} className="flex items-center gap-2">
-            <Image className="h-4 w-4" />
-            <span>Media</span>
-          </Link>
-        </DropdownMenuItem>
-        <DropdownMenuItem asChild>
-          <Link href={`/app/locations/${locationSlug}#location-map`} className="flex items-center gap-2">
-            <MapPinned className="h-4 w-4" />
-            <span>Location Map</span>
-          </Link>
-        </DropdownMenuItem>
-
-        <DropdownMenuItem asChild>
-          <Link href={`/app/locations/${locationSlug}#health`} className="flex items-center gap-2">
-            <Activity className="h-4 w-4" />
-            <span>Health</span>
-          </Link>
-        </DropdownMenuItem>
-
-        <div className="h-px bg-border my-2" />
-
-        {/* Manage Page Quick Links */}
-        <div className="px-2 py-1.5 text-xs font-semibold text-muted-foreground uppercase tracking-wide">
-          Manage
-        </div>
-        <DropdownMenuItem asChild>
-          <Link href={`/app/locations/${locationSlug}/manage#tasks`} className="flex items-center gap-2">
-            <Zap className="h-4 w-4" />
-            <span>Tasks</span>
-          </Link>
-        </DropdownMenuItem>
-        <DropdownMenuItem asChild>
-          <Link href={`/app/locations/${locationSlug}/manage#keywords`} className="flex items-center gap-2">
-            <FileText className="h-4 w-4" />
-            <span>Keywords</span>
-          </Link>
-        </DropdownMenuItem>
-        <DropdownMenuItem asChild>
-          <Link href={`/app/locations/${locationSlug}/manage#analytics`} className="flex items-center gap-2">
-            <BarChart3 className="h-4 w-4" />
-            <span>Analytics</span>
-          </Link>
-        </DropdownMenuItem>
-        <DropdownMenuItem asChild>
-          <Link href={`/app/locations/${locationSlug}/manage#competitor-insights`} className="flex items-center gap-2">
-            <TrendingUp className="h-4 w-4" />
-            <span>Competitor Insights</span>
-          </Link>
-        </DropdownMenuItem>
-        <DropdownMenuItem asChild>
-          <Link href={`/app/locations/${locationSlug}/manage#social-posts`} className="flex items-center gap-2">
-            <Share2 className="h-4 w-4" />
-            <span>Social Posts</span>
-          </Link>
-        </DropdownMenuItem>
-        <DropdownMenuItem asChild>
-          <Link href={`/app/locations/${locationSlug}/manage#customer-reviews`} className="flex items-center gap-2">
-            <MessageSquare className="h-4 w-4" />
-            <span>Customer Reviews</span>
-          </Link>
-        </DropdownMenuItem>
-      </DropdownMenuContent>
-    </DropdownMenu>
-  );
-};
-
-export default LocationTable;
+export default LocationCardList
