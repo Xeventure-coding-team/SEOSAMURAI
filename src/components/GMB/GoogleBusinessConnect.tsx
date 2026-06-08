@@ -176,7 +176,7 @@ const GoogleBusinessConnect: React.FC<GoogleBusinessConnectProps> = ({ onAuthent
                 if (data?.accessToken && data?.isActive) {
                     setAccountName(data.accountName ?? "Google My Business Account")
                     safeSetState("connected")
-                    onAuthenticated?.() 
+                    onAuthenticated?.()
                     return
                 }
             }
@@ -235,26 +235,31 @@ const GoogleBusinessConnect: React.FC<GoogleBusinessConnectProps> = ({ onAuthent
             let accountId: string | null = null
 
             try {
-                if (process.env.NEXT_PUBLIC_API_BASE_URL) {
-                    // Pass token via header, NOT query string
-                    const accountRes = await fetch(
-                        `${process.env.NEXT_PUBLIC_API_BASE_URL}connected-accounts`,
-                        {
-                            method: "GET",
-                            headers: {
-                                "Content-Type": "application/json",
-                                Authorization: `Bearer ${tokenData.access_token}`,
-                            },
-                        }
-                    )
-                    if (accountRes.ok) {
-                        const accountData = await accountRes.json()
-                        accountName = accountData.accountName ?? null
-                        accountId = accountData.accountId ?? null
+                const accountRes = await fetch(
+                    "https://mybusinessaccountmanagement.googleapis.com/v1/accounts",
+                    {
+                        headers: {
+                            Authorization: `Bearer ${tokenData.access_token}`,
+                            "Content-Type": "application/json",
+                        },
                     }
+                )
+
+                if (accountRes.ok) {
+                    const accountData = await accountRes.json()
+                    const account = accountData.accounts?.[0]
+
+                    if (account) {
+                        // account.name is like "accounts/123456789"
+                        accountName = account.accountName ?? account.name ?? null
+                        accountId = account.name?.split("/")?.[1] ?? null
+                    }
+                } else {
+                    console.warn("[GMBConnect] Accounts API returned:", accountRes.status)
                 }
             } catch (e) {
                 console.warn("[GMBConnect] Could not fetch account info:", e)
+                // Non-fatal — tokens still save, account info just won't be set
             }
 
             setProgress(70)

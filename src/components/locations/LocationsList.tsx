@@ -36,6 +36,7 @@ import { ChooseActiveLocation } from "./ChooseActiveLocation"
 import { usePlanLimits } from "@/lib/use-plan-limits"
 import { useRouter } from "next/navigation"
 import { cn } from "@/lib/utils"
+import { SlotInfoBanner } from "../SlotInfoBanner"
 
 type Location = {
   _id?: string
@@ -156,6 +157,7 @@ export default function LocationsTable() {
     } catch (err: any) {
       setError(err.message || "Error loading locations.")
       toast.error(err.message || "Error loading locations.")
+      
     } finally {
       setLoading(false)
     }
@@ -250,31 +252,42 @@ export default function LocationsTable() {
   const withWebsite = locations.filter((l) => l.websiteUri).length
 
   if (loading) return <LoadingSkeleton />
-  if (error) return <ErrorRender error="We couldn't load this content. You can retry or report the issue." />
+  if (error) return <ErrorRender error={error} />
 
   return (
     <TooltipProvider>
+
+      <SlotInfoBanner
+        slot="locations"
+        resourceName="Locations"
+        upgradeHref="/app/settings/billing"
+      />
+
       <div className="min-h-screen">
         <div className="max-w-8xl mx-auto m:px-6 space-y-5">
 
           {/* ── Header ── */}
-          <div className="flex items-start justify-between gap-4">
+          <div className="flex items-center justify-between gap-4">
             <div>
-              <h1 className="text-4xl font-bold tracking-tight text-foreground">
+              <h1 className="text-3xl font-bold tracking-tight text-foreground">
                 Locations
               </h1>
-
-              <p className="mt-2 text-base text-muted-foreground">
+              <p className="mt-1 text-sm text-muted-foreground">
                 {locations.length > 0
-                  ? `Managing ${locations.length} Google Business location${locations.length !== 1 ? "s" : ""
-                  }`
+                  ? `Managing ${locations.length} Google Business location${locations.length !== 1 ? "s" : ""}`
                   : "Manage your Google Business locations"}
               </p>
             </div>
+
             <div className="flex items-center gap-2 shrink-0">
-              <SlotBadge slot="locations" label="Locations" />
+
+
               <UsageGate slot="locations">
-                <Button asChild variant="default" className="h-8 rounded-full gap-1.5 text-sm font-medium">
+                <Button
+                  asChild
+                  variant="default"
+                  className="h-8 rounded-full gap-1.5 text-sm font-medium"
+                >
                   <Link href="/app/locations/add">
                     <Plus className="h-3.5 w-3.5" />
                     Add location
@@ -321,7 +334,7 @@ export default function LocationsTable() {
           )}
 
           {/* ── Search & Filters ── */}
-          <div className="space-y-2">
+          {paginatedLocations && paginatedLocations?.length !== 0 ? <div className="space-y-2">
             <div className="flex gap-2">
               <div className="relative flex-1">
                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground pointer-events-none" />
@@ -403,7 +416,8 @@ export default function LocationsTable() {
                 {searchTerm && <> for <span className="font-medium text-foreground">"{searchTerm}"</span></>}
               </p>
             )}
-          </div>
+          </div> : null }
+          
 
           {/* ── Location Cards ── */}
           <LocationCardList

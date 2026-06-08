@@ -366,7 +366,6 @@ function GateShell({
 }
 
 // ─── Metric gate ──────────────────────────────────────────────────────────────
-
 function MetricGate({
   metric,
   children,
@@ -383,31 +382,39 @@ function MetricGate({
   const status = statusFor(metric);
   const blocked = warnOnly ? false : !canUse(metric);
 
+  // Don't show tooltip at all when status is ok and not blocked
+  if (status === "ok" && !blocked) return <>{children}</>;
+
   const used = data.used[metric];
   const limit = data.limits[metric];
   const remaining = limit != null ? Math.max(0, limit - used) : null;
 
+  // Hide usage numbers for aiReviewRepliesUsed — just show generic message
+  const isAiReply = metric === "aiReviewRepliesUsed";
+
   const tip =
     tooltipText ??
     (blocked
-      ? limit != null
-        ? `You've used all ${limit.toLocaleString()} available this month.`
-        : "You've reached your monthly limit."
+      ? isAiReply
+        ? "You've reached your AI reply limit for this month."
+        : limit != null
+          ? `You've used all ${limit.toLocaleString()} available this month.`
+          : "You've reached your monthly limit."
       : status === "warning"
-        ? remaining != null
-          ? `${STATUS_TOOLTIP.warning} — ${remaining.toLocaleString()} remaining.`
-          : STATUS_TOOLTIP.warning
-        : remaining != null && limit != null
-          ? `${remaining.toLocaleString()} of ${limit.toLocaleString()} remaining this month.`
-          : "Usage data unavailable.");
+        ? isAiReply
+          ? "You're approaching your AI reply limit for this month."
+          : remaining != null
+            ? `${STATUS_TOOLTIP.warning} — ${remaining.toLocaleString()} remaining.`
+            : STATUS_TOOLTIP.warning
+        : "");
 
   return (
     <GateShell
       blocked={blocked}
       status={status}
       tip={tip}
-      used={used}
-      limit={limit}
+      used={isAiReply ? undefined : used}        // hide numbers for ai reply
+      limit={isAiReply ? undefined : limit}       // hide numbers for ai reply
       onBlocked={onBlocked}
       className={className}
     >
@@ -430,7 +437,12 @@ function SlotGate({
   if (isLoading) return <LoadingSkeleton>{children}</LoadingSkeleton>;
 
   const blocked = !canAdd;
-  const label   = slot === "locations" ? "location" : slot === "websites" ? "website" : "review poster";
+  const status = blocked ? "exceeded" : remaining <= 1 ? "warning" : "ok";
+
+  // ← Only show gate UI when near limit or blocked
+  if (status === "ok") return <>{children}</>;
+
+  const label = slot === "locations" ? "location" : slot === "websites" ? "website" : "review poster";
 
   const tip =
     tooltipText ??
@@ -441,10 +453,10 @@ function SlotGate({
   return (
     <GateShell
       blocked={blocked}
-      status={blocked ? "exceeded" : remaining <= 1 ? "warning" : "ok"}
+      status={status}
       tip={tip}
-      used={data?.current}    
-      limit={data?.limit}     
+      used={data?.current}
+      limit={data?.limit}
       onBlocked={onBlocked}
       className={className}
     >
@@ -452,6 +464,8 @@ function SlotGate({
     </GateShell>
   );
 }
+
+
 // ─── Public API ───────────────────────────────────────────────────────────────
 
 export function UsageGate(props: UsageGateProps) {

@@ -207,6 +207,14 @@ export async function GET(req: Request) {
       )
     }
 
+    const OBJECT_ID_REGEX = /^[a-f\d]{24}$/i;
+    if (!OBJECT_ID_REGEX.test(mongoId)) {
+      return NextResponse.json(
+        { error: "Location not found" },
+        { status: 404 }
+      );
+    }
+
     // 1. Look up the location record by MongoDB _id — unambiguous across all users
     const dbLocation = await prisma.locations.findUnique({
       where: { id: mongoId },

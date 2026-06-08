@@ -137,8 +137,7 @@ export default function ManageLocation() {
     'keywords',
     'analytics',
     'competitor-insights',
-    'social-posts',
-    'customer-reviews'
+    'social-posts'
   ];
 
   const [payload, setPayload] = useState<GMBApiResponse | null>(null)
@@ -525,7 +524,7 @@ export default function ManageLocation() {
 
         <div>
           <div>
-            {payload?.location?.locationData === null || undefined ? <LoadingSpinner /> : <AnimatedTabs syncHash items={items} defaultTab={activeTab} main>
+            {payload?.location?.locationData === null || undefined ? <LoadingSpinner /> : <AnimatedTabs syncHash items={items} defaultTab={activeTab}>
               <AnimatedTabItem value="tasks">
 
                 {payload ? <TaskManager
@@ -912,9 +911,6 @@ export default function ManageLocation() {
 
                   </CardContent>
                 </Card>
-              </AnimatedTabItem>
-              <AnimatedTabItem value="customer-reviews">
-                <Reviews businessName={pageName} locationId={locationId} />
               </AnimatedTabItem>
             </AnimatedTabs>}
 

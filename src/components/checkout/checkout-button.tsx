@@ -2,12 +2,16 @@
 
 import { useTransition } from "react";
 import toast from "react-hot-toast";
-import { createCheckoutSession, createBillingPortalSession, createUpgradePortalSession } from "@/lib/actions/stripe";
-import { detectCurrency } from "@/lib/stripe";
+import {
+  createCheckoutSession,
+  createBillingPortalSession,
+  createUpgradePortalSession,
+} from "@/lib/actions/stripe";
 import { Button } from "@/components/ui/button";
 import { Loader2 } from "lucide-react";
-import type { PlanId, SupportedCurrency } from "@/lib/stripe";
+import type { PlanId } from "@/lib/stripe";
 import { useRouter } from "next/navigation";
+import { useCurrency } from "@/providers/CurrencyProvider";
 
 interface CheckoutButtonProps {
   planId: PlanId;
@@ -15,7 +19,6 @@ interface CheckoutButtonProps {
   isHighlight?: boolean;
   isLoggedIn: boolean;
   hasActiveSubscription?: boolean;
-  currency?: string;
 }
 
 export function CheckoutButton({
@@ -24,10 +27,11 @@ export function CheckoutButton({
   isHighlight,
   isLoggedIn,
   hasActiveSubscription,
-  currency,
 }: CheckoutButtonProps) {
   const [isPending, startTransition] = useTransition();
   const router = useRouter();
+  // Read currency from global context — updated by CurrencySelector
+  const { currency } = useCurrency();
 
   const handleClick = () => {
     if (!isLoggedIn) {
@@ -36,18 +40,15 @@ export function CheckoutButton({
     }
 
     startTransition(async () => {
-      const cur = (currency ?? detectCurrency()) as SupportedCurrency;
-
       try {
         if (isCurrentPlan) {
           await createBillingPortalSession();
         } else if (hasActiveSubscription) {
-          await createUpgradePortalSession(planId, cur);
+          await createUpgradePortalSession(planId, currency);
         } else {
-          await createCheckoutSession(planId, cur);
+          await createCheckoutSession(planId, currency);
         }
       } catch (err: any) {
-        // Next.js redirect() throws internally — ignore those
         if (err?.message?.includes("NEXT_REDIRECT")) return;
         toast.error(err?.message ?? "Something went wrong. Please try again.");
       }
@@ -56,7 +57,7 @@ export function CheckoutButton({
 
   if (isCurrentPlan) {
     return (
-      <Button variant="outline" onClick={handleClick} disabled={isPending}>
+      <Button variant="outline" onClick={handleClick} disabled={isPending} className="w-full">
         {isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
         Manage Plan
       </Button>
@@ -72,9 +73,10 @@ export function CheckoutButton({
     >
       {isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
       {isLoggedIn
-        ? hasActiveSubscription ? "Switch Plan" : "Subscribe"
-        : "Get Started"
-      }
+        ? hasActiveSubscription
+          ? "Switch Plan"
+          : "Subscribe"
+        : "Get Started"}
     </Button>
   );
 }

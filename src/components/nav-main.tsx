@@ -107,16 +107,16 @@ const FlatItem = ({ item, collapsed, onItemClick }: { item: NavItem; collapsed?:
       asChild
       isActive={active}
       disabled={item.disabled}
-        className={cn(
-    "h-10 rounded-md px-3 gap-3 group w-full",
-    "text-[15px] font-medium transition-all duration-100",
-    "text-white hover:text-white",
-    "hover:bg-white/[0.08]",
-    active && [
-      "bg-blue-500/15 text-white font-semibold",
-      "hover:bg-blue-500/20 hover:text-blue-300",
-    ]
-  )}
+      className={cn(
+        "h-10 rounded-md px-3 gap-3 group w-full",
+        "text-[15px] font-medium transition-all duration-100",
+        "text-white hover:text-white",
+        "hover:bg-white/[0.08]",
+        active && [
+          "bg-blue-500/15 text-white font-semibold",
+          "hover:bg-blue-500/20 hover:text-blue-300",
+        ]
+      )}
     >
       <Link
         href={item.disabled ? "#" : item.url}
@@ -306,16 +306,16 @@ export function NavMain({ items, collapsed = false, onItemClick }: NavMainProps)
     <nav className="flex flex-col gap-6 px-2 mt-6" aria-label="Main navigation">
       {groups.map((group, gi) => (
         <SidebarGroup key={gi} className="p-0">
+
           {group.label && !collapsed && (
-            <p className="mb-2 px-3 text-[10px] font-semibold uppercase tracking-wider text-white/50 select-none flex items-center gap-2">
-              <span className="flex-1">{group.label}</span>
-              {group.items.length > 0 && (
-                <span className="inline-flex min-w-[18px] items-center justify-center rounded-full bg-white/20 px-1.5 py-0.5 text-[9px] font-medium text-white">
-                  {group.items.length}
-                </span>
-              )}
-            </p>
+            <div className="mb-3 px-3 flex items-center gap-3 select-none">
+              <span className="text-[11px] font-semibold uppercase tracking-wide text-gray-500">
+                {group.label}
+              </span>
+              <div className="flex-1 border-t border-dashed border-gray-700" />
+            </div>
           )}
+
           <SidebarGroupContent>
             <SidebarMenu className="flex flex-col gap-1">
               {group.items.map((item) =>

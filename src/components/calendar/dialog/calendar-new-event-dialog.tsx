@@ -452,7 +452,7 @@ export default function CalendarNewEventDialog({
         location: locationId,
         accessToken: accessToken,
         image_url: fileToUpload ? undefined : (data.image_url || undefined), // ✅ never send base64
-        file: fileToUpload || undefined, 
+        file: fileToUpload || undefined,
         scheduled: data.scheduled || undefined,
         color: data.color || undefined,
       }
@@ -928,13 +928,21 @@ export default function CalendarNewEventDialog({
                           />
                         </LegendSection>
 
-                        <div className="grid grid-cols-2 gap-2">
-                          {/* Image (upload or URL) is required to submit */}
+                        <div className="flex gap-2">
+                          <DialogClose asChild>
+                            <Button
+                              type="button"
+                              variant="outline"
+                              disabled={loading}
+                            >
+                              Close
+                            </Button>
+                          </DialogClose>
 
-                          <UsageGate metric="scheduledPostsUsed" className="w-full">
+                          <UsageGate metric="scheduledPostsUsed">
                             <Button
                               type="submit"
-                              className="col-span-2 w-full"
+                              className="flex-1"
                               disabled={
                                 loading ||
                                 !form.formState.isValid ||
@@ -954,13 +962,8 @@ export default function CalendarNewEventDialog({
                               )}
                             </Button>
                           </UsageGate>
-
-                          <DialogClose asChild>
-                            <Button type="button" variant="outline" className="w-full">
-                              Close
-                            </Button>
-                          </DialogClose>
                         </div>
+
                       </form>
                     </CardContent>
                   </Card>

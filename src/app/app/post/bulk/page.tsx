@@ -10,7 +10,7 @@ export const metadata = {
 function page() {
   return (
     <DashboardLayout>
-      <PlanGate mode={{ type: "feature", feature: "bulkPosting" }} featureName="Bulk Posting">
+      <PlanGate mode={{ type: "feature", feature: "bulkPosts" }} featureName="Bulk Posting">
         <GMBLocationSelector />
       </PlanGate>
     </DashboardLayout>

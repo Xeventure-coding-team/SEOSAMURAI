@@ -12,6 +12,7 @@
   "dependencies": {
     "@google/genai": "^1.30.0",
     "@google/generative-ai": "^0.24.1",
+    "@hexclave/next": "^1.0.6",
     "@hookform/resolvers": "^5.2.1",
     "@hugeicons/core-free-icons": "^1.2.1",
     "@hugeicons/react": "^1.1.6",
@@ -43,7 +44,6 @@
     "@react-pdf/renderer": "^4.3.1",
     "@react-three/drei": "^10.7.6",
     "@react-three/fiber": "^9.3.0",
-    "@stackframe/stack": "^2.8.28",
     "@stripe/stripe-js": "^9.3.1",
     "@tabler/icons-react": "^3.34.1",
     "@vis.gl/react-google-maps": "^1.5.5",

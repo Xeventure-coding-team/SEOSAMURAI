@@ -5,14 +5,14 @@ import axios from "axios"
 import toast from "react-hot-toast"
 import { Card, CardContent, CardHeader } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
-import { MapPin, AlertCircle, RefreshCw, Building2, ArrowRight, Loader2, CheckCircle, Lock } from "lucide-react"
+import { MapPin, AlertCircle, RefreshCw, Building2, ArrowRight, Loader2, CheckCircle, Lock, Sparkles } from "lucide-react"
 import { GmbBulkPostForm } from "./GMBBulkPostForm"
 import { ScrollArea } from "../ui/scroll-area"
 import { useGMBStore } from "@/store/gmbStore"
 import { Loader } from "../Loader/Loader"
 import { UsageBadge } from "../usage-badge"
 import { Skeleton } from "../ui/skeleton"
-import { useUser } from "@stackframe/stack"
+import { useUser } from "@hexclave/next"
 import { useUsage } from "@/lib/use-usage"
 import { cn } from "@/lib/utils"
 import Link from "next/link"
@@ -304,87 +304,96 @@ export default function GMBLocationSelector() {
                     <span className="font-medium">Available Locations ({locations.length})</span>
                 </div>
 
-                <ScrollArea className="sm:h-auto">
-                    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2.5">
-                        {locations.length === 0 ? (
-                            <Card className="border-dashed col-span-full">
-                                <CardContent className="flex items-center justify-center py-12">
-                                    <div className="text-center space-y-2">
-                                        <AlertCircle className="h-8 w-8 text-muted-foreground mx-auto" />
-                                        <p className="text-sm text-muted-foreground">No locations found</p>
-                                    </div>
-                                </CardContent>
-                            </Card>
-                        ) : (
-                            locations.map((location) => {
-                                const isSelected = selectedLocation === location.id
-                                const isLocked = location.is_active === false
+ <ScrollArea className="sm:h-auto">
+    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2.5">
+        {locations.length === 0 ? (
+            <Card className="border-dashed col-span-full">
+                <CardContent className="flex items-center justify-center py-12">
+                    <div className="text-center space-y-2">
+                        <AlertCircle className="h-8 w-8 text-muted-foreground mx-auto" />
+                        <p className="text-sm text-muted-foreground">No locations found</p>
+                    </div>
+                </CardContent>
+            </Card>
+        ) : (
+            locations.map((location) => {
+                const isSelected = selectedLocation === location.id
+                const isLocked = location.is_active === false
 
-                                return (
-                                    <div
-                                        key={location.name}
-                                        onClick={() => !isLocked && handleLocationSelect(location.id)}
-                                        className={cn(
-                                            "flex items-center gap-3 rounded-lg border px-3.5 py-3 transition-colors",
-                                            isLocked
-                                                ? "cursor-not-allowed border-border/50 bg-muted/20"
-                                                : isSelected
-                                                    ? "cursor-pointer border-primary bg-primary/5"
-                                                    : "cursor-pointer border-border hover:bg-muted/40"
-                                        )}
-                                    >
-                                        {/* Icon */}
-                                        <div className={cn(
-                                            "flex h-8 w-8 shrink-0 items-center justify-center rounded-md",
-                                            isLocked
-                                                ? "bg-muted"
-                                                : isSelected
-                                                    ? "bg-primary/10"
-                                                    : "bg-muted"
-                                        )}>
-                                            {isLocked
-                                                ? <Lock className="h-3.5 w-3.5 text-muted-foreground/50" />
-                                                : <Building2 className={cn(
-                                                    "h-3.5 w-3.5",
-                                                    isSelected ? "text-primary" : "text-muted-foreground"
-                                                )} />
-                                            }
-                                        </div>
+                return (
+                    <div
+                        key={location.id}
+                        onClick={() => !isLocked && handleLocationSelect(location.id)}
+                        className={cn(
+                            "flex items-center gap-3 rounded-lg border px-3.5 py-3 transition-all duration-200",
+                            isLocked
+                                ? "cursor-not-allowed border-dashed border-muted-foreground/30 bg-gradient-to-br from-muted/30 to-muted/10 opacity-75 hover:opacity-75"
+                                : isSelected
+                                    ? "cursor-pointer border-primary bg-primary/5 shadow-sm ring-1 ring-primary/20"
+                                    : "cursor-pointer border-border hover:border-primary/30 hover:bg-muted/40 hover:shadow-sm"
+                        )}
+                    >
+                        {/* Icon */}
+                        <div className={cn(
+                            "flex h-8 w-8 shrink-0 items-center justify-center rounded-md transition-colors",
+                            isLocked
+                                ? "bg-muted-foreground/10"
+                                : isSelected
+                                    ? "bg-primary/10"
+                                    : "bg-muted"
+                        )}>
+                            {isLocked
+                                ? <Lock className="h-3.5 w-3.5 text-muted-foreground/40" />
+                                : <Building2 className={cn(
+                                    "h-3.5 w-3.5",
+                                    isSelected ? "text-primary" : "text-muted-foreground"
+                                )} />
+                            }
+                        </div>
 
-                                        {/* Text */}
-                                        <div className="flex-1 min-w-0">
-                                            <p className={cn(
-                                                "text-sm font-medium truncate leading-none",
-                                                isLocked ? "text-muted-foreground/60" : ""
-                                            )}>
-                                                {getLocationDisplayName(location)}
-                                            </p>
-                                            {isLocked ? (
-                                                <Link
-                                                    href="/app/settings/billing"
-                                                    onClick={e => e.stopPropagation()}
-                                                    className="text-xs text-muted-foreground hover:text-primary transition-colors mt-0.5 inline-block"
-                                                >
-                                                    Upgrade to unlock
-                                                </Link>
-                                            ) : location.storefrontAddress ? (
-                                                <p className="text-xs text-muted-foreground truncate mt-0.5">
-                                                    {location.formattedAddress}
-                                                </p>
-                                            ) : null}
-                                        </div>
+                        {/* Text */}
+                        <div className="flex-1 min-w-0">
+                            <p className={cn(
+                                "text-sm font-medium truncate leading-none",
+                                isLocked ? "text-muted-foreground/50 line-through" : ""
+                            )}>
+                                {getLocationDisplayName(location)}
+                            </p>
+                            {isLocked ? (
+                                <Link
+                                    href="/app/settings/billing"
+                                    onClick={e => e.stopPropagation()}
+                                    className="inline-flex items-center gap-1 text-xs font-medium text-amber-600 hover:text-amber-700 dark:text-amber-500 dark:hover:text-amber-400 transition-colors mt-1"
+                                >
+                                    <Sparkles className="h-3 w-3" />
+                                    Upgrade to unlock
+                                </Link>
+                            ) : location.storefrontAddress ? (
+                                <p className="text-xs text-muted-foreground truncate mt-1">
+                                    {location.formattedAddress}
+                                </p>
+                            ) : null}
+                        </div>
 
-                                        {/* Right indicator */}
-                                        {!isLocked && isSelected && (
-                                            <CheckCircle className="h-4 w-4 text-primary shrink-0" />
-                                        )}
-                                    </div>
-                                )
-                            })
+                        {/* Right indicator */}
+                        {!isLocked && isSelected && (
+                            <CheckCircle className="h-4 w-4 text-primary shrink-0" />
+                        )}
+                        
+                        {/* Locked badge overlay */}
+                        {isLocked && (
+                            <div className="shrink-0">
+                                <div className="bg-muted-foreground/10 rounded-full px-1.5 py-0.5">
+                                    <span className="text-[10px] font-medium text-muted-foreground/60">LOCKED</span>
+                                </div>
+                            </div>
                         )}
                     </div>
-                </ScrollArea>
-
+                )
+            })
+        )}
+    </div>
+</ScrollArea>
 
             </div>
 

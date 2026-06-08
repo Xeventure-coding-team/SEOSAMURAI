@@ -268,7 +268,7 @@ export default function TaskManager({
 
   if (isLoading) {
     return (
-       <Card>
+      <Card>
         <CardContent className="space-y-6 py-8">
           <div className="space-y-2">
             <Skeleton className="h-5 w-48" />
@@ -640,9 +640,12 @@ export default function TaskManager({
             <div className="p-6">
               <h3 className="text-lg font-semibold mb-4 text-foreground">Completed This Month</h3>
               {completedTasks.length === 0 ? (
-                <div className="bg-card border border-border rounded-xl p-12 text-center">
-                  <CheckCircle2 className="w-12 h-12 text-muted-foreground mx-auto mb-4" aria-hidden="true" />
-                  <p className="text-muted-foreground">No completed tasks this month</p>
+                <div className="bg-card p-12 text-center">
+                  <CheckCircle2 className="w-12 h-12 text-muted-foreground/60 mx-auto mb-4" aria-hidden="true" />
+                  <p className="text-muted-foreground font-medium mb-1">No completed tasks yet</p>
+                  <p className="text-sm text-muted-foreground/70 max-w-sm mx-auto">
+                    Complete your first task of the month to see it here.
+                  </p>
                 </div>
               ) : (
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -700,9 +703,14 @@ export default function TaskManager({
             <div className="p-6">
               <h3 className="text-lg font-semibold mb-4 text-foreground">Excluded This Month</h3>
               {excludedTasks.length === 0 ? (
-                <div className="bg-card border border-border rounded-xl p-12 text-center">
-                  <AlertCircle className="w-12 h-12 text-muted-foreground mx-auto mb-4" aria-hidden="true" />
-                  <p className="text-muted-foreground">No excluded tasks this month</p>
+                <div className="bg-card p-12 text-center">
+                  <AlertCircle className="w-12 h-12 text-muted-foreground/50 mx-auto mb-4" aria-hidden="true" />
+                  <div className="space-y-2">
+                    <p className="text-muted-foreground font-medium">No excluded tasks this month</p>
+                    <p className="text-sm text-muted-foreground/70">
+                      Exclude a task to remove it from your monthly progress.
+                    </p>
+                  </div>
                 </div>
               ) : (
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -788,8 +796,29 @@ export default function TaskManager({
                     </div>
                   </div>
                 ) : (
-                  <div className="bg-card border border-border rounded-xl p-6 text-center text-muted-foreground">
-                    No recent achievements.
+                  <div className="bg-card p-8 text-center">
+                    <div className="flex flex-col items-center gap-3">
+                      {/* Optional: subtle icon for better visual communication */}
+                      <div className="text-muted-foreground/60">
+                        <svg
+                          className="w-12 h-12 mx-auto"
+                          fill="none"
+                          stroke="currentColor"
+                          viewBox="0 0 24 24"
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth={1.5}
+                            d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.539 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.784.57-1.838-.196-1.539-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z"
+                          />
+                        </svg>
+                      </div>
+                      <p className="text-muted-foreground font-medium">No recent achievements</p>
+                      <p className="text-sm text-muted-foreground/70 max-w-sm">
+                        Complete your first milestone or task to see achievements appear here.
+                      </p>
+                    </div>
                   </div>
                 )}
               </div>
@@ -845,8 +874,28 @@ export default function TaskManager({
                     </div>
                   </div>
                 ) : (
-                  <div className="bg-card border border-border rounded-xl p-6 text-center text-muted-foreground">
-                    No recent milestones.
+                  <div className="bg-card rounded-xl p-8 text-center">
+                    <div className="flex flex-col items-center gap-3">
+                      <div className="text-muted-foreground/60">
+                        <svg
+                          className="w-12 h-12 mx-auto"
+                          fill="none"
+                          stroke="currentColor"
+                          viewBox="0 0 24 24"
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth={1.5}
+                            d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
+                          />
+                        </svg>
+                      </div>
+                      <p className="text-muted-foreground font-medium">No recent milestones</p>
+                      <p className="text-sm text-muted-foreground/70 max-w-sm">
+                        Set your first milestone to start tracking your progress.
+                      </p>
+                    </div>
                   </div>
                 )}
               </div>

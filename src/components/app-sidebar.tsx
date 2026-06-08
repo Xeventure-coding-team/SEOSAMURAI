@@ -14,7 +14,7 @@ import {
   SidebarMenuButton,
   SidebarMenuItem,
 } from "@/components/ui/sidebar"
-import { useUser } from "@stackframe/stack";
+import { useUser } from "@hexclave/next";
 import { usePathname } from "next/navigation";
 import { usePageStore } from "@/store/usePageStore";
 import Logo from "./Logo";

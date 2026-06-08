@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import axios, { AxiosError } from 'axios'
 import { stackServerApp } from '@/stack'
 import { incrementUsage } from '@/lib/usage'
+import { prisma } from '../../../../../lib/prisma'
 
 interface QueryParams {
   accountId: string
@@ -29,6 +30,17 @@ interface SuccessResponse {
   data?: any
   message?: string
 }
+
+// Helper to resolve real GMB locationId from MongoDB _id
+async function resolveGmbLocationId(locationId: string): Promise<string | null> {
+  const location = await prisma.locations.findUnique({
+    where: { id: locationId },
+    select: { location_id: true }
+  })
+  if (!location) return null
+  return location.location_id.replace('locations/', '')
+}
+
 
 // Helper function to validate common parameters
 function validateCommonParams(params: Partial<QueryParams>) {
@@ -224,111 +236,75 @@ function handleApiError(error: any): NextResponse<ErrorResponse> {
   )
 }
 
-// CREATE/UPDATE Reply - PUT Method
+// PUT
 export async function PUT(request: NextRequest): Promise<NextResponse<SuccessResponse | ErrorResponse>> {
   try {
     const { params, error } = await parseRequestParams(request, true)
-    if (error) {
-      return error
-    }
+    if (error) return error
 
     const { accountId, locationId, selectedId, selectedText, accessToken } = params
 
-    const cleanAccountId = accountId !== undefined ? accountId.replace('accounts/', '') : accountId
+    const gmbLocationId = await resolveGmbLocationId(locationId!)
+    if (!gmbLocationId) {
+      return NextResponse.json({ error: 'Location not found' }, { status: 404 })
+    }
 
-    // Make request to Google My Business API to add/update reply
-    const apiUrl = `https://mybusiness.googleapis.com/v4/accounts/${cleanAccountId}/locations/${locationId}/reviews/${selectedId}/reply`
+    const cleanAccountId = accountId!.replace('accounts/', '')
+    const apiUrl = `https://mybusiness.googleapis.com/v4/accounts/${cleanAccountId}/locations/${gmbLocationId}/reviews/${selectedId}/reply`
 
     const response = await axios.put(
       apiUrl,
+      { comment: selectedText!.trim() },
       {
-        comment: selectedText!.trim(),
-      },
-      {
-        headers: {
-          Authorization: `Bearer ${accessToken}`,
-          'Content-Type': 'application/json',
-        },
-        timeout: 10000, // 10 second timeout
+        headers: { Authorization: `Bearer ${accessToken}`, 'Content-Type': 'application/json' },
+        timeout: 10000,
       }
     )
 
-    return NextResponse.json(
-      {
-        success: true,
-        message: 'Reply added/updated successfully',
-        data: response.data
-      },
-      { status: 200 }
-    )
-
+    return NextResponse.json({ success: true, message: 'Reply added/updated successfully', data: response.data }, { status: 200 })
   } catch (error) {
     return handleApiError(error)
   }
 }
 
-// CREATE Reply - POST Method (alternative to PUT)
+
+// POST - CREATE Reply
 export async function POST(request: NextRequest): Promise<NextResponse<SuccessResponse | ErrorResponse>> {
   try {
     const body = await request.json()
     const { accountId, locationId, selectedId, selectedText, accessToken } = body
 
-    const user = await stackServerApp.getUser();
-
+    const user = await stackServerApp.getUser()
     if (!user) {
-      return NextResponse.json({
-        success: false,
-        error: "Unauthorized"
-      }, { status: 401 });
+      return NextResponse.json({ success: false, error: 'Unauthorized' }, { status: 401 })
     }
 
-
-    // Validate required fields
     if (!accountId || !locationId || !selectedId || !selectedText || !accessToken) {
       return NextResponse.json(
-        {
-          success: false,
-          error: 'Missing required parameters',
-          details: 'accountId, locationId, selectedId, selectedText, and accessToken are required'
-        },
+        { success: false, error: 'Missing required parameters', details: 'accountId, locationId, selectedId, selectedText, and accessToken are required' },
         { status: 400 }
       )
     }
 
-    // Clean the accountId - remove "accounts/" prefix if present
-    const cleanAccountId = accountId.replace('accounts/', '')
-
-    // Construct the review name according to Google's format
-    const reviewName = `accounts/${cleanAccountId}/locations/${locationId}/reviews/${selectedId}`
-
-    // Correct API URL format from the documentation
-    const apiUrl = `https://mybusiness.googleapis.com/v4/${reviewName}/reply`
-
-    // Correct request body format - should be a ReviewReply object
-    const requestBody = {
-      comment: selectedText.trim()
+    const gmbLocationId = await resolveGmbLocationId(locationId)
+    if (!gmbLocationId) {
+      return NextResponse.json({ success: false, error: 'Location not found' }, { status: 404 })
     }
+
+    const cleanAccountId = accountId.replace('accounts/', '')
+    const reviewName = `accounts/${cleanAccountId}/locations/${gmbLocationId}/reviews/${selectedId}`
+    const apiUrl = `https://mybusiness.googleapis.com/v4/${reviewName}/reply`
 
     const response = await axios.put(
       apiUrl,
-      requestBody,
+      { comment: selectedText.trim() },
       {
-        headers: {
-          Authorization: `Bearer ${accessToken}`,
-          'Content-Type': 'application/json',
-        },
-        timeout: 15000, // Increased timeout
+        headers: { Authorization: `Bearer ${accessToken}`, 'Content-Type': 'application/json' },
+        timeout: 15000,
       }
     )
 
-    return NextResponse.json(
-      {
-        success: true,
-        message: 'Reply created/updated successfully',
-        data: response.data
-      },
-      { status: 201 }
-    )
+    return NextResponse.json({ success: true, message: 'Reply created/updated successfully', data: response.data }, { status: 201 })
 
   } catch (error: any) {
     console.error('POST Error details:', {
@@ -340,50 +316,32 @@ export async function POST(request: NextRequest): Promise<NextResponse<SuccessRe
       requestData: error.config?.data
     })
 
-    // Handle specific Google API errors
     if (error.response?.status === 404) {
       return NextResponse.json(
-        {
-          success: false,
-          error: 'Resource not found',
-          details: 'The review, location, or account could not be found. Verify that:\n1. The location exists and is verified\n2. The review exists\n3. You have proper permissions\n4. The account/location IDs are correct'
-        },
+        { success: false, error: 'Resource not found', details: 'The review, location, or account could not be found. Verify that:\n1. The location exists and is verified\n2. The review exists\n3. You have proper permissions\n4. The account/location IDs are correct' },
         { status: 404 }
       )
     }
-
     if (error.response?.status === 403) {
       return NextResponse.json(
-        {
-          success: false,
-          error: 'Insufficient permissions',
-          details: 'Access denied. Check that:\n1. Your OAuth token has the correct scopes (business.manage)\n2. The location is verified\n3. You have permission to manage this business'
-        },
+        { success: false, error: 'Insufficient permissions', details: 'Access denied. Check that:\n1. Your OAuth token has the correct scopes (business.manage)\n2. The location is verified\n3. You have permission to manage this business' },
         { status: 403 }
       )
     }
-
     if (error.response?.status === 401) {
       return NextResponse.json(
-        {
-          success: false,
-          error: 'Unauthorized',
-          details: 'Invalid or expired access token. Please refresh your OAuth token.'
-        },
+        { success: false, error: 'Unauthorized', details: 'Invalid or expired access token. Please refresh your OAuth token.' },
         { status: 401 }
       )
     }
 
     return NextResponse.json(
-      {
-        success: false,
-        error: error.response?.data?.error?.message || error.message || 'Unknown error',
-        details: error.response?.data?.error?.details || 'An unexpected error occurred'
-      },
+      { success: false, error: error.response?.data?.error?.message || error.message || 'Unknown error', details: error.response?.data?.error?.details || 'An unexpected error occurred' },
       { status: error.response?.status || 500 }
     )
   }
 }
+
 
 // READ Reply - GET Method
 export async function GET(request: NextRequest): Promise<NextResponse<SuccessResponse | ErrorResponse>> {
@@ -432,107 +390,36 @@ export async function GET(request: NextRequest): Promise<NextResponse<SuccessRes
   }
 }
 
-// DELETE Reply - DELETE Method
+// DELETE
 export async function DELETE(request: NextRequest): Promise<NextResponse> {
   try {
     const body = await request.json()
     const { accountId, locationId, selectedId, accessToken } = body
 
-    // Validate required fields
     if (!accountId || !locationId || !selectedId || !accessToken) {
-      return NextResponse.json(
-        {
-          success: false,
-          error: 'Missing required parameters',
-          details: 'accountId, locationId, selectedId, and accessToken are required'
-        },
-        { status: 400 }
-      )
+      return NextResponse.json({ success: false, error: 'Missing required parameters' }, { status: 400 })
     }
 
-    // Construct the correct API URL according to Google's documentation
-    // Format: accounts/{accountId}/locations/{locationId}/reviews/{reviewId}
-    const reviewName = `accounts/${accountId.replace('accounts/', '')}/locations/${locationId}/reviews/${selectedId}`
-    const apiUrl = `https://mybusiness.googleapis.com/v4/${reviewName}/reply`
+    const gmbLocationId = await resolveGmbLocationId(locationId)
+    if (!gmbLocationId) {
+      return NextResponse.json({ success: false, error: 'Location not found' }, { status: 404 })
+    }
+
+    const cleanAccountId = accountId.replace('accounts/', '')
+    const apiUrl = `https://mybusiness.googleapis.com/v4/accounts/${cleanAccountId}/locations/${gmbLocationId}/reviews/${selectedId}/reply`
 
     const response = await axios.delete(apiUrl, {
-      headers: {
-        Authorization: `Bearer ${accessToken}`,
-        'Content-Type': 'application/json',
-      },
+      headers: { Authorization: `Bearer ${accessToken}`, 'Content-Type': 'application/json' },
       timeout: 15000,
     })
 
-
-
-    return NextResponse.json(
-      {
-        success: true,
-        message: 'Reply deleted successfully',
-        data: response.data
-      },
-      { status: 200 }
-    )
-
+    return NextResponse.json({ success: true, message: 'Reply deleted successfully', data: response.data }, { status: 200 })
   } catch (error: any) {
-    console.error('DELETE Error details:', {
-      message: error.message,
-      response: error.response?.data,
-      status: error.response?.status,
-      statusText: error.response?.statusText,
-      config: {
-        url: error.config?.url,
-        method: error.config?.method,
-        headers: error.config?.headers
-      }
-    })
-
-    // Handle specific Google API errors
-    if (error.response?.status === 404) {
-      return NextResponse.json(
-        {
-          success: false,
-          error: 'Resource not found',
-          details: 'The review reply does not exist, or the review/location/account could not be found.'
-        },
-        { status: 404 }
-      )
-    }
-
-    if (error.response?.status === 403) {
-      return NextResponse.json(
-        {
-          success: false,
-          error: 'Insufficient permissions',
-          details: 'The access token does not have permission to delete this review reply, or the location is not verified.'
-        },
-        { status: 403 }
-      )
-    }
-
-    if (error.response?.status === 401) {
-      return NextResponse.json(
-        {
-          success: false,
-          error: 'Unauthorized',
-          details: 'Invalid or expired access token.'
-        },
-        { status: 401 }
-      )
-    }
-
-    return NextResponse.json(
-      {
-        success: false,
-        error: error.response?.data?.error?.message || error.message || 'Unknown error',
-        details: error.response?.data?.error?.details || 'An unexpected error occurred'
-      },
-      { status: error.response?.status || 500 }
-    )
+    return handleApiError(error)
   }
 }
 
-// PATCH Method for partial updates (edit reply)
+// PATCH
 export async function PATCH(request: NextRequest): Promise<NextResponse<SuccessResponse | ErrorResponse>> {
   try {
     const { params, error } = await parseRequestParams(request, true)
@@ -540,32 +427,24 @@ export async function PATCH(request: NextRequest): Promise<NextResponse<SuccessR
 
     const { accountId, locationId, selectedId, selectedText, accessToken } = params
 
-    // Make request to Google My Business API to update reply
-    const apiUrl = `https://mybusiness.googleapis.com/v4/accounts/${accountId}/locations/${locationId}/reviews/${selectedId}/reply`
+    const gmbLocationId = await resolveGmbLocationId(locationId!)
+    if (!gmbLocationId) {
+      return NextResponse.json({ error: 'Location not found' }, { status: 404 })
+    }
 
-    const response = await axios.put( // GMB API uses PUT for updates
+    const cleanAccountId = accountId!.replace('accounts/', '')
+    const apiUrl = `https://mybusiness.googleapis.com/v4/accounts/${cleanAccountId}/locations/${gmbLocationId}/reviews/${selectedId}/reply`
+
+    const response = await axios.put(
       apiUrl,
+      { comment: selectedText!.trim() },
       {
-        comment: selectedText!.trim(),
-      },
-      {
-        headers: {
-          Authorization: `Bearer ${accessToken}`,
-          'Content-Type': 'application/json',
-        },
-        timeout: 10000, // 10 second timeout
+        headers: { Authorization: `Bearer ${accessToken}`, 'Content-Type': 'application/json' },
+        timeout: 10000,
       }
     )
 
-    return NextResponse.json(
-      {
-        success: true,
-        message: 'Reply updated successfully',
-        data: response.data
-      },
-      { status: 200 }
-    )
-
+    return NextResponse.json({ success: true, message: 'Reply updated successfully', data: response.data }, { status: 200 })
   } catch (error) {
     return handleApiError(error)
   }

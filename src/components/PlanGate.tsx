@@ -6,6 +6,7 @@ import { useUsage, UsageMetric, useFeature } from "@/lib/use-usage";
 import { useSlot, SlotResource } from "@/lib/use-slot";
 import { cn } from "@/lib/utils";
 import { Lock, Star, AlertCircle, ArrowRight, Check } from "lucide-react";
+import Link from "next/link";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -84,16 +85,6 @@ const variantCfg: Record<GateVariant, VariantCfg> = {
   },
 };
 
-// ─── Chip ─────────────────────────────────────────────────────────────────────
-
-function Chip({ children }: { children: React.ReactNode }) {
-  return (
-    <span className="inline-flex items-center gap-1.5 text-xs text-muted-foreground bg-muted rounded-full px-3 py-1 border border-border">
-      <Check className="h-3 w-3 shrink-0" />
-      {children}
-    </span>
-  );
-}
 
 // ─── Upgrade button ───────────────────────────────────────────────────────────
 
@@ -156,6 +147,7 @@ interface FullGateProps {
   usageData?: { used: number; total: number };
 }
 
+// ─── Full gate — simple centered overlay ──────────────────────────────────────
 function FullGate({
   variant,
   children,
@@ -163,68 +155,60 @@ function FullGate({
   description,
   upgradeHref,
   ctaLabel,
-  chips,
-  usageData,
 }: FullGateProps) {
-  const cfg = variantCfg[variant];
+  const router = useRouter();
 
   return (
-    <div className={cn("relative rounded-4xl border-1 overflow-hidden", cfg.borderColor)}>
+    <div className="relative rounded-2xl overflow-hidden">
 
-      {/* Blurred background — shows children dimly */}
-      <div className="blur-sm pointer-events-none select-none opacity-40 min-h-[260px]" aria-hidden="true">
+      {/* Blurred background */}
+      <div
+        className="pointer-events-none select-none opacity-45 min-h-[200px]"
+        aria-hidden="true"
+      >
         {children}
       </div>
 
-      {/* Dark overlay */}
-      <div className="absolute inset-0 bg-background/60" />
+      {/* Light overlay */}
+      <div className="absolute inset-0 bg-background/55" />
 
-      {/* Gate card — centered over the blur */}
+      {/* Centered card */}
       <div className="absolute inset-0 flex items-center justify-center p-6">
-        <div className={cn(
-          "w-full max-w-xl rounded-2xl border bg-card p-7 flex flex-col items-center gap-4 text-center",
-          cfg.borderColor
-        )}>
+        <div className="bg-card border border-border rounded-2xl px-8 py-10 flex flex-col items-center gap-4 text-center max-w-md w-full">
 
-          {/* Icon */}
-          <div className={cn("h-14 w-14 rounded-2xl flex items-center justify-center", cfg.iconBg)}>
-            <cfg.Icon className={cn("h-6 w-6", cfg.iconColor)} />
+          <div className="w-12 h-12 rounded-full bg-blue-50 dark:bg-blue-950/40 flex items-center justify-center">
+            <Lock className="h-5 w-5 text-blue-600 dark:text-blue-400" />
           </div>
 
-          {/* Badge */}
-          <span className={cn(
-            "inline-flex items-center gap-1.5 text-[11px] font-medium tracking-wide uppercase rounded-full px-3 py-1",
-            cfg.badgeBg, cfg.badgeText
-          )}>
-            <cfg.Icon className="h-3 w-3" />
-            {cfg.label}
-          </span>
-
-          {/* Text */}
-          <div className="space-y-1.5">
-            <h3 className="text-base font-semibold text-foreground leading-snug">{heading}</h3>
-            <p className="text-sm text-muted-foreground leading-relaxed">{description}</p>
+          <div className="flex flex-col gap-2">
+            <h3 className="text-lg font-medium text-foreground leading-snug">
+              {heading}
+            </h3>
+            <p className="text-sm text-muted-foreground leading-relaxed max-w-xs">
+              {description}{" "}
+              <Link
+                href={upgradeHref}
+                className="text-blue-600 underline underline-offset-2 hover:text-blue-700 transition-colors"
+              >
+                upgrade your plan
+              </Link>
+              .
+            </p>
           </div>
 
-          {/* Usage bar */}
-          {usageData && <UsageBar {...usageData} variant={variant} />}
-
-          {/* CTA */}
           <div className="flex flex-col items-center gap-2 w-full mt-1">
-            <UpgradeBtn href={upgradeHref} variant={variant} label={ctaLabel ?? "Upgrade plan"} />
-            <a
-              href="/app/settings/billing"
-              className="text-xs text-muted-foreground hover:text-foreground transition-colors"
-             >
-              View all plans
-            </a>
+            <Link href={upgradeHref} className="w-full">
+              <button className="w-full flex items-center justify-center gap-2 bg-foreground text-background text-sm font-medium rounded-lg px-6 py-2.5 hover:opacity-90 active:scale-[0.97] transition-all">
+                {ctaLabel ?? "Upgrade plan"}
+                <ArrowRight className="h-4 w-4" />
+              </button>
+            </Link>
           </div>
 
         </div>
       </div>
-
-      {/* Spacer so the outer div has height matching the blurred content */}
-      <div className="invisible min-h-[260px]" aria-hidden="true" />
+      {/* Height spacer */}
+      <div className="invisible min-h-[120px]" aria-hidden="true" />
     </div>
   );
 }

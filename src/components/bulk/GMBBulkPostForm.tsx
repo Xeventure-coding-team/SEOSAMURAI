@@ -630,7 +630,7 @@ export function GmbBulkPostForm({
                 ) : (
                   <div className="h-full flex flex-col">
                     {bulkPosts.length > 1 && (
-                      <div className="flex items-center justify-between mb-4 p-3 bg-muted/50 rounded-lg flex-shrink-0">
+                      <div className="flex items-center justify-between mb-4 p-3 bg-muted/50 rounded-lg flex-shrink-0 border">
                         <Button
                           variant="outline"
                           size="sm"
@@ -655,12 +655,12 @@ export function GmbBulkPostForm({
                       </div>
                     )}
 
-                    <div className="flex-1 min-h-0 overflow-y-auto">
+                    <div className="flex-1 min-h-0 overflow-y-auto p-0 m-0">
                       {bulkPosts.map((post, index) => (
-                        <Card key={post.id} className={index === activeForm ? "" : "hidden"}>
-                          <CardHeader>
-                            <div className="flex items-center justify-between">
-                              <div className="flex items-center gap-3 min-w-0 flex-1">
+                        <Card key={post.id} className={index === activeForm ? "shadow-none border-none p-0 m-0" : "hidden"}>
+                          <CardHeader className=" p-0 m-0">
+                            <div className="flex items-center justify-between px-2">
+                              <div className="flex items-center min-w-0 flex-1 gap-4">
                                 <Badge variant="default">Post {index + 1}</Badge>
                                 {post.postContent && (
                                   <Badge variant="outline" className="text-xs">
@@ -692,7 +692,7 @@ export function GmbBulkPostForm({
                             </div>
                           </CardHeader>
 
-                          <CardContent className="space-y-4">
+                          <CardContent className="space-y-4 p-0 m-0">
                             <LegendSection legend="Post Content">
                               <div className="space-y-2">
                                 <div className="flex items-center justify-between">

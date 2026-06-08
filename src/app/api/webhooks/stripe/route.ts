@@ -57,9 +57,9 @@ async function handleDowngrade(userId: string, newPlanId: PlanId) {
     console.log(`Locked ${toLock.length} locations for user ${userId}`);
   }
 
-  // Websites — lock extras, keep oldest
+  // Websites — lock extras, keep oldest (use isPublished not isActive)
   const activeWebsites = await prisma.website.findMany({
-    where: { userId, isActive: true },
+    where: { userId, isPublished: true },
     orderBy: { createdAt: "asc" },
   });
 
@@ -67,12 +67,10 @@ async function handleDowngrade(userId: string, newPlanId: PlanId) {
     const toLock = activeWebsites.slice(newLimits.websites).map((w) => w.id);
     await prisma.website.updateMany({
       where: { id: { in: toLock } },
-      data: { isActive: false },
+      data: { isPublished: false },
     });
     console.log(`Locked ${toLock.length} websites for user ${userId}`);
   }
-
-  // Review posters — no action, slot gate handles creation blocking
 }
 
 async function handleUpgrade(userId: string, newPlanId: PlanId) {
@@ -100,15 +98,15 @@ async function handleUpgrade(userId: string, newPlanId: PlanId) {
     }
   }
 
-  // Websites — unlock previously locked ones up to new limit
+  // Websites — unlock previously locked ones up to new limit (use isPublished not isActive)
   const activeWebsiteCount = await prisma.website.count({
-    where: { userId, isActive: true },
+    where: { userId, isPublished: true },
   });
 
   const websitesToUnlock = newLimits.websites - activeWebsiteCount;
   if (websitesToUnlock > 0) {
     const locked = await prisma.website.findMany({
-      where: { userId, isActive: false },
+      where: { userId, isPublished: false },
       orderBy: { createdAt: "asc" },
       take: websitesToUnlock,
     });
@@ -116,13 +114,11 @@ async function handleUpgrade(userId: string, newPlanId: PlanId) {
     if (locked.length > 0) {
       await prisma.website.updateMany({
         where: { id: { in: locked.map((w) => w.id) } },
-        data: { isActive: true },
+        data: { isPublished: true },
       });
       console.log(`Unlocked ${locked.length} websites for user ${userId}`);
     }
   }
-
-  // Review posters — no action, slot gate allows creation automatically
 }
 
 async function handlePlanChange(userId: string, oldPlanId: PlanId, newPlanId: PlanId) {
@@ -182,7 +178,7 @@ export async function POST(req: Request) {
 
         const existing = await prisma.subscription.findUnique({
           where: { stackUserId },
-          select: { plan: true, status: true }, // 👈 also grab old status
+          select: { plan: true, status: true },
         });
 
         await prisma.subscription.upsert({
@@ -207,24 +203,39 @@ export async function POST(req: Request) {
             cancelAtPeriodEnd: (subscription as any).cancel_at_period_end ?? false,
           },
         });
-        
-        // Plan changed → handle upgrade/downgrade as before
-        if (existing?.plan) {
-          const oldPlanId = existing.plan.toLowerCase() as PlanId;
-          const newPlanId = plan.id as PlanId;
-          if (oldPlanId !== newPlanId) {
-            await handlePlanChange(stackUserId, oldPlanId, newPlanId);
-          }
-        }
 
-        // 👇 Status changed to active (e.g. reactivated, payment recovered)
+        await prisma.usage.upsert({
+          where: { stackUserId },
+          update: {},
+          create: {
+            subscriptionId: subscription.id,
+            stackUserId,
+            periodStart: new Date((subscription as any).current_period_start * 1000),
+            periodEnd: getPeriodEnd(subscription),
+            postsUsed: 0,
+            aiReviewRepliesUsed: 0,
+            scheduledPostsUsed: 0,
+            geoGridScansUsed: 0,
+            reviewPostersUsed: 0,
+            keywordTrackingUsed: 0,
+            aiImageUsed: 0,
+          }
+        });
+
         const newStatus = stripeStatusToPrisma(subscription.status);
         const wasNotActive = existing?.status !== "ACTIVE";
-        if (newStatus === "ACTIVE" && wasNotActive) {
+        const planChanged = existing?.plan && existing.plan.toLowerCase() !== plan.id;
+
+        if (planChanged) {
+          await handlePlanChange(
+            stackUserId,
+            existing!.plan.toLowerCase() as PlanId,
+            plan.id as PlanId
+          );
+        } else if (newStatus === "ACTIVE" && wasNotActive) {
           await handleUpgrade(stackUserId, plan.id as PlanId);
           console.log(`Reactivated resources for user ${stackUserId}`);
         }
-
         break;
       }
 
@@ -243,9 +254,10 @@ export async function POST(req: Request) {
             where: { user_id: stackUserId, is_deleted: false },
             data: { is_active: false },
           });
+          // ← Fix: isActive → isPublished (website model doesn't have isActive)
           await prisma.website.updateMany({
             where: { userId: stackUserId },
-            data: { isActive: false },
+            data: { isPublished: false },
           });
           console.log(`Locked all resources for cancelled user ${stackUserId}`);
         }
@@ -259,13 +271,54 @@ export async function POST(req: Request) {
         if (!subscriptionId) break;
 
         const stripeSub = await getStripe().subscriptions.retrieve(subscriptionId);
+        const stackUserId = stripeSub.metadata?.stackUserId;
+        const priceId = stripeSub.items.data[0]?.price.id;
+        const plan = priceId ? getPlanByPriceId(priceId) : null;
+
+        const periodStart = new Date((stripeSub as any).current_period_start * 1000);
+        const periodEnd = getPeriodEnd(stripeSub);
+
+        const existing = await prisma.subscription.findFirst({
+          where: { stripeSubscriptionId: subscriptionId },
+          select: { status: true },
+        });
+
         await prisma.subscription.updateMany({
           where: { stripeSubscriptionId: subscriptionId },
           data: {
             status: "ACTIVE",
-            stripeCurrentPeriodEnd: getPeriodEnd(stripeSub),
+            stripeCurrentPeriodEnd: periodEnd,
           },
         });
+
+        if (stackUserId) {
+          await prisma.usage.updateMany({
+            where: { stackUserId },
+            data: {
+              periodStart,
+              periodEnd,
+              postsUsed: 0,
+              aiReviewRepliesUsed: 0,
+              scheduledPostsUsed: 0,
+              geoGridScansUsed: 0,
+              reviewPostersUsed: 0,
+              keywordTrackingUsed: 0,
+              aiImageUsed: 0,
+            },
+          });
+          console.log(`Reset usage for user ${stackUserId} — new period: ${periodStart.toISOString()} → ${periodEnd.toISOString()}`);
+        }
+
+        if (
+          stackUserId &&
+          plan &&
+          existing?.status &&
+          ["PAST_DUE", "UNPAID"].includes(existing.status)
+        ) {
+          await handleUpgrade(stackUserId, plan.id as PlanId);
+          console.log(`Recovered resources for user ${stackUserId}`);
+        }
+
         break;
       }
 
@@ -278,6 +331,7 @@ export async function POST(req: Request) {
           where: { stripeSubscriptionId: subscriptionId },
           data: { status: "PAST_DUE" },
         });
+
         break;
       }
 

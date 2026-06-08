@@ -1,4 +1,3 @@
-// app/api/generate-reply/route.ts
 import { NextRequest, NextResponse } from 'next/server'
 import { GoogleGenAI } from '@google/genai'
 import { decrementUsage, incrementUsage } from '@/lib/usage';

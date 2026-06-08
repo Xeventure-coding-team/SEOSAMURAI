@@ -1,7 +1,6 @@
 import "server-only";
+import { HexclaveServerApp } from "@hexclave/next";
 
-import { StackServerApp } from "@stackframe/stack";
-
-export const stackServerApp = new StackServerApp({
+export const stackServerApp = new HexclaveServerApp({
   tokenStore: "nextjs-cookie",
 });

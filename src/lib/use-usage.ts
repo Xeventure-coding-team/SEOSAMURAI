@@ -24,18 +24,20 @@ export interface UsageData {
 }
 
 const FEATURE_ALIAS: Record<string, string> = {
-  "bulk-posts": "bulkPosts",
-  "competitor-insights": "competitorInsights",
-  "advanced-analytics": "analytics",
-  "media-upload": "mediaUpload",
-  "review-tracking": "reviewTracking",
-  "tasks": "tasks",
-  bulkPosts: "bulkPosts",
-  competitorInsights: "competitorInsights",
-  mediaUpload: "mediaUpload",
-  reviewTracking: "reviewTracking",
+  "bulk-posts":           "bulkPosts",
+  "competitor-insights":  "competitorInsights",
+  "advanced-analytics":   "analytics",
+  "media-upload":         "mediaUpload",
+  "review-tracking":      "reviewTracking",
+  "tasks":                "tasks",
+  "task-achievements":    "taskAchievements", 
+  "task-milestones":      "taskMilestones",    
+  "health":               "health",            
+  bulkPosts:              "bulkPosts",
+  competitorInsights:     "competitorInsights",
+  mediaUpload:            "mediaUpload",
+  reviewTracking:         "reviewTracking",
 };
-
 
 function resolveFeatureFromLimits(feature: string, planId: PlanId): boolean {
   const limitKey = FEATURE_ALIAS[feature] ?? feature;

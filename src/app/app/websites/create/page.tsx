@@ -3,7 +3,7 @@ import DashboardLayout from '@/app/layouts/DashboardLayout';
 import { ArrowLeft } from 'lucide-react';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
-import { StackServerApp } from '@stackframe/stack';
+import { StackServerApp } from '@hexclave/next';
 import { stackServerApp } from '@/stack';
 import { Metadata } from 'next';
 import { PlanGate } from '@/components/PlanGate';

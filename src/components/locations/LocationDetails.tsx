@@ -1,7 +1,7 @@
 "use client"
 
 import { useState, useMemo, useEffect, useCallback } from "react"
-import { useParams, useRouter, useSearchParams } from "next/navigation"
+import { notFound, useParams, useRouter, useSearchParams } from "next/navigation"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
@@ -140,6 +140,11 @@ export default function LocationDashboard() {
 
       const res = await fetch(url, { cache: "no-store" })
 
+      if (res.status === 404) {
+        notFound() // triggers Next.js not-found.tsx
+        return
+      }
+
       if (!res.ok) {
         const errorText = await res.text()
         throw new Error(`Failed to fetch location: ${res.status} ${res.statusText}. ${errorText}`)
@@ -150,27 +155,19 @@ export default function LocationDashboard() {
       const isActive = data?.location?.data?.is_active ?? false;
       setActiveState(isActive);
 
-
       setPayload(data)
 
       if (data) {
         const businessName = data?.location?.locationData?.name;
-
-        const pageName = businessName
-          ? `${businessName}`
-          : 'Location Dashboard';
-
-        document.title =
-          pageName !== 'Location Dashboard'
-            ? `${pageName} | Rankerly`
-            : 'Location Dashboard | Rankerly';
-
+        const pageName = businessName ? `${businessName}` : 'Location Dashboard';
+        document.title = pageName !== 'Location Dashboard'
+          ? `${pageName} | Rankerly`
+          : 'Location Dashboard | Rankerly';
         setPageName(pageName);
       }
 
     } catch (err: any) {
       console.error("Error fetching location:", err)
-      setError(err?.message || "Unknown error occurred")
     } finally {
       setLoading(false)
     }
@@ -874,7 +871,7 @@ export default function LocationDashboard() {
 
                 </AnimatedTabItem>
                 <AnimatedTabItem value="reviews">
-                  <div className="p-6">
+                  <div className="mt-8 mb-5">
                     <Reviews businessName={name} locationId={locationId} />
                   </div>
                 </AnimatedTabItem>
@@ -897,8 +894,8 @@ export default function LocationDashboard() {
                   />
                 </AnimatedTabItem>
                 <AnimatedTabItem value="hours">
-                  <div className="p-6">
-                    <Card className="bg-white/80 dark:bg-slate-800/50 border-slate-200 dark:border-slate-700">
+                  <div className="mt-8 mb-5">
+                    <Card className=" border-0 shadow-none p-0">
                       <CardHeader>
                         <CardTitle>Business Hours</CardTitle>
                         <CardDescription>Weekly operating schedule</CardDescription>
@@ -939,8 +936,8 @@ export default function LocationDashboard() {
                   </div>
                 </AnimatedTabItem>
                 <AnimatedTabItem value="location-map">
-                  <div className="p-6">
-                    <Card className="bg-white/80 dark:bg-slate-800/50 border-slate-200 dark:border-slate-700">
+                  <div className="mt-8 mb-5">
+                    <Card className=" border-0 shadow-none p-0">
                       <CardHeader>
                         <CardTitle>Location Map</CardTitle>
                         <CardDescription>View location on external map services</CardDescription>

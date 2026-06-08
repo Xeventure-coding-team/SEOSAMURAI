@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button"
 import { Navbar as NavbarComponent, NavbarLeft, NavbarRight } from "@/components/ui/navbar"
 import { Sheet, SheetContent, SheetTrigger, SheetTitle } from "@/components/ui/sheet"
 import { siteConfig } from "@/config/site"
-import { useStackApp, useUser } from "@stackframe/stack"
+import { useStackApp, useUser } from "@hexclave/next"
 import toast from "react-hot-toast"
 import Link from "next/link"
 

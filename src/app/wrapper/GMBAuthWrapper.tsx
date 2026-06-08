@@ -3,7 +3,7 @@
 import React, { useEffect, useRef, useState, useCallback } from "react"
 import GoogleBusinessConnect from "@/components/GMB/GoogleBusinessConnect"
 import { Skeleton } from "@/components/ui/skeleton"
-import { useUser } from "@stackframe/stack"
+import { useUser } from "@hexclave/next"
 import { useGMBStore } from "@/store/gmbStore"
 import ErrorRender from "@/components/Error"
 

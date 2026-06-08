@@ -1,5 +1,5 @@
 import DashboardLayout from '@/app/layouts/DashboardLayout'
-import { AccountSettings } from '@stackframe/stack'
+import { AccountSettings } from '@hexclave/next'
 import React from 'react'
 
 export const metadata = {

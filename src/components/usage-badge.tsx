@@ -3,7 +3,7 @@
 import { useUsage, UsageMetric, UsageStatus } from "@/lib/use-usage";
 import { useSlot, SlotResource } from "@/lib/use-slot";
 import { cn } from "@/lib/utils";
-import { AlertTriangle, XCircle, CheckCircle2 } from "lucide-react";
+import { AlertTriangle, XCircle } from "lucide-react";
 import { ReactNode } from "react";
 
 // ─── Types ─────────────────────────────────────────────────────────────────────
@@ -27,239 +27,189 @@ interface SlotBadgeProps extends BaseBadgeProps {
 type UsageBadgeProps = MetricBadgeProps | SlotBadgeProps;
 
 interface StatusStyle {
-  badge: string;
-  bar: string;
-  barTrack: string;
-  text: string;
-  dot: string;
-  icon: ReactNode;
-  extraWrap?: string;
+  border:      string;
+  left:        string;
+  divider:     string;
+  middle:      string;
+  middleBg:    string;
+  right:       string;
+  icon:        ReactNode;
+  message:     string;
 }
 
-// ─── Constants ─────────────────────────────────────────────────────────────────
+// ─── Status styles ─────────────────────────────────────────────────────────────
 
 const STATUS_STYLES: Record<UsageStatus, StatusStyle> = {
   ok: {
-    badge:
-      "bg-emerald-50 text-emerald-700 border-emerald-200 hover:bg-emerald-100 transition-colors",
-    bar: "bg-emerald-500",
-    barTrack: "bg-black/10",
-    dot: "bg-emerald-500",
-    text: "",
-    icon: <CheckCircle2 className="w-3.5 h-3.5 flex-shrink-0" />,
+    border:   "border-zinc-300 dark:border-zinc-600",
+    left:     "bg-zinc-200 text-zinc-600 dark:bg-zinc-700 dark:text-zinc-300",
+    divider:  "bg-zinc-300 dark:bg-zinc-600",
+    middleBg: "bg-white dark:bg-zinc-900",
+    middle:   "text-zinc-500 dark:text-zinc-400",
+    right:    "bg-zinc-200 text-zinc-600 dark:bg-zinc-700 dark:text-zinc-300",
+    icon:     null,
+    message:  "Available",
   },
   warning: {
-    badge:
-      "bg-amber-50 text-amber-800 border-amber-300 shadow-sm shadow-amber-200/80 hover:bg-amber-100 transition-colors",
-    bar: "bg-amber-500",
-    barTrack: "bg-amber-200/60",
-    dot: "bg-amber-500",
-    text: "text-amber-900 font-bold",
-    icon: (
-      <AlertTriangle className="w-3.5 h-3.5 flex-shrink-0 text-amber-600 animate-[pulse_1.8s_ease-in-out_infinite]" />
-    ),
+    border:   "border-amber-400 dark:border-amber-700",
+    left:     "bg-amber-400 text-white dark:bg-amber-600 dark:text-white",
+    divider:  "bg-amber-300 dark:bg-amber-700",
+    middleBg: "bg-amber-50 dark:bg-amber-950",
+    middle:   "text-amber-700 dark:text-amber-300",
+    right:    "bg-amber-400 text-white dark:bg-amber-600 dark:text-white",
+    icon:     <AlertTriangle className="w-3 h-3 flex-shrink-0" />,
+    message:  "Near limit",
   },
   exceeded: {
-    badge:
-      "bg-red-600 text-white border-red-700 shadow-lg shadow-red-400/50 scale-[1.03] hover:bg-red-700 transition-all duration-150",
-    bar: "bg-white/70",
-    barTrack: "bg-red-800/40",
-    dot: "bg-white",
-    text: "text-white font-extrabold tracking-wide",
-    icon: (
-      <XCircle className="w-4 h-4 flex-shrink-0 animate-[pulse_0.9s_ease-in-out_infinite]" />
-    ),
-    extraWrap:
-      "ring-2 ring-red-400 ring-offset-1 animate-[pulse_2s_ease-in-out_infinite] rounded-lg",
+    border:   "border-red-500 dark:border-red-700",
+    left:     "bg-red-500 text-white dark:bg-red-700 dark:text-white",
+    divider:  "bg-red-400 dark:bg-red-600",
+    middleBg: "bg-red-50 dark:bg-red-950",
+    middle:   "text-red-600 dark:text-red-300",
+    right:    "bg-red-500 text-white dark:bg-red-700 dark:text-white",
+    icon:     <XCircle className="w-3 h-3 flex-shrink-0" />,
+    message:  "Limit exceeded",
   },
 };
 
 // ─── Sub-components ────────────────────────────────────────────────────────────
 
-const ProgressBar = ({
-  percentage,
-  barClass,
-  trackClass,
-}: {
-  percentage: number;
-  barClass: string;
-  trackClass: string;
-}) => (
-  <span
-    className={cn(
-      "relative inline-block w-14 h-1.5 rounded-full overflow-hidden flex-shrink-0",
-      trackClass
-    )}
-  >
-    <span
-      className={cn(
-        "absolute inset-y-0 left-0 rounded-full transition-all duration-500",
-        barClass
-      )}
-      style={{ width: `${Math.min(percentage, 100)}%` }}
-    />
-  </span>
-);
-
-const Badge = ({
-  className,
-  wrapClass,
-  children,
-}: {
-  className?: string;
-  wrapClass?: string;
-  children: ReactNode;
-}) => {
-  const inner = (
-    <span
-      className={cn(
-        "inline-flex items-center gap-1.5 px-3 py-1 rounded-lg text-xs font-medium border",
-        className
-      )}
-    >
-      {children}
-    </span>
-  );
-  return wrapClass ? <span className={wrapClass}>{inner}</span> : inner;
-};
-
-// Only shown on true first-load (no stale data yet)
 const LoadingBadge = ({ className }: { className?: string }) => (
-  <Badge className={cn("border-neutral-200", className)}>
-    <span className="w-12 h-2 rounded bg-neutral-200 animate-pulse" />
-  </Badge>
+  <div className={cn(
+    "inline-flex h-[28px] w-36 animate-pulse rounded-full",
+    "bg-zinc-100 dark:bg-zinc-800",
+    className
+  )} />
 );
 
-const DisabledBadge = ({
+const FlatBadge = ({
   label,
+  message,
   className,
 }: {
   label: string;
+  message: string;
   className?: string;
 }) => (
-  <Badge className={cn("bg-gray-50 text-gray-500 border-gray-200", className)}>
-    <span className="w-2 h-2 rounded-full bg-gray-300 flex-shrink-0" />
-    {label}
-    <span className="opacity-60">· Not included</span>
-  </Badge>
+  <div className={cn(
+    "inline-flex items-stretch overflow-hidden rounded-full border cursor-default",
+    "border-zinc-300 dark:border-zinc-600",
+    className
+  )}>
+    <div className="flex items-center px-3 py-1 bg-zinc-200 text-zinc-500 dark:bg-zinc-700 dark:text-zinc-400">
+      <span className="text-[11px] font-bold uppercase tracking-widest whitespace-nowrap">{label}</span>
+    </div>
+    <div className="w-px bg-zinc-300 dark:bg-zinc-600" />
+    <span className="flex items-center px-3 py-1 text-xs bg-white dark:bg-zinc-900 text-zinc-400 dark:text-zinc-500 whitespace-nowrap">
+      {message}
+    </span>
+  </div>
 );
 
-const ErrorBadge = () => (
-  <Badge className="bg-red-50 text-red-700 border-red-200">
-    <XCircle className="w-3.5 h-3.5" />
-    Not available
-  </Badge>
-);
+// ─── Core segmented badge ──────────────────────────────────────────────────────
 
-const NoPlanBadge = ({
-  label,
-  className,
-}: {
-  label: string;
-  className?: string;
-}) => (
-  <Badge className={cn("bg-gray-50 text-gray-500 border-gray-200", className)}>
-    <span className="w-2 h-2 rounded-full bg-gray-300 flex-shrink-0" />
-    {label}
-    <span className="opacity-60">· No plan</span>
-  </Badge>
-);
-
-const UsageContent = ({
+const SegmentedBadge = ({
   label,
   current,
   limit,
   status,
-  showBar,
   className,
 }: {
-  label: string;
-  current: number;
-  limit: number;
-  status: UsageStatus;
-  showBar?: boolean;
+  label:     string;
+  current:   number;
+  limit:     number;
+  status:    UsageStatus;
   className?: string;
 }) => {
-  const styles = STATUS_STYLES[status];
-  const percentage = limit > 0 ? (current / limit) * 100 : 0;
+  const s = STATUS_STYLES[status];
 
   return (
-    <Badge className={cn(styles.badge, className)} wrapClass={styles.extraWrap}>
-      {styles.icon}
-      <span className="font-medium">{label}</span>
-      <span className={cn("opacity-70", status === "exceeded" && "text-white")}>
-        ·
+    <div className={cn(
+      "inline-flex items-stretch overflow-hidden rounded-full border cursor-default w-fit shadow-sm",
+      s.border,
+      className
+    )}>
+      {/* Left — icon + label, solid filled */}
+      <div className={cn("flex items-center gap-1.5 px-3 py-1", s.left)}>
+        {s.icon}
+        <span className="text-[11px] font-bold uppercase tracking-widest whitespace-nowrap">
+          {label}
+        </span>
+      </div>
+
+      {/* Divider */}
+      <div className={cn("w-px", s.divider)} />
+
+      {/* Middle — status message */}
+      <span className={cn(
+        "flex items-center px-3 py-1 text-xs font-medium whitespace-nowrap",
+        s.middleBg,
+        s.middle,
+      )}>
+        {s.message}
       </span>
-      <span className={cn("tabular-nums", styles.text)}>
-        {current}/{limit}
+
+      {/* Divider */}
+      <div className={cn("w-px", s.divider)} />
+
+      {/* Right — used/limit, solid filled */}
+      <span className={cn(
+        "flex items-center gap-0.5 px-3 py-1 text-xs font-bold font-mono tabular-nums whitespace-nowrap",
+        s.right,
+      )}>
+        <span>{current}</span>
+        <span className="opacity-60">/</span>
+        <span>{limit}</span>
       </span>
-      {showBar && (
-        <ProgressBar
-          percentage={percentage}
-          barClass={styles.bar}
-          trackClass={styles.barTrack}
-        />
-      )}
-    </Badge>
+    </div>
   );
 };
 
-// ─── Slot Variant ──────────────────────────────────────────────────────────────
+// ─── Slot variant ──────────────────────────────────────────────────────────────
 
-const SlotBadgeInner = ({ slot, label, showBar, className }: SlotBadgeProps) => {
+const SlotBadgeInner = ({ slot, label, className }: SlotBadgeProps) => {
   const { data, isLoading, canAdd } = useSlot(slot);
 
-  // Show skeleton only on true first-load — keep stale data visible during refetch
   if (isLoading && !data) return <LoadingBadge className={className} />;
-  if (!data) return null;
+  if (!data)              return null;
+  if (data.limit === 0)   return <FlatBadge label={label} message="Not included" className={className} />;
 
-  if (data.limit === 0) return <DisabledBadge label={label} className={className} />;
-
-  const status: UsageStatus = !canAdd
-    ? "exceeded"
-    : data.remaining <= 1
-    ? "warning"
-    : "ok";
+  const status: UsageStatus =
+    !canAdd             ? "exceeded" :
+    data.remaining <= 2 ? "warning"  :
+                          "ok";
 
   return (
-    <UsageContent
+    <SegmentedBadge
       label={label}
       current={data.current}
       limit={data.limit}
       status={status}
-      showBar={showBar}
       className={className}
     />
   );
 };
 
-// ─── Metric Variant ────────────────────────────────────────────────────────────
+// ─── Metric variant ────────────────────────────────────────────────────────────
 
-const MetricBadgeInner = ({
-  metric,
-  label,
-  showBar,
-  className,
-}: MetricBadgeProps) => {
+const MetricBadgeInner = ({ metric, label, className }: MetricBadgeProps) => {
   const { data, isLoading, statusFor, error } = useUsage();
 
-  // Show skeleton only on true first-load — keep stale data visible during refetch
   if (isLoading && !data && !error) return <LoadingBadge className={className} />;
-  if (error) return <ErrorBadge />;
-  if (!data?.plan) return <NoPlanBadge label={label} className={className} />;
+  if (error)       return <FlatBadge label={label} message="Not available" className={className} />;
+  if (!data?.plan) return <FlatBadge label={label} message="No plan" className={className} />;
 
-  const used = data.used[metric];
+  const used  = data.used[metric];
   const limit = data.limits[metric];
 
-  if (limit === 0) return <DisabledBadge label={label} className={className} />;
+  if (limit === 0) return <FlatBadge label={label} message="Not included" className={className} />;
 
   return (
-    <UsageContent
+    <SegmentedBadge
       label={label}
       current={used}
       limit={limit}
       status={statusFor(metric)}
-      showBar={showBar}
       className={className}
     />
   );
@@ -267,12 +217,6 @@ const MetricBadgeInner = ({
 
 // ─── Public API ────────────────────────────────────────────────────────────────
 
-/**
- * UsageBadge — displays a metric or slot limit with status-aware styling.
- *
- * @example <UsageBadge metric="api_calls" label="API Calls" showBar />
- * @example <UsageBadge slot="seats" label="Team Seats" />
- */
 export function UsageBadge({ label, className, ...props }: UsageBadgeProps) {
   if ("slot" in props && props.slot != null) {
     return (
@@ -285,7 +229,7 @@ export function UsageBadge({ label, className, ...props }: UsageBadgeProps) {
     );
   }
 
-  const { metric, showBar } = props as MetricBadgeProps;
+  const { metric } = props as MetricBadgeProps;
 
   if (!metric) {
     console.warn("UsageBadge: `metric` is required when `slot` is not provided");
@@ -296,7 +240,7 @@ export function UsageBadge({ label, className, ...props }: UsageBadgeProps) {
     <MetricBadgeInner
       metric={metric}
       label={label}
-      showBar={showBar}
+      showBar={props.showBar}
       className={className}
     />
   );

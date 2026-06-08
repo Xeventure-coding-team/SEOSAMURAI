@@ -9,48 +9,51 @@ import {
   DropdownMenuSeparator,
 } from "@/components/ui/dropdown-menu"
 import {
-  MapPin,
-  Eye,
-  Settings2,
-  Building2,
-  Plus,
-  RotateCcw,
-  MoreHorizontal,
-  Lock,
-  ArrowUpRight,
-  Globe,
-  Globe2,
-  Zap,
-  FileText,
-  BarChart3,
-  TrendingUp,
-  Share2,
-  MessageSquare,
-  MapPinned,
-  Clock,
-  Image,
-  Activity,
-  AlertCircle,
-  CheckCircle2,
-  ShoppingBag,
-  Tag,
+  MapPin, Eye, Settings2, Building2, Plus, RotateCcw,
+  MoreHorizontal, ArrowUpRight, Globe, Zap, FileText,
+  BarChart3, TrendingUp, Share2, MessageSquare, MapPinned,
+  Clock, Image, Activity, AlertCircle, CheckCircle2, Tag,
+  Phone, ExternalLink,
+  FilterX,
 } from "lucide-react"
 import Link from "next/link"
 import { cn } from "@/lib/utils"
+import { UsageGate } from "../usage-gate"
+
+type StorefrontAddress = {
+  locality?: string
+  administrativeArea?: string
+  postalCode?: string
+  addressLines?: string[]
+  regionCode?: string
+}
 
 type Location = {
   _id?: string
   id?: string
   name: string
   title: string
+  displayName?: string
   formattedAddress: string
   profile?: { description?: string }
   websiteUri?: string
-  categories?: { primaryCategory?: { displayName: string } }
-  storefrontAddress?: { addressLines?: string[]; locality?: string }
+  businessWebsite?: string | null
+  categories?: {
+    primaryCategory?: { displayName: string }
+    additionalCategories?: { displayName: string }[]
+  }
+  storefrontAddress?: StorefrontAddress
+  phoneNumbers?: { primaryPhone?: string; additionalPhones?: string[] }
+  metadata?: {
+    placeId?: string
+    mapsUri?: string
+    newReviewUri?: string
+    canDelete?: boolean
+  }
   location_id?: string
   location_name?: string
   is_active?: boolean
+  last_rank_updated?: string | null
 }
 
 interface LocationCardListProps {
@@ -64,36 +67,39 @@ interface LocationCardListProps {
   getPreferredLocality: (location: Location) => string
 }
 
-// ─── Meta pill ────────────────────────────────────────────────────────────────
-const MetaPill: React.FC<{
-  icon: React.ReactNode
-  label: string
-  variant?: "default" | "category" | "muted"
-}> = ({ icon, label, variant = "default" }) => (
-  <span
-    className={cn(
-      "inline-flex items-center gap-1.5 text-xs font-medium px-2.5 py-1 rounded-full",
-      variant === "category" && "bg-blue-50 text-blue-700 border border-blue-200 dark:bg-blue-950/30 dark:text-blue-400 dark:border-blue-800/40",
-      variant === "default" && "text-muted-foreground",
-      variant === "muted" && "text-muted-foreground/60"
-    )}
-  >
-    {icon}
-    {label}
-  </span>
-)
+// ─── Helpers ──────────────────────────────────────────────────────────────────
+const getLocality = (location: Location): string => {
+  return (
+    location.storefrontAddress?.locality ||
+    location.storefrontAddress?.administrativeArea ||
+    location.formattedAddress?.split(",")[1]?.trim() ||
+    ""
+  )
+}
+
+const getWebsite = (location: Location): string | null =>
+  location.websiteUri || location.businessWebsite || null
+
+const getCategoryName = (location: Location): string =>
+  location.categories?.primaryCategory?.displayName || ""
+
+const getPhone = (location: Location): string =>
+  location.phoneNumbers?.primaryPhone || ""
+
+const getMapsUri = (location: Location): string =>
+  location.metadata?.mapsUri || ""
 
 // ─── Status badge ─────────────────────────────────────────────────────────────
 const StatusBadge: React.FC<{ active: boolean }> = ({ active }) =>
   active ? (
-    <span className="inline-flex items-center gap-1 text-xs font-medium px-2 py-0.5 rounded-full bg-green-50 text-green-700 border border-green-200 dark:bg-green-950/30 dark:text-green-400 dark:border-green-800/50">
-      <CheckCircle2 className="h-3 w-3" />
+    <span className="inline-flex items-center gap-1.5 text-xs font-semibold px-3 py-1.5 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200 dark:bg-emerald-950/40 dark:text-emerald-300 dark:border-emerald-800/60 shadow-sm">
+      <CheckCircle2 className="h-3.5 w-3.5" />
       Active
     </span>
   ) : (
-    <span className="inline-flex items-center gap-1 text-xs font-medium px-2 py-0.5 rounded-full bg-red-50 text-red-600 border border-red-200 dark:bg-red-950/30 dark:text-red-400 dark:border-red-800/50">
-      <AlertCircle className="h-3 w-3" />
-      Inactive
+    <span className="inline-flex items-center gap-1.5 text-xs font-semibold px-3 py-1.5 rounded-full bg-slate-100 text-slate-600 border border-slate-200 dark:bg-slate-800/40 dark:text-slate-400 dark:border-slate-700/60 shadow-sm">
+      <AlertCircle className="h-3.5 w-3.5" />
+      Paused
     </span>
   )
 
@@ -101,72 +107,72 @@ const StatusBadge: React.FC<{ active: boolean }> = ({ active }) =>
 const MoreDropdown: React.FC<{ locationSlug: string }> = ({ locationSlug }) => (
   <DropdownMenu>
     <DropdownMenuTrigger asChild>
-      <Button variant="ghost" size="sm" className="h-8 w-8 p-0 rounded-lg" aria-label="More options">
-        <MoreHorizontal className="h-4 w-4" />
+      <Button
+        variant="ghost"
+        size="sm"
+        className="h-9 w-9 p-0 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
+        aria-label="More options"
+      >
+        <MoreHorizontal className="h-4 w-4 text-slate-600 dark:text-slate-400" />
       </Button>
     </DropdownMenuTrigger>
-    <DropdownMenuContent align="end" className="w-52">
-      <DropdownMenuLabel className="text-xs text-muted-foreground uppercase tracking-wide font-medium">View</DropdownMenuLabel>
+    <DropdownMenuContent align="end" className="w-56">
+      <DropdownMenuLabel className="text-xs text-slate-500 uppercase tracking-widest font-semibold px-2 py-1.5">View</DropdownMenuLabel>
       <DropdownMenuItem asChild>
-        <Link href={`/app/locations/${locationSlug}#overview`} className="flex items-center gap-2.5">
-          <Eye className="h-4 w-4 text-muted-foreground" /> Overview
+        <Link href={`/app/locations/${locationSlug}#overview`} className="flex items-center gap-3 cursor-pointer">
+          <Eye className="h-4 w-4 text-slate-500" /> Overview
         </Link>
       </DropdownMenuItem>
       <DropdownMenuItem asChild>
-        <Link href={`/app/locations/${locationSlug}#reviews`} className="flex items-center gap-2.5">
-          <MessageSquare className="h-4 w-4 text-muted-foreground" /> Reviews
+        <Link href={`/app/locations/${locationSlug}#reviews`} className="flex items-center gap-3 cursor-pointer">
+          <MessageSquare className="h-4 w-4 text-slate-500" /> Customer Reviews
         </Link>
       </DropdownMenuItem>
       <DropdownMenuItem asChild>
-        <Link href={`/app/locations/${locationSlug}#hours`} className="flex items-center gap-2.5">
-          <Clock className="h-4 w-4 text-muted-foreground" /> Hours
+        <Link href={`/app/locations/${locationSlug}#hours`} className="flex items-center gap-3 cursor-pointer">
+          <Clock className="h-4 w-4 text-slate-500" /> Hours
         </Link>
       </DropdownMenuItem>
       <DropdownMenuItem asChild>
-        <Link href={`/app/locations/${locationSlug}#media`} className="flex items-center gap-2.5">
-          <Image className="h-4 w-4 text-muted-foreground" /> Media
+        <Link href={`/app/locations/${locationSlug}#media`} className="flex items-center gap-3 cursor-pointer">
+          <Image className="h-4 w-4 text-slate-500" /> Media
         </Link>
       </DropdownMenuItem>
       <DropdownMenuItem asChild>
-        <Link href={`/app/locations/${locationSlug}#location-map`} className="flex items-center gap-2.5">
-          <MapPinned className="h-4 w-4 text-muted-foreground" /> Location map
+        <Link href={`/app/locations/${locationSlug}#location-map`} className="flex items-center gap-3 cursor-pointer">
+          <MapPinned className="h-4 w-4 text-slate-500" /> Location map
         </Link>
       </DropdownMenuItem>
       <DropdownMenuItem asChild>
-        <Link href={`/app/locations/${locationSlug}#health`} className="flex items-center gap-2.5">
-          <Activity className="h-4 w-4 text-muted-foreground" /> Health
+        <Link href={`/app/locations/${locationSlug}#health`} className="flex items-center gap-3 cursor-pointer">
+          <Activity className="h-4 w-4 text-slate-500" /> Health
         </Link>
       </DropdownMenuItem>
       <DropdownMenuSeparator />
-      <DropdownMenuLabel className="text-xs text-muted-foreground uppercase tracking-wide font-medium">Manage</DropdownMenuLabel>
+      <DropdownMenuLabel className="text-xs text-slate-500 uppercase tracking-widest font-semibold px-2 py-1.5">Manage</DropdownMenuLabel>
       <DropdownMenuItem asChild>
-        <Link href={`/app/locations/${locationSlug}/manage#tasks`} className="flex items-center gap-2.5">
-          <Zap className="h-4 w-4 text-muted-foreground" /> Tasks
+        <Link href={`/app/locations/${locationSlug}/manage#tasks`} className="flex items-center gap-3 cursor-pointer">
+          <Zap className="h-4 w-4 text-slate-500" /> Tasks
         </Link>
       </DropdownMenuItem>
       <DropdownMenuItem asChild>
-        <Link href={`/app/locations/${locationSlug}/manage#keywords`} className="flex items-center gap-2.5">
-          <FileText className="h-4 w-4 text-muted-foreground" /> Keywords
+        <Link href={`/app/locations/${locationSlug}/manage#keywords`} className="flex items-center gap-3 cursor-pointer">
+          <FileText className="h-4 w-4 text-slate-500" /> Keywords
         </Link>
       </DropdownMenuItem>
       <DropdownMenuItem asChild>
-        <Link href={`/app/locations/${locationSlug}/manage#analytics`} className="flex items-center gap-2.5">
-          <BarChart3 className="h-4 w-4 text-muted-foreground" /> Analytics
+        <Link href={`/app/locations/${locationSlug}/manage#analytics`} className="flex items-center gap-3 cursor-pointer">
+          <BarChart3 className="h-4 w-4 text-slate-500" /> Analytics
         </Link>
       </DropdownMenuItem>
       <DropdownMenuItem asChild>
-        <Link href={`/app/locations/${locationSlug}/manage#competitor-insights`} className="flex items-center gap-2.5">
-          <TrendingUp className="h-4 w-4 text-muted-foreground" /> Competitor insights
+        <Link href={`/app/locations/${locationSlug}/manage#competitor-insights`} className="flex items-center gap-3 cursor-pointer">
+          <TrendingUp className="h-4 w-4 text-slate-500" /> Competitor insights
         </Link>
       </DropdownMenuItem>
       <DropdownMenuItem asChild>
-        <Link href={`/app/locations/${locationSlug}/manage#social-posts`} className="flex items-center gap-2.5">
-          <Share2 className="h-4 w-4 text-muted-foreground" /> Social posts
-        </Link>
-      </DropdownMenuItem>
-      <DropdownMenuItem asChild>
-        <Link href={`/app/locations/${locationSlug}/manage#customer-reviews`} className="flex items-center gap-2.5">
-          <MessageSquare className="h-4 w-4 text-muted-foreground" /> Customer reviews
+        <Link href={`/app/locations/${locationSlug}/manage#social-posts`} className="flex items-center gap-3 cursor-pointer">
+          <Share2 className="h-4 w-4 text-slate-500" /> Social posts
         </Link>
       </DropdownMenuItem>
     </DropdownMenuContent>
@@ -174,176 +180,231 @@ const MoreDropdown: React.FC<{ locationSlug: string }> = ({ locationSlug }) => (
 )
 
 // ─── Active location card ─────────────────────────────────────────────────────
-const ActiveLocationCard: React.FC<{
-  location: Location
-  getPreferredLocality: (l: Location) => string
-}> = ({ location, getPreferredLocality }) => {
+const ActiveLocationCard: React.FC<{ location: Location }> = ({ location }) => {
   const slug = location.id
-  const category = location.categories?.primaryCategory?.displayName
-  const locality = getPreferredLocality(location)
-  const hasWebsite = !!location.websiteUri
+  const category = getCategoryName(location)
+  const locality = getLocality(location)
+  const website = getWebsite(location)
+  const phone = getPhone(location)
+  const mapsUri = getMapsUri(location)
 
   return (
-    <div className="bg-card border border-border rounded-xl p-4 space-y-3">
-      {/* Top row */}
-      <div className="flex items-start justify-between gap-3">
-        <div className="flex items-center gap-2.5 min-w-0">
-          <h3 className="font-semibold text-base text-foreground leading-tight truncate">
-            {location.title || "Untitled location"}
-          </h3>
-          <StatusBadge active={true} />
-        </div>
-        <div className="flex items-center gap-1.5 shrink-0">
-          <Button variant="outline" size="sm" asChild className="h-8 rounded-lg gap-1.5 text-sm font-medium">
-            <Link href={`/app/locations/${slug}`}>
-              <Eye className="h-3.5 w-3.5" />
-              Details
-            </Link>
-          </Button>
-          <Button size="sm" asChild className="h-8 rounded-lg gap-1.5 text-sm font-medium">
-            <Link href={`/app/locations/${slug}/manage`}>
-              <Settings2 className="h-3.5 w-3.5" />
-              Manage
-            </Link>
-          </Button>
-          <MoreDropdown locationSlug={slug!} />
-        </div>
-      </div>
+    <div className="group bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl overflow-hidden hover:border-slate-300 dark:hover:border-slate-700 transition-all duration-200 hover:shadow-sm">
 
-      {/* Description */}
-      {location.profile?.description && (
-        <p className="text-sm text-muted-foreground leading-relaxed line-clamp-2">
-          {location.profile.description}
-        </p>
-      )}
 
-      {/* Meta pills */}
-      <div className="flex flex-wrap items-center gap-2">
-        {category && (
-          <MetaPill
-            icon={<Tag className="h-3 w-3" />}
-            label={category}
-            variant="category"
-          />
-        )}
-        {locality && (
-          <MetaPill
-            icon={<MapPin className="h-3 w-3" />}
-            label={locality}
-          />
-        )}
-        <MetaPill
-          icon={<Globe className="h-3 w-3" />}
-          label={hasWebsite ? "Website live" : "No website"}
-          variant={hasWebsite ? "default" : "muted"}
-        />
+      <div className="p-5 space-y-4">
+        {/* Top row - Header */}
+        <div className="flex items-start justify-between gap-4">
+          <div className="flex-1 min-w-0">
+            <div className="flex items-center gap-3 mb-2">
+              <h3 className="font-bold text-lg text-slate-900 dark:text-white leading-tight truncate">
+                {location.title}
+              </h3>
+              <StatusBadge active={true} />
+            </div>
+            {location.profile?.description && (
+              <p className="text-sm text-slate-600 dark:text-slate-400 leading-relaxed line-clamp-1">
+                {location.profile.description}
+              </p>
+            )}
+          </div>
+          <div className="flex items-center gap-2 shrink-0">
+            <Button
+              variant="outline"
+              size="sm"
+              asChild
+              className="h-9 rounded-lg gap-2 text-sm font-medium border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-800"
+            >
+              <Link href={`/app/locations/${slug}`}>
+                <Eye className="h-4 w-4" />
+                Details
+              </Link>
+            </Button>
+            <Button
+              size="sm"
+              asChild
+              className="h-9 rounded-lg gap-2 text-sm font-medium bg-blue-600 hover:bg-blue-700 text-white"
+            >
+              <Link href={`/app/locations/${slug}/manage`}>
+                <Settings2 className="h-4 w-4" />
+                Manage
+              </Link>
+            </Button>
+            <MoreDropdown locationSlug={slug!} />
+          </div>
+        </div>
+
+        {/* Meta pills - Enhanced styling */}
+        <div className="flex flex-wrap items-center gap-2.5 pt-2">
+          {category && (
+            <span className="inline-flex items-center gap-2 text-xs font-semibold px-3 py-1.5 rounded-lg bg-blue-50 text-blue-700 border border-blue-200 dark:bg-blue-950/40 dark:text-blue-300 dark:border-blue-800/50 shadow-sm">
+              <Tag className="h-3.5 w-3.5" />
+              {category}
+            </span>
+          )}
+          {locality && (
+            <span className="inline-flex items-center gap-2 text-xs font-medium px-3 py-1.5 rounded-lg bg-slate-100 text-slate-700 border border-slate-200 dark:bg-slate-800/50 dark:text-slate-300 dark:border-slate-700/50">
+              <MapPin className="h-3.5 w-3.5" />
+              {locality}
+            </span>
+          )}
+          {phone && (
+            <span className="inline-flex items-center gap-2 text-xs font-medium px-3 py-1.5 rounded-lg bg-slate-100 text-slate-700 border border-slate-200 dark:bg-slate-800/50 dark:text-slate-300 dark:border-slate-700/50">
+              <Phone className="h-3.5 w-3.5" />
+              {phone}
+            </span>
+          )}
+          {website && (
+            <a
+              href={website}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-2 text-xs font-medium px-3 py-1.5 rounded-lg bg-emerald-50 text-emerald-700 border border-emerald-200 dark:bg-emerald-950/40 dark:text-emerald-300 dark:border-emerald-800/50 hover:bg-emerald-100 dark:hover:bg-emerald-950/60 transition-colors shadow-sm"
+            >
+              <Globe className="h-3.5 w-3.5" />
+              Website
+              <ExternalLink className="h-3 w-3" />
+            </a>
+          )}
+          {mapsUri && (
+            <a
+              href={mapsUri}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-2 text-xs font-medium px-3 py-1.5 rounded-lg bg-slate-100 text-slate-700 border border-slate-200 dark:bg-slate-800/50 dark:text-slate-300 dark:border-slate-700/50 hover:bg-slate-200 dark:hover:bg-slate-700/50 transition-colors"
+            >
+              <MapPinned className="h-3.5 w-3.5" />
+              Maps
+              <ExternalLink className="h-3 w-3" />
+            </a>
+          )}
+        </div>
       </div>
     </div>
   )
 }
 
 // ─── Inactive location card ───────────────────────────────────────────────────
-const InactiveLocationCard: React.FC<{
-  location: Location
-  getPreferredLocality: (l: Location) => string
-}> = ({ location, getPreferredLocality }) => {
-  const category = location.categories?.primaryCategory?.displayName
-  const locality = getPreferredLocality(location)
-  const hasWebsite = !!location.websiteUri
+const InactiveLocationCard: React.FC<{ location: Location }> = ({ location }) => {
+  const category = getCategoryName(location)
+  const locality = getLocality(location)
+  const website = getWebsite(location)
+  const phone = getPhone(location)
 
   return (
-    <div className="bg-card border border-border rounded-xl p-4 space-y-3">
-      {/* Top row */}
-      <div className="flex items-start justify-between gap-3">
-        <div className="flex items-center gap-2.5 min-w-0 opacity-70">
-          <h3 className="font-semibold text-base text-foreground leading-tight truncate">
-            {location.title || "Untitled location"}
-          </h3>
-          <StatusBadge active={false} />
+    <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl overflow-hidden opacity-75 hover:opacity-100 transition-opacity">
+
+
+      <div className="p-5 space-y-4">
+        {/* Top row */}
+        <div className="flex items-start justify-between gap-4">
+          <div className="flex-1 min-w-0">
+            <div className="flex items-center gap-3 mb-2">
+              <h3 className="font-bold text-lg text-slate-900 dark:text-white leading-tight truncate">
+                {location.title}
+              </h3>
+              <StatusBadge active={false} />
+            </div>
+            {location.profile?.description && (
+              <p className="text-sm text-slate-600 dark:text-slate-400 leading-relaxed line-clamp-2">
+                {location.profile.description}
+              </p>
+            )}
+          </div>
+          <Button
+            size="sm"
+            asChild
+            className="shrink-0 h-9 rounded-lg gap-2 text-sm font-medium bg-blue-600 hover:bg-blue-700 text-white"
+          >
+            <Link href="/app/settings/billing">
+              <ArrowUpRight className="h-4 w-4" />
+              Upgrade
+            </Link>
+          </Button>
         </div>
-        <Button
-          size="sm"
-          variant="outline"
-          asChild
-          className="shrink-0 h-8 rounded-lg gap-1.5 text-sm font-medium"
-        >
-          <Link href="/app/settings/billing">
-            <ArrowUpRight className="h-3.5 w-3.5" />
-            Upgrade to activate
-          </Link>
-        </Button>
-      </div>
 
-      {/* Description */}
-      {location.profile?.description && (
-        <p className="text-sm text-muted-foreground leading-relaxed line-clamp-2 opacity-70">
-          {location.profile.description}
-        </p>
-      )}
+        {/* Meta pills */}
+        <div className="flex flex-wrap items-center gap-2.5 pt-2">
+          {category && (
+            <span className="inline-flex items-center gap-2 text-xs font-semibold px-3 py-1.5 rounded-lg bg-slate-100 text-slate-600 border border-slate-200 dark:bg-slate-800/50 dark:text-slate-400 dark:border-slate-700/50 opacity-60">
+              <Tag className="h-3.5 w-3.5" />
+              {category}
+            </span>
+          )}
+          {locality && (
+            <span className="inline-flex items-center gap-2 text-xs font-medium px-3 py-1.5 rounded-lg bg-slate-100 text-slate-600 border border-slate-200 dark:bg-slate-800/50 dark:text-slate-400 dark:border-slate-700/50 opacity-60">
+              <MapPin className="h-3.5 w-3.5" />
+              {locality}
+            </span>
+          )}
+          {phone && (
+            <span className="inline-flex items-center gap-2 text-xs font-medium px-3 py-1.5 rounded-lg bg-slate-100 text-slate-600 border border-slate-200 dark:bg-slate-800/50 dark:text-slate-400 dark:border-slate-700/50 opacity-60">
+              <Phone className="h-3.5 w-3.5" />
+              {phone}
+            </span>
+          )}
+          <span className="inline-flex items-center gap-2 text-xs text-slate-500 px-3 py-1.5 rounded-lg bg-slate-100 border border-slate-200 dark:bg-slate-800/30 dark:text-slate-500 dark:border-slate-700/30 opacity-60">
+            <Globe className="h-3.5 w-3.5" />
+            {website ? "Website" : "No website"}
+          </span>
+        </div>
 
-      {/* Meta pills */}
-      <div className="flex flex-wrap items-center gap-2 opacity-60">
-        {category && (
-          <MetaPill
-            icon={<Tag className="h-3 w-3" />}
-            label={category}
-            variant="category"
-          />
-        )}
-        {locality && (
-          <MetaPill
-            icon={<MapPin className="h-3 w-3" />}
-            label={locality}
-          />
-        )}
-        <MetaPill
-          icon={<Globe className="h-3 w-3" />}
-          label={hasWebsite ? "Website locked" : "No website"}
-          variant="muted"
-        />
-      </div>
-
-      {/* Inactive notice */}
-      <div className="flex items-start gap-2 rounded-lg bg-muted/50 border border-border px-3 py-2.5">
-        <AlertCircle className="h-4 w-4 text-muted-foreground shrink-0 mt-0.5" />
-        <p className="text-xs text-muted-foreground leading-relaxed">
-          This location is paused — your Starter plan only includes 1 active location. Upgrade to make it visible on Google Business.
-        </p>
+        {/* Inactive notice */}
+        <div className="flex items-start gap-3 rounded-lg bg-slate-50 dark:bg-slate-800/40 border border-slate-200 dark:border-slate-700/60 border-l-4 border-l-amber-500 px-4 py-3 mt-3">
+          <AlertCircle className="h-4 w-4 text-amber-600 dark:text-amber-400 shrink-0 mt-0.5" />
+          <p className="text-xs text-slate-700 dark:text-slate-300 leading-relaxed">
+            This location is paused — your Starter plan only includes 1 active location.{" "}
+            <Link href="/app/settings/billing" className="font-semibold text-blue-600 dark:text-blue-400 hover:underline">
+              Upgrade your plan
+            </Link>{" "}
+            to make it visible on Google Business.
+          </p>
+        </div>
       </div>
     </div>
   )
 }
 
-// ─── Empty state ──────────────────────────────────────────────────────────────
 const EmptyState: React.FC<{ hasFilters: boolean; clearFilters: () => void }> = ({
   hasFilters,
   clearFilters,
 }) => (
-  <div className="flex flex-col items-center justify-center py-20 text-center">
-    <div className="w-14 h-14 rounded-2xl bg-muted flex items-center justify-center mb-4">
-      <Building2 className="h-7 w-7 text-muted-foreground" />
-    </div>
-    <h3 className="font-semibold text-base mb-1.5">
-      {hasFilters ? "No matches found" : "No locations yet"}
-    </h3>
-    <p className="text-sm text-muted-foreground max-w-xs mb-6 leading-relaxed">
+  <div className="flex flex-col items-center justify-center py-28 text-center px-6">
+    <div className="w-16 h-16 rounded-2xl bg-muted flex items-center justify-center mb-6">
       {hasFilters
-        ? "Try adjusting your search or filters to find what you're looking for."
-        : "Get started by adding your first Google Business location."}
+        ? <FilterX className="h-7 w-7 text-muted-foreground" />
+        : <Building2 className="h-7 w-7 text-muted-foreground" />
+      }
+    </div>
+
+    <h3 className="text-lg font-medium text-foreground mb-2">
+      {hasFilters ? "No locations found" : "No locations yet"}
+    </h3>
+
+    <p className="text-sm text-muted-foreground max-w-[300px] mb-7 leading-relaxed">
+      {hasFilters
+        ? "No results match your current filters. Try adjusting your search or clearing them."
+        : "Add your first Google Business location to start managing your online presence."}
     </p>
+
     {hasFilters ? (
-      <Button variant="outline" size="sm" onClick={clearFilters} className="gap-1.5 rounded-xl">
-        <RotateCcw className="h-3.5 w-3.5" /> Clear filters
+      <Button variant="outline" onClick={clearFilters} className="gap-2">
+        <RotateCcw className="h-4 w-4" />
+        Clear filters
       </Button>
     ) : (
-      <Button size="sm" asChild className="gap-1.5 rounded-xl">
-        <Link href="/app/locations/add">
-          <Plus className="h-3.5 w-3.5" /> Add first location
-        </Link>
-      </Button>
+      <UsageGate slot="locations">
+        <Button asChild className="gap-2">
+          <Link href="/app/locations/add">
+            <Plus className="h-4 w-4" />
+            Add first location
+          </Link>
+        </Button>
+      </UsageGate>
     )}
   </div>
 )
+
 
 // ─── Main export ──────────────────────────────────────────────────────────────
 const LocationCardList: React.FC<LocationCardListProps> = ({
@@ -351,7 +412,6 @@ const LocationCardList: React.FC<LocationCardListProps> = ({
   paginatedLocations,
   hasActiveFilters,
   clearFilters,
-  getPreferredLocality,
 }) => {
   if (filteredAndSortedLocations.length === 0) {
     return <EmptyState hasFilters={hasActiveFilters} clearFilters={clearFilters} />
@@ -360,18 +420,16 @@ const LocationCardList: React.FC<LocationCardListProps> = ({
   return (
     <div className="space-y-3">
       {paginatedLocations.map((location) => {
-        const isActive = location.is_active !== false
+        const isActive = location.is_active === true
         return isActive ? (
           <ActiveLocationCard
-            key={location.location_id || location.name}
+            key={location.id || location.location_id}
             location={location}
-            getPreferredLocality={getPreferredLocality}
           />
         ) : (
           <InactiveLocationCard
-            key={location.location_id || location.name}
+            key={location.id || location.location_id}
             location={location}
-            getPreferredLocality={getPreferredLocality}
           />
         )
       })}

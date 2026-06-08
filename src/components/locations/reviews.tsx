@@ -42,6 +42,7 @@ import toast from "react-hot-toast"
 import { useGMBStore } from "@/store/gmbStore"
 import { Loader } from "../Loader/Loader"
 import { UsageGate } from "../usage-gate"
+import { ReviewsAnalytics } from "../reviews/ReviewsAnalytics"
 
 interface Review {
   reviewId: string
@@ -498,6 +499,9 @@ export default function Reviews({
     )
   }
 
+  console.log(validReviews);
+
+
   return (
     <Card className={`${className}`}>
       <CardHeader>
@@ -534,6 +538,17 @@ export default function Reviews({
         </div>
       </CardHeader>
       <CardContent>
+
+        <ReviewsAnalytics data={validReviews} />
+
+        <div className="flex items-center gap-4 my-8">
+          <div className="flex-1 h-px bg-gray-300"></div>
+          <h1 className="text-2xl font-bold">
+            Reviews
+          </h1>
+          <div className="flex-1 h-px bg-gray-300"></div>
+        </div>
+
         {paginatedReviews.length > 0 ? (
           <div className="space-y-4">
             {paginatedReviews.map((review) => {
@@ -609,16 +624,22 @@ export default function Reviews({
                                 Reply
                               </Button>
                             </DialogTrigger>
-                            <DialogContent className="sm:max-w-[525px]">
-                              <DialogHeader>
-                                <DialogTitle>Reply to Review</DialogTitle>
-                                <DialogDescription>
-                                  Responding to {review.reviewer?.displayName || "Anonymous"}'s review
+                            <DialogContent className="sm:max-w-[540px] p-0 gap-0 overflow-hidden">
+                              {/* Header */}
+                              <DialogHeader className="px-6 pt-6 pb-4 border-b">
+                                <DialogTitle className="text-base font-medium">Reply to Review</DialogTitle>
+                                <DialogDescription className="text-sm">
+                                  Responding to{" "}
+                                  <span className="font-medium text-foreground">
+                                    {review.reviewer?.displayName || "Anonymous"}
+                                  </span>
+                                  's review
                                 </DialogDescription>
                               </DialogHeader>
 
-                              <div className="space-y-4">
-                                <div className="p-3 bg-muted rounded-lg">
+                              <div className="px-6 py-5 flex flex-col gap-4">
+                                {/* Review preview card */}
+                                <div className="bg-muted/60 border rounded-xl p-4">
                                   <div className="flex items-center gap-2 mb-2">
                                     <div className="flex">
                                       {Array.from({ length: 5 }).map((_, i) => (
@@ -626,79 +647,85 @@ export default function Reviews({
                                           key={i}
                                           className={`w-3 h-3 ${i < ratingToNumber(review.starRating)
                                             ? "text-yellow-400 fill-current"
-                                            : "text-gray-300"
+                                            : "text-muted-foreground/30"
                                             }`}
                                         />
                                       ))}
                                     </div>
-                                    <span className="text-xs text-muted-foreground">
+                                    <span className="text-xs font-medium text-foreground">
                                       {review.reviewer?.displayName || "Anonymous"}
                                     </span>
                                   </div>
-                                  <p className="text-sm">{review.comment || "No review text provided"}</p>
+                                  <p className="text-sm leading-relaxed">
+                                    {review.comment || "No review text provided"}
+                                  </p>
                                 </div>
 
-                                <div className="space-y-2">
+                                {/* Incorrect review */}
+                                <div className="border-t pt-4 flex flex-col gap-2">
+                                  <p className="text-sm text-muted-foreground">
+                                    Do you think this review is incorrect?
+                                  </p>
+                                  {!showIncorrectInput ? (
+                                    <Button
+                                      variant="outline"
+                                      size="sm"
+                                      className="w-fit"
+                                      onClick={() => setShowIncorrectInput(true)}
+                                    >
+                                      Yes
+                                    </Button>
+                                  ) : (
+                                    <Textarea
+                                      placeholder="Please explain why you think this review is incorrect..."
+                                      value={incorrectReason}
+                                      onChange={(e) => setIncorrectReason(e.target.value)}
+                                      rows={3}
+                                      className="text-sm resize-none"
+                                    />
+                                  )}
+                                </div>
 
-                                  <div className="mt-3 border-t pt-3">
-                                    <p className="text-xs text-muted-foreground mb-2">
-                                      Do you think this review is incorrect?
-                                    </p>
-
-                                    {!showIncorrectInput ? (
-                                      <Button
-                                        variant="outline"
-                                        size="sm"
-                                        onClick={() => setShowIncorrectInput(true)}
-                                      >
-                                        Yes
-                                      </Button>
-                                    ) : (
-                                      <Textarea
-                                        placeholder="Please explain why you think this review is incorrect..."
-                                        value={incorrectReason}
-                                        onChange={(e) => setIncorrectReason(e.target.value)}
-                                        rows={3}
-                                      />
-                                    )}
-
-
-                                  </div>
-
+                                {/* Reply section */}
+                                <div className="flex flex-col gap-2">
                                   <div className="flex items-center justify-between">
                                     <label className="text-sm font-medium">Your Reply</label>
-
-
                                     <UsageGate metric="aiReviewRepliesUsed">
                                       <Button
                                         variant="outline"
                                         size="sm"
-                                        onClick={() => generateAIReply(review.comment || "", review.reviewId, review.reviewer?.displayName || '', review.starRating)}
+                                        onClick={() =>
+                                          generateAIReply(
+                                            review.comment || "",
+                                            review.reviewId,
+                                            review.reviewer?.displayName || "",
+                                            review.starRating
+                                          )
+                                        }
                                       >
                                         {generatingReply ? (
                                           <>
-                                            <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                                            <Loader2 className="w-3.5 h-3.5 mr-2 animate-spin" />
                                             Generating...
                                           </>
                                         ) : (
                                           <>
-                                            <Sparkles className="w-4 h-4 mr-2" />
-                                            Generate Reply
+                                            <Sparkles className="w-3.5 h-3.5 mr-2 text-violet-500" />
+                                            Generate with AI
                                           </>
                                         )}
                                       </Button>
                                     </UsageGate>
-                                    
                                   </div>
 
                                   {generatingReply && aiGenerationProgress && (
-                                    <div className="flex items-center gap-2 p-2 bg-blue-50 dark:bg-blue-950/20 rounded-lg">
-                                      <div className="flex space-x-1">
-                                        <div className="w-2 h-2 bg-blue-500 rounded-full animate-bounce [animation-delay:-0.3s]"></div>
-                                        <div className="w-2 h-2 bg-blue-500 rounded-full animate-bounce [animation-delay:-0.15s]"></div>
-                                        <div className="w-2 h-2 bg-blue-500 rounded-full animate-bounce"></div>
+                                    <div className="flex items-center gap-2.5 px-3 py-2.5 bg-blue-50 dark:bg-blue-950/20 border border-blue-100 dark:border-blue-900/40 rounded-lg">
+                                      <div className="flex gap-1">
+                                        <span className="w-1.5 h-1.5 bg-blue-500 rounded-full animate-bounce [animation-delay:-0.3s]" />
+                                        <span className="w-1.5 h-1.5 bg-blue-500 rounded-full animate-bounce [animation-delay:-0.15s]" />
+                                        <span className="w-1.5 h-1.5 bg-blue-500 rounded-full animate-bounce" />
                                       </div>
-                                      <span className="text-sm text-blue-600 animate-pulse">
+                                      <span className="text-sm text-blue-600 dark:text-blue-400">
                                         {aiGenerationProgress}
                                       </span>
                                     </div>
@@ -709,26 +736,32 @@ export default function Reviews({
                                     value={replyText}
                                     onChange={(e) => setReplyText(e.target.value)}
                                     rows={4}
+                                    className="text-sm leading-relaxed resize-none"
                                   />
+                                  <p className="text-xs text-muted-foreground text-right">
+                                    {replyText.length} characters
+                                  </p>
                                 </div>
                               </div>
 
-                              <DialogFooter>
-                                <Button variant="outline" onClick={closeReplyDialog}>
+                              {/* Footer */}
+                              <DialogFooter className="px-6 py-4 border-t bg-muted/40 gap-2">
+                                <Button variant="outline" size="sm" onClick={closeReplyDialog}>
                                   Cancel
                                 </Button>
                                 <Button
+                                  size="sm"
                                   onClick={() => handlePostReply(review.reviewId)}
                                   disabled={postingReply || !replyText.trim()}
                                 >
                                   {postingReply ? (
                                     <>
-                                      <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                                      <Loader2 className="w-3.5 h-3.5 mr-2 animate-spin" />
                                       Posting...
                                     </>
                                   ) : (
                                     <>
-                                      <Send className="w-4 h-4 mr-2" />
+                                      <Send className="w-3.5 h-3.5 mr-2" />
                                       Post Reply
                                     </>
                                   )}
@@ -738,6 +771,7 @@ export default function Reviews({
                           </Dialog>
                         </div>
                       )}
+
                     </div>
                   </div>
 

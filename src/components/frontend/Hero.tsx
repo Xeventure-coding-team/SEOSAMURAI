@@ -2,7 +2,7 @@ import { ChevronRight, ArrowRight } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import SphereAnimation from "../eldoraui/sphere-animation"
 import Squares from "../Squares"
-import { useStackApp, useUser } from "@stackframe/stack"
+import { useStackApp, useUser } from "@hexclave/next"
 import { useRouter } from "next/navigation"                // App Router navigation
 
 export default function Hero() {

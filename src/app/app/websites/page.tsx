@@ -7,6 +7,7 @@ import { stackServerApp } from '@/stack';
 import { Metadata } from 'next';
 import { UsageGate } from '@/components/usage-gate';
 import { SlotBadge } from '@/components/slot-badge';
+import { SlotInfoBanner } from '@/components/SlotInfoBanner';
 
 export const metadata: Metadata = {
     title: "Websites | Rankerly",
@@ -32,8 +33,19 @@ export default async function page() {
 
     return (
         <DashboardLayout>
-            <div className="container mx-auto py-6 space-y-6">
-                <div className="flex justify-between items-center">
+
+
+           
+
+            <div className="container mx-auto space-y-6">
+
+                 <SlotInfoBanner
+                slot="websites"
+                resourceName="Website"
+                upgradeHref="/app/settings/billing"
+            />
+
+                <div className="flex justify-between items-center py-6">
                     <div>
                         <h1 className="text-3xl font-bold tracking-tight">Websites</h1>
                         <p className="text-muted-foreground">
@@ -42,7 +54,8 @@ export default async function page() {
                     </div>
 
                     <div className='flex gap-4 items-center flex-wrap'>
-                        <SlotBadge slot="websites" label="Websites" />
+
+
 
                         <UsageGate slot="websites">
                             <Button asChild size="lg" className="shrink-0">

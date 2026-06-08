@@ -120,25 +120,37 @@ export function UsageRemaining({
         </>
       )}
 
-      {showExpiry && !isLoading && data && (
-        <div className="flex flex-col gap-1">
-          <span className="text-xs font-semibold uppercase tracking-widest">Subscription</span>
-          <p className="text-[13px]">
-            Expires on{" "}
-            <span className="font-semibold">
-              {new Date(data.periodEnd).toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" })}
-            </span>
-            {data.periodStale && <span className="ml-1 text-amber-400 text-[11px]">(may have renewed)</span>}
-          </p>
-        </div>
+      {showExpiry && !isLoading && (
+        <>
+          {data && data.plan ? (
+            <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
+              <span>Plan renews</span>
+              <span className="font-medium text-foreground">
+                {new Date(data.periodEnd).toLocaleDateString("en-US", {
+                  month: "short", day: "numeric", year: "numeric",
+                })}
+              </span>
+              {data.periodStale && (
+                <span className="text-amber-500">(may have renewed)</span>
+              )}
+            </div>
+          ) : (
+            <Link
+              href="/app/billing"
+              className="flex items-center gap-1.5 text-xs text-amber-600 dark:text-amber-400 hover:underline"
+            >
+              <span>No active plan</span>
+              <span className="font-medium underline underline-offset-2">Upgrade →</span>
+            </Link>
+          )}
+        </>
       )}
 
+
       {showExpiry && isLoading && (
-        <div className="flex flex-col gap-1.5 animate-pulse">
-          <div className="h-2.5 w-24 rounded bg-white/10" />
-          <div className="h-4 w-40 rounded bg-white/10" />
-        </div>
+        <div className="h-3 w-36 rounded animate-pulse bg-muted" />
       )}
+
     </div>
   );
 }

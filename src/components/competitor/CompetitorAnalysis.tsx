@@ -95,35 +95,42 @@ export function CompetitorAnalysisWithMap({
     // No keywords tracked state
     if (!hasKeywords || trackedKeywordsCount === 0) {
         return (
-              <PlanGate
-            mode={{ type: "feature", feature: "competitor-insights" }}
-            featureName="Competitor Insights"
-            description="Upgrade to Pro to access competitor insights."
-        >
-            <div className="flex flex-col items-center justify-center py-24 text-center">
+            <PlanGate
+                mode={{ type: "feature", feature: "competitor-insights" }}
+                featureName="Competitor Insights"
+                description="Upgrade to Pro to access competitor insights."
+            >
+                <div className="flex flex-col items-center justify-center py-16 text-center px-4">
+                    {/* Icon with animated pulse effect */}
+                    <div className="mb-6 rounded-full border border-border/60 bg-gradient-to-b from-background to-muted/30 p-5 shadow-sm">
+                        <TrendingUp className="h-12 w-12 text-primary/80" />
+                    </div>
 
-                {/* Icon */}
-                <div className="mb-4 rounded-2xl border border-border/60 bg-background p-5 shadow-sm">
-                    <TrendingUp className="h-10 w-10 text-primary/70" />
+                    {/* Title */}
+                    <h3 className="mb-3 text-xl font-semibold tracking-tight">
+                        No keywords tracked yet
+                    </h3>
+
+                    {/* Description */}
+                    <p className="max-w-md text-sm text-muted-foreground leading-relaxed">
+                        Start tracking your first keywords to unlock competitor insights, ranking trends,
+                        and visibility analytics — all in one place.
+                    </p>
+
+                    {/* Action hint */}
+                    <div className="mt-6 flex items-center gap-1.5 rounded-full bg-muted/40 px-3 py-1.5 text-xs text-muted-foreground">
+                        <Plus className="h-3 w-3" />
+                        <span>Add keywords from the dashboard to get started</span>
+                    </div>
+
+                    {/* Optional: subtle illustration or progress placeholder */}
+                    <div className="mt-8 h-1 w-16 rounded-full bg-muted/50" />
+                    <p className="mt-3 text-[11px] text-muted-foreground/50">
+                        Data updates automatically once keywords are added
+                    </p>
                 </div>
-                {/* Title */}
-                <h3 className="mb-2 text-lg font-semibold">
-                    No keywords yet
-                </h3>
-
-                {/* Description */}
-                <p className="max-w-md text-sm text-muted-foreground leading-relaxed">
-                    Once you start tracking keywords, you’ll be able to monitor rankings,
-                    analyze competitors, and understand how your visibility changes over time.
-                </p>
-
-                {/* Subtle hint */}
-                <p className="mt-4 text-xs text-muted-foreground/60">
-                    Your data will appear here as soon as keywords are added
-                </p>
-            </div>
             </PlanGate>
-        )
+        );
     }
 
     // No competitors found but has keywords

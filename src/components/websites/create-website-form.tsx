@@ -45,9 +45,11 @@ import {
     X,
     Type,
     Globe,
+    Lock,
 } from 'lucide-react';
 import { useGMBStore } from '@/store/gmbStore';
 import { usePageStore } from '@/store/usePageStore';
+import { cn } from '@/lib/utils';
 
 const formSchema = z.object({
     locationId: z.string().min(1, 'Please select a location'),
@@ -123,7 +125,7 @@ export function CreateWebsiteForm({ userId, onSuccessRedirect, onSuccess }: Crea
 
     useEffect(() => {
         setPageName('Create New Website');
-    },[])
+    }, [])
 
 
     const router = useRouter();
@@ -204,7 +206,7 @@ export function CreateWebsiteForm({ userId, onSuccessRedirect, onSuccess }: Crea
             setLoadingDetails(true);
             setError(null);
 
-             
+
 
             const response = await axios.get(`/api/gmb/location`, {
                 params: {
@@ -501,14 +503,38 @@ export function CreateWebsiteForm({ userId, onSuccessRedirect, onSuccess }: Crea
                                                         </SelectTrigger>
                                                     </FormControl>
                                                     <SelectContent>
-                                                        {locations.map((location) => (
-                                                            <SelectItem key={location.id} value={location.id}>
-                                                                <div className="flex items-center gap-2">
-                                                                    <Store className="h-4 w-4" />
-                                                                    {getLocationDisplayName(location)}
-                                                                </div>
-                                                            </SelectItem>
-                                                        ))}
+                                                        {locations.map((location) => {
+                                                            const isLocked = location.is_active === false;
+
+                                                            return (
+                                                                <SelectItem
+                                                                    key={location.id}
+                                                                    value={location.id}
+                                                                    disabled={isLocked}
+                                                                    className={cn(
+                                                                        isLocked && "opacity-60 cursor-not-allowed"
+                                                                    )}
+                                                                >
+                                                                    <div className="flex items-center gap-2">
+                                                                        {isLocked ? (
+                                                                            <Lock className="h-4 w-4 text-muted-foreground/50" />
+                                                                        ) : (
+                                                                            <Store className="h-4 w-4" />
+                                                                        )}
+                                                                        <span className={cn(
+                                                                            isLocked && "line-through text-muted-foreground/60"
+                                                                        )}>
+                                                                            {getLocationDisplayName(location)}
+                                                                        </span>
+                                                                        {isLocked && (
+                                                                            <span className="text-xs text-muted-foreground/50 ml-auto">
+                                                                                Locked
+                                                                            </span>
+                                                                        )}
+                                                                    </div>
+                                                                </SelectItem>
+                                                            );
+                                                        })}
                                                     </SelectContent>
                                                 </Select>
                                                 <FormDescription>

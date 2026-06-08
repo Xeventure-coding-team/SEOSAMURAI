@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { StackProvider, StackTheme } from "@stackframe/stack";
+import { HexclaveProvider, HexclaveTheme } from "@hexclave/next";
 import { stackServerApp } from "../stack";
 import {
   Outfit,
@@ -18,6 +18,7 @@ import {
 } from "next/font/google";
 import "./globals.css";
 import { ClientThemeProvider } from "./layouts/ClientThemeProvider";
+import { CurrencyProvider } from "@/providers/CurrencyProvider";
 
 const outfit = Outfit({
   variable: "--font-outfit",
@@ -234,11 +235,13 @@ export default function RootLayout({
         suppressHydrationWarning
       >
         <ClientThemeProvider>
-          <StackProvider app={stackServerApp}>
-            <StackTheme theme={theme}>
-              {children}
-            </StackTheme>
-          </StackProvider>
+          <HexclaveProvider app={stackServerApp}>
+            <HexclaveTheme theme={theme}>
+              <CurrencyProvider>
+                {children}
+              </CurrencyProvider>
+            </HexclaveTheme >
+          </HexclaveProvider>
         </ClientThemeProvider>
       </body>
     </html>

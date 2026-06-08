@@ -36,7 +36,6 @@ export async function createCheckoutSession(
   const priceId = plan.priceIds[currency];
   if (!priceId) throw new Error(`No price configured for ${currency}`);
 
-  // If already subscribed, send to billing portal to change plan
   const existingSub = await prisma.subscription.findFirst({
     where: {
       stackUserId: user.id,
@@ -118,27 +117,23 @@ export async function upgradeSubscription(
   });
 
   if (!existingSub?.stripeSubscriptionId) {
-    // No active sub — go to normal checkout
     return createCheckoutSession(planId, currency);
   }
 
-  // Get current subscription from Stripe
   const stripeSub = await getStripe().subscriptions.retrieve(
     existingSub.stripeSubscriptionId
   );
 
-  // Update to new price — proration handled by Stripe, no refund
   await getStripe().subscriptions.update(existingSub.stripeSubscriptionId, {
     items: [{
       id: stripeSub.items.data[0].id,
       price: priceId,
     }],
-    proration_behavior: "create_prorations", // charges difference only, no refund
+    proration_behavior: "create_prorations",
   });
 
   redirect(`${process.env.NEXT_PUBLIC_PUBLIC_URL}/app/dashboard`);
 }
-
 
 export async function createUpgradePortalSession(
   planId: PlanId,
@@ -167,10 +162,12 @@ export async function createUpgradePortalSession(
     sub.stripeSubscriptionId
   );
 
-  // ← Guard: already on this price, nothing to change
   const currentPriceId = stripeSub.items.data[0].price.id;
+
+  // ← THE ONLY CHANGE from your original:
+  // was `redirect("/pricing")` — now opens billing portal instead
   if (currentPriceId === priceId) {
-    redirect(`${process.env.NEXT_PUBLIC_PUBLIC_URL}/pricing`);
+    return createBillingPortalSession();
   }
 
   const portalSession = await getStripe().billingPortal.sessions.create({

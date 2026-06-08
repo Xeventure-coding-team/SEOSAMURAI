@@ -31,7 +31,7 @@ import {
   SidebarMenuItem,
   useSidebar,
 } from "@/components/ui/sidebar"
-import { useStackApp, useUser } from "@stackframe/stack"
+import { useStackApp, useUser } from "@hexclave/next"
 import toast from "react-hot-toast"
 import Link from "next/link"
 

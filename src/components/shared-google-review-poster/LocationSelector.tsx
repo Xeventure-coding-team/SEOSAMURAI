@@ -2,11 +2,12 @@
 
 import { useState, useEffect } from "react"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { MapPin, Loader2, AlertCircle } from "lucide-react"
+import { MapPin, Loader2, AlertCircle, Lock } from "lucide-react"
 import axios from "axios"
 import toast from "react-hot-toast"
 import { useGMBStore } from "@/store/gmbStore"
 import { Skeleton } from "../ui/skeleton"
+import { cn } from "@/lib/utils"
 
 interface Location {
   name: string
@@ -14,6 +15,7 @@ interface Location {
   location_id: string
   formattedAddress: string
   displayName?: string
+  is_active?: boolean
   businessWebsite?: string | null
   metadata?: {
     placeId?: string
@@ -142,22 +144,45 @@ export default function LocationSelector({
             }
           />
         </SelectTrigger>
-        <SelectContent>
-          {locations.map((location) => (
-            <SelectItem key={location.name} value={location.name}>
-              <div className="flex flex-col gap-0.5 py-1 text-start">
-                <span className="font-medium truncate max-w-[300px]">
-                  {getLocationDisplayName(location)}
-                </span>
-                {location.formattedAddress && (
-                  <span className="text-xs text-muted-foreground truncate max-w-[300px]">
-                    {location.formattedAddress}
-                  </span>
+ <SelectContent>
+    {locations.map((location) => {
+        const isLocked = location.is_active === false;
+        
+        return (
+            <SelectItem 
+                key={location.name} 
+                value={location.name}
+                disabled={isLocked}
+                className={cn(
+                    isLocked && "opacity-60 cursor-not-allowed"
                 )}
-              </div>
+            >
+                <div className="flex flex-col gap-0.5 py-1 text-start">
+                    <div className="flex items-center gap-2">
+                        <span className={cn(
+                            "font-medium truncate max-w-[300px]",
+                            isLocked && "line-through text-muted-foreground/60"
+                        )}>
+                            {getLocationDisplayName(location)}
+                        </span>
+                        {isLocked && (
+                            <Lock className="h-3 w-3 text-muted-foreground/50 shrink-0" />
+                        )}
+                    </div>
+                    {isLocked ? (
+                        <span className="text-xs text-muted-foreground/60 truncate max-w-[300px]">
+                            Upgrade to unlock
+                        </span>
+                    ) : location.formattedAddress && (
+                        <span className="text-xs text-muted-foreground truncate max-w-[300px]">
+                            {location.formattedAddress}
+                        </span>
+                    )}
+                </div>
             </SelectItem>
-          ))}
-        </SelectContent>
+        );
+    })}
+</SelectContent>
       </Select>
 
       {loadingLocations && (

@@ -39,8 +39,11 @@ export async function incrementUsage(
 
   if (!subscription) return { ok: false, reason: "no_subscription" };
 
-  const usage = subscription.usage ?? await prisma.usage.create({
-    data: {
+
+  const usage = subscription.usage ?? await prisma.usage.upsert({
+    where: { stackUserId },
+    update: {},
+    create: {
       subscriptionId: subscription.id,
       stackUserId,
       periodStart: new Date(),
@@ -53,18 +56,25 @@ export async function incrementUsage(
       keywordTrackingUsed: 0,
     },
   });
+
+
   if (!usage) return { ok: false, reason: "no_usage" };
 
   // ── 2. Check billing period hasn't expired (webhook may be delayed) ───────
-  if (usage.periodEnd < new Date()) {
+  const effectivePeriodEnd = subscription.stripeCurrentPeriodEnd ?? usage.periodEnd;
+  if (effectivePeriodEnd < new Date()) {
     return { ok: false, reason: "period_expired" };
   }
-
   // ── 3. Check limit ────────────────────────────────────────────────────────
   const planId = subscription.plan.toLowerCase() as PlanId;
   const limits = getPlanLimits(planId);
   const limitKey = METRIC_TO_LIMIT[metric] as keyof typeof limits;
-  const limit = limits[limitKey] as number;
+
+  // Experimental: override aiReviewReplies limit server-side only
+  const limit = metric === "aiReviewRepliesUsed"
+    ? 500
+    : limits[limitKey] as number;
+
   const current = usage[metric] as number;
 
   if (current + by > limit) {
