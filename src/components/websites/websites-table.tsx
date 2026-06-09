@@ -53,9 +53,11 @@ import {
     CheckCircle,
     XCircle,
     Star,
+    Plus,
 } from 'lucide-react';
 import { getWebsiteUrl } from '@/lib/website-url';
 import Link from 'next/link';
+import { UsageGate } from '../usage-gate';
 
 interface WebsiteCachedData {
     id: string;
@@ -268,23 +270,26 @@ export function WebsitesTable() {
         <>
             <Card>
                 <CardHeader>
-                    <div className="flex justify-between items-center flex-wrap gap-4">
-                        <div>
-                            <CardTitle>Your Websites</CardTitle>
-                            <CardDescription>
-                                Manage all your business websites and their settings
-                            </CardDescription>
+                    {filteredWebsites.length > 0 && (
+                        <div className="flex justify-between items-center flex-wrap gap-4">
+                            <div>
+                                <CardTitle>Your Websites</CardTitle>
+                                <CardDescription>
+                                    Manage all your business websites and their settings
+                                </CardDescription>
+                            </div>
+
+                            <div className="relative w-72">
+                                <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
+                                <Input
+                                    placeholder="Search websites..."
+                                    value={searchTerm}
+                                    onChange={(e) => setSearchTerm(e.target.value)}
+                                    className="pl-8"
+                                />
+                            </div>
                         </div>
-                        <div className="relative w-72">
-                            <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
-                            <Input
-                                placeholder="Search websites..."
-                                value={searchTerm}
-                                onChange={(e) => setSearchTerm(e.target.value)}
-                                className="pl-8"
-                            />
-                        </div>
-                    </div>
+                    )}
                 </CardHeader>
                 <CardContent>
                     {filteredWebsites.length === 0 ? (
@@ -538,20 +543,24 @@ function LoadingSkeleton() {
 }
 
 function EmptyState({ searchTerm }: { searchTerm: string }) {
+    const isSearching = Boolean(searchTerm);
+
     return (
-        <div className="text-center py-12">
-            <Globe className="mx-auto h-12 w-12 text-muted-foreground" />
-            <h3 className="mt-4 text-lg font-semibold">No websites found</h3>
-            <p className="mt-2 text-sm text-muted-foreground">
-                {searchTerm
-                    ? `No websites matching "${searchTerm}"`
-                    : "Get started by creating your first website"}
+        <div className="flex flex-col items-center justify-center py-24 px-6 text-center">
+            <div className="mb-6 flex h-16 w-16 items-center justify-center rounded-2xl border bg-muted/30">
+                <Globe className="h-7 w-7 text-muted-foreground" />
+            </div>
+
+            <h3 className="text-xl font-semibold tracking-tight">
+                {isSearching ? "No matching websites" : "No websites yet"}
+            </h3>
+
+            <p className="mt-2 max-w-md text-sm leading-6 text-muted-foreground">
+                {isSearching
+                    ? `No websites match "${searchTerm}". Try adjusting your search terms.`
+                    : "Create your first business website to establish your online presence and connect with customers."}
             </p>
-            {!searchTerm && (
-                <Button className="mt-4">
-                    Create Website
-                </Button>
-            )}
+
         </div>
     );
 }

@@ -19,6 +19,7 @@ import {
 import "./globals.css";
 import { ClientThemeProvider } from "./layouts/ClientThemeProvider";
 import { CurrencyProvider } from "@/providers/CurrencyProvider";
+import ClarityInit from "@/components/tracking/ClarityInit";
 
 const outfit = Outfit({
   variable: "--font-outfit",
@@ -234,6 +235,10 @@ export default function RootLayout({
         className={`${outfit.variable} ${inter.variable} ${roboto.variable} ${openSans.variable} ${poppins.variable} ${montserrat.variable} ${lato.variable} ${nunito.variable} ${playfairDisplay.variable} ${merriweather.variable} ${dmSans.variable} ${plusJakartaSans.variable} ${spaceGrotesk.variable} font-outfit antialiased`}
         suppressHydrationWarning
       >
+
+        {/* Mircosoft clarity */}
+        <ClarityInit />
+
         <ClientThemeProvider>
           <HexclaveProvider app={stackServerApp}>
             <HexclaveTheme theme={theme}>

@@ -23,6 +23,12 @@ function getPeriodEnd(subscription: Stripe.Subscription): Date {
   return new Date(ts * 1000);
 }
 
+// FIX: Safe period start — current_period_start is not always present
+function getPeriodStart(subscription: Stripe.Subscription): Date {
+  const ts = (subscription as any).current_period_start;
+  return ts ? new Date(ts * 1000) : new Date();
+}
+
 function stripeStatusToPrisma(status: Stripe.Subscription.Status): SubscriptionStatus {
   const map: Record<Stripe.Subscription.Status, SubscriptionStatus> = {
     active: "ACTIVE",
@@ -37,12 +43,9 @@ function stripeStatusToPrisma(status: Stripe.Subscription.Status): SubscriptionS
   return map[status] ?? "INCOMPLETE";
 }
 
-// ─── Plan change handlers ─────────────────────────────────────────────────────
-
 async function handleDowngrade(userId: string, newPlanId: PlanId) {
   const newLimits = getPlanLimits(newPlanId);
 
-  // Locations — lock extras, keep oldest
   const activeLocations = await prisma.locations.findMany({
     where: { user_id: userId, is_active: true, is_deleted: false },
     orderBy: { created_at: "asc" },
@@ -57,7 +60,6 @@ async function handleDowngrade(userId: string, newPlanId: PlanId) {
     console.log(`Locked ${toLock.length} locations for user ${userId}`);
   }
 
-  // Websites — lock extras, keep oldest (use isPublished not isActive)
   const activeWebsites = await prisma.website.findMany({
     where: { userId, isPublished: true },
     orderBy: { createdAt: "asc" },
@@ -76,7 +78,6 @@ async function handleDowngrade(userId: string, newPlanId: PlanId) {
 async function handleUpgrade(userId: string, newPlanId: PlanId) {
   const newLimits = getPlanLimits(newPlanId);
 
-  // Locations — unlock previously locked ones up to new limit
   const activeCount = await prisma.locations.count({
     where: { user_id: userId, is_active: true, is_deleted: false },
   });
@@ -98,7 +99,6 @@ async function handleUpgrade(userId: string, newPlanId: PlanId) {
     }
   }
 
-  // Websites — unlock previously locked ones up to new limit (use isPublished not isActive)
   const activeWebsiteCount = await prisma.website.count({
     where: { userId, isPublished: true },
   });
@@ -137,8 +137,6 @@ async function handlePlanChange(userId: string, oldPlanId: PlanId, newPlanId: Pl
     await handleUpgrade(userId, newPlanId);
   }
 }
-
-// ─── Webhook handler ──────────────────────────────────────────────────────────
 
 export async function POST(req: Request) {
   const body = await req.text();
@@ -181,14 +179,18 @@ export async function POST(req: Request) {
           select: { plan: true, status: true },
         });
 
-        await prisma.subscription.upsert({
+        // FIX: safe period start
+        const periodStart = getPeriodStart(subscription);
+        const periodEnd = getPeriodEnd(subscription);
+
+        const upsertedSub = await prisma.subscription.upsert({
           where: { stackUserId },
           create: {
             stackUserId,
             stripeCustomerId: customerId,
             stripeSubscriptionId: subscription.id,
             stripePriceId: priceId,
-            stripeCurrentPeriodEnd: getPeriodEnd(subscription),
+            stripeCurrentPeriodEnd: periodEnd,
             status: stripeStatusToPrisma(subscription.status),
             plan: plan.id.toUpperCase() as PlanType,
             cancelAtPeriodEnd: (subscription as any).cancel_at_period_end ?? false,
@@ -197,34 +199,44 @@ export async function POST(req: Request) {
             stripeCustomerId: customerId,
             stripeSubscriptionId: subscription.id,
             stripePriceId: priceId,
-            stripeCurrentPeriodEnd: getPeriodEnd(subscription),
+            stripeCurrentPeriodEnd: periodEnd,
             status: stripeStatusToPrisma(subscription.status),
             plan: plan.id.toUpperCase() as PlanType,
             cancelAtPeriodEnd: (subscription as any).cancel_at_period_end ?? false,
           },
         });
 
-        await prisma.usage.upsert({
-          where: { stackUserId },
-          update: {},
-          create: {
-            subscriptionId: subscription.id,
-            stackUserId,
-            periodStart: new Date((subscription as any).current_period_start * 1000),
-            periodEnd: getPeriodEnd(subscription),
-            postsUsed: 0,
-            aiReviewRepliesUsed: 0,
-            scheduledPostsUsed: 0,
-            geoGridScansUsed: 0,
-            reviewPostersUsed: 0,
-            keywordTrackingUsed: 0,
-            aiImageUsed: 0,
-          }
-        });
+        // FIX: use upsertedSub.id (Prisma ObjectId) not subscription.id (Stripe string)
+        try {
+          await prisma.usage.upsert({
+            where: { stackUserId },
+            update: {},
+            create: {
+              subscriptionId: upsertedSub.id,
+              stackUserId,
+              periodStart,
+              periodEnd,
+              postsUsed: 0,
+              aiPostersUsed: 0,
+              aiReviewRepliesUsed: 0,
+              scheduledPostsUsed: 0,
+              geoGridScansUsed: 0,
+              reviewPostersUsed: 0,
+              keywordTrackingUsed: 0,
+              aiImageUsed: 0,
+            },
+          });
+        } catch (e: any) {
+          // P2002 = unique constraint violation — concurrent webhook already created the record
+          if (e?.code !== "P2002") throw e;
+          console.log(`Usage record already exists for ${stackUserId} — skipping create`);
+        }
 
         const newStatus = stripeStatusToPrisma(subscription.status);
         const wasNotActive = existing?.status !== "ACTIVE";
-        const planChanged = existing?.plan && existing.plan.toLowerCase() !== plan.id;
+        const planChanged =
+          existing?.plan &&
+          existing.plan.toLowerCase() !== plan.id.toLowerCase();
 
         if (planChanged) {
           await handlePlanChange(
@@ -248,20 +260,19 @@ export async function POST(req: Request) {
           data: { status: "CANCELED" },
         });
 
-        // Lock all locations and websites on cancellation
         if (stackUserId) {
           await prisma.locations.updateMany({
             where: { user_id: stackUserId, is_deleted: false },
             data: { is_active: false },
           });
-          // ← Fix: isActive → isPublished (website model doesn't have isActive)
           await prisma.website.updateMany({
             where: { userId: stackUserId },
             data: { isPublished: false },
           });
           console.log(`Locked all resources for cancelled user ${stackUserId}`);
+        } else {
+          console.warn(`subscription.deleted: no stackUserId in metadata for sub ${subscription.id}`);
         }
-
         break;
       }
 
@@ -275,7 +286,8 @@ export async function POST(req: Request) {
         const priceId = stripeSub.items.data[0]?.price.id;
         const plan = priceId ? getPlanByPriceId(priceId) : null;
 
-        const periodStart = new Date((stripeSub as any).current_period_start * 1000);
+        // FIX: safe period start (retrieved sub should always have it, but guard anyway)
+        const periodStart = getPeriodStart(stripeSub);
         const periodEnd = getPeriodEnd(stripeSub);
 
         const existing = await prisma.subscription.findFirst({
@@ -298,6 +310,7 @@ export async function POST(req: Request) {
               periodStart,
               periodEnd,
               postsUsed: 0,
+              aiPostersUsed: 0,
               aiReviewRepliesUsed: 0,
               scheduledPostsUsed: 0,
               geoGridScansUsed: 0,
@@ -318,7 +331,6 @@ export async function POST(req: Request) {
           await handleUpgrade(stackUserId, plan.id as PlanId);
           console.log(`Recovered resources for user ${stackUserId}`);
         }
-
         break;
       }
 
@@ -331,7 +343,6 @@ export async function POST(req: Request) {
           where: { stripeSubscriptionId: subscriptionId },
           data: { status: "PAST_DUE" },
         });
-
         break;
       }
 

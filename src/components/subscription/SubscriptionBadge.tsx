@@ -8,8 +8,6 @@ import { forwardRef } from "react";
 // ============================================================================
 // Types & Configuration
 // ============================================================================
-
-type PlanType = "starter" | "pro" | "business" | "enterprise" | "free";
 type Size = "sm" | "md" | "lg";
 type Variant = "default" | "expiry" | "metrics";
 
@@ -17,44 +15,34 @@ const PLAN_CONFIG = {
   starter: {
     label: "Starter",
     icon: Zap,
-    variant: "default",
     class: "bg-blue-50 text-blue-700 border-blue-200 dark:bg-blue-950/40 dark:text-blue-300 dark:border-blue-800",
     dot: "bg-blue-500",
     hoverClass: "hover:bg-blue-100 dark:hover:bg-blue-950/60",
   },
-  pro: {
-    label: "Pro",
+  growth: {                                         // ← ADD THIS
+    label: "Growth",
     icon: Sparkles,
-    variant: "default",
     class: "bg-violet-50 text-violet-700 border-violet-200 dark:bg-violet-950/40 dark:text-violet-300 dark:border-violet-800",
     dot: "bg-violet-500",
     hoverClass: "hover:bg-violet-100 dark:hover:bg-violet-950/60",
   },
-  business: {
-    label: "Business",
+  pro: {
+    label: "Pro",
     icon: Shield,
-    variant: "default",
     class: "bg-amber-50 text-amber-700 border-amber-200 dark:bg-amber-950/40 dark:text-amber-300 dark:border-amber-800",
     dot: "bg-amber-500",
     hoverClass: "hover:bg-amber-100 dark:hover:bg-amber-950/60",
   },
-  enterprise: {
-    label: "Enterprise",
-    icon: Star,
-    variant: "default",
-    class: "bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-950/40 dark:text-emerald-300 dark:border-emerald-800",
-    dot: "bg-emerald-500",
-    hoverClass: "hover:bg-emerald-100 dark:hover:bg-emerald-950/60",
-  },
   free: {
     label: "Free",
     icon: Zap,
-    variant: "default",
     class: "bg-zinc-100 text-zinc-600 border-zinc-200 dark:bg-zinc-800 dark:text-zinc-400 dark:border-zinc-700",
     dot: "bg-zinc-400",
     hoverClass: "hover:bg-zinc-200 dark:hover:bg-zinc-800/80",
   },
 } as const;
+
+type PlanType = keyof typeof PLAN_CONFIG;
 
 const SIZE_CONFIG = {
   sm: {

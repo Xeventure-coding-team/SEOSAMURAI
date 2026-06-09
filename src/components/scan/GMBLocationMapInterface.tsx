@@ -255,7 +255,7 @@ export default function GMBLocationMapInterface() {
       .map((x) => x.result)
   }, [gridData])
 
-  const fetchLocations = async () => {
+ const fetchLocations = async () => {
     if (!accessToken) { setError("Access token missing. Please re-authenticate."); setLoadingLocations(false); return }
     try {
       setLoadingLocations(true)
@@ -266,13 +266,14 @@ export default function GMBLocationMapInterface() {
       if (!response.ok) throw new Error(`HTTP ${response.status}: ${response.statusText}`)
       const data = await response.json()
       if (data.accounts?.length > 0) setLocations(data.accounts)
-      else setError("No business locations found. Check your GMB account.")
+      // Remove this line 👇
+      // else setError("No business locations found. Check your GMB account.")
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to fetch locations")
     } finally {
       setLoadingLocations(false)
     }
-  }
+}
 
   const fetchLocationDetails = async (locationName: string) => {
     if (!accessToken || !gmbAccountId) { setError("Missing credentials. Please re-authenticate."); return }

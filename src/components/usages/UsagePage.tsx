@@ -8,47 +8,94 @@ import { cn } from '@/lib/utils';
 import { FileText, MessageSquare, CalendarClock, ScanLine, Image, Tags, Zap, MapPin, Globe } from 'lucide-react';
 import { SubscriptionBadge } from '../subscription/SubscriptionBadge';
 
+
+const REPLY_MULTIPLIER: Record<string, string> = {
+    pro: "10x",
+    growth: "5x",
+    starter: "2x",
+};
+
+
+function AIReplyCard({ used, limit, plan }: { used: number; limit: number; plan: string }) {
+    const multiplier = REPLY_MULTIPLIER[plan.toLowerCase()] ?? "";
+    const status = getStatus(used, limit);
+    const st = STATUS[status];
+
+    return (
+        <div className="flex flex-col gap-5 p-6 rounded-xl justify-between border bg-background">
+            <div className="flex items-start justify-between gap-3">
+                <div className="flex items-center gap-3.5">
+                    <div className={cn("w-11 h-11 rounded-lg flex items-center justify-center shrink-0", st.icon)}>
+                        <MessageSquare className="h-5 w-5" />
+                    </div>
+                    <div>
+                        <p className="text-[15px] font-medium">AI Review Replies</p>
+                        <p className="text-xs text-muted-foreground mt-0.5">AI-generated review replies</p>
+                    </div>
+                </div>
+            </div>
+
+            <p className="text-sm text-muted-foreground leading-relaxed">
+                {status === "over"
+                    ? "You've used all your AI reply credits for this billing period. Upgrade your plan to get more."
+                    : status === "warn"
+                        ? "You're close to your AI reply limit for this period. Upgrade to avoid interruptions."
+                        : "Respond to customer reviews instantly with AI-crafted replies tailored to your business."}
+            </p>
+
+            <div className="flex items-end justify-between gap-3">
+                {multiplier && (
+                    <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-muted">
+                        <Zap className="h-3.5 w-3.5 text-amber-500" />
+                        <span className="text-sm font-semibold text-foreground">{multiplier} AI Review Replies</span>
+                    </div>
+                )}
+            </div>
+        </div>
+    );
+}
+
+
 // ─── Monthly metrics ──────────────────────────────────────────────────────────
 
 const METRIC_CONFIG: Record<
-  UsageMetric,
-  { label: string; icon: React.ElementType; description: string }
+    UsageMetric,
+    { label: string; icon: React.ElementType; description: string }
 > = {
-  postsUsed: {
-    label: "Posts",
-    icon: FileText,
-    description: "Published this month",
-  },
+    postsUsed: {
+        label: "Posts",
+        icon: FileText,
+        description: "Published this month",
+    },
 
-  aiReviewRepliesUsed: {
-    label: "AI replies",
-    icon: MessageSquare,
-    description: "AI-generated review replies",
-  },
+    aiReviewRepliesUsed: {
+        label: "AI Review Replies",
+        icon: MessageSquare,
+        description: "AI-generated review replies",
+    },
+    scheduledPostsUsed: {
+        label: "Scheduled posts",
+        icon: CalendarClock,
+        description: "Posts queued this month",
+    },
 
-  scheduledPostsUsed: {
-    label: "Scheduled posts",
-    icon: CalendarClock,
-    description: "Posts queued this month",
-  },
+    geoGridScansUsed: {
+        label: "Geo scans",
+        icon: ScanLine,
+        description: "Grid scans run this month",
+    },
 
-  geoGridScansUsed: {
-    label: "Geo scans",
-    icon: ScanLine,
-    description: "Grid scans run this month",
-  },
+    keywordTrackingUsed: {
+        label: "Keywords",
+        icon: Tags,
+        description: "Keywords currently tracked",
+    },
 
-  keywordTrackingUsed: {
-    label: "Keywords",
-    icon: Tags,
-    description: "Keywords currently tracked",
-  },
-
-  aiImageUsed: {
-    label: "AI images",
-    icon: Image,
-    description: "AI-generated images used this month",
-  },
+    aiImageUsed: {
+        label: "AI Poster",
+        icon: Image,
+        description: "AI-generated posters used this month",
+    },
 };
 
 const METRICS = Object.keys(METRIC_CONFIG) as UsageMetric[];
@@ -164,6 +211,10 @@ function SlotCard({ slot, label, description, icon }: {
     );
 }
 
+const COUNTER_METRICS = (Object.keys(METRIC_CONFIG) as UsageMetric[]).filter(
+    (m) => m !== "aiReviewRepliesUsed"
+);
+
 // ─── Page ─────────────────────────────────────────────────────────────────────
 
 export default function UsagePage() {
@@ -215,7 +266,7 @@ export default function UsagePage() {
                                 ? "—"
                                 : `${Number.isFinite(topPct) ? topPct : 0}% of limit used`,
                         },
-                         { label: "Resets in", value: isLoading ? "—" : daysLeft !== null ? `${daysLeft} days` : "—", sub: isLoading ? "—" : resetDate },
+                        { label: "Resets in", value: isLoading ? "—" : daysLeft !== null ? `${daysLeft} days` : "—", sub: isLoading ? "—" : resetDate },
                     ].map((s) => (
                         <div key={s.label} className="flex flex-col gap-1 p-5 rounded-xl bg-background border">
                             <span className="text-xs text-muted-foreground uppercase tracking-wide">{s.label}</span>
@@ -236,16 +287,23 @@ export default function UsagePage() {
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-8">
                     {isLoading || !data
                         ? METRICS.map((m) => <CardSkeleton key={m} />)
-                        : METRICS.map((m) => (
-                            <UsageCard
-                                key={m}
-                                label={METRIC_CONFIG[m].label}
-                                icon={METRIC_CONFIG[m].icon}
-                                description={METRIC_CONFIG[m].description}
-                                used={data.used[m]}
-                                limit={data.limits[m]}
+                        : <>
+                            {COUNTER_METRICS.map((m) => (
+                                <UsageCard
+                                    key={m}
+                                    label={METRIC_CONFIG[m].label}
+                                    icon={METRIC_CONFIG[m].icon}
+                                    description={METRIC_CONFIG[m].description}
+                                    used={data.used[m]}
+                                    limit={data.limits[m]}
+                                />
+                            ))}
+                            <AIReplyCard
+                                used={data.used.aiReviewRepliesUsed}
+                                limit={data.limits.aiReviewRepliesUsed}
+                                plan={data.plan}
                             />
-                        ))
+                        </>
                     }
                     {/* Lifetime slots */}
                     <SlotCard slot="locations" label="Locations" description="Business locations added" icon={MapPin} />

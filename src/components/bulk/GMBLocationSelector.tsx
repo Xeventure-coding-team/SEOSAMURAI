@@ -165,10 +165,7 @@ export default function GMBLocationSelector() {
             if (response.data.accounts && response.data.accounts.length > 0) {
                 setLocations(response.data.accounts);
             } else {
-                toast.error("No business locations found. Check your GMB account.", {
-                    duration: 5000,
-                    position: "top-center",
-                });
+                
             }
         } catch (err: any) {
             const errorMessage = err.response?.data?.error || err.message || "Failed to fetch locations";

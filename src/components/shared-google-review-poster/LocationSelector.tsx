@@ -82,12 +82,6 @@ export default function LocationSelector({
       } else if (response.data.accounts && response.data.accounts.length > 0) {
         // Fallback for direct accounts array
         setLocations(response.data.accounts)
-      } else {
-        setError("No locations found")
-        toast.error("No business locations found", {
-          duration: 3000,
-          position: "top-center",
-        })
       }
     } catch (err: any) {
       const errorMessage = err.response?.data?.error || err.message || "Failed to load locations"

@@ -37,6 +37,8 @@ import { usePlanLimits } from "@/lib/use-plan-limits"
 import { useRouter } from "next/navigation"
 import { cn } from "@/lib/utils"
 import { SlotInfoBanner } from "../SlotInfoBanner"
+import { Badge } from "../ui/badge"
+import { UsageBadge } from "../usage-badge"
 
 type Location = {
   _id?: string
@@ -157,7 +159,7 @@ export default function LocationsTable() {
     } catch (err: any) {
       setError(err.message || "Error loading locations.")
       toast.error(err.message || "Error loading locations.")
-      
+
     } finally {
       setLoading(false)
     }
@@ -266,31 +268,34 @@ export default function LocationsTable() {
       <div className="min-h-screen">
         <div className="max-w-8xl mx-auto m:px-6 space-y-5">
 
-          {/* ── Header ── */}
-          <div className="flex items-center justify-between gap-4">
+          {/* Header */}
+          <div className="flex flex-col gap-6 lg:flex-row lg:items-center lg:justify-between">
             <div>
-              <h1 className="text-3xl font-bold tracking-tight text-foreground">
-                Locations
-              </h1>
-              <p className="mt-1 text-sm text-muted-foreground">
-                {locations.length > 0
-                  ? `Managing ${locations.length} Google Business location${locations.length !== 1 ? "s" : ""}`
-                  : "Manage your Google Business locations"}
+              <div className="flex items-center gap-3">
+                <h1 className="text-3xl font-bold tracking-tight">
+                  Business Locations
+                </h1>
+
+                {locations.length > 0 && (
+                  <Badge variant="secondary">
+                    {locations.length} {locations.length === 1 ? "Location" : "Locations"}
+                  </Badge>
+                )}
+              </div>
+
+              <p className="mt-2 text-sm text-muted-foreground max-w-2xl">
+                Connect and manage your Google Business Profile locations from a single dashboard.
               </p>
             </div>
 
-            <div className="flex items-center gap-2 shrink-0">
-
+            <div className="flex items-center gap-3">
+              <UsageBadge slot="locations" label="Locations" />
 
               <UsageGate slot="locations">
-                <Button
-                  asChild
-                  variant="default"
-                  className="h-8 rounded-full gap-1.5 text-sm font-medium"
-                >
+                <Button asChild size="sm" className="gap-2">
                   <Link href="/app/locations/add">
-                    <Plus className="h-3.5 w-3.5" />
-                    Add location
+                    <Plus className="h-4 w-4" />
+                    Add Location
                   </Link>
                 </Button>
               </UsageGate>
@@ -416,8 +421,8 @@ export default function LocationsTable() {
                 {searchTerm && <> for <span className="font-medium text-foreground">"{searchTerm}"</span></>}
               </p>
             )}
-          </div> : null }
-          
+          </div> : null}
+
 
           {/* ── Location Cards ── */}
           <LocationCardList

@@ -123,7 +123,7 @@ export function UsageRemaining({
       {showExpiry && !isLoading && (
         <>
           {data && data.plan ? (
-            <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
+            <div className="flex items-center gap-1.5 text-md text-muted-foreground">
               <span>Plan renews</span>
               <span className="font-medium text-foreground">
                 {new Date(data.periodEnd).toLocaleDateString("en-US", {
@@ -136,7 +136,7 @@ export function UsageRemaining({
             </div>
           ) : (
             <Link
-              href="/app/billing"
+              href="/app/settings/billing"
               className="flex items-center gap-1.5 text-xs text-amber-600 dark:text-amber-400 hover:underline"
             >
               <span>No active plan</span>

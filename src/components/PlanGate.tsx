@@ -156,61 +156,58 @@ function FullGate({
   upgradeHref,
   ctaLabel,
 }: FullGateProps) {
-  const router = useRouter();
-
   return (
-    <div className="relative rounded-2xl overflow-hidden">
+    <div className="relative rounded-2xl overflow-hidden flex flex-col items-center justify-center min-h-[520px]">
 
       {/* Blurred background */}
       <div
-        className="pointer-events-none select-none opacity-45 min-h-[200px]"
+        className="absolute inset-0 pointer-events-none select-none opacity-40"
         aria-hidden="true"
       >
         {children}
       </div>
 
-      {/* Light overlay */}
-      <div className="absolute inset-0 bg-background/55" />
+      {/* Overlay */}
+      <div className="absolute inset-0 bg-background/60" />
 
-      {/* Centered card */}
-      <div className="absolute inset-0 flex items-center justify-center p-6">
-        <div className="bg-card border border-border rounded-2xl px-8 py-10 flex flex-col items-center gap-4 text-center max-w-md w-full">
+      {/* Card */}
+      <div className="relative z-10 my-auto bg-card border border-border rounded-2xl px-8 py-10 flex flex-col items-center gap-4 text-center max-w-md w-full mx-6">
 
-          <div className="w-12 h-12 rounded-full bg-blue-50 dark:bg-blue-950/40 flex items-center justify-center">
-            <Lock className="h-5 w-5 text-blue-600 dark:text-blue-400" />
-          </div>
-
-          <div className="flex flex-col gap-2">
-            <h3 className="text-lg font-medium text-foreground leading-snug">
-              {heading}
-            </h3>
-            <p className="text-sm text-muted-foreground leading-relaxed max-w-xs">
-              {description}{" "}
-              <Link
-                href={upgradeHref}
-                className="text-blue-600 underline underline-offset-2 hover:text-blue-700 transition-colors"
-              >
-                upgrade your plan
-              </Link>
-              .
-            </p>
-          </div>
-
-          <div className="flex flex-col items-center gap-2 w-full mt-1">
-            <Link href={upgradeHref} className="w-full">
-              <button className="w-full flex items-center justify-center gap-2 bg-foreground text-background text-sm font-medium rounded-lg px-6 py-2.5 hover:opacity-90 active:scale-[0.97] transition-all">
-                {ctaLabel ?? "Upgrade plan"}
-                <ArrowRight className="h-4 w-4" />
-              </button>
-            </Link>
-          </div>
-
+        <div className="w-12 h-12 rounded-full bg-blue-50 dark:bg-blue-950/40 flex items-center justify-center">
+          <Lock className="h-5 w-5 text-blue-600 dark:text-blue-400" />
         </div>
+
+        <div className="flex flex-col gap-2">
+          <h3 className="text-lg font-medium text-foreground leading-snug">
+            {heading}
+          </h3>
+          <p className="text-sm text-muted-foreground leading-relaxed max-w-xs">
+            {description}{" "}
+            <Link
+              href={upgradeHref}
+              className="text-blue-600 underline underline-offset-2 hover:text-blue-700 transition-colors"
+            >
+              upgrade your plan
+            </Link>
+            .
+          </p>
+        </div>
+
+        <div className="flex flex-col items-center gap-2 w-full mt-1">
+          <Link href={upgradeHref} className="w-full">
+            <button className="w-full flex items-center justify-center gap-2 bg-foreground text-background text-sm font-medium rounded-lg px-6 py-2.5 hover:opacity-90 active:scale-[0.97] transition-all">
+              {ctaLabel ?? "Upgrade plan"}
+              <ArrowRight className="h-4 w-4" />
+            </button>
+          </Link>
+          <p className="text-xs text-muted-foreground">
+            Plans start at $24/mo · Cancel anytime
+          </p>
+        </div>
+
       </div>
-      {/* Height spacer */}
-      <div className="invisible min-h-[120px]" aria-hidden="true" />
     </div>
-  );
+  )
 }
 
 // ─── Small gate — inline banner ───────────────────────────────────────────────

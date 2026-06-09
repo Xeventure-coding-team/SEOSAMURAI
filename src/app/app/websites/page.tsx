@@ -1,13 +1,14 @@
 import { WebsitesTable } from '@/components/websites/websites-table';
 import DashboardLayout from '@/app/layouts/DashboardLayout';
 import { Button } from '@/components/ui/button';
-import { Plus } from 'lucide-react';
+import { Globe, Plus } from 'lucide-react';
 import Link from 'next/link';
 import { stackServerApp } from '@/stack';
 import { Metadata } from 'next';
 import { UsageGate } from '@/components/usage-gate';
 import { SlotBadge } from '@/components/slot-badge';
 import { SlotInfoBanner } from '@/components/SlotInfoBanner';
+import { UsageBadge } from '@/components/usage-badge';
 
 export const metadata: Metadata = {
     title: "Websites | Rankerly",
@@ -35,39 +36,43 @@ export default async function page() {
         <DashboardLayout>
 
 
-           
+
 
             <div className="container mx-auto space-y-6">
 
-                 <SlotInfoBanner
-                slot="websites"
-                resourceName="Website"
-                upgradeHref="/app/settings/billing"
-            />
+                <SlotInfoBanner
+                    slot="websites"
+                    resourceName="Website"
+                    upgradeHref="/app/settings/billing"
+                />
 
-                <div className="flex justify-between items-center py-6">
+                <div className="flex flex-col gap-8 lg:flex-row lg:items-center lg:justify-between">
                     <div>
-                        <h1 className="text-3xl font-bold tracking-tight">Websites</h1>
-                        <p className="text-muted-foreground">
-                            Manage and monitor all your business websites
+                        <div className="mb-4 inline-flex items-center gap-2 rounded-full border border-primary/20 bg-primary/5 px-3 py-1 text-xs font-medium text-primary">
+                            <Globe className="h-3.5 w-3.5" />
+                            Website Management
+                        </div>
+
+                        <h1 className="text-4xl font-bold tracking-tight">
+                            Business websites
+                        </h1>
+
+                        <p className="mt-4 max-w-2xl text-muted-foreground">
+                            Create, manage, and monitor websites connected to your business locations.
                         </p>
                     </div>
 
-                    <div className='flex gap-4 items-center flex-wrap'>
-
-
-
+                    <div className="flex items-center gap-3">
+                    
                         <UsageGate slot="websites">
-                            <Button asChild size="lg" className="shrink-0">
+                            <Button asChild>
                                 <Link href="/app/websites/create">
-                                    <Plus className="h-5 w-5 mr-2" />
+                                    <Plus className="mr-2 h-4 w-4" />
                                     Create Website
                                 </Link>
                             </Button>
                         </UsageGate>
                     </div>
-
-
                 </div>
                 <WebsitesTable />
             </div>

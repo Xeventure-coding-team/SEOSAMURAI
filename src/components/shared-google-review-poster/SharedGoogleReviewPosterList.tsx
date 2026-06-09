@@ -189,34 +189,42 @@ export default function SharedGoogleReviewPosterList() {
 
   return (
     <div className="space-y-6">
+
       {/* Header */}
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col gap-6 lg:flex-row lg:items-center lg:justify-between">
+        {/* Left Section */}
         <div>
-          <h2 className="text-3xl font-bold tracking-tight">Review Posters</h2>
-          <p className="text-muted-foreground mt-1">Manage your Google review poster collection</p>
-        </div>
-        <div className="flex items-center gap-3">
-          <Badge variant="secondary">
-            {posters.length} {posters.length === 1 ? 'Poster' : 'Posters'}
-          </Badge>
+          <div className="flex items-center gap-3">
+            <h1 className="text-3xl font-bold tracking-tight">
+              Review Posters
+            </h1>
 
-
-          <div className='flex gap-4 items-center flex-wrap'>
-            <UsageBadge slot="reviewPosters" label="Review Posters" />
-
-            <UsageGate slot="reviewPosters">
-              <Button asChild size="lg" className="shrink-0">
-                <Link href="/app/shared-google-review-poster/create">
-                  <Plus className="h-5 w-5" />
-                  Create New Poster
-                </Link>
-              </Button>
-            </UsageGate>
-
-
+            <Badge variant="secondary" className="h-6">
+              {posters.length} {posters.length === "1" ? "Poster" : "Posters"}
+            </Badge>
           </div>
 
+          <p className="mt-2 text-sm text-muted-foreground max-w-2xl">
+            Create, manage, and share Google review posters to help customers
+            leave reviews and improve your online reputation.
+          </p>
+        </div>
 
+        {/* Right Section */}
+        <div className="flex flex-wrap items-center gap-3">
+          <UsageBadge
+            slot="reviewPosters"
+            label="Review Posters"
+          />
+
+          <UsageGate slot="reviewPosters">
+            <Button asChild className="gap-2">
+              <Link href="/app/shared-google-review-poster/create">
+                <Plus className="h-4 w-4" />
+                Create Poster
+              </Link>
+            </Button>
+          </UsageGate>
         </div>
       </div>
 
@@ -231,12 +239,14 @@ export default function SharedGoogleReviewPosterList() {
             <p className="text-sm text-muted-foreground max-w-md mx-auto mb-6">
               Create your first review poster to start collecting customer feedback and boosting your online presence
             </p>
-            <Button asChild size="lg" className="shrink-0">
-              <Link href="/app/shared-google-review-poster/create">
-                <Plus className="h-4 w-4" />
-                Create Your First Poster
-              </Link>
-            </Button>
+            <UsageGate slot="reviewPosters">
+              <Button asChild variant="secondary" className="shrink-0">
+                <Link href="/app/shared-google-review-poster/create">
+                  <Plus className="h-4 w-4" />
+                  Create Your First Poster
+                </Link>
+              </Button>
+            </UsageGate>
           </CardContent>
         </Card>
       ) : (

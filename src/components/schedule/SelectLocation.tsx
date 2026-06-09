@@ -163,10 +163,7 @@ export default function SelectLocation() {
             if (response.data.accounts && response.data.accounts.length > 0) {
                 setLocations(response.data.accounts)
             } else {
-                toast.error("No business locations found. Check your GMB account.", {
-                    duration: 5000,
-                    position: "top-center",
-                })
+
             }
         } catch (err: any) {
             const errorMessage = err.response?.data?.error || err.message || "Failed to fetch locations"
@@ -314,31 +311,32 @@ export default function SelectLocation() {
                 </div>
             )}
 
-            <div className="flex flex-col gap-6 sm:flex-row sm:items-start sm:justify-between">
-
-                <div className="space-y-3">
-                    <div className="inline-flex items-center gap-1.5 bg-blue-50 text-blue-600 border-1 border-blue-600 text-xs font-medium px-3 py-1.5 rounded-full">
+            <div className="flex flex-col gap-8 lg:flex-row lg:items-center lg:justify-between">
+                <div className="max-w-3xl">
+                    <div className="mb-4 inline-flex items-center gap-2 rounded-full border border-primary/20 bg-primary/5 px-3 py-1 text-xs font-medium text-primary">
                         <MapPin className="h-3.5 w-3.5" />
-                        Business scheduling
+                        Multi-location Publishing
                     </div>
 
-                    <h1 className="text-4xl md:text-5xl font-semibold tracking-tight leading-tight">
-                        Schedule posts for
-                        your business locations
+                    <h1 className="text-4xl font-bold tracking-tight lg:text-5xl">
+                        Schedule posts across
+                        <span className="block">all your business locations</span>
                     </h1>
 
-                    <p className="text-lg text-muted-foreground max-w-xl leading-relaxed">
-                        Pick a location to start publishing and managing posts — all in one place.
+                    <p className="mt-4 max-w-2xl text-base text-muted-foreground lg:text-lg">
+                        Publish, schedule, and manage Google Business Profile posts
+                        from a single dashboard.
                     </p>
                 </div>
 
-                <div>
-                    <div>
-                        <UsageBadge metric="scheduledPostsUsed" label="Schedule Posts" showBar={true} />
-                    </div>
+                <div className="shrink-0">
+                    <UsageBadge
+                        metric="scheduledPostsUsed"
+                        label="Scheduled Posts"
+                        showBar
+                    />
                 </div>
             </div>
-
             <div className="space-y-4">
 
                 <div className="flex items-center justify-between mb-5">
@@ -358,96 +356,104 @@ export default function SelectLocation() {
                     </div>
                 </div>
 
- <ScrollArea className="sm:h-auto">
-    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2.5">
-        {locations.length === 0 ? (
-            <Card className="border-dashed col-span-full">
-                <CardContent className="flex items-center justify-center py-12">
-                    <div className="text-center space-y-2">
-                        <AlertCircle className="h-8 w-8 text-muted-foreground mx-auto" />
-                        <p className="text-sm text-muted-foreground">No locations found</p>
+                <ScrollArea className="sm:h-auto">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2.5">
+                        {locations.length === 0 ? (
+                            <Card className="col-span-full border-dashed">
+                                <CardContent className="flex flex-col items-center justify-center py-20 px-6 text-center">
+                                    <div className="mb-5 flex h-14 w-14 items-center justify-center rounded-full bg-muted">
+                                        <MapPin className="h-7 w-7 text-muted-foreground" />
+                                    </div>
+
+                                    <h3 className="text-lg font-semibold">
+                                        No locations found
+                                    </h3>
+
+                                    <p className="mt-2 max-w-md text-sm text-muted-foreground">
+                                        We couldn't find any locations matching your current search or filters.
+                                        Try adjusting your criteria to see more results.
+                                    </p>
+                                </CardContent>
+                            </Card>
+                        ) : (
+                            locations.map((location) => {
+                                const isSelected = selectedLocation === location.id
+                                const isLocked = location.is_active === false
+
+                                return (
+                                    <div
+                                        key={location.id}
+                                        onClick={() => !isLocked && handleLocationSelect(location.id)}
+                                        className={cn(
+                                            "flex items-center gap-3 rounded-lg border px-3.5 py-3 transition-all duration-200",
+                                            isLocked
+                                                ? "cursor-not-allowed border-dashed border-muted-foreground/30 bg-gradient-to-br from-muted/30 to-muted/10 opacity-75 hover:opacity-75"
+                                                : isSelected
+                                                    ? "cursor-pointer border-primary bg-primary/5 shadow-sm ring-1 ring-primary/20"
+                                                    : "cursor-pointer border-border hover:border-primary/30 hover:bg-muted/40 hover:shadow-sm"
+                                        )}
+                                    >
+                                        {/* Icon */}
+                                        <div className={cn(
+                                            "flex h-8 w-8 shrink-0 items-center justify-center rounded-md transition-colors",
+                                            isLocked
+                                                ? "bg-muted-foreground/10"
+                                                : isSelected
+                                                    ? "bg-primary/10"
+                                                    : "bg-muted"
+                                        )}>
+                                            {isLocked
+                                                ? <Lock className="h-3.5 w-3.5 text-muted-foreground/40" />
+                                                : <Building2 className={cn(
+                                                    "h-3.5 w-3.5",
+                                                    isSelected ? "text-primary" : "text-muted-foreground"
+                                                )} />
+                                            }
+                                        </div>
+
+                                        {/* Text */}
+                                        <div className="flex-1 min-w-0">
+                                            <p className={cn(
+                                                "text-sm font-medium truncate leading-none",
+                                                isLocked ? "text-muted-foreground/50 line-through" : ""
+                                            )}>
+                                                {getLocationDisplayName(location)}
+                                            </p>
+                                            {isLocked ? (
+                                                <Link
+                                                    href="/app/settings/billing"
+                                                    onClick={e => e.stopPropagation()}
+                                                    className="inline-flex items-center gap-1 text-xs font-medium text-amber-600 hover:text-amber-700 dark:text-amber-500 dark:hover:text-amber-400 transition-colors mt-1"
+                                                >
+                                                    <Sparkles className="h-3 w-3" />
+                                                    Upgrade to unlock
+                                                </Link>
+                                            ) : location.storefrontAddress ? (
+                                                <p className="text-xs text-muted-foreground truncate mt-1">
+                                                    {location.formattedAddress}
+                                                </p>
+                                            ) : null}
+                                        </div>
+
+                                        {/* Right indicator */}
+                                        {!isLocked && isSelected && (
+                                            <CheckCircle className="h-4 w-4 text-primary shrink-0" />
+                                        )}
+
+                                        {/* Locked badge overlay */}
+                                        {isLocked && (
+                                            <div className="shrink-0">
+                                                <div className="bg-muted-foreground/10 rounded-full px-1.5 py-0.5">
+                                                    <span className="text-[10px] font-medium text-muted-foreground/60">LOCKED</span>
+                                                </div>
+                                            </div>
+                                        )}
+                                    </div>
+                                )
+                            })
+                        )}
                     </div>
-                </CardContent>
-            </Card>
-        ) : (
-            locations.map((location) => {
-                const isSelected = selectedLocation === location.id
-                const isLocked = location.is_active === false
-
-                return (
-                    <div
-                        key={location.id}
-                        onClick={() => !isLocked && handleLocationSelect(location.id)}
-                        className={cn(
-                            "flex items-center gap-3 rounded-lg border px-3.5 py-3 transition-all duration-200",
-                            isLocked
-                                ? "cursor-not-allowed border-dashed border-muted-foreground/30 bg-gradient-to-br from-muted/30 to-muted/10 opacity-75 hover:opacity-75"
-                                : isSelected
-                                    ? "cursor-pointer border-primary bg-primary/5 shadow-sm ring-1 ring-primary/20"
-                                    : "cursor-pointer border-border hover:border-primary/30 hover:bg-muted/40 hover:shadow-sm"
-                        )}
-                    >
-                        {/* Icon */}
-                        <div className={cn(
-                            "flex h-8 w-8 shrink-0 items-center justify-center rounded-md transition-colors",
-                            isLocked
-                                ? "bg-muted-foreground/10"
-                                : isSelected
-                                    ? "bg-primary/10"
-                                    : "bg-muted"
-                        )}>
-                            {isLocked
-                                ? <Lock className="h-3.5 w-3.5 text-muted-foreground/40" />
-                                : <Building2 className={cn(
-                                    "h-3.5 w-3.5",
-                                    isSelected ? "text-primary" : "text-muted-foreground"
-                                )} />
-                            }
-                        </div>
-
-                        {/* Text */}
-                        <div className="flex-1 min-w-0">
-                            <p className={cn(
-                                "text-sm font-medium truncate leading-none",
-                                isLocked ? "text-muted-foreground/50 line-through" : ""
-                            )}>
-                                {getLocationDisplayName(location)}
-                            </p>
-                            {isLocked ? (
-                                <Link
-                                    href="/app/settings/billing"
-                                    onClick={e => e.stopPropagation()}
-                                    className="inline-flex items-center gap-1 text-xs font-medium text-amber-600 hover:text-amber-700 dark:text-amber-500 dark:hover:text-amber-400 transition-colors mt-1"
-                                >
-                                    <Sparkles className="h-3 w-3" />
-                                    Upgrade to unlock
-                                </Link>
-                            ) : location.storefrontAddress ? (
-                                <p className="text-xs text-muted-foreground truncate mt-1">
-                                    {location.formattedAddress}
-                                </p>
-                            ) : null}
-                        </div>
-
-                        {/* Right indicator */}
-                        {!isLocked && isSelected && (
-                            <CheckCircle className="h-4 w-4 text-primary shrink-0" />
-                        )}
-                        
-                        {/* Locked badge overlay */}
-                        {isLocked && (
-                            <div className="shrink-0">
-                                <div className="bg-muted-foreground/10 rounded-full px-1.5 py-0.5">
-                                    <span className="text-[10px] font-medium text-muted-foreground/60">LOCKED</span>
-                                </div>
-                            </div>
-                        )}
-                    </div>
-                )
-            })
-        )}
-    </div>
-</ScrollArea>
+                </ScrollArea>
 
 
             </div>

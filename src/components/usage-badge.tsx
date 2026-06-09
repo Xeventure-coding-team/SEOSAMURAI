@@ -3,245 +3,166 @@
 import { useUsage, UsageMetric, UsageStatus } from "@/lib/use-usage";
 import { useSlot, SlotResource } from "@/lib/use-slot";
 import { cn } from "@/lib/utils";
-import { AlertTriangle, XCircle } from "lucide-react";
+import { TrendingUp, Clock, Circle } from "lucide-react";
 import { ReactNode } from "react";
 
 // ─── Types ─────────────────────────────────────────────────────────────────────
 
-interface BaseBadgeProps {
-  label: string;
-  showBar?: boolean;
-  className?: string;
-}
-
-interface MetricBadgeProps extends BaseBadgeProps {
-  metric: UsageMetric;
-  slot?: never;
-}
-
-interface SlotBadgeProps extends BaseBadgeProps {
-  slot: SlotResource;
-  metric?: never;
-}
-
-type UsageBadgeProps = MetricBadgeProps | SlotBadgeProps;
+type UsageBadgeProps = 
+  | { metric: UsageMetric; label: string; className?: string; compact?: boolean }
+  | { slot: SlotResource; label: string; className?: string; compact?: boolean };
 
 interface StatusStyle {
-  border:      string;
-  left:        string;
-  divider:     string;
-  middle:      string;
-  middleBg:    string;
-  right:       string;
-  icon:        ReactNode;
-  message:     string;
+  dotColor: string;
+  textColor: string;
+  message: string;
 }
 
-// ─── Status styles ─────────────────────────────────────────────────────────────
+// ─── Status styles — modern minimal ────────────────────────────────────────────
 
 const STATUS_STYLES: Record<UsageStatus, StatusStyle> = {
   ok: {
-    border:   "border-zinc-300 dark:border-zinc-600",
-    left:     "bg-zinc-200 text-zinc-600 dark:bg-zinc-700 dark:text-zinc-300",
-    divider:  "bg-zinc-300 dark:bg-zinc-600",
-    middleBg: "bg-white dark:bg-zinc-900",
-    middle:   "text-zinc-500 dark:text-zinc-400",
-    right:    "bg-zinc-200 text-zinc-600 dark:bg-zinc-700 dark:text-zinc-300",
-    icon:     null,
-    message:  "Available",
+    dotColor: "bg-emerald-400",
+    textColor: "text-emerald-600 dark:text-emerald-400",
+    message: "Good",
   },
   warning: {
-    border:   "border-amber-400 dark:border-amber-700",
-    left:     "bg-amber-400 text-white dark:bg-amber-600 dark:text-white",
-    divider:  "bg-amber-300 dark:bg-amber-700",
-    middleBg: "bg-amber-50 dark:bg-amber-950",
-    middle:   "text-amber-700 dark:text-amber-300",
-    right:    "bg-amber-400 text-white dark:bg-amber-600 dark:text-white",
-    icon:     <AlertTriangle className="w-3 h-3 flex-shrink-0" />,
-    message:  "Near limit",
+    dotColor: "bg-amber-400",
+    textColor: "text-amber-600 dark:text-amber-400",
+    message: "Getting there",
   },
   exceeded: {
-    border:   "border-red-500 dark:border-red-700",
-    left:     "bg-red-500 text-white dark:bg-red-700 dark:text-white",
-    divider:  "bg-red-400 dark:bg-red-600",
-    middleBg: "bg-red-50 dark:bg-red-950",
-    middle:   "text-red-600 dark:text-red-300",
-    right:    "bg-red-500 text-white dark:bg-red-700 dark:text-white",
-    icon:     <XCircle className="w-3 h-3 flex-shrink-0" />,
-    message:  "Limit exceeded",
+    dotColor: "bg-zinc-400",
+    textColor: "text-zinc-500 dark:text-zinc-400",
+    message: "Maxed",
   },
 };
 
-// ─── Sub-components ────────────────────────────────────────────────────────────
+// ─── Components ────────────────────────────────────────────────────────────────
 
-const LoadingBadge = ({ className }: { className?: string }) => (
+const LoadingBadge = ({ className, compact }: { className?: string; compact?: boolean }) => (
   <div className={cn(
-    "inline-flex h-[28px] w-36 animate-pulse rounded-full",
-    "bg-zinc-100 dark:bg-zinc-800",
+    "animate-pulse rounded-full bg-gradient-to-r from-zinc-100 to-zinc-50 dark:from-zinc-800 dark:to-zinc-900",
+    compact ? "h-6 w-24" : "h-7 w-32",
     className
   )} />
 );
 
-const FlatBadge = ({
-  label,
-  message,
-  className,
-}: {
-  label: string;
-  message: string;
-  className?: string;
-}) => (
+const FlatBadge = ({ label, message, className, compact }: { label: string; message: string; className?: string; compact?: boolean }) => (
   <div className={cn(
-    "inline-flex items-stretch overflow-hidden rounded-full border cursor-default",
-    "border-zinc-300 dark:border-zinc-600",
+    "inline-flex items-center gap-1.5 rounded-full bg-zinc-50 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800",
+    compact ? "px-2.5 py-0.5" : "px-3 py-1",
     className
   )}>
-    <div className="flex items-center px-3 py-1 bg-zinc-200 text-zinc-500 dark:bg-zinc-700 dark:text-zinc-400">
-      <span className="text-[11px] font-bold uppercase tracking-widest whitespace-nowrap">{label}</span>
-    </div>
-    <div className="w-px bg-zinc-300 dark:bg-zinc-600" />
-    <span className="flex items-center px-3 py-1 text-xs bg-white dark:bg-zinc-900 text-zinc-400 dark:text-zinc-500 whitespace-nowrap">
+    <Circle className="w-1.5 h-1.5 fill-zinc-300 dark:fill-zinc-700 text-zinc-300 dark:text-zinc-700" />
+    <span className={cn(
+      "font-mono text-[11px] font-medium tracking-tight text-zinc-500 dark:text-zinc-500",
+      compact && "text-[10px]"
+    )}>
+      {label}
+    </span>
+    <span className={cn(
+      "text-[11px] text-zinc-400 dark:text-zinc-600",
+      compact && "text-[10px]"
+    )}>
       {message}
     </span>
   </div>
 );
 
-// ─── Core segmented badge ──────────────────────────────────────────────────────
-
 const SegmentedBadge = ({
-  label,
-  current,
-  limit,
-  status,
-  className,
+  label, current, limit, status, className, compact
 }: {
-  label:     string;
-  current:   number;
-  limit:     number;
-  status:    UsageStatus;
-  className?: string;
+  label: string; current: number; limit: number; status: UsageStatus; className?: string; compact?: boolean;
 }) => {
   const s = STATUS_STYLES[status];
-
+  const percent = (current / limit) * 100;
+  
   return (
     <div className={cn(
-      "inline-flex items-stretch overflow-hidden rounded-full border cursor-default w-fit shadow-sm",
-      s.border,
+      "group relative inline-flex items-center gap-2 rounded-full bg-white dark:bg-black border border-zinc-200 dark:border-zinc-800 shadow-sm hover:shadow-md transition-all duration-200",
+      compact ? "pl-2 pr-2.5 py-0.5" : "pl-2.5 pr-3 py-1",
       className
     )}>
-      {/* Left — icon + label, solid filled */}
-      <div className={cn("flex items-center gap-1.5 px-3 py-1", s.left)}>
-        {s.icon}
-        <span className="text-[11px] font-bold uppercase tracking-widest whitespace-nowrap">
-          {label}
-        </span>
+      {/* Animated progress ring */}
+      <div className="relative">
+        <Circle className={cn(
+          "w-2 h-2 transition-all duration-300",
+          s.dotColor,
+          status === "exceeded" && "opacity-40"
+        )} />
+        {status === "warning" && (
+          <div className="absolute inset-0 animate-ping w-2 h-2 rounded-full bg-amber-400 opacity-40" />
+        )}
       </div>
-
-      {/* Divider */}
-      <div className={cn("w-px", s.divider)} />
-
-      {/* Middle — status message */}
+      
+      {/* Label */}
       <span className={cn(
-        "flex items-center px-3 py-1 text-xs font-medium whitespace-nowrap",
-        s.middleBg,
-        s.middle,
+        "font-mono text-[11px] font-medium tracking-tight text-zinc-600 dark:text-zinc-400",
+        compact && "text-[10px]"
+      )}>
+        {label}
+      </span>
+      
+      {/* Usage bar (modern touch) */}
+      <div className="w-8 h-1 bg-zinc-100 dark:bg-zinc-800 rounded-full overflow-hidden">
+        <div 
+          className={cn("h-full transition-all duration-500 ease-out rounded-full", s.dotColor)}
+          style={{ width: `${Math.min(percent, 100)}%` }}
+        />
+      </div>
+      
+      {/* Numbers */}
+      <span className={cn(
+        "font-mono tabular-nums text-[11px] font-medium",
+        s.textColor,
+        compact && "text-[10px]"
+      )}>
+        {current}/{limit}
+      </span>
+      
+      {/* Status message - subtle */}
+      <span className={cn(
+        "text-[11px] text-zinc-400 dark:text-zinc-600 transition-opacity",
+        compact && "hidden sm:inline",
+        !compact && "hidden md:inline"
       )}>
         {s.message}
-      </span>
-
-      {/* Divider */}
-      <div className={cn("w-px", s.divider)} />
-
-      {/* Right — used/limit, solid filled */}
-      <span className={cn(
-        "flex items-center gap-0.5 px-3 py-1 text-xs font-bold font-mono tabular-nums whitespace-nowrap",
-        s.right,
-      )}>
-        <span>{current}</span>
-        <span className="opacity-60">/</span>
-        <span>{limit}</span>
       </span>
     </div>
   );
 };
 
-// ─── Slot variant ──────────────────────────────────────────────────────────────
+// ─── Main Component ────────────────────────────────────────────────────────────
 
-const SlotBadgeInner = ({ slot, label, className }: SlotBadgeProps) => {
-  const { data, isLoading, canAdd } = useSlot(slot);
+export function UsageBadge(props: UsageBadgeProps) {
+  const { label, className, compact = false } = props;
 
-  if (isLoading && !data) return <LoadingBadge className={className} />;
-  if (!data)              return null;
-  if (data.limit === 0)   return <FlatBadge label={label} message="Not included" className={className} />;
+  // Slot variant
+  if ("slot" in props) {
+    const { data, isLoading, canAdd } = useSlot(props.slot);
+    if (isLoading && !data) return <LoadingBadge className={className} compact={compact} />;
+    if (!data) return null;
+    if (data.limit === 0) return <FlatBadge label={label} message="Not included" className={className} compact={compact} />;
+    
+    const status: UsageStatus = !canAdd ? "exceeded" : data.remaining <= 2 ? "warning" : "ok";
+    return <SegmentedBadge label={label} current={data.current} limit={data.limit} status={status} className={className} compact={compact} />;
+  }
 
-  const status: UsageStatus =
-    !canAdd             ? "exceeded" :
-    data.remaining <= 2 ? "warning"  :
-                          "ok";
-
-  return (
-    <SegmentedBadge
-      label={label}
-      current={data.current}
-      limit={data.limit}
-      status={status}
-      className={className}
-    />
-  );
-};
-
-// ─── Metric variant ────────────────────────────────────────────────────────────
-
-const MetricBadgeInner = ({ metric, label, className }: MetricBadgeProps) => {
+  // Metric variant
   const { data, isLoading, statusFor, error } = useUsage();
-
-  if (isLoading && !data && !error) return <LoadingBadge className={className} />;
-  if (error)       return <FlatBadge label={label} message="Not available" className={className} />;
-  if (!data?.plan) return <FlatBadge label={label} message="No plan" className={className} />;
-
-  const used  = data.used[metric];
-  const limit = data.limits[metric];
-
-  if (limit === 0) return <FlatBadge label={label} message="Not included" className={className} />;
-
-  return (
-    <SegmentedBadge
-      label={label}
-      current={used}
-      limit={limit}
-      status={statusFor(metric)}
-      className={className}
-    />
-  );
-};
-
-// ─── Public API ────────────────────────────────────────────────────────────────
-
-export function UsageBadge({ label, className, ...props }: UsageBadgeProps) {
-  if ("slot" in props && props.slot != null) {
-    return (
-      <SlotBadgeInner
-        slot={props.slot}
-        label={label}
-        showBar={props.showBar}
-        className={className}
-      />
-    );
-  }
-
-  const { metric } = props as MetricBadgeProps;
-
-  if (!metric) {
-    console.warn("UsageBadge: `metric` is required when `slot` is not provided");
-    return null;
-  }
-
-  return (
-    <MetricBadgeInner
-      metric={metric}
-      label={label}
-      showBar={props.showBar}
-      className={className}
-    />
-  );
+  if (isLoading && !data && !error) return <LoadingBadge className={className} compact={compact} />;
+  if (error || !data?.plan) return <FlatBadge label={label} message={error ? "Unavailable" : "No plan"} className={className} compact={compact} />;
+  
+  const limit = data.limits[props.metric];
+  if (limit === 0) return <FlatBadge label={label} message="Not included" className={className} compact={compact} />;
+  
+  return <SegmentedBadge 
+    label={label} 
+    current={data.used[props.metric]} 
+    limit={limit} 
+    status={statusFor(props.metric)} 
+    className={className} 
+    compact={compact}
+  />;
 }

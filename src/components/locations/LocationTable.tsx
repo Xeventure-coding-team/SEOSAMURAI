@@ -369,39 +369,42 @@ const EmptyState: React.FC<{ hasFilters: boolean; clearFilters: () => void }> = 
   hasFilters,
   clearFilters,
 }) => (
-  <div className="flex flex-col items-center justify-center py-28 text-center px-6">
-    <div className="w-16 h-16 rounded-2xl bg-muted flex items-center justify-center mb-6">
-      {hasFilters
-        ? <FilterX className="h-7 w-7 text-muted-foreground" />
-        : <Building2 className="h-7 w-7 text-muted-foreground" />
-      }
+  <div className="flex flex-col items-center justify-center py-32 px-6 text-center">
+    <div className="mb-6 flex h-16 w-16 items-center justify-center rounded-2xl border bg-muted/30">
+      {hasFilters ? (
+        <FilterX className="h-7 w-7 text-muted-foreground" />
+      ) : (
+        <Building2 className="h-7 w-7 text-muted-foreground" />
+      )}
     </div>
 
-    <h3 className="text-lg font-medium text-foreground mb-2">
-      {hasFilters ? "No locations found" : "No locations yet"}
+    <h3 className="text-xl font-semibold tracking-tight">
+      {hasFilters ? "No matching locations" : "No locations yet"}
     </h3>
 
-    <p className="text-sm text-muted-foreground max-w-[300px] mb-7 leading-relaxed">
+    <p className="mt-2 max-w-md text-sm leading-6 text-muted-foreground">
       {hasFilters
-        ? "No results match your current filters. Try adjusting your search or clearing them."
-        : "Add your first Google Business location to start managing your online presence."}
+        ? "Try adjusting your search terms or clearing active filters to see more locations."
+        : "Connect your first Google Business Profile location to start managing posts, reviews, and business information."}
     </p>
 
-    {hasFilters ? (
-      <Button variant="outline" onClick={clearFilters} className="gap-2">
-        <RotateCcw className="h-4 w-4" />
-        Clear filters
-      </Button>
-    ) : (
-      <UsageGate slot="locations">
-        <Button asChild className="gap-2">
-          <Link href="/app/locations/add">
-            <Plus className="h-4 w-4" />
-            Add first location
-          </Link>
+    <div className="mt-8">
+      {hasFilters ? (
+        <Button variant="outline" onClick={clearFilters} className="gap-2">
+          <RotateCcw className="h-4 w-4" />
+          Clear Filters
         </Button>
-      </UsageGate>
-    )}
+      ) : (
+        <UsageGate slot="locations">
+          <Button asChild size="lg" className="gap-2">
+            <Link href="/app/locations/add">
+              <Plus className="h-4 w-4" />
+              Add Location
+            </Link>
+          </Button>
+        </UsageGate>
+      )}
+    </div>
   </div>
 )
 

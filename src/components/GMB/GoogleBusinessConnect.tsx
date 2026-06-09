@@ -250,9 +250,8 @@ const GoogleBusinessConnect: React.FC<GoogleBusinessConnectProps> = ({ onAuthent
                     const account = accountData.accounts?.[0]
 
                     if (account) {
-                        // account.name is like "accounts/123456789"
-                        accountName = account.accountName ?? account.name ?? null
-                        accountId = account.name?.split("/")?.[1] ?? null
+                        accountName = account.name ?? null           
+                        accountId = account.name?.split("/")?.[1] ?? null 
                     }
                 } else {
                     console.warn("[GMBConnect] Accounts API returned:", accountRes.status)
