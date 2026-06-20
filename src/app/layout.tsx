@@ -1,99 +1,23 @@
 import type { Metadata } from "next";
 import { HexclaveProvider, HexclaveTheme } from "@hexclave/next";
 import { stackServerApp } from "../stack";
-import {
-  Outfit,
-  Inter,
-  Roboto,
-  Open_Sans,
-  Poppins,
-  Montserrat,
-  Lato,
-  Nunito,
-  Playfair_Display,
-  Merriweather,
-  DM_Sans,
-  Plus_Jakarta_Sans,
-  Space_Grotesk
-} from "next/font/google";
+import { Outfit } from "next/font/google";
 import "./globals.css";
 import { ClientThemeProvider } from "./layouts/ClientThemeProvider";
 import { CurrencyProvider } from "@/providers/CurrencyProvider";
 import ClarityInit from "@/components/tracking/ClarityInit";
+import ErrorBoundary from "@/components/error/error-boundary";
+import OfflineWrapper from "@/components/Offline/OffflineWrapper";
+import SentryInit from "@/components/tracking/SentryInit";
 
 const outfit = Outfit({
   variable: "--font-outfit",
   subsets: ["latin"],
 });
 
-const inter = Inter({
-  variable: "--font-inter",
-  subsets: ["latin"],
-});
-
-const roboto = Roboto({
-  variable: "--font-roboto",
-  weight: ['400', '500', '700'],
-  subsets: ["latin"],
-});
-
-const openSans = Open_Sans({
-  variable: "--font-open-sans",
-  subsets: ["latin"],
-});
-
-const poppins = Poppins({
-  variable: "--font-poppins",
-  weight: ['400', '500', '600', '700'],
-  subsets: ["latin"],
-});
-
-const montserrat = Montserrat({
-  variable: "--font-montserrat",
-  subsets: ["latin"],
-});
-
-const lato = Lato({
-  variable: "--font-lato",
-  weight: ['400', '700'],
-  subsets: ["latin"],
-});
-
-const nunito = Nunito({
-  variable: "--font-nunito",
-  subsets: ["latin"],
-});
-
-const playfairDisplay = Playfair_Display({
-  variable: "--font-playfair-display",
-  subsets: ["latin"],
-});
-
-const merriweather = Merriweather({
-  variable: "--font-merriweather",
-  weight: ['400', '700'],
-  subsets: ["latin"],
-});
-
-const dmSans = DM_Sans({
-  variable: "--font-dm-sans",
-  subsets: ["latin"],
-});
-
-const plusJakartaSans = Plus_Jakarta_Sans({
-  variable: "--font-plus-jakarta-sans",
-  subsets: ["latin"],
-});
-
-const spaceGrotesk = Space_Grotesk({
-  variable: "--font-space-grotesk",
-  subsets: ["latin"],
-});
-
 export const metadata: Metadata = {
   title: process.env.APP_NAME || "Rankerly",
-  description:
-    "Rankerly is your all-in-one tool to boost rankings, optimize local SEO, manage Google Business Profiles, and grow online visibility.",
+  description: "Rankerly is your all-in-one tool to boost rankings, optimize local SEO, manage Google Business Profiles, and grow online visibility.",
 };
 
 const theme = {
@@ -221,33 +145,29 @@ const theme = {
   },
 }
 
-export default function RootLayout({
-  children,
-}: Readonly<{
-  children: React.ReactNode;
-}>) {
+export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
   return (
     <html lang="en" suppressHydrationWarning>
       <head>
         <meta name="referrer" content="no-referrer" />
       </head>
-      <body
-        className={`${outfit.variable} ${inter.variable} ${roboto.variable} ${openSans.variable} ${poppins.variable} ${montserrat.variable} ${lato.variable} ${nunito.variable} ${playfairDisplay.variable} ${merriweather.variable} ${dmSans.variable} ${plusJakartaSans.variable} ${spaceGrotesk.variable} font-outfit antialiased`}
-        suppressHydrationWarning
-      >
-
-        {/* Mircosoft clarity */}
+      <body className={`${outfit.variable} font-outfit antialiased`} suppressHydrationWarning>
+        <SentryInit />
         <ClarityInit />
-
-        <ClientThemeProvider>
-          <HexclaveProvider app={stackServerApp}>
-            <HexclaveTheme theme={theme}>
-              <CurrencyProvider>
-                {children}
-              </CurrencyProvider>
-            </HexclaveTheme >
-          </HexclaveProvider>
-        </ClientThemeProvider>
+        <ErrorBoundary>
+          <OfflineWrapper>
+            {/* Tracking should be outside ErrorBoundary to ensure it loads even if other parts fail */}
+            <ClientThemeProvider>
+              <HexclaveProvider app={stackServerApp}>
+                <HexclaveTheme theme={theme}>
+                  <CurrencyProvider>
+                    {children}
+                  </CurrencyProvider>
+                </HexclaveTheme>
+              </HexclaveProvider>
+            </ClientThemeProvider>
+          </OfflineWrapper>
+        </ErrorBoundary>
       </body>
     </html>
   );

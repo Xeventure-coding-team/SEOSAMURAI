@@ -840,44 +840,7 @@ export function CreateWebsiteForm({ userId, onSuccessRedirect, onSuccess }: Crea
                                             </div>
                                         </div>
 
-                                        {/* Font Family */}
-                                        <FormField
-                                            control={form.control}
-                                            name="fontFamily"
-                                            render={({ field }) => (
-                                                <FormItem>
-                                                    <FormLabel className="flex items-center gap-2">
-                                                        <Type className="h-4 w-4" />
-                                                        Font Family
-                                                    </FormLabel>
-                                                    <Select onValueChange={field.onChange} value={field.value || 'Inter'} defaultValue="Inter">
-                                                        <FormControl>
-                                                            <SelectTrigger className="h-12">
-                                                                <SelectValue placeholder="Inter" />
-                                                            </SelectTrigger>
-                                                        </FormControl>
-                                                        <SelectContent>
-                                                            {fontOptions.map((font) => (
-                                                                <SelectItem key={font.value} value={font.value}>
-                                                                    <div className="flex items-center justify-between gap-6">
-                                                                        <span style={{ fontFamily: font.fontFamily }}>
-                                                                            {font.label}
-                                                                        </span>
-                                                                        <span className="text-xs text-muted-foreground">
-                                                                            {font.category}
-                                                                        </span>
-                                                                    </div>
-                                                                </SelectItem>
-                                                            ))}
-                                                        </SelectContent>
-                                                    </Select>
-                                                    <FormDescription>
-                                                        Choose a font that matches your brand
-                                                    </FormDescription>
-                                                    <FormMessage />
-                                                </FormItem>
-                                            )}
-                                        />
+                                        
                                     </CardContent>
                                 </Card>
                             )}
@@ -1034,24 +997,7 @@ export function CreateWebsiteForm({ userId, onSuccessRedirect, onSuccess }: Crea
                                 </div>
                             </div>
 
-                            {/* Font Preview */}
-                            {form.watch('fontFamily') && (
-                                <div className="space-y-2">
-                                    <Label className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">Font Style</Label>
-                                    <div
-                                        className="p-4 rounded border border-input bg-muted"
-                                        style={{
-                                            fontFamily: fontOptions.find(f => f.value === form.watch('fontFamily'))?.fontFamily
-                                        }}
-                                    >
-                                        <p className="text-sm font-medium">The quick brown fox jumps</p>
-                                        <p className="text-xs text-muted-foreground mt-1">
-                                            {form.watch('fontFamily')}
-                                        </p>
-                                    </div>
-                                </div>
-                            )}
-
+                           
                             {/* Sections Summary */}
                             {form.watch('enabledSections')?.length > 0 && (
                                 <div className="space-y-2">

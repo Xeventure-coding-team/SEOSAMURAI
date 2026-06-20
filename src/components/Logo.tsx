@@ -36,11 +36,11 @@ export default function Logo({
 
   const logoSrc =
     theme === "dark"
-      ? "/logo/logo_icon_dark.png"
+      ? "/logo/logo_icon.png"
       : "/logo/logo_icon.png";
 
- 
-    
+
+
 
   return (
     <div className={cn("flex items-center gap-3", className)} {...props}>
@@ -54,9 +54,7 @@ export default function Logo({
       />
 
       {showText && (
-        <span
-          className={`text-xl font-semibold tracking-tight`}
-        >
+        <span className="text-xl font-semibold tracking-tight text-foreground">
           Rankerly
         </span>
       )}

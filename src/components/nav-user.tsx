@@ -34,6 +34,7 @@ import {
 import { useStackApp, useUser } from "@hexclave/next"
 import toast from "react-hot-toast"
 import Link from "next/link"
+import { useRouter } from "next/navigation"
 
 export function NavUser({
   user,
@@ -46,6 +47,8 @@ export function NavUser({
 }) {
   const { isMobile } = useSidebar()
   const { theme, setTheme } = useTheme()
+  const router = useRouter();
+
 
   // Helper function to get initials from name
   const getInitials = (name?: string | null): string => {
@@ -59,11 +62,17 @@ export function NavUser({
 
   const userAuth = useUser();
 
-  function handleSignout() {
+  async function handleSignout() {
     try {
-      userAuth?.signOut();
+      await userAuth?.signOut();
+
+      // Redirect to login page
+      router.replace("/");
+
+      // Optional: force refresh
+      router.refresh();
     } catch (error) {
-      toast.error('The operation failed. Try again later.');
+      toast.error("The operation failed. Try again later.");
     }
   }
 
@@ -132,10 +141,10 @@ export function NavUser({
                 </DropdownMenuItem>
               </Link>
               <Link href={'/app/settings/billing'}>
-              <DropdownMenuItem>
-                <IconCreditCard />
-                Billing
-              </DropdownMenuItem>
+                <DropdownMenuItem>
+                  <IconCreditCard />
+                  Billing
+                </DropdownMenuItem>
               </Link>
               <Link href={'/app/settings#notifications'}>
                 <DropdownMenuItem>

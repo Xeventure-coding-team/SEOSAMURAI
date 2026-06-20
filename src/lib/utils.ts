@@ -8,3 +8,12 @@ export function cn(...inputs: ClassValue[]) {
 export function toUrl(url: string): string {
     return url;
 }
+
+export function slugify(text: string): string {
+  return text
+    .toLowerCase()
+    .trim()
+    .replace(/[^\w\s-]/g, "") 
+    .replace(/\s+/g, "-")    
+    .replace(/--+/g, "-");    
+}

@@ -741,6 +741,77 @@ model GmbContextCache {
   @@map("gmb_context_cache")
 }
 
+model BlogPost {
+  id         String     @id @default(auto()) @map("_id") @db.ObjectId
+  title      String
+  slug       String     @unique
+  body       String
+  coverImage String?
+  status     PostStatus @default(DRAFT)
+  authorId   String // stackUserId
+
+  // SEO
+  metaTitle       String?
+  metaDescription String?
+  metaKeywords    String?
+
+  // Relations
+  categories String[] // store category IDs directly (MongoDB array)
+  tags       String[] // store tag IDs directly
+
+  publishedAt DateTime?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+}
+
+model ChangeLog {
+  id          String   @id @default(auto()) @map("_id") @db.ObjectId
+  title       String
+  version     String   @unique
+  body        String
+  type        String? // "added", "fixed", "changed", "removed", "security"
+  releaseDate DateTime @default(now())
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([releaseDate])
+}
+
+model SiteSettings {
+  id String @id @default("singleton") @map("_id")
+
+  maintenanceMode   Boolean @default(false)
+  maintenanceBanner String?
+  registrationOpen  Boolean @default(true)
+
+  siteName     String?
+  supportEmail String?
+
+  updatedAt DateTime @updatedAt
+
+  @@map("site_settings")
+}
+
+model Category {
+  id   String @id @default(auto()) @map("_id") @db.ObjectId
+  name String @unique
+  slug String @unique
+}
+
+model Tag {
+  id   String @id @default(auto()) @map("_id") @db.ObjectId
+  name String @unique
+  slug String @unique
+}
+
+model ApiCache {
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  key       String   @unique
+  data      Json
+  fetchedAt DateTime
+}
+
 enum SubscriptionStatus {
   ACTIVE
   CANCELED
@@ -755,4 +826,9 @@ enum PlanType {
   STARTER
   GROWTH
   PRO
+}
+
+enum PostStatus {
+  DRAFT
+  PUBLISHED
 }

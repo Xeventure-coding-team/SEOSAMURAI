@@ -590,6 +590,64 @@ exports.Prisma.GmbContextCacheScalarFieldEnum = {
   cachedAt: 'cachedAt'
 };
 
+exports.Prisma.BlogPostScalarFieldEnum = {
+  id: 'id',
+  title: 'title',
+  slug: 'slug',
+  body: 'body',
+  coverImage: 'coverImage',
+  status: 'status',
+  authorId: 'authorId',
+  metaTitle: 'metaTitle',
+  metaDescription: 'metaDescription',
+  metaKeywords: 'metaKeywords',
+  categories: 'categories',
+  tags: 'tags',
+  publishedAt: 'publishedAt',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+};
+
+exports.Prisma.ChangeLogScalarFieldEnum = {
+  id: 'id',
+  title: 'title',
+  version: 'version',
+  body: 'body',
+  type: 'type',
+  releaseDate: 'releaseDate',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+};
+
+exports.Prisma.SiteSettingsScalarFieldEnum = {
+  id: 'id',
+  maintenanceMode: 'maintenanceMode',
+  maintenanceBanner: 'maintenanceBanner',
+  registrationOpen: 'registrationOpen',
+  siteName: 'siteName',
+  supportEmail: 'supportEmail',
+  updatedAt: 'updatedAt'
+};
+
+exports.Prisma.CategoryScalarFieldEnum = {
+  id: 'id',
+  name: 'name',
+  slug: 'slug'
+};
+
+exports.Prisma.TagScalarFieldEnum = {
+  id: 'id',
+  name: 'name',
+  slug: 'slug'
+};
+
+exports.Prisma.ApiCacheScalarFieldEnum = {
+  id: 'id',
+  key: 'key',
+  data: 'data',
+  fetchedAt: 'fetchedAt'
+};
+
 exports.Prisma.SortOrder = {
   asc: 'asc',
   desc: 'desc'
@@ -648,6 +706,11 @@ exports.PlanType = exports.$Enums.PlanType = {
   PRO: 'PRO'
 };
 
+exports.PostStatus = exports.$Enums.PostStatus = {
+  DRAFT: 'DRAFT',
+  PUBLISHED: 'PUBLISHED'
+};
+
 exports.Prisma.ModelName = {
   Version: 'Version',
   locations: 'locations',
@@ -680,7 +743,13 @@ exports.Prisma.ModelName = {
   Subscription: 'Subscription',
   Usage: 'Usage',
   LocationChoice: 'LocationChoice',
-  GmbContextCache: 'GmbContextCache'
+  GmbContextCache: 'GmbContextCache',
+  BlogPost: 'BlogPost',
+  ChangeLog: 'ChangeLog',
+  SiteSettings: 'SiteSettings',
+  Category: 'Category',
+  Tag: 'Tag',
+  ApiCache: 'ApiCache'
 };
 
 /**

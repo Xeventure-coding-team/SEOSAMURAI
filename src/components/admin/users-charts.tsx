@@ -113,7 +113,7 @@ export function UsersCharts({ users }: UsersChartsProps) {
 
   return (
     <div className="space-y-6 mt-8">
-        
+
       {/* User Growth */}
       <Card>
         <CardHeader>
@@ -127,22 +127,22 @@ export function UsersCharts({ users }: UsersChartsProps) {
         </CardHeader>
         <CardContent>
           <ChartContainer config={chartConfig} className="h-[300px] w-full">
-           <BarChart data={signupsTrend}>
-  <CartesianGrid vertical={false} />
-  <XAxis
-    dataKey="monthName"
-    tickLine={false}
-    axisLine={false}
-  />
-  <ChartTooltip cursor={false} content={<ChartTooltipContent />} />
+            <BarChart data={signupsTrend}>
+              <CartesianGrid vertical={false} />
+              <XAxis
+                dataKey="monthName"
+                tickLine={false}
+                axisLine={false}
+              />
+              <ChartTooltip cursor={false} content={<ChartTooltipContent />} />
 
-  <Bar
-    dataKey="signups"
-    fill="var(--color-signups)"
-    radius={8}
-    barSize={40}
-  />
-</BarChart>
+              <Bar
+                dataKey="signups"
+                fill="var(--color-signups)"
+                radius={8}
+                barSize={40}
+              />
+            </BarChart>
           </ChartContainer>
         </CardContent>
       </Card>

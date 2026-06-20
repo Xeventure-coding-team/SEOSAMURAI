@@ -1,16 +1,19 @@
-"use client";
-import Hero from "@/components/frontend/Hero";
-import MainLayout from "./layouts/MainLayout";
-import { FeaturesList } from "@/components/frontend/FeaturesGrid";
+import HomePage from '@/components/frontend/HomePage'
+import React from 'react'
+import { createMetadata } from '../../lib/metadata';
 
-export default function Home() {
+export const metadata = createMetadata({
+  title: "Home",
+  description: "Automate local SEO growth for your Google Business Profile.",
+  slug: "/",
+});
 
+function page() {
   return (
-    <MainLayout>
-        <Hero />
-      <div className="max-w-screen-xl mx-auto text-gray-600 gap-x-12 pb-8 mb-8">
-        <FeaturesList />
-      </div>
-    </MainLayout>
-  );
+    <div>
+      <HomePage />
+    </div>
+  )
 }
+
+export default page

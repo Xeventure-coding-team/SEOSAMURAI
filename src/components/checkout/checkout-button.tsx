@@ -12,6 +12,7 @@ import { Loader2 } from "lucide-react";
 import type { PlanId } from "@/lib/stripe";
 import { useRouter } from "next/navigation";
 import { useCurrency } from "@/providers/CurrencyProvider";
+import { cn } from "@/lib/utils";
 
 interface CheckoutButtonProps {
   planId: PlanId;
@@ -57,7 +58,12 @@ export function CheckoutButton({
 
   if (isCurrentPlan) {
     return (
-      <Button variant="outline" onClick={handleClick} disabled={isPending} className="w-full">
+      <Button
+        variant="outline"
+        onClick={handleClick}
+        disabled={isPending}
+        className="w-full"
+      >
         {isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
         Manage Plan
       </Button>
@@ -66,17 +72,21 @@ export function CheckoutButton({
 
   return (
     <Button
-      onClick={handleClick}
-      disabled={isPending}
-      variant={isHighlight ? "default" : "outline"}
-      className="w-full"
-    >
-      {isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-      {isLoggedIn
-        ? hasActiveSubscription
-          ? "Switch Plan"
-          : "Subscribe"
-        : "Get Started"}
-    </Button>
+  onClick={handleClick}
+  disabled={isPending}
+  variant={isHighlight ? "default" : "outline"}
+  className={cn(
+    "w-full",
+    !isHighlight &&
+      "bg-background text-foreground border-border hover:bg-muted"
+  )}
+>
+  {isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+  {isLoggedIn
+    ? hasActiveSubscription
+      ? "Switch Plan"
+      : "Subscribe"
+    : "Get Started"}
+</Button>
   );
 }

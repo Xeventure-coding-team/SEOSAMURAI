@@ -56,7 +56,6 @@ export default async function AdminLayout({
 
             {/* Nav — client component handles mobile sheet + active state */}
             <AdminNav
-              pathname={pathname}
               initials={initials}
               displayName={user.displayName ?? "Admin"}
               email={user.primaryEmail ?? ""}

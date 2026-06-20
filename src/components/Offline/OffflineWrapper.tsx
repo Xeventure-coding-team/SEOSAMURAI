@@ -13,7 +13,9 @@ interface OfflineWrapperProps {
 }
 
 function OfflineWrapper({ children, showRetry = true, customMessage }: OfflineWrapperProps) {
-  const [isOffline, setIsOffline] = useState<boolean>(!window.navigator.onLine)
+  const [isOffline, setIsOffline] = useState(
+    typeof window !== "undefined" ? !window.navigator.onLine : false
+  );
   const [isChecking, setIsChecking] = useState<boolean>(false)
 
   const checkConnection = () => {
@@ -43,19 +45,19 @@ function OfflineWrapper({ children, showRetry = true, customMessage }: OfflineWr
       <div className="flex items-center justify-center min-h-screen bg-background p-4">
         <Card className="max-w-md w-full">
           <CardContent className="pt-6">
-            
+
             <div className="flex flex-col items-center justify-center space-y-4 text-center">
               <div className="rounded-full bg-muted p-3">
                 <WifiOff className="h-8 w-8 text-muted-foreground" />
               </div>
-              
+
               <p className="text-sm text-muted-foreground">
                 Some features may be unavailable while you're offline.
               </p>
-              
+
               {showRetry && (
-                <Button 
-                  onClick={checkConnection} 
+                <Button
+                  onClick={checkConnection}
                   disabled={isChecking}
                   className="w-full sm:w-auto"
                 >
