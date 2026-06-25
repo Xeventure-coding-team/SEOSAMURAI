@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { HexclaveProvider, HexclaveTheme } from "@hexclave/next";
 import { stackServerApp } from "../stack";
-import { Outfit } from "next/font/google";
+import { Outfit, Plus_Jakarta_Sans } from "next/font/google";
 import "./globals.css";
 import { ClientThemeProvider } from "./layouts/ClientThemeProvider";
 import { CurrencyProvider } from "@/providers/CurrencyProvider";
@@ -10,10 +10,9 @@ import ErrorBoundary from "@/components/error/error-boundary";
 import OfflineWrapper from "@/components/Offline/OffflineWrapper";
 import SentryInit from "@/components/tracking/SentryInit";
 
-const outfit = Outfit({
-  variable: "--font-outfit",
-  subsets: ["latin"],
-});
+const outfit = Outfit({ variable: "--font-sans", subsets: ["latin"] });
+const jakarta = Plus_Jakarta_Sans({ variable: "--font-heading", subsets: ["latin"], weight: ["600","700","800"] });
+
 
 export const metadata: Metadata = {
   title: process.env.APP_NAME || "Rankerly",
@@ -151,7 +150,7 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
       <head>
         <meta name="referrer" content="no-referrer" />
       </head>
-      <body className={`${outfit.variable} font-outfit antialiased`} suppressHydrationWarning>
+      <body className={`${outfit.variable} ${jakarta.variable} font-sans antialiased`} suppressHydrationWarning>
         <SentryInit />
         <ClarityInit />
         <ErrorBoundary>

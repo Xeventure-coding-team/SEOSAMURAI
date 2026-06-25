@@ -629,6 +629,24 @@ exports.Prisma.SiteSettingsScalarFieldEnum = {
   updatedAt: 'updatedAt'
 };
 
+exports.Prisma.AISettingsScalarFieldEnum = {
+  id: 'id',
+  activeProvider: 'activeProvider',
+  updatedAt: 'updatedAt'
+};
+
+exports.Prisma.AIProviderConfigScalarFieldEnum = {
+  id: 'id',
+  provider: 'provider',
+  apiKeyEncrypted: 'apiKeyEncrypted',
+  apiKeyLast4: 'apiKeyLast4',
+  model: 'model',
+  enabled: 'enabled',
+  isActive: 'isActive',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+};
+
 exports.Prisma.CategoryScalarFieldEnum = {
   id: 'id',
   name: 'name',
@@ -747,6 +765,8 @@ exports.Prisma.ModelName = {
   BlogPost: 'BlogPost',
   ChangeLog: 'ChangeLog',
   SiteSettings: 'SiteSettings',
+  AISettings: 'AISettings',
+  AIProviderConfig: 'AIProviderConfig',
   Category: 'Category',
   Tag: 'Tag',
   ApiCache: 'ApiCache'

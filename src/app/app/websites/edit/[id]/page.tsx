@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button';
 import { stackServerApp } from '@/stack';
 import { EditWebsiteForm } from '@/components/websites/EditWebsiteForm';
 import { Metadata } from 'next';
+import { prisma } from '../../../../../../lib/prisma';
 
 interface PageProps {
     params: Promise<{
@@ -20,20 +21,10 @@ export const metadata: Metadata = {
 // Function to fetch website data
 async function fetchWebsiteData(websiteId: string, userId: string) {
     try {
-        const response = await fetch(`${process.env.NEXT_PUBLIC_PUBLIC_URL}/api/websites?userId=${userId}`, {
-            cache: 'no-store'
+        const website = await prisma.website.findFirst({
+            where: { id: websiteId, userId },
+            include: { cachedData: true },
         });
-
-        if (!response.ok) {
-            throw new Error('Failed to fetch websites');
-        }
-
-        const data = await response.json();
-        const website = data.websites.find((w: any) => w.id === websiteId);
-
-        if (!website) {
-            throw new Error('Website not found');
-        }
 
         return website;
     } catch (error) {

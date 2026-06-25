@@ -499,9 +499,6 @@ export default function Reviews({
     )
   }
 
-  console.log(validReviews);
-
-
   return (
     <Card className={`${className}`}>
       <CardHeader>

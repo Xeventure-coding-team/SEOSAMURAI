@@ -355,7 +355,7 @@ export function MediaTabContent({
   accessToken
 }: MediaTabContentProps) {
   return (
-    <div className="p-6">
+    <div>
       <Card>
         <CardHeader>
           <div className="flex items-center justify-between gap-4 flex-wrap">

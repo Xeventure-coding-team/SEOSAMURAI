@@ -38,13 +38,14 @@ export async function POST(request: Request) {
                 <!-- Main Container -->
                 <table width="100%" max-width="600px" cellpadding="0" cellspacing="0" border="0" style="max-width: 600px; width: 100%; background-color: #ffffff; border-radius: 12px; box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);">
                   
-                  <!-- Header -->
+                  <!-- Header with Logo -->
                   <tr>
                     <td style="padding: 32px 32px 0 32px;">
                       <table width="100%" cellpadding="0" cellspacing="0" border="0">
                         <tr>
                           <td>
-                            <span style="font-size: 24px; font-weight: 600; color: #111827; letter-spacing: -0.3px;">Support Request</span>
+                            <span style="font-size: 24px; font-weight: 700; color: #111827; letter-spacing: -0.3px;">Rankerly</span>
+                            <span style="font-size: 16px; font-weight: 400; color: #6b7280; margin-left: 8px;">Support</span>
                           </td>
                         </tr>
                         <tr>
@@ -125,8 +126,8 @@ export async function POST(request: Request) {
                           <span style="font-weight: 500;">Priority:</span> Normal
                         </div>
                         <div style="font-size: 11px; color: #9ca3af; border-top: 1px solid #e5e7eb; padding-top: 20px;">
-                          <p style="margin: 0 0 8px 0;">This is an automated message from your support system.</p>
-                          <p style="margin: 0;">© ${new Date().getFullYear()} Your Company. All rights reserved.</p>
+                          <p style="margin: 0 0 8px 0;">This is an automated message from Rankerly support.</p>
+                          <p style="margin: 0;">© ${new Date().getFullYear()} Rankerly. All rights reserved.</p>
                         </div>
                       </div>
                     </td>
@@ -142,7 +143,7 @@ export async function POST(request: Request) {
 
     // Clean plain text version with proper formatting
     const textContent = `
-SUPPORT REQUEST
+RANKERLY SUPPORT
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 Ticket ID: ${ticketId}
@@ -164,14 +165,14 @@ Submitted: ${currentDateTime}
 Priority: Normal
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-This is an automated message from your support system.
-© ${new Date().getFullYear()} Your Company. All rights reserved.
+This is an automated message from Rankerly support.
+© ${new Date().getFullYear()} Rankerly. All rights reserved.
     `;
 
     // Send email
     await transporter.sendMail({
-      from: '"Support" <support@yourapp.com>',
-      to: "support@yourapp.com",
+      from: '"Rankerly Support" <support@rankerly.com>',
+      to: "support@rankerly.com",
       subject: `[${category}] ${subject} (${ticketId})`,
       html: emailHtml,
       text: textContent,

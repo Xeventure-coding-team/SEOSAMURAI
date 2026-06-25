@@ -189,6 +189,16 @@ export type ChangeLog = $Result.DefaultSelection<Prisma.$ChangeLogPayload>
  */
 export type SiteSettings = $Result.DefaultSelection<Prisma.$SiteSettingsPayload>
 /**
+ * Model AISettings
+ * 
+ */
+export type AISettings = $Result.DefaultSelection<Prisma.$AISettingsPayload>
+/**
+ * Model AIProviderConfig
+ * 
+ */
+export type AIProviderConfig = $Result.DefaultSelection<Prisma.$AIProviderConfigPayload>
+/**
  * Model Category
  * 
  */
@@ -748,6 +758,26 @@ export class PrismaClient<
   get siteSettings(): Prisma.SiteSettingsDelegate<ExtArgs, ClientOptions>;
 
   /**
+   * `prisma.aISettings`: Exposes CRUD operations for the **AISettings** model.
+    * Example usage:
+    * ```ts
+    * // Fetch zero or more AISettings
+    * const aISettings = await prisma.aISettings.findMany()
+    * ```
+    */
+  get aISettings(): Prisma.AISettingsDelegate<ExtArgs, ClientOptions>;
+
+  /**
+   * `prisma.aIProviderConfig`: Exposes CRUD operations for the **AIProviderConfig** model.
+    * Example usage:
+    * ```ts
+    * // Fetch zero or more AIProviderConfigs
+    * const aIProviderConfigs = await prisma.aIProviderConfig.findMany()
+    * ```
+    */
+  get aIProviderConfig(): Prisma.AIProviderConfigDelegate<ExtArgs, ClientOptions>;
+
+  /**
    * `prisma.category`: Exposes CRUD operations for the **Category** model.
     * Example usage:
     * ```ts
@@ -1251,6 +1281,8 @@ export namespace Prisma {
     BlogPost: 'BlogPost',
     ChangeLog: 'ChangeLog',
     SiteSettings: 'SiteSettings',
+    AISettings: 'AISettings',
+    AIProviderConfig: 'AIProviderConfig',
     Category: 'Category',
     Tag: 'Tag',
     ApiCache: 'ApiCache'
@@ -1272,7 +1304,7 @@ export namespace Prisma {
       omit: GlobalOmitOptions
     }
     meta: {
-      modelProps: "version" | "locations" | "scheduledPost" | "gmbIntegration" | "competitorAnalysis" | "keywords" | "keywordRank" | "keywordTracking" | "batchUpdate" | "userSettings" | "rankAlert" | "task" | "completedTask" | "taskExclusion" | "userProgress" | "locationProgress" | "milestone" | "locationMilestone" | "locationAchievement" | "userTaskRefresh" | "googleReviewPoster" | "gmb_reviews" | "chat" | "message" | "website" | "websiteCachedData" | "syncHistory" | "syncQueue" | "subscription" | "usage" | "locationChoice" | "gmbContextCache" | "blogPost" | "changeLog" | "siteSettings" | "category" | "tag" | "apiCache"
+      modelProps: "version" | "locations" | "scheduledPost" | "gmbIntegration" | "competitorAnalysis" | "keywords" | "keywordRank" | "keywordTracking" | "batchUpdate" | "userSettings" | "rankAlert" | "task" | "completedTask" | "taskExclusion" | "userProgress" | "locationProgress" | "milestone" | "locationMilestone" | "locationAchievement" | "userTaskRefresh" | "googleReviewPoster" | "gmb_reviews" | "chat" | "message" | "website" | "websiteCachedData" | "syncHistory" | "syncQueue" | "subscription" | "usage" | "locationChoice" | "gmbContextCache" | "blogPost" | "changeLog" | "siteSettings" | "aISettings" | "aIProviderConfig" | "category" | "tag" | "apiCache"
       txIsolationLevel: never
     }
     model: {
@@ -3866,6 +3898,154 @@ export namespace Prisma {
           }
         }
       }
+      AISettings: {
+        payload: Prisma.$AISettingsPayload<ExtArgs>
+        fields: Prisma.AISettingsFieldRefs
+        operations: {
+          findUnique: {
+            args: Prisma.AISettingsFindUniqueArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$AISettingsPayload> | null
+          }
+          findUniqueOrThrow: {
+            args: Prisma.AISettingsFindUniqueOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$AISettingsPayload>
+          }
+          findFirst: {
+            args: Prisma.AISettingsFindFirstArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$AISettingsPayload> | null
+          }
+          findFirstOrThrow: {
+            args: Prisma.AISettingsFindFirstOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$AISettingsPayload>
+          }
+          findMany: {
+            args: Prisma.AISettingsFindManyArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$AISettingsPayload>[]
+          }
+          create: {
+            args: Prisma.AISettingsCreateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$AISettingsPayload>
+          }
+          createMany: {
+            args: Prisma.AISettingsCreateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          delete: {
+            args: Prisma.AISettingsDeleteArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$AISettingsPayload>
+          }
+          update: {
+            args: Prisma.AISettingsUpdateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$AISettingsPayload>
+          }
+          deleteMany: {
+            args: Prisma.AISettingsDeleteManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          updateMany: {
+            args: Prisma.AISettingsUpdateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          upsert: {
+            args: Prisma.AISettingsUpsertArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$AISettingsPayload>
+          }
+          aggregate: {
+            args: Prisma.AISettingsAggregateArgs<ExtArgs>
+            result: $Utils.Optional<AggregateAISettings>
+          }
+          groupBy: {
+            args: Prisma.AISettingsGroupByArgs<ExtArgs>
+            result: $Utils.Optional<AISettingsGroupByOutputType>[]
+          }
+          findRaw: {
+            args: Prisma.AISettingsFindRawArgs<ExtArgs>
+            result: JsonObject
+          }
+          aggregateRaw: {
+            args: Prisma.AISettingsAggregateRawArgs<ExtArgs>
+            result: JsonObject
+          }
+          count: {
+            args: Prisma.AISettingsCountArgs<ExtArgs>
+            result: $Utils.Optional<AISettingsCountAggregateOutputType> | number
+          }
+        }
+      }
+      AIProviderConfig: {
+        payload: Prisma.$AIProviderConfigPayload<ExtArgs>
+        fields: Prisma.AIProviderConfigFieldRefs
+        operations: {
+          findUnique: {
+            args: Prisma.AIProviderConfigFindUniqueArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$AIProviderConfigPayload> | null
+          }
+          findUniqueOrThrow: {
+            args: Prisma.AIProviderConfigFindUniqueOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$AIProviderConfigPayload>
+          }
+          findFirst: {
+            args: Prisma.AIProviderConfigFindFirstArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$AIProviderConfigPayload> | null
+          }
+          findFirstOrThrow: {
+            args: Prisma.AIProviderConfigFindFirstOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$AIProviderConfigPayload>
+          }
+          findMany: {
+            args: Prisma.AIProviderConfigFindManyArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$AIProviderConfigPayload>[]
+          }
+          create: {
+            args: Prisma.AIProviderConfigCreateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$AIProviderConfigPayload>
+          }
+          createMany: {
+            args: Prisma.AIProviderConfigCreateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          delete: {
+            args: Prisma.AIProviderConfigDeleteArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$AIProviderConfigPayload>
+          }
+          update: {
+            args: Prisma.AIProviderConfigUpdateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$AIProviderConfigPayload>
+          }
+          deleteMany: {
+            args: Prisma.AIProviderConfigDeleteManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          updateMany: {
+            args: Prisma.AIProviderConfigUpdateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          upsert: {
+            args: Prisma.AIProviderConfigUpsertArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$AIProviderConfigPayload>
+          }
+          aggregate: {
+            args: Prisma.AIProviderConfigAggregateArgs<ExtArgs>
+            result: $Utils.Optional<AggregateAIProviderConfig>
+          }
+          groupBy: {
+            args: Prisma.AIProviderConfigGroupByArgs<ExtArgs>
+            result: $Utils.Optional<AIProviderConfigGroupByOutputType>[]
+          }
+          findRaw: {
+            args: Prisma.AIProviderConfigFindRawArgs<ExtArgs>
+            result: JsonObject
+          }
+          aggregateRaw: {
+            args: Prisma.AIProviderConfigAggregateRawArgs<ExtArgs>
+            result: JsonObject
+          }
+          count: {
+            args: Prisma.AIProviderConfigCountArgs<ExtArgs>
+            result: $Utils.Optional<AIProviderConfigCountAggregateOutputType> | number
+          }
+        }
+      }
       Category: {
         payload: Prisma.$CategoryPayload<ExtArgs>
         fields: Prisma.CategoryFieldRefs
@@ -4202,6 +4382,8 @@ export namespace Prisma {
     blogPost?: BlogPostOmit
     changeLog?: ChangeLogOmit
     siteSettings?: SiteSettingsOmit
+    aISettings?: AISettingsOmit
+    aIProviderConfig?: AIProviderConfigOmit
     category?: CategoryOmit
     tag?: TagOmit
     apiCache?: ApiCacheOmit
@@ -40620,6 +40802,1892 @@ export namespace Prisma {
 
 
   /**
+   * Model AISettings
+   */
+
+  export type AggregateAISettings = {
+    _count: AISettingsCountAggregateOutputType | null
+    _min: AISettingsMinAggregateOutputType | null
+    _max: AISettingsMaxAggregateOutputType | null
+  }
+
+  export type AISettingsMinAggregateOutputType = {
+    id: string | null
+    activeProvider: string | null
+    updatedAt: Date | null
+  }
+
+  export type AISettingsMaxAggregateOutputType = {
+    id: string | null
+    activeProvider: string | null
+    updatedAt: Date | null
+  }
+
+  export type AISettingsCountAggregateOutputType = {
+    id: number
+    activeProvider: number
+    updatedAt: number
+    _all: number
+  }
+
+
+  export type AISettingsMinAggregateInputType = {
+    id?: true
+    activeProvider?: true
+    updatedAt?: true
+  }
+
+  export type AISettingsMaxAggregateInputType = {
+    id?: true
+    activeProvider?: true
+    updatedAt?: true
+  }
+
+  export type AISettingsCountAggregateInputType = {
+    id?: true
+    activeProvider?: true
+    updatedAt?: true
+    _all?: true
+  }
+
+  export type AISettingsAggregateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which AISettings to aggregate.
+     */
+    where?: AISettingsWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of AISettings to fetch.
+     */
+    orderBy?: AISettingsOrderByWithRelationInput | AISettingsOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the start position
+     */
+    cursor?: AISettingsWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` AISettings from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` AISettings.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Count returned AISettings
+    **/
+    _count?: true | AISettingsCountAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the minimum value
+    **/
+    _min?: AISettingsMinAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the maximum value
+    **/
+    _max?: AISettingsMaxAggregateInputType
+  }
+
+  export type GetAISettingsAggregateType<T extends AISettingsAggregateArgs> = {
+        [P in keyof T & keyof AggregateAISettings]: P extends '_count' | 'count'
+      ? T[P] extends true
+        ? number
+        : GetScalarType<T[P], AggregateAISettings[P]>
+      : GetScalarType<T[P], AggregateAISettings[P]>
+  }
+
+
+
+
+  export type AISettingsGroupByArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: AISettingsWhereInput
+    orderBy?: AISettingsOrderByWithAggregationInput | AISettingsOrderByWithAggregationInput[]
+    by: AISettingsScalarFieldEnum[] | AISettingsScalarFieldEnum
+    having?: AISettingsScalarWhereWithAggregatesInput
+    take?: number
+    skip?: number
+    _count?: AISettingsCountAggregateInputType | true
+    _min?: AISettingsMinAggregateInputType
+    _max?: AISettingsMaxAggregateInputType
+  }
+
+  export type AISettingsGroupByOutputType = {
+    id: string
+    activeProvider: string | null
+    updatedAt: Date
+    _count: AISettingsCountAggregateOutputType | null
+    _min: AISettingsMinAggregateOutputType | null
+    _max: AISettingsMaxAggregateOutputType | null
+  }
+
+  type GetAISettingsGroupByPayload<T extends AISettingsGroupByArgs> = Prisma.PrismaPromise<
+    Array<
+      PickEnumerable<AISettingsGroupByOutputType, T['by']> &
+        {
+          [P in ((keyof T) & (keyof AISettingsGroupByOutputType))]: P extends '_count'
+            ? T[P] extends boolean
+              ? number
+              : GetScalarType<T[P], AISettingsGroupByOutputType[P]>
+            : GetScalarType<T[P], AISettingsGroupByOutputType[P]>
+        }
+      >
+    >
+
+
+  export type AISettingsSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    activeProvider?: boolean
+    updatedAt?: boolean
+  }, ExtArgs["result"]["aISettings"]>
+
+
+
+  export type AISettingsSelectScalar = {
+    id?: boolean
+    activeProvider?: boolean
+    updatedAt?: boolean
+  }
+
+  export type AISettingsOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "activeProvider" | "updatedAt", ExtArgs["result"]["aISettings"]>
+
+  export type $AISettingsPayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    name: "AISettings"
+    objects: {}
+    scalars: $Extensions.GetPayloadResult<{
+      id: string
+      activeProvider: string | null
+      updatedAt: Date
+    }, ExtArgs["result"]["aISettings"]>
+    composites: {}
+  }
+
+  type AISettingsGetPayload<S extends boolean | null | undefined | AISettingsDefaultArgs> = $Result.GetResult<Prisma.$AISettingsPayload, S>
+
+  type AISettingsCountArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> =
+    Omit<AISettingsFindManyArgs, 'select' | 'include' | 'distinct' | 'omit'> & {
+      select?: AISettingsCountAggregateInputType | true
+    }
+
+  export interface AISettingsDelegate<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> {
+    [K: symbol]: { types: Prisma.TypeMap<ExtArgs>['model']['AISettings'], meta: { name: 'AISettings' } }
+    /**
+     * Find zero or one AISettings that matches the filter.
+     * @param {AISettingsFindUniqueArgs} args - Arguments to find a AISettings
+     * @example
+     * // Get one AISettings
+     * const aISettings = await prisma.aISettings.findUnique({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUnique<T extends AISettingsFindUniqueArgs>(args: SelectSubset<T, AISettingsFindUniqueArgs<ExtArgs>>): Prisma__AISettingsClient<$Result.GetResult<Prisma.$AISettingsPayload<ExtArgs>, T, "findUnique", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find one AISettings that matches the filter or throw an error with `error.code='P2025'`
+     * if no matches were found.
+     * @param {AISettingsFindUniqueOrThrowArgs} args - Arguments to find a AISettings
+     * @example
+     * // Get one AISettings
+     * const aISettings = await prisma.aISettings.findUniqueOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUniqueOrThrow<T extends AISettingsFindUniqueOrThrowArgs>(args: SelectSubset<T, AISettingsFindUniqueOrThrowArgs<ExtArgs>>): Prisma__AISettingsClient<$Result.GetResult<Prisma.$AISettingsPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find the first AISettings that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {AISettingsFindFirstArgs} args - Arguments to find a AISettings
+     * @example
+     * // Get one AISettings
+     * const aISettings = await prisma.aISettings.findFirst({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirst<T extends AISettingsFindFirstArgs>(args?: SelectSubset<T, AISettingsFindFirstArgs<ExtArgs>>): Prisma__AISettingsClient<$Result.GetResult<Prisma.$AISettingsPayload<ExtArgs>, T, "findFirst", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find the first AISettings that matches the filter or
+     * throw `PrismaKnownClientError` with `P2025` code if no matches were found.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {AISettingsFindFirstOrThrowArgs} args - Arguments to find a AISettings
+     * @example
+     * // Get one AISettings
+     * const aISettings = await prisma.aISettings.findFirstOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirstOrThrow<T extends AISettingsFindFirstOrThrowArgs>(args?: SelectSubset<T, AISettingsFindFirstOrThrowArgs<ExtArgs>>): Prisma__AISettingsClient<$Result.GetResult<Prisma.$AISettingsPayload<ExtArgs>, T, "findFirstOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find zero or more AISettings that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {AISettingsFindManyArgs} args - Arguments to filter and select certain fields only.
+     * @example
+     * // Get all AISettings
+     * const aISettings = await prisma.aISettings.findMany()
+     * 
+     * // Get first 10 AISettings
+     * const aISettings = await prisma.aISettings.findMany({ take: 10 })
+     * 
+     * // Only select the `id`
+     * const aISettingsWithIdOnly = await prisma.aISettings.findMany({ select: { id: true } })
+     * 
+     */
+    findMany<T extends AISettingsFindManyArgs>(args?: SelectSubset<T, AISettingsFindManyArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$AISettingsPayload<ExtArgs>, T, "findMany", GlobalOmitOptions>>
+
+    /**
+     * Create a AISettings.
+     * @param {AISettingsCreateArgs} args - Arguments to create a AISettings.
+     * @example
+     * // Create one AISettings
+     * const AISettings = await prisma.aISettings.create({
+     *   data: {
+     *     // ... data to create a AISettings
+     *   }
+     * })
+     * 
+     */
+    create<T extends AISettingsCreateArgs>(args: SelectSubset<T, AISettingsCreateArgs<ExtArgs>>): Prisma__AISettingsClient<$Result.GetResult<Prisma.$AISettingsPayload<ExtArgs>, T, "create", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Create many AISettings.
+     * @param {AISettingsCreateManyArgs} args - Arguments to create many AISettings.
+     * @example
+     * // Create many AISettings
+     * const aISettings = await prisma.aISettings.createMany({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     *     
+     */
+    createMany<T extends AISettingsCreateManyArgs>(args?: SelectSubset<T, AISettingsCreateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Delete a AISettings.
+     * @param {AISettingsDeleteArgs} args - Arguments to delete one AISettings.
+     * @example
+     * // Delete one AISettings
+     * const AISettings = await prisma.aISettings.delete({
+     *   where: {
+     *     // ... filter to delete one AISettings
+     *   }
+     * })
+     * 
+     */
+    delete<T extends AISettingsDeleteArgs>(args: SelectSubset<T, AISettingsDeleteArgs<ExtArgs>>): Prisma__AISettingsClient<$Result.GetResult<Prisma.$AISettingsPayload<ExtArgs>, T, "delete", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Update one AISettings.
+     * @param {AISettingsUpdateArgs} args - Arguments to update one AISettings.
+     * @example
+     * // Update one AISettings
+     * const aISettings = await prisma.aISettings.update({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    update<T extends AISettingsUpdateArgs>(args: SelectSubset<T, AISettingsUpdateArgs<ExtArgs>>): Prisma__AISettingsClient<$Result.GetResult<Prisma.$AISettingsPayload<ExtArgs>, T, "update", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Delete zero or more AISettings.
+     * @param {AISettingsDeleteManyArgs} args - Arguments to filter AISettings to delete.
+     * @example
+     * // Delete a few AISettings
+     * const { count } = await prisma.aISettings.deleteMany({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     * 
+     */
+    deleteMany<T extends AISettingsDeleteManyArgs>(args?: SelectSubset<T, AISettingsDeleteManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Update zero or more AISettings.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {AISettingsUpdateManyArgs} args - Arguments to update one or more rows.
+     * @example
+     * // Update many AISettings
+     * const aISettings = await prisma.aISettings.updateMany({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    updateMany<T extends AISettingsUpdateManyArgs>(args: SelectSubset<T, AISettingsUpdateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Create or update one AISettings.
+     * @param {AISettingsUpsertArgs} args - Arguments to update or create a AISettings.
+     * @example
+     * // Update or create a AISettings
+     * const aISettings = await prisma.aISettings.upsert({
+     *   create: {
+     *     // ... data to create a AISettings
+     *   },
+     *   update: {
+     *     // ... in case it already exists, update
+     *   },
+     *   where: {
+     *     // ... the filter for the AISettings we want to update
+     *   }
+     * })
+     */
+    upsert<T extends AISettingsUpsertArgs>(args: SelectSubset<T, AISettingsUpsertArgs<ExtArgs>>): Prisma__AISettingsClient<$Result.GetResult<Prisma.$AISettingsPayload<ExtArgs>, T, "upsert", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find zero or more AISettings that matches the filter.
+     * @param {AISettingsFindRawArgs} args - Select which filters you would like to apply.
+     * @example
+     * const aISettings = await prisma.aISettings.findRaw({
+     *   filter: { age: { $gt: 25 } }
+     * })
+     */
+    findRaw(args?: AISettingsFindRawArgs): Prisma.PrismaPromise<JsonObject>
+
+    /**
+     * Perform aggregation operations on a AISettings.
+     * @param {AISettingsAggregateRawArgs} args - Select which aggregations you would like to apply.
+     * @example
+     * const aISettings = await prisma.aISettings.aggregateRaw({
+     *   pipeline: [
+     *     { $match: { status: "registered" } },
+     *     { $group: { _id: "$country", total: { $sum: 1 } } }
+     *   ]
+     * })
+     */
+    aggregateRaw(args?: AISettingsAggregateRawArgs): Prisma.PrismaPromise<JsonObject>
+
+
+    /**
+     * Count the number of AISettings.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {AISettingsCountArgs} args - Arguments to filter AISettings to count.
+     * @example
+     * // Count the number of AISettings
+     * const count = await prisma.aISettings.count({
+     *   where: {
+     *     // ... the filter for the AISettings we want to count
+     *   }
+     * })
+    **/
+    count<T extends AISettingsCountArgs>(
+      args?: Subset<T, AISettingsCountArgs>,
+    ): Prisma.PrismaPromise<
+      T extends $Utils.Record<'select', any>
+        ? T['select'] extends true
+          ? number
+          : GetScalarType<T['select'], AISettingsCountAggregateOutputType>
+        : number
+    >
+
+    /**
+     * Allows you to perform aggregations operations on a AISettings.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {AISettingsAggregateArgs} args - Select which aggregations you would like to apply and on what fields.
+     * @example
+     * // Ordered by age ascending
+     * // Where email contains prisma.io
+     * // Limited to the 10 users
+     * const aggregations = await prisma.user.aggregate({
+     *   _avg: {
+     *     age: true,
+     *   },
+     *   where: {
+     *     email: {
+     *       contains: "prisma.io",
+     *     },
+     *   },
+     *   orderBy: {
+     *     age: "asc",
+     *   },
+     *   take: 10,
+     * })
+    **/
+    aggregate<T extends AISettingsAggregateArgs>(args: Subset<T, AISettingsAggregateArgs>): Prisma.PrismaPromise<GetAISettingsAggregateType<T>>
+
+    /**
+     * Group by AISettings.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {AISettingsGroupByArgs} args - Group by arguments.
+     * @example
+     * // Group by city, order by createdAt, get count
+     * const result = await prisma.user.groupBy({
+     *   by: ['city', 'createdAt'],
+     *   orderBy: {
+     *     createdAt: true
+     *   },
+     *   _count: {
+     *     _all: true
+     *   },
+     * })
+     * 
+    **/
+    groupBy<
+      T extends AISettingsGroupByArgs,
+      HasSelectOrTake extends Or<
+        Extends<'skip', Keys<T>>,
+        Extends<'take', Keys<T>>
+      >,
+      OrderByArg extends True extends HasSelectOrTake
+        ? { orderBy: AISettingsGroupByArgs['orderBy'] }
+        : { orderBy?: AISettingsGroupByArgs['orderBy'] },
+      OrderFields extends ExcludeUnderscoreKeys<Keys<MaybeTupleToUnion<T['orderBy']>>>,
+      ByFields extends MaybeTupleToUnion<T['by']>,
+      ByValid extends Has<ByFields, OrderFields>,
+      HavingFields extends GetHavingFields<T['having']>,
+      HavingValid extends Has<ByFields, HavingFields>,
+      ByEmpty extends T['by'] extends never[] ? True : False,
+      InputErrors extends ByEmpty extends True
+      ? `Error: "by" must not be empty.`
+      : HavingValid extends False
+      ? {
+          [P in HavingFields]: P extends ByFields
+            ? never
+            : P extends string
+            ? `Error: Field "${P}" used in "having" needs to be provided in "by".`
+            : [
+                Error,
+                'Field ',
+                P,
+                ` in "having" needs to be provided in "by"`,
+              ]
+        }[HavingFields]
+      : 'take' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "take", you also need to provide "orderBy"'
+      : 'skip' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "skip", you also need to provide "orderBy"'
+      : ByValid extends True
+      ? {}
+      : {
+          [P in OrderFields]: P extends ByFields
+            ? never
+            : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+        }[OrderFields]
+    >(args: SubsetIntersection<T, AISettingsGroupByArgs, OrderByArg> & InputErrors): {} extends InputErrors ? GetAISettingsGroupByPayload<T> : Prisma.PrismaPromise<InputErrors>
+  /**
+   * Fields of the AISettings model
+   */
+  readonly fields: AISettingsFieldRefs;
+  }
+
+  /**
+   * The delegate class that acts as a "Promise-like" for AISettings.
+   * Why is this prefixed with `Prisma__`?
+   * Because we want to prevent naming conflicts as mentioned in
+   * https://github.com/prisma/prisma-client-js/issues/707
+   */
+  export interface Prisma__AISettingsClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
+    readonly [Symbol.toStringTag]: "PrismaPromise"
+    /**
+     * Attaches callbacks for the resolution and/or rejection of the Promise.
+     * @param onfulfilled The callback to execute when the Promise is resolved.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of which ever callback is executed.
+     */
+    then<TResult1 = T, TResult2 = never>(onfulfilled?: ((value: T) => TResult1 | PromiseLike<TResult1>) | undefined | null, onrejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>) | undefined | null): $Utils.JsPromise<TResult1 | TResult2>
+    /**
+     * Attaches a callback for only the rejection of the Promise.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of the callback.
+     */
+    catch<TResult = never>(onrejected?: ((reason: any) => TResult | PromiseLike<TResult>) | undefined | null): $Utils.JsPromise<T | TResult>
+    /**
+     * Attaches a callback that is invoked when the Promise is settled (fulfilled or rejected). The
+     * resolved value cannot be modified from the callback.
+     * @param onfinally The callback to execute when the Promise is settled (fulfilled or rejected).
+     * @returns A Promise for the completion of the callback.
+     */
+    finally(onfinally?: (() => void) | undefined | null): $Utils.JsPromise<T>
+  }
+
+
+
+
+  /**
+   * Fields of the AISettings model
+   */
+  interface AISettingsFieldRefs {
+    readonly id: FieldRef<"AISettings", 'String'>
+    readonly activeProvider: FieldRef<"AISettings", 'String'>
+    readonly updatedAt: FieldRef<"AISettings", 'DateTime'>
+  }
+    
+
+  // Custom InputTypes
+  /**
+   * AISettings findUnique
+   */
+  export type AISettingsFindUniqueArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the AISettings
+     */
+    select?: AISettingsSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the AISettings
+     */
+    omit?: AISettingsOmit<ExtArgs> | null
+    /**
+     * Filter, which AISettings to fetch.
+     */
+    where: AISettingsWhereUniqueInput
+  }
+
+  /**
+   * AISettings findUniqueOrThrow
+   */
+  export type AISettingsFindUniqueOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the AISettings
+     */
+    select?: AISettingsSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the AISettings
+     */
+    omit?: AISettingsOmit<ExtArgs> | null
+    /**
+     * Filter, which AISettings to fetch.
+     */
+    where: AISettingsWhereUniqueInput
+  }
+
+  /**
+   * AISettings findFirst
+   */
+  export type AISettingsFindFirstArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the AISettings
+     */
+    select?: AISettingsSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the AISettings
+     */
+    omit?: AISettingsOmit<ExtArgs> | null
+    /**
+     * Filter, which AISettings to fetch.
+     */
+    where?: AISettingsWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of AISettings to fetch.
+     */
+    orderBy?: AISettingsOrderByWithRelationInput | AISettingsOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for AISettings.
+     */
+    cursor?: AISettingsWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` AISettings from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` AISettings.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of AISettings.
+     */
+    distinct?: AISettingsScalarFieldEnum | AISettingsScalarFieldEnum[]
+  }
+
+  /**
+   * AISettings findFirstOrThrow
+   */
+  export type AISettingsFindFirstOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the AISettings
+     */
+    select?: AISettingsSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the AISettings
+     */
+    omit?: AISettingsOmit<ExtArgs> | null
+    /**
+     * Filter, which AISettings to fetch.
+     */
+    where?: AISettingsWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of AISettings to fetch.
+     */
+    orderBy?: AISettingsOrderByWithRelationInput | AISettingsOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for AISettings.
+     */
+    cursor?: AISettingsWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` AISettings from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` AISettings.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of AISettings.
+     */
+    distinct?: AISettingsScalarFieldEnum | AISettingsScalarFieldEnum[]
+  }
+
+  /**
+   * AISettings findMany
+   */
+  export type AISettingsFindManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the AISettings
+     */
+    select?: AISettingsSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the AISettings
+     */
+    omit?: AISettingsOmit<ExtArgs> | null
+    /**
+     * Filter, which AISettings to fetch.
+     */
+    where?: AISettingsWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of AISettings to fetch.
+     */
+    orderBy?: AISettingsOrderByWithRelationInput | AISettingsOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for listing AISettings.
+     */
+    cursor?: AISettingsWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` AISettings from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` AISettings.
+     */
+    skip?: number
+    distinct?: AISettingsScalarFieldEnum | AISettingsScalarFieldEnum[]
+  }
+
+  /**
+   * AISettings create
+   */
+  export type AISettingsCreateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the AISettings
+     */
+    select?: AISettingsSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the AISettings
+     */
+    omit?: AISettingsOmit<ExtArgs> | null
+    /**
+     * The data needed to create a AISettings.
+     */
+    data: XOR<AISettingsCreateInput, AISettingsUncheckedCreateInput>
+  }
+
+  /**
+   * AISettings createMany
+   */
+  export type AISettingsCreateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to create many AISettings.
+     */
+    data: AISettingsCreateManyInput | AISettingsCreateManyInput[]
+  }
+
+  /**
+   * AISettings update
+   */
+  export type AISettingsUpdateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the AISettings
+     */
+    select?: AISettingsSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the AISettings
+     */
+    omit?: AISettingsOmit<ExtArgs> | null
+    /**
+     * The data needed to update a AISettings.
+     */
+    data: XOR<AISettingsUpdateInput, AISettingsUncheckedUpdateInput>
+    /**
+     * Choose, which AISettings to update.
+     */
+    where: AISettingsWhereUniqueInput
+  }
+
+  /**
+   * AISettings updateMany
+   */
+  export type AISettingsUpdateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to update AISettings.
+     */
+    data: XOR<AISettingsUpdateManyMutationInput, AISettingsUncheckedUpdateManyInput>
+    /**
+     * Filter which AISettings to update
+     */
+    where?: AISettingsWhereInput
+    /**
+     * Limit how many AISettings to update.
+     */
+    limit?: number
+  }
+
+  /**
+   * AISettings upsert
+   */
+  export type AISettingsUpsertArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the AISettings
+     */
+    select?: AISettingsSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the AISettings
+     */
+    omit?: AISettingsOmit<ExtArgs> | null
+    /**
+     * The filter to search for the AISettings to update in case it exists.
+     */
+    where: AISettingsWhereUniqueInput
+    /**
+     * In case the AISettings found by the `where` argument doesn't exist, create a new AISettings with this data.
+     */
+    create: XOR<AISettingsCreateInput, AISettingsUncheckedCreateInput>
+    /**
+     * In case the AISettings was found with the provided `where` argument, update it with this data.
+     */
+    update: XOR<AISettingsUpdateInput, AISettingsUncheckedUpdateInput>
+  }
+
+  /**
+   * AISettings delete
+   */
+  export type AISettingsDeleteArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the AISettings
+     */
+    select?: AISettingsSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the AISettings
+     */
+    omit?: AISettingsOmit<ExtArgs> | null
+    /**
+     * Filter which AISettings to delete.
+     */
+    where: AISettingsWhereUniqueInput
+  }
+
+  /**
+   * AISettings deleteMany
+   */
+  export type AISettingsDeleteManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which AISettings to delete
+     */
+    where?: AISettingsWhereInput
+    /**
+     * Limit how many AISettings to delete.
+     */
+    limit?: number
+  }
+
+  /**
+   * AISettings findRaw
+   */
+  export type AISettingsFindRawArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The query predicate filter. If unspecified, then all documents in the collection will match the predicate. ${@link https://docs.mongodb.com/manual/reference/operator/query MongoDB Docs}.
+     */
+    filter?: InputJsonValue
+    /**
+     * Additional options to pass to the `find` command ${@link https://docs.mongodb.com/manual/reference/command/find/#command-fields MongoDB Docs}.
+     */
+    options?: InputJsonValue
+  }
+
+  /**
+   * AISettings aggregateRaw
+   */
+  export type AISettingsAggregateRawArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * An array of aggregation stages to process and transform the document stream via the aggregation pipeline. ${@link https://docs.mongodb.com/manual/reference/operator/aggregation-pipeline MongoDB Docs}.
+     */
+    pipeline?: InputJsonValue[]
+    /**
+     * Additional options to pass to the `aggregate` command ${@link https://docs.mongodb.com/manual/reference/command/aggregate/#command-fields MongoDB Docs}.
+     */
+    options?: InputJsonValue
+  }
+
+  /**
+   * AISettings without action
+   */
+  export type AISettingsDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the AISettings
+     */
+    select?: AISettingsSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the AISettings
+     */
+    omit?: AISettingsOmit<ExtArgs> | null
+  }
+
+
+  /**
+   * Model AIProviderConfig
+   */
+
+  export type AggregateAIProviderConfig = {
+    _count: AIProviderConfigCountAggregateOutputType | null
+    _min: AIProviderConfigMinAggregateOutputType | null
+    _max: AIProviderConfigMaxAggregateOutputType | null
+  }
+
+  export type AIProviderConfigMinAggregateOutputType = {
+    id: string | null
+    provider: string | null
+    apiKeyEncrypted: string | null
+    apiKeyLast4: string | null
+    model: string | null
+    enabled: boolean | null
+    isActive: boolean | null
+    createdAt: Date | null
+    updatedAt: Date | null
+  }
+
+  export type AIProviderConfigMaxAggregateOutputType = {
+    id: string | null
+    provider: string | null
+    apiKeyEncrypted: string | null
+    apiKeyLast4: string | null
+    model: string | null
+    enabled: boolean | null
+    isActive: boolean | null
+    createdAt: Date | null
+    updatedAt: Date | null
+  }
+
+  export type AIProviderConfigCountAggregateOutputType = {
+    id: number
+    provider: number
+    apiKeyEncrypted: number
+    apiKeyLast4: number
+    model: number
+    enabled: number
+    isActive: number
+    createdAt: number
+    updatedAt: number
+    _all: number
+  }
+
+
+  export type AIProviderConfigMinAggregateInputType = {
+    id?: true
+    provider?: true
+    apiKeyEncrypted?: true
+    apiKeyLast4?: true
+    model?: true
+    enabled?: true
+    isActive?: true
+    createdAt?: true
+    updatedAt?: true
+  }
+
+  export type AIProviderConfigMaxAggregateInputType = {
+    id?: true
+    provider?: true
+    apiKeyEncrypted?: true
+    apiKeyLast4?: true
+    model?: true
+    enabled?: true
+    isActive?: true
+    createdAt?: true
+    updatedAt?: true
+  }
+
+  export type AIProviderConfigCountAggregateInputType = {
+    id?: true
+    provider?: true
+    apiKeyEncrypted?: true
+    apiKeyLast4?: true
+    model?: true
+    enabled?: true
+    isActive?: true
+    createdAt?: true
+    updatedAt?: true
+    _all?: true
+  }
+
+  export type AIProviderConfigAggregateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which AIProviderConfig to aggregate.
+     */
+    where?: AIProviderConfigWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of AIProviderConfigs to fetch.
+     */
+    orderBy?: AIProviderConfigOrderByWithRelationInput | AIProviderConfigOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the start position
+     */
+    cursor?: AIProviderConfigWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` AIProviderConfigs from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` AIProviderConfigs.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Count returned AIProviderConfigs
+    **/
+    _count?: true | AIProviderConfigCountAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the minimum value
+    **/
+    _min?: AIProviderConfigMinAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the maximum value
+    **/
+    _max?: AIProviderConfigMaxAggregateInputType
+  }
+
+  export type GetAIProviderConfigAggregateType<T extends AIProviderConfigAggregateArgs> = {
+        [P in keyof T & keyof AggregateAIProviderConfig]: P extends '_count' | 'count'
+      ? T[P] extends true
+        ? number
+        : GetScalarType<T[P], AggregateAIProviderConfig[P]>
+      : GetScalarType<T[P], AggregateAIProviderConfig[P]>
+  }
+
+
+
+
+  export type AIProviderConfigGroupByArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: AIProviderConfigWhereInput
+    orderBy?: AIProviderConfigOrderByWithAggregationInput | AIProviderConfigOrderByWithAggregationInput[]
+    by: AIProviderConfigScalarFieldEnum[] | AIProviderConfigScalarFieldEnum
+    having?: AIProviderConfigScalarWhereWithAggregatesInput
+    take?: number
+    skip?: number
+    _count?: AIProviderConfigCountAggregateInputType | true
+    _min?: AIProviderConfigMinAggregateInputType
+    _max?: AIProviderConfigMaxAggregateInputType
+  }
+
+  export type AIProviderConfigGroupByOutputType = {
+    id: string
+    provider: string
+    apiKeyEncrypted: string
+    apiKeyLast4: string | null
+    model: string | null
+    enabled: boolean
+    isActive: boolean
+    createdAt: Date
+    updatedAt: Date
+    _count: AIProviderConfigCountAggregateOutputType | null
+    _min: AIProviderConfigMinAggregateOutputType | null
+    _max: AIProviderConfigMaxAggregateOutputType | null
+  }
+
+  type GetAIProviderConfigGroupByPayload<T extends AIProviderConfigGroupByArgs> = Prisma.PrismaPromise<
+    Array<
+      PickEnumerable<AIProviderConfigGroupByOutputType, T['by']> &
+        {
+          [P in ((keyof T) & (keyof AIProviderConfigGroupByOutputType))]: P extends '_count'
+            ? T[P] extends boolean
+              ? number
+              : GetScalarType<T[P], AIProviderConfigGroupByOutputType[P]>
+            : GetScalarType<T[P], AIProviderConfigGroupByOutputType[P]>
+        }
+      >
+    >
+
+
+  export type AIProviderConfigSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    provider?: boolean
+    apiKeyEncrypted?: boolean
+    apiKeyLast4?: boolean
+    model?: boolean
+    enabled?: boolean
+    isActive?: boolean
+    createdAt?: boolean
+    updatedAt?: boolean
+  }, ExtArgs["result"]["aIProviderConfig"]>
+
+
+
+  export type AIProviderConfigSelectScalar = {
+    id?: boolean
+    provider?: boolean
+    apiKeyEncrypted?: boolean
+    apiKeyLast4?: boolean
+    model?: boolean
+    enabled?: boolean
+    isActive?: boolean
+    createdAt?: boolean
+    updatedAt?: boolean
+  }
+
+  export type AIProviderConfigOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "provider" | "apiKeyEncrypted" | "apiKeyLast4" | "model" | "enabled" | "isActive" | "createdAt" | "updatedAt", ExtArgs["result"]["aIProviderConfig"]>
+
+  export type $AIProviderConfigPayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    name: "AIProviderConfig"
+    objects: {}
+    scalars: $Extensions.GetPayloadResult<{
+      id: string
+      provider: string
+      apiKeyEncrypted: string
+      apiKeyLast4: string | null
+      model: string | null
+      enabled: boolean
+      isActive: boolean
+      createdAt: Date
+      updatedAt: Date
+    }, ExtArgs["result"]["aIProviderConfig"]>
+    composites: {}
+  }
+
+  type AIProviderConfigGetPayload<S extends boolean | null | undefined | AIProviderConfigDefaultArgs> = $Result.GetResult<Prisma.$AIProviderConfigPayload, S>
+
+  type AIProviderConfigCountArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> =
+    Omit<AIProviderConfigFindManyArgs, 'select' | 'include' | 'distinct' | 'omit'> & {
+      select?: AIProviderConfigCountAggregateInputType | true
+    }
+
+  export interface AIProviderConfigDelegate<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> {
+    [K: symbol]: { types: Prisma.TypeMap<ExtArgs>['model']['AIProviderConfig'], meta: { name: 'AIProviderConfig' } }
+    /**
+     * Find zero or one AIProviderConfig that matches the filter.
+     * @param {AIProviderConfigFindUniqueArgs} args - Arguments to find a AIProviderConfig
+     * @example
+     * // Get one AIProviderConfig
+     * const aIProviderConfig = await prisma.aIProviderConfig.findUnique({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUnique<T extends AIProviderConfigFindUniqueArgs>(args: SelectSubset<T, AIProviderConfigFindUniqueArgs<ExtArgs>>): Prisma__AIProviderConfigClient<$Result.GetResult<Prisma.$AIProviderConfigPayload<ExtArgs>, T, "findUnique", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find one AIProviderConfig that matches the filter or throw an error with `error.code='P2025'`
+     * if no matches were found.
+     * @param {AIProviderConfigFindUniqueOrThrowArgs} args - Arguments to find a AIProviderConfig
+     * @example
+     * // Get one AIProviderConfig
+     * const aIProviderConfig = await prisma.aIProviderConfig.findUniqueOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUniqueOrThrow<T extends AIProviderConfigFindUniqueOrThrowArgs>(args: SelectSubset<T, AIProviderConfigFindUniqueOrThrowArgs<ExtArgs>>): Prisma__AIProviderConfigClient<$Result.GetResult<Prisma.$AIProviderConfigPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find the first AIProviderConfig that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {AIProviderConfigFindFirstArgs} args - Arguments to find a AIProviderConfig
+     * @example
+     * // Get one AIProviderConfig
+     * const aIProviderConfig = await prisma.aIProviderConfig.findFirst({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirst<T extends AIProviderConfigFindFirstArgs>(args?: SelectSubset<T, AIProviderConfigFindFirstArgs<ExtArgs>>): Prisma__AIProviderConfigClient<$Result.GetResult<Prisma.$AIProviderConfigPayload<ExtArgs>, T, "findFirst", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find the first AIProviderConfig that matches the filter or
+     * throw `PrismaKnownClientError` with `P2025` code if no matches were found.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {AIProviderConfigFindFirstOrThrowArgs} args - Arguments to find a AIProviderConfig
+     * @example
+     * // Get one AIProviderConfig
+     * const aIProviderConfig = await prisma.aIProviderConfig.findFirstOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirstOrThrow<T extends AIProviderConfigFindFirstOrThrowArgs>(args?: SelectSubset<T, AIProviderConfigFindFirstOrThrowArgs<ExtArgs>>): Prisma__AIProviderConfigClient<$Result.GetResult<Prisma.$AIProviderConfigPayload<ExtArgs>, T, "findFirstOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find zero or more AIProviderConfigs that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {AIProviderConfigFindManyArgs} args - Arguments to filter and select certain fields only.
+     * @example
+     * // Get all AIProviderConfigs
+     * const aIProviderConfigs = await prisma.aIProviderConfig.findMany()
+     * 
+     * // Get first 10 AIProviderConfigs
+     * const aIProviderConfigs = await prisma.aIProviderConfig.findMany({ take: 10 })
+     * 
+     * // Only select the `id`
+     * const aIProviderConfigWithIdOnly = await prisma.aIProviderConfig.findMany({ select: { id: true } })
+     * 
+     */
+    findMany<T extends AIProviderConfigFindManyArgs>(args?: SelectSubset<T, AIProviderConfigFindManyArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$AIProviderConfigPayload<ExtArgs>, T, "findMany", GlobalOmitOptions>>
+
+    /**
+     * Create a AIProviderConfig.
+     * @param {AIProviderConfigCreateArgs} args - Arguments to create a AIProviderConfig.
+     * @example
+     * // Create one AIProviderConfig
+     * const AIProviderConfig = await prisma.aIProviderConfig.create({
+     *   data: {
+     *     // ... data to create a AIProviderConfig
+     *   }
+     * })
+     * 
+     */
+    create<T extends AIProviderConfigCreateArgs>(args: SelectSubset<T, AIProviderConfigCreateArgs<ExtArgs>>): Prisma__AIProviderConfigClient<$Result.GetResult<Prisma.$AIProviderConfigPayload<ExtArgs>, T, "create", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Create many AIProviderConfigs.
+     * @param {AIProviderConfigCreateManyArgs} args - Arguments to create many AIProviderConfigs.
+     * @example
+     * // Create many AIProviderConfigs
+     * const aIProviderConfig = await prisma.aIProviderConfig.createMany({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     *     
+     */
+    createMany<T extends AIProviderConfigCreateManyArgs>(args?: SelectSubset<T, AIProviderConfigCreateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Delete a AIProviderConfig.
+     * @param {AIProviderConfigDeleteArgs} args - Arguments to delete one AIProviderConfig.
+     * @example
+     * // Delete one AIProviderConfig
+     * const AIProviderConfig = await prisma.aIProviderConfig.delete({
+     *   where: {
+     *     // ... filter to delete one AIProviderConfig
+     *   }
+     * })
+     * 
+     */
+    delete<T extends AIProviderConfigDeleteArgs>(args: SelectSubset<T, AIProviderConfigDeleteArgs<ExtArgs>>): Prisma__AIProviderConfigClient<$Result.GetResult<Prisma.$AIProviderConfigPayload<ExtArgs>, T, "delete", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Update one AIProviderConfig.
+     * @param {AIProviderConfigUpdateArgs} args - Arguments to update one AIProviderConfig.
+     * @example
+     * // Update one AIProviderConfig
+     * const aIProviderConfig = await prisma.aIProviderConfig.update({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    update<T extends AIProviderConfigUpdateArgs>(args: SelectSubset<T, AIProviderConfigUpdateArgs<ExtArgs>>): Prisma__AIProviderConfigClient<$Result.GetResult<Prisma.$AIProviderConfigPayload<ExtArgs>, T, "update", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Delete zero or more AIProviderConfigs.
+     * @param {AIProviderConfigDeleteManyArgs} args - Arguments to filter AIProviderConfigs to delete.
+     * @example
+     * // Delete a few AIProviderConfigs
+     * const { count } = await prisma.aIProviderConfig.deleteMany({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     * 
+     */
+    deleteMany<T extends AIProviderConfigDeleteManyArgs>(args?: SelectSubset<T, AIProviderConfigDeleteManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Update zero or more AIProviderConfigs.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {AIProviderConfigUpdateManyArgs} args - Arguments to update one or more rows.
+     * @example
+     * // Update many AIProviderConfigs
+     * const aIProviderConfig = await prisma.aIProviderConfig.updateMany({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    updateMany<T extends AIProviderConfigUpdateManyArgs>(args: SelectSubset<T, AIProviderConfigUpdateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Create or update one AIProviderConfig.
+     * @param {AIProviderConfigUpsertArgs} args - Arguments to update or create a AIProviderConfig.
+     * @example
+     * // Update or create a AIProviderConfig
+     * const aIProviderConfig = await prisma.aIProviderConfig.upsert({
+     *   create: {
+     *     // ... data to create a AIProviderConfig
+     *   },
+     *   update: {
+     *     // ... in case it already exists, update
+     *   },
+     *   where: {
+     *     // ... the filter for the AIProviderConfig we want to update
+     *   }
+     * })
+     */
+    upsert<T extends AIProviderConfigUpsertArgs>(args: SelectSubset<T, AIProviderConfigUpsertArgs<ExtArgs>>): Prisma__AIProviderConfigClient<$Result.GetResult<Prisma.$AIProviderConfigPayload<ExtArgs>, T, "upsert", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find zero or more AIProviderConfigs that matches the filter.
+     * @param {AIProviderConfigFindRawArgs} args - Select which filters you would like to apply.
+     * @example
+     * const aIProviderConfig = await prisma.aIProviderConfig.findRaw({
+     *   filter: { age: { $gt: 25 } }
+     * })
+     */
+    findRaw(args?: AIProviderConfigFindRawArgs): Prisma.PrismaPromise<JsonObject>
+
+    /**
+     * Perform aggregation operations on a AIProviderConfig.
+     * @param {AIProviderConfigAggregateRawArgs} args - Select which aggregations you would like to apply.
+     * @example
+     * const aIProviderConfig = await prisma.aIProviderConfig.aggregateRaw({
+     *   pipeline: [
+     *     { $match: { status: "registered" } },
+     *     { $group: { _id: "$country", total: { $sum: 1 } } }
+     *   ]
+     * })
+     */
+    aggregateRaw(args?: AIProviderConfigAggregateRawArgs): Prisma.PrismaPromise<JsonObject>
+
+
+    /**
+     * Count the number of AIProviderConfigs.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {AIProviderConfigCountArgs} args - Arguments to filter AIProviderConfigs to count.
+     * @example
+     * // Count the number of AIProviderConfigs
+     * const count = await prisma.aIProviderConfig.count({
+     *   where: {
+     *     // ... the filter for the AIProviderConfigs we want to count
+     *   }
+     * })
+    **/
+    count<T extends AIProviderConfigCountArgs>(
+      args?: Subset<T, AIProviderConfigCountArgs>,
+    ): Prisma.PrismaPromise<
+      T extends $Utils.Record<'select', any>
+        ? T['select'] extends true
+          ? number
+          : GetScalarType<T['select'], AIProviderConfigCountAggregateOutputType>
+        : number
+    >
+
+    /**
+     * Allows you to perform aggregations operations on a AIProviderConfig.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {AIProviderConfigAggregateArgs} args - Select which aggregations you would like to apply and on what fields.
+     * @example
+     * // Ordered by age ascending
+     * // Where email contains prisma.io
+     * // Limited to the 10 users
+     * const aggregations = await prisma.user.aggregate({
+     *   _avg: {
+     *     age: true,
+     *   },
+     *   where: {
+     *     email: {
+     *       contains: "prisma.io",
+     *     },
+     *   },
+     *   orderBy: {
+     *     age: "asc",
+     *   },
+     *   take: 10,
+     * })
+    **/
+    aggregate<T extends AIProviderConfigAggregateArgs>(args: Subset<T, AIProviderConfigAggregateArgs>): Prisma.PrismaPromise<GetAIProviderConfigAggregateType<T>>
+
+    /**
+     * Group by AIProviderConfig.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {AIProviderConfigGroupByArgs} args - Group by arguments.
+     * @example
+     * // Group by city, order by createdAt, get count
+     * const result = await prisma.user.groupBy({
+     *   by: ['city', 'createdAt'],
+     *   orderBy: {
+     *     createdAt: true
+     *   },
+     *   _count: {
+     *     _all: true
+     *   },
+     * })
+     * 
+    **/
+    groupBy<
+      T extends AIProviderConfigGroupByArgs,
+      HasSelectOrTake extends Or<
+        Extends<'skip', Keys<T>>,
+        Extends<'take', Keys<T>>
+      >,
+      OrderByArg extends True extends HasSelectOrTake
+        ? { orderBy: AIProviderConfigGroupByArgs['orderBy'] }
+        : { orderBy?: AIProviderConfigGroupByArgs['orderBy'] },
+      OrderFields extends ExcludeUnderscoreKeys<Keys<MaybeTupleToUnion<T['orderBy']>>>,
+      ByFields extends MaybeTupleToUnion<T['by']>,
+      ByValid extends Has<ByFields, OrderFields>,
+      HavingFields extends GetHavingFields<T['having']>,
+      HavingValid extends Has<ByFields, HavingFields>,
+      ByEmpty extends T['by'] extends never[] ? True : False,
+      InputErrors extends ByEmpty extends True
+      ? `Error: "by" must not be empty.`
+      : HavingValid extends False
+      ? {
+          [P in HavingFields]: P extends ByFields
+            ? never
+            : P extends string
+            ? `Error: Field "${P}" used in "having" needs to be provided in "by".`
+            : [
+                Error,
+                'Field ',
+                P,
+                ` in "having" needs to be provided in "by"`,
+              ]
+        }[HavingFields]
+      : 'take' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "take", you also need to provide "orderBy"'
+      : 'skip' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "skip", you also need to provide "orderBy"'
+      : ByValid extends True
+      ? {}
+      : {
+          [P in OrderFields]: P extends ByFields
+            ? never
+            : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+        }[OrderFields]
+    >(args: SubsetIntersection<T, AIProviderConfigGroupByArgs, OrderByArg> & InputErrors): {} extends InputErrors ? GetAIProviderConfigGroupByPayload<T> : Prisma.PrismaPromise<InputErrors>
+  /**
+   * Fields of the AIProviderConfig model
+   */
+  readonly fields: AIProviderConfigFieldRefs;
+  }
+
+  /**
+   * The delegate class that acts as a "Promise-like" for AIProviderConfig.
+   * Why is this prefixed with `Prisma__`?
+   * Because we want to prevent naming conflicts as mentioned in
+   * https://github.com/prisma/prisma-client-js/issues/707
+   */
+  export interface Prisma__AIProviderConfigClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
+    readonly [Symbol.toStringTag]: "PrismaPromise"
+    /**
+     * Attaches callbacks for the resolution and/or rejection of the Promise.
+     * @param onfulfilled The callback to execute when the Promise is resolved.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of which ever callback is executed.
+     */
+    then<TResult1 = T, TResult2 = never>(onfulfilled?: ((value: T) => TResult1 | PromiseLike<TResult1>) | undefined | null, onrejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>) | undefined | null): $Utils.JsPromise<TResult1 | TResult2>
+    /**
+     * Attaches a callback for only the rejection of the Promise.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of the callback.
+     */
+    catch<TResult = never>(onrejected?: ((reason: any) => TResult | PromiseLike<TResult>) | undefined | null): $Utils.JsPromise<T | TResult>
+    /**
+     * Attaches a callback that is invoked when the Promise is settled (fulfilled or rejected). The
+     * resolved value cannot be modified from the callback.
+     * @param onfinally The callback to execute when the Promise is settled (fulfilled or rejected).
+     * @returns A Promise for the completion of the callback.
+     */
+    finally(onfinally?: (() => void) | undefined | null): $Utils.JsPromise<T>
+  }
+
+
+
+
+  /**
+   * Fields of the AIProviderConfig model
+   */
+  interface AIProviderConfigFieldRefs {
+    readonly id: FieldRef<"AIProviderConfig", 'String'>
+    readonly provider: FieldRef<"AIProviderConfig", 'String'>
+    readonly apiKeyEncrypted: FieldRef<"AIProviderConfig", 'String'>
+    readonly apiKeyLast4: FieldRef<"AIProviderConfig", 'String'>
+    readonly model: FieldRef<"AIProviderConfig", 'String'>
+    readonly enabled: FieldRef<"AIProviderConfig", 'Boolean'>
+    readonly isActive: FieldRef<"AIProviderConfig", 'Boolean'>
+    readonly createdAt: FieldRef<"AIProviderConfig", 'DateTime'>
+    readonly updatedAt: FieldRef<"AIProviderConfig", 'DateTime'>
+  }
+    
+
+  // Custom InputTypes
+  /**
+   * AIProviderConfig findUnique
+   */
+  export type AIProviderConfigFindUniqueArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the AIProviderConfig
+     */
+    select?: AIProviderConfigSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the AIProviderConfig
+     */
+    omit?: AIProviderConfigOmit<ExtArgs> | null
+    /**
+     * Filter, which AIProviderConfig to fetch.
+     */
+    where: AIProviderConfigWhereUniqueInput
+  }
+
+  /**
+   * AIProviderConfig findUniqueOrThrow
+   */
+  export type AIProviderConfigFindUniqueOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the AIProviderConfig
+     */
+    select?: AIProviderConfigSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the AIProviderConfig
+     */
+    omit?: AIProviderConfigOmit<ExtArgs> | null
+    /**
+     * Filter, which AIProviderConfig to fetch.
+     */
+    where: AIProviderConfigWhereUniqueInput
+  }
+
+  /**
+   * AIProviderConfig findFirst
+   */
+  export type AIProviderConfigFindFirstArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the AIProviderConfig
+     */
+    select?: AIProviderConfigSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the AIProviderConfig
+     */
+    omit?: AIProviderConfigOmit<ExtArgs> | null
+    /**
+     * Filter, which AIProviderConfig to fetch.
+     */
+    where?: AIProviderConfigWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of AIProviderConfigs to fetch.
+     */
+    orderBy?: AIProviderConfigOrderByWithRelationInput | AIProviderConfigOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for AIProviderConfigs.
+     */
+    cursor?: AIProviderConfigWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` AIProviderConfigs from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` AIProviderConfigs.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of AIProviderConfigs.
+     */
+    distinct?: AIProviderConfigScalarFieldEnum | AIProviderConfigScalarFieldEnum[]
+  }
+
+  /**
+   * AIProviderConfig findFirstOrThrow
+   */
+  export type AIProviderConfigFindFirstOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the AIProviderConfig
+     */
+    select?: AIProviderConfigSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the AIProviderConfig
+     */
+    omit?: AIProviderConfigOmit<ExtArgs> | null
+    /**
+     * Filter, which AIProviderConfig to fetch.
+     */
+    where?: AIProviderConfigWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of AIProviderConfigs to fetch.
+     */
+    orderBy?: AIProviderConfigOrderByWithRelationInput | AIProviderConfigOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for AIProviderConfigs.
+     */
+    cursor?: AIProviderConfigWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` AIProviderConfigs from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` AIProviderConfigs.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of AIProviderConfigs.
+     */
+    distinct?: AIProviderConfigScalarFieldEnum | AIProviderConfigScalarFieldEnum[]
+  }
+
+  /**
+   * AIProviderConfig findMany
+   */
+  export type AIProviderConfigFindManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the AIProviderConfig
+     */
+    select?: AIProviderConfigSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the AIProviderConfig
+     */
+    omit?: AIProviderConfigOmit<ExtArgs> | null
+    /**
+     * Filter, which AIProviderConfigs to fetch.
+     */
+    where?: AIProviderConfigWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of AIProviderConfigs to fetch.
+     */
+    orderBy?: AIProviderConfigOrderByWithRelationInput | AIProviderConfigOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for listing AIProviderConfigs.
+     */
+    cursor?: AIProviderConfigWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` AIProviderConfigs from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` AIProviderConfigs.
+     */
+    skip?: number
+    distinct?: AIProviderConfigScalarFieldEnum | AIProviderConfigScalarFieldEnum[]
+  }
+
+  /**
+   * AIProviderConfig create
+   */
+  export type AIProviderConfigCreateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the AIProviderConfig
+     */
+    select?: AIProviderConfigSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the AIProviderConfig
+     */
+    omit?: AIProviderConfigOmit<ExtArgs> | null
+    /**
+     * The data needed to create a AIProviderConfig.
+     */
+    data: XOR<AIProviderConfigCreateInput, AIProviderConfigUncheckedCreateInput>
+  }
+
+  /**
+   * AIProviderConfig createMany
+   */
+  export type AIProviderConfigCreateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to create many AIProviderConfigs.
+     */
+    data: AIProviderConfigCreateManyInput | AIProviderConfigCreateManyInput[]
+  }
+
+  /**
+   * AIProviderConfig update
+   */
+  export type AIProviderConfigUpdateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the AIProviderConfig
+     */
+    select?: AIProviderConfigSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the AIProviderConfig
+     */
+    omit?: AIProviderConfigOmit<ExtArgs> | null
+    /**
+     * The data needed to update a AIProviderConfig.
+     */
+    data: XOR<AIProviderConfigUpdateInput, AIProviderConfigUncheckedUpdateInput>
+    /**
+     * Choose, which AIProviderConfig to update.
+     */
+    where: AIProviderConfigWhereUniqueInput
+  }
+
+  /**
+   * AIProviderConfig updateMany
+   */
+  export type AIProviderConfigUpdateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to update AIProviderConfigs.
+     */
+    data: XOR<AIProviderConfigUpdateManyMutationInput, AIProviderConfigUncheckedUpdateManyInput>
+    /**
+     * Filter which AIProviderConfigs to update
+     */
+    where?: AIProviderConfigWhereInput
+    /**
+     * Limit how many AIProviderConfigs to update.
+     */
+    limit?: number
+  }
+
+  /**
+   * AIProviderConfig upsert
+   */
+  export type AIProviderConfigUpsertArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the AIProviderConfig
+     */
+    select?: AIProviderConfigSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the AIProviderConfig
+     */
+    omit?: AIProviderConfigOmit<ExtArgs> | null
+    /**
+     * The filter to search for the AIProviderConfig to update in case it exists.
+     */
+    where: AIProviderConfigWhereUniqueInput
+    /**
+     * In case the AIProviderConfig found by the `where` argument doesn't exist, create a new AIProviderConfig with this data.
+     */
+    create: XOR<AIProviderConfigCreateInput, AIProviderConfigUncheckedCreateInput>
+    /**
+     * In case the AIProviderConfig was found with the provided `where` argument, update it with this data.
+     */
+    update: XOR<AIProviderConfigUpdateInput, AIProviderConfigUncheckedUpdateInput>
+  }
+
+  /**
+   * AIProviderConfig delete
+   */
+  export type AIProviderConfigDeleteArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the AIProviderConfig
+     */
+    select?: AIProviderConfigSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the AIProviderConfig
+     */
+    omit?: AIProviderConfigOmit<ExtArgs> | null
+    /**
+     * Filter which AIProviderConfig to delete.
+     */
+    where: AIProviderConfigWhereUniqueInput
+  }
+
+  /**
+   * AIProviderConfig deleteMany
+   */
+  export type AIProviderConfigDeleteManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which AIProviderConfigs to delete
+     */
+    where?: AIProviderConfigWhereInput
+    /**
+     * Limit how many AIProviderConfigs to delete.
+     */
+    limit?: number
+  }
+
+  /**
+   * AIProviderConfig findRaw
+   */
+  export type AIProviderConfigFindRawArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The query predicate filter. If unspecified, then all documents in the collection will match the predicate. ${@link https://docs.mongodb.com/manual/reference/operator/query MongoDB Docs}.
+     */
+    filter?: InputJsonValue
+    /**
+     * Additional options to pass to the `find` command ${@link https://docs.mongodb.com/manual/reference/command/find/#command-fields MongoDB Docs}.
+     */
+    options?: InputJsonValue
+  }
+
+  /**
+   * AIProviderConfig aggregateRaw
+   */
+  export type AIProviderConfigAggregateRawArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * An array of aggregation stages to process and transform the document stream via the aggregation pipeline. ${@link https://docs.mongodb.com/manual/reference/operator/aggregation-pipeline MongoDB Docs}.
+     */
+    pipeline?: InputJsonValue[]
+    /**
+     * Additional options to pass to the `aggregate` command ${@link https://docs.mongodb.com/manual/reference/command/aggregate/#command-fields MongoDB Docs}.
+     */
+    options?: InputJsonValue
+  }
+
+  /**
+   * AIProviderConfig without action
+   */
+  export type AIProviderConfigDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the AIProviderConfig
+     */
+    select?: AIProviderConfigSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the AIProviderConfig
+     */
+    omit?: AIProviderConfigOmit<ExtArgs> | null
+  }
+
+
+  /**
    * Model Category
    */
 
@@ -43981,6 +46049,30 @@ export namespace Prisma {
   export type SiteSettingsScalarFieldEnum = (typeof SiteSettingsScalarFieldEnum)[keyof typeof SiteSettingsScalarFieldEnum]
 
 
+  export const AISettingsScalarFieldEnum: {
+    id: 'id',
+    activeProvider: 'activeProvider',
+    updatedAt: 'updatedAt'
+  };
+
+  export type AISettingsScalarFieldEnum = (typeof AISettingsScalarFieldEnum)[keyof typeof AISettingsScalarFieldEnum]
+
+
+  export const AIProviderConfigScalarFieldEnum: {
+    id: 'id',
+    provider: 'provider',
+    apiKeyEncrypted: 'apiKeyEncrypted',
+    apiKeyLast4: 'apiKeyLast4',
+    model: 'model',
+    enabled: 'enabled',
+    isActive: 'isActive',
+    createdAt: 'createdAt',
+    updatedAt: 'updatedAt'
+  };
+
+  export type AIProviderConfigScalarFieldEnum = (typeof AIProviderConfigScalarFieldEnum)[keyof typeof AIProviderConfigScalarFieldEnum]
+
+
   export const CategoryScalarFieldEnum: {
     id: 'id',
     name: 'name',
@@ -47278,6 +49370,120 @@ export namespace Prisma {
     siteName?: StringNullableWithAggregatesFilter<"SiteSettings"> | string | null
     supportEmail?: StringNullableWithAggregatesFilter<"SiteSettings"> | string | null
     updatedAt?: DateTimeWithAggregatesFilter<"SiteSettings"> | Date | string
+  }
+
+  export type AISettingsWhereInput = {
+    AND?: AISettingsWhereInput | AISettingsWhereInput[]
+    OR?: AISettingsWhereInput[]
+    NOT?: AISettingsWhereInput | AISettingsWhereInput[]
+    id?: StringFilter<"AISettings"> | string
+    activeProvider?: StringNullableFilter<"AISettings"> | string | null
+    updatedAt?: DateTimeFilter<"AISettings"> | Date | string
+  }
+
+  export type AISettingsOrderByWithRelationInput = {
+    id?: SortOrder
+    activeProvider?: SortOrder
+    updatedAt?: SortOrder
+  }
+
+  export type AISettingsWhereUniqueInput = Prisma.AtLeast<{
+    id?: string
+    AND?: AISettingsWhereInput | AISettingsWhereInput[]
+    OR?: AISettingsWhereInput[]
+    NOT?: AISettingsWhereInput | AISettingsWhereInput[]
+    activeProvider?: StringNullableFilter<"AISettings"> | string | null
+    updatedAt?: DateTimeFilter<"AISettings"> | Date | string
+  }, "id">
+
+  export type AISettingsOrderByWithAggregationInput = {
+    id?: SortOrder
+    activeProvider?: SortOrder
+    updatedAt?: SortOrder
+    _count?: AISettingsCountOrderByAggregateInput
+    _max?: AISettingsMaxOrderByAggregateInput
+    _min?: AISettingsMinOrderByAggregateInput
+  }
+
+  export type AISettingsScalarWhereWithAggregatesInput = {
+    AND?: AISettingsScalarWhereWithAggregatesInput | AISettingsScalarWhereWithAggregatesInput[]
+    OR?: AISettingsScalarWhereWithAggregatesInput[]
+    NOT?: AISettingsScalarWhereWithAggregatesInput | AISettingsScalarWhereWithAggregatesInput[]
+    id?: StringWithAggregatesFilter<"AISettings"> | string
+    activeProvider?: StringNullableWithAggregatesFilter<"AISettings"> | string | null
+    updatedAt?: DateTimeWithAggregatesFilter<"AISettings"> | Date | string
+  }
+
+  export type AIProviderConfigWhereInput = {
+    AND?: AIProviderConfigWhereInput | AIProviderConfigWhereInput[]
+    OR?: AIProviderConfigWhereInput[]
+    NOT?: AIProviderConfigWhereInput | AIProviderConfigWhereInput[]
+    id?: StringFilter<"AIProviderConfig"> | string
+    provider?: StringFilter<"AIProviderConfig"> | string
+    apiKeyEncrypted?: StringFilter<"AIProviderConfig"> | string
+    apiKeyLast4?: StringNullableFilter<"AIProviderConfig"> | string | null
+    model?: StringNullableFilter<"AIProviderConfig"> | string | null
+    enabled?: BoolFilter<"AIProviderConfig"> | boolean
+    isActive?: BoolFilter<"AIProviderConfig"> | boolean
+    createdAt?: DateTimeFilter<"AIProviderConfig"> | Date | string
+    updatedAt?: DateTimeFilter<"AIProviderConfig"> | Date | string
+  }
+
+  export type AIProviderConfigOrderByWithRelationInput = {
+    id?: SortOrder
+    provider?: SortOrder
+    apiKeyEncrypted?: SortOrder
+    apiKeyLast4?: SortOrder
+    model?: SortOrder
+    enabled?: SortOrder
+    isActive?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+  }
+
+  export type AIProviderConfigWhereUniqueInput = Prisma.AtLeast<{
+    id?: string
+    provider?: string
+    AND?: AIProviderConfigWhereInput | AIProviderConfigWhereInput[]
+    OR?: AIProviderConfigWhereInput[]
+    NOT?: AIProviderConfigWhereInput | AIProviderConfigWhereInput[]
+    apiKeyEncrypted?: StringFilter<"AIProviderConfig"> | string
+    apiKeyLast4?: StringNullableFilter<"AIProviderConfig"> | string | null
+    model?: StringNullableFilter<"AIProviderConfig"> | string | null
+    enabled?: BoolFilter<"AIProviderConfig"> | boolean
+    isActive?: BoolFilter<"AIProviderConfig"> | boolean
+    createdAt?: DateTimeFilter<"AIProviderConfig"> | Date | string
+    updatedAt?: DateTimeFilter<"AIProviderConfig"> | Date | string
+  }, "id" | "provider">
+
+  export type AIProviderConfigOrderByWithAggregationInput = {
+    id?: SortOrder
+    provider?: SortOrder
+    apiKeyEncrypted?: SortOrder
+    apiKeyLast4?: SortOrder
+    model?: SortOrder
+    enabled?: SortOrder
+    isActive?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+    _count?: AIProviderConfigCountOrderByAggregateInput
+    _max?: AIProviderConfigMaxOrderByAggregateInput
+    _min?: AIProviderConfigMinOrderByAggregateInput
+  }
+
+  export type AIProviderConfigScalarWhereWithAggregatesInput = {
+    AND?: AIProviderConfigScalarWhereWithAggregatesInput | AIProviderConfigScalarWhereWithAggregatesInput[]
+    OR?: AIProviderConfigScalarWhereWithAggregatesInput[]
+    NOT?: AIProviderConfigScalarWhereWithAggregatesInput | AIProviderConfigScalarWhereWithAggregatesInput[]
+    id?: StringWithAggregatesFilter<"AIProviderConfig"> | string
+    provider?: StringWithAggregatesFilter<"AIProviderConfig"> | string
+    apiKeyEncrypted?: StringWithAggregatesFilter<"AIProviderConfig"> | string
+    apiKeyLast4?: StringNullableWithAggregatesFilter<"AIProviderConfig"> | string | null
+    model?: StringNullableWithAggregatesFilter<"AIProviderConfig"> | string | null
+    enabled?: BoolWithAggregatesFilter<"AIProviderConfig"> | boolean
+    isActive?: BoolWithAggregatesFilter<"AIProviderConfig"> | boolean
+    createdAt?: DateTimeWithAggregatesFilter<"AIProviderConfig"> | Date | string
+    updatedAt?: DateTimeWithAggregatesFilter<"AIProviderConfig"> | Date | string
   }
 
   export type CategoryWhereInput = {
@@ -50892,6 +53098,124 @@ export namespace Prisma {
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
+  export type AISettingsCreateInput = {
+    id?: string
+    activeProvider?: string | null
+    updatedAt?: Date | string
+  }
+
+  export type AISettingsUncheckedCreateInput = {
+    id?: string
+    activeProvider?: string | null
+    updatedAt?: Date | string
+  }
+
+  export type AISettingsUpdateInput = {
+    activeProvider?: NullableStringFieldUpdateOperationsInput | string | null
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type AISettingsUncheckedUpdateInput = {
+    activeProvider?: NullableStringFieldUpdateOperationsInput | string | null
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type AISettingsCreateManyInput = {
+    id?: string
+    activeProvider?: string | null
+    updatedAt?: Date | string
+  }
+
+  export type AISettingsUpdateManyMutationInput = {
+    activeProvider?: NullableStringFieldUpdateOperationsInput | string | null
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type AISettingsUncheckedUpdateManyInput = {
+    activeProvider?: NullableStringFieldUpdateOperationsInput | string | null
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type AIProviderConfigCreateInput = {
+    id?: string
+    provider: string
+    apiKeyEncrypted: string
+    apiKeyLast4?: string | null
+    model?: string | null
+    enabled?: boolean
+    isActive?: boolean
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
+  export type AIProviderConfigUncheckedCreateInput = {
+    id?: string
+    provider: string
+    apiKeyEncrypted: string
+    apiKeyLast4?: string | null
+    model?: string | null
+    enabled?: boolean
+    isActive?: boolean
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
+  export type AIProviderConfigUpdateInput = {
+    provider?: StringFieldUpdateOperationsInput | string
+    apiKeyEncrypted?: StringFieldUpdateOperationsInput | string
+    apiKeyLast4?: NullableStringFieldUpdateOperationsInput | string | null
+    model?: NullableStringFieldUpdateOperationsInput | string | null
+    enabled?: BoolFieldUpdateOperationsInput | boolean
+    isActive?: BoolFieldUpdateOperationsInput | boolean
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type AIProviderConfigUncheckedUpdateInput = {
+    provider?: StringFieldUpdateOperationsInput | string
+    apiKeyEncrypted?: StringFieldUpdateOperationsInput | string
+    apiKeyLast4?: NullableStringFieldUpdateOperationsInput | string | null
+    model?: NullableStringFieldUpdateOperationsInput | string | null
+    enabled?: BoolFieldUpdateOperationsInput | boolean
+    isActive?: BoolFieldUpdateOperationsInput | boolean
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type AIProviderConfigCreateManyInput = {
+    id?: string
+    provider: string
+    apiKeyEncrypted: string
+    apiKeyLast4?: string | null
+    model?: string | null
+    enabled?: boolean
+    isActive?: boolean
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
+  export type AIProviderConfigUpdateManyMutationInput = {
+    provider?: StringFieldUpdateOperationsInput | string
+    apiKeyEncrypted?: StringFieldUpdateOperationsInput | string
+    apiKeyLast4?: NullableStringFieldUpdateOperationsInput | string | null
+    model?: NullableStringFieldUpdateOperationsInput | string | null
+    enabled?: BoolFieldUpdateOperationsInput | boolean
+    isActive?: BoolFieldUpdateOperationsInput | boolean
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type AIProviderConfigUncheckedUpdateManyInput = {
+    provider?: StringFieldUpdateOperationsInput | string
+    apiKeyEncrypted?: StringFieldUpdateOperationsInput | string
+    apiKeyLast4?: NullableStringFieldUpdateOperationsInput | string | null
+    model?: NullableStringFieldUpdateOperationsInput | string | null
+    enabled?: BoolFieldUpdateOperationsInput | boolean
+    isActive?: BoolFieldUpdateOperationsInput | boolean
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
   export type CategoryCreateInput = {
     id?: string
     name: string
@@ -53268,6 +55592,60 @@ export namespace Prisma {
     registrationOpen?: SortOrder
     siteName?: SortOrder
     supportEmail?: SortOrder
+    updatedAt?: SortOrder
+  }
+
+  export type AISettingsCountOrderByAggregateInput = {
+    id?: SortOrder
+    activeProvider?: SortOrder
+    updatedAt?: SortOrder
+  }
+
+  export type AISettingsMaxOrderByAggregateInput = {
+    id?: SortOrder
+    activeProvider?: SortOrder
+    updatedAt?: SortOrder
+  }
+
+  export type AISettingsMinOrderByAggregateInput = {
+    id?: SortOrder
+    activeProvider?: SortOrder
+    updatedAt?: SortOrder
+  }
+
+  export type AIProviderConfigCountOrderByAggregateInput = {
+    id?: SortOrder
+    provider?: SortOrder
+    apiKeyEncrypted?: SortOrder
+    apiKeyLast4?: SortOrder
+    model?: SortOrder
+    enabled?: SortOrder
+    isActive?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+  }
+
+  export type AIProviderConfigMaxOrderByAggregateInput = {
+    id?: SortOrder
+    provider?: SortOrder
+    apiKeyEncrypted?: SortOrder
+    apiKeyLast4?: SortOrder
+    model?: SortOrder
+    enabled?: SortOrder
+    isActive?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+  }
+
+  export type AIProviderConfigMinOrderByAggregateInput = {
+    id?: SortOrder
+    provider?: SortOrder
+    apiKeyEncrypted?: SortOrder
+    apiKeyLast4?: SortOrder
+    model?: SortOrder
+    enabled?: SortOrder
+    isActive?: SortOrder
+    createdAt?: SortOrder
     updatedAt?: SortOrder
   }
 

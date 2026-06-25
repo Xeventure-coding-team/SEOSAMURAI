@@ -1,6 +1,6 @@
 "use client";
 
-import React, { cloneElement, isValidElement, useEffect, useRef } from "react";
+import React, { cloneElement, isValidElement } from "react";
 import * as Tooltip from "@radix-ui/react-tooltip";
 import { useUsage, UsageMetric, UsageStatus } from "@/lib/use-usage";
 import { cn } from "@/lib/utils";
@@ -26,11 +26,20 @@ type UsageGateProps = (MetricGateProps | SlotGateProps) & {
   className?: string;
 };
 
+// Only treat as "near limit" once usage crosses this percentage.
+// Below this, the gate renders nothing extra — children pass through untouched.
+const NEAR_LIMIT_PCT = 98;
+
 const STATUS_TOOLTIP: Record<UsageStatus, string> = {
   ok: "",
   warning: "You're approaching your monthly limit",
   exceeded: "Monthly limit reached — upgrade to continue",
 };
+
+function pctOf(used?: number, limit?: number | null) {
+  if (used == null || !limit) return null;
+  return (used / limit) * 100;
+}
 
 // ─── Shimmer skeleton ─────────────────────────────────────────────────────────
 
@@ -68,19 +77,14 @@ function UsageRing({
   const circ = 2 * Math.PI * r;
   const fill = Math.min(pct / 100, 1) * circ;
 
-  const trackColor =
-    status === "exceeded"
-      ? "stroke-red-200 dark:stroke-red-900"
-      : status === "warning"
-        ? "stroke-amber-200 dark:stroke-amber-900"
-        : "stroke-gray-200 dark:stroke-gray-700";
+  const trackColor = "stroke-border";
 
   const progressColor =
     status === "exceeded"
-      ? "#ef4444"
+      ? "stroke-destructive"
       : status === "warning"
-        ? "#f59e0b"
-        : "#10b981";
+        ? "stroke-warning"
+        : "stroke-primary";
 
   return (
     <svg
@@ -104,7 +108,8 @@ function UsageRing({
         cy={size / 2}
         r={r}
         strokeWidth={3}
-        stroke={progressColor}
+        className={progressColor}
+        stroke="currentColor"
         strokeDasharray={circ}
         strokeDashoffset={circ - fill}
         strokeLinecap="round"
@@ -133,18 +138,14 @@ function TooltipBody({ blocked, status, tip, used, limit }: TooltipBodyProps) {
       {/* Header row */}
       <div className="flex items-center gap-2.5">
         {pct != null && limit != null && (
-          <UsageRing
-            pct={pct}
-            status={status}
-            size={34}
-          />
+          <UsageRing pct={pct} status={status} size={34} />
         )}
         <div className="flex flex-col gap-0.5">
-          <p className="text-[14px] font-medium leading-tight text-white/95">
+          <p className="text-[14px] font-medium leading-tight text-popover-foreground">
             {blocked ? "Limit reached" : status === "warning" ? "Almost there" : "Usage"}
           </p>
           {pct != null && limit != null && (
-            <p className="text-[12px] text-white/55 tabular-nums">
+            <p className="text-[12px] text-muted-foreground tabular-nums">
               {used?.toLocaleString()} / {limit.toLocaleString()} used
             </p>
           )}
@@ -152,19 +153,19 @@ function TooltipBody({ blocked, status, tip, used, limit }: TooltipBodyProps) {
       </div>
 
       {/* Tip text */}
-      <p className="text-[14px] leading-relaxed text-white/75 border-t border-white/10 pt-2.5">
+      <p className="text-[14px] leading-relaxed text-muted-foreground border-t border-border pt-2.5">
         {tip}
       </p>
 
       {/* Progress bar (if we have data) */}
       {pct != null && (
-        <div className="h-1 w-full rounded-full bg-white/10 overflow-hidden -mt-1">
+        <div className="h-1 w-full rounded-full bg-muted overflow-hidden -mt-1">
           <div
             className={cn(
               "h-full rounded-full transition-all duration-500",
-              status === "exceeded" && "bg-red-400",
-              status === "warning" && "bg-amber-400",
-              status === "ok" && "bg-emerald-400"
+              status === "exceeded" && "bg-destructive",
+              status === "warning" && "bg-warning",
+              status === "ok" && "bg-primary"
             )}
             style={{ width: `${Math.min(pct, 100)}%` }}
           />
@@ -178,7 +179,7 @@ function TooltipBody({ blocked, status, tip, used, limit }: TooltipBodyProps) {
           className={cn(
             "inline-flex items-center justify-center gap-1.5",
             "rounded-lg px-3 py-2 text-[12px] font-medium",
-            "bg-white text-gray-900 hover:bg-white/90",
+            "bg-primary text-primary-foreground hover:bg-primary/90",
             "transition-all duration-150 active:scale-[0.98]",
             "shadow-sm"
           )}
@@ -214,7 +215,7 @@ function LockBadge() {
         "absolute -top-1.5 -right-1.5 z-10",
         "flex items-center justify-center",
         "w-[18px] h-[18px] rounded-full",
-        "bg-red-500 ring-2 ring-white dark:ring-gray-900",
+        "bg-destructive ring-2 ring-background",
         "shadow-sm pointer-events-none",
         "animate-in zoom-in-75 duration-200"
       )}
@@ -224,7 +225,8 @@ function LockBadge() {
         height="9"
         viewBox="0 0 24 24"
         fill="none"
-        stroke="white"
+        stroke="currentColor"
+        className="text-destructive-foreground"
         strokeWidth="3"
         strokeLinecap="round"
         strokeLinejoin="round"
@@ -245,7 +247,7 @@ function WarningDot() {
       className={cn(
         "absolute -top-1 -right-1 z-10",
         "w-[10px] h-[10px] rounded-full",
-        "bg-amber-400 ring-2 ring-white dark:ring-gray-900",
+        "bg-warning ring-2 ring-background",
         "pointer-events-none",
         "animate-pulse"
       )}
@@ -292,9 +294,7 @@ function GateShell({
         className: cn(
           (children.props as { className?: string }).className,
           blocked && "opacity-50 cursor-not-allowed pointer-events-none",
-          !blocked &&
-          status === "warning" &&
-          "ring-1 ring-amber-400/60 ring-offset-1",
+          !blocked && status === "warning" && "ring-1 ring-warning/60 ring-offset-1",
           className
         ),
       }
@@ -306,10 +306,7 @@ function GateShell({
       <Tooltip.Root>
         <Tooltip.Trigger asChild>
           <span
-            className={cn(
-              "relative inline-flex",
-              blocked && "cursor-not-allowed"
-            )}
+            className={cn("relative inline-flex", blocked && "cursor-not-allowed")}
             tabIndex={blocked ? 0 : undefined}
             aria-label={blocked ? tip : undefined}
           >
@@ -326,13 +323,8 @@ function GateShell({
             sideOffset={10}
             className={cn(
               "z-50 rounded-xl px-3 py-3 shadow-xl",
-              "border border-white/10",
-              // Contextual background tinting
-              blocked
-                ? "bg-gray-900 dark:bg-gray-800"
-                : status === "warning"
-                  ? "bg-amber-900/95 dark:bg-amber-950/95"
-                  : "bg-gray-900 dark:bg-gray-800",
+              "border border-border",
+              "bg-popover text-popover-foreground",
               "backdrop-blur-sm",
               "will-change-transform",
               "data-[state=open]:animate-in data-[state=open]:fade-in-0 data-[state=open]:zoom-in-95",
@@ -342,22 +334,8 @@ function GateShell({
               "duration-150"
             )}
           >
-            <TooltipBody
-              blocked={blocked}
-              status={status}
-              tip={tip}
-              used={used}
-              limit={limit}
-            />
-            <Tooltip.Arrow
-              className={cn(
-                blocked
-                  ? "fill-gray-900 dark:fill-gray-800"
-                  : status === "warning"
-                    ? "fill-amber-900/95"
-                    : "fill-gray-900 dark:fill-gray-800"
-              )}
-            />
+            <TooltipBody blocked={blocked} status={status} tip={tip} used={used} limit={limit} />
+            <Tooltip.Arrow className="fill-popover" />
           </Tooltip.Content>
         </Tooltip.Portal>
       </Tooltip.Root>
@@ -379,17 +357,20 @@ function MetricGate({
   if (isLoading || !data) return <LoadingSkeleton>{children}</LoadingSkeleton>;
   if (error) return <>{children}</>;
 
-  const status = statusFor(metric);
-  const blocked = warnOnly ? false : !canUse(metric);
-
-  // Don't show tooltip at all when status is ok and not blocked
-  if (status === "ok" && !blocked) return <>{children}</>;
-
   const used = data.used[metric];
   const limit = data.limits[metric];
-  const remaining = limit != null ? Math.max(0, limit - used) : null;
+  const pct = pctOf(used, limit);
 
-  // Hide usage numbers for aiReviewRepliesUsed — just show generic message
+  const blocked = warnOnly ? false : !canUse(metric);
+  // Only flag "warning" once we're actually near the limit (>= NEAR_LIMIT_PCT),
+  // regardless of what the hook's own status threshold is.
+  const nearLimit = pct != null && pct >= NEAR_LIMIT_PCT;
+  const status: UsageStatus = blocked ? "exceeded" : nearLimit ? "warning" : "ok";
+
+  // Default shadcn look everywhere else — no gate UI at all unless blocked or near limit.
+  if (status === "ok" && !blocked) return <>{children}</>;
+
+  const remaining = limit != null ? Math.max(0, limit - used) : null;
   const isAiReply = metric === "aiReviewRepliesUsed";
 
   const tip =
@@ -400,21 +381,19 @@ function MetricGate({
         : limit != null
           ? `You've used all ${limit.toLocaleString()} available this month.`
           : "You've reached your monthly limit."
-      : status === "warning"
-        ? isAiReply
-          ? "You're approaching your AI reply limit for this month."
-          : remaining != null
-            ? `${STATUS_TOOLTIP.warning} — ${remaining.toLocaleString()} remaining.`
-            : STATUS_TOOLTIP.warning
-        : "");
+      : isAiReply
+        ? "You're approaching your AI reply limit for this month."
+        : remaining != null
+          ? `${STATUS_TOOLTIP.warning} — ${remaining.toLocaleString()} remaining.`
+          : STATUS_TOOLTIP.warning);
 
   return (
     <GateShell
       blocked={blocked}
       status={status}
       tip={tip}
-      used={isAiReply ? undefined : used}        // hide numbers for ai reply
-      limit={isAiReply ? undefined : limit}       // hide numbers for ai reply
+      used={isAiReply ? undefined : used}
+      limit={isAiReply ? undefined : limit}
       onBlocked={onBlocked}
       className={className}
     >
@@ -437,12 +416,14 @@ function SlotGate({
   if (isLoading) return <LoadingSkeleton>{children}</LoadingSkeleton>;
 
   const blocked = !canAdd;
-  const status = blocked ? "exceeded" : remaining <= 1 ? "warning" : "ok";
+  const pct = pctOf(data?.current, data?.limit);
+  const nearLimit = pct != null && pct >= NEAR_LIMIT_PCT;
+  const status: UsageStatus = blocked ? "exceeded" : nearLimit ? "warning" : "ok";
 
-  // ← Only show gate UI when near limit or blocked
   if (status === "ok") return <>{children}</>;
 
-  const label = slot === "locations" ? "location" : slot === "websites" ? "website" : "review poster";
+  const label =
+    slot === "locations" ? "location" : slot === "websites" ? "website" : "review poster";
 
   const tip =
     tooltipText ??
@@ -464,7 +445,6 @@ function SlotGate({
     </GateShell>
   );
 }
-
 
 // ─── Public API ───────────────────────────────────────────────────────────────
 

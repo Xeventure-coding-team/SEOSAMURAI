@@ -3,15 +3,13 @@ import { GoogleGenAI } from '@google/genai'
 import { decrementUsage, incrementUsage } from '@/lib/usage';
 import { stackServerApp } from '@/stack';
 import { canUse, canUseErrorMessage, getCode } from '@/lib/actions/can-use';
-
-// Initialize Gemini AI (prefers GEMINI_API_KEY, falls back to AI_KEY)
-const genAI = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY || process.env.AI_KEY! });
+import { getActiveAIConfig } from '../../../../lib/getActiveAIConfig';
 
 interface RequestBody {
   reviewText: string
   businessName: string
   guest: string
-  rating?: string // Optional rating field (e.g., "FIVE" for 5 stars)
+  rating?: string
   incorrect?: string
 }
 
@@ -24,16 +22,159 @@ interface SuccessResponse {
   reply: string
 }
 
+
+async function generateWithGemini(apiKey: string, model: string, prompt: string): Promise<string> {
+  const genAI = new GoogleGenAI({ apiKey });
+  const result = await genAI.models.generateContent({
+    model,
+    contents: prompt,
+    config: {
+      temperature: 0.7,
+      topP: 0.8,
+      topK: 40,
+    },
+  });
+
+  if (result.promptFeedback?.blockReason) {
+    throw new Error('Prompt blocked by safety filters');
+  }
+  if (result.candidates.length === 0 || result.candidates[0].finishReason === 'SAFETY') {
+    throw new Error('Response blocked by safety filters');
+  }
+
+  return result.text ?? '';
+}
+
+async function generateWithOpenAI(apiKey: string, model: string, prompt: string): Promise<string> {
+  const res = await fetch('https://api.openai.com/v1/chat/completions', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: `Bearer ${apiKey}`,
+    },
+    body: JSON.stringify({
+      model: model || 'gpt-4o',
+      messages: [{ role: 'user', content: prompt }],
+      temperature: 0.7,
+    }),
+  });
+
+  if (!res.ok) {
+    const errText = await res.text();
+    throw new Error(`OpenAI request failed: ${errText}`);
+  }
+
+  const data = await res.json();
+  return data.choices?.[0]?.message?.content ?? '';
+}
+
+async function generateWithClaude(apiKey: string, model: string, prompt: string): Promise<string> {
+  const res = await fetch('https://api.anthropic.com/v1/messages', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'x-api-key': apiKey,
+      'anthropic-version': '2023-06-01',
+    },
+    body: JSON.stringify({
+      model: model || 'claude-sonnet-4-6',
+      max_tokens: 1000,
+      messages: [{ role: 'user', content: prompt }],
+    }),
+  });
+
+  if (!res.ok) {
+    const errText = await res.text();
+    throw new Error(`Claude request failed: ${errText}`);
+  }
+
+  const data = await res.json();
+  const textBlock = data.content?.find((c: any) => c.type === 'text');
+  return textBlock?.text ?? '';
+}
+
+async function generateWithDeepSeek(apiKey: string, model: string, prompt: string): Promise<string> {
+  const res = await fetch('https://api.deepseek.com/v1/chat/completions', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: `Bearer ${apiKey}`,
+    },
+    body: JSON.stringify({
+      model: model || 'deepseek-chat',
+      messages: [{ role: 'user', content: prompt }],
+      temperature: 0.7,
+    }),
+  });
+
+  if (!res.ok) {
+    const errText = await res.text();
+    throw new Error(`DeepSeek request failed: ${errText}`);
+  }
+
+  const data = await res.json();
+  return data.choices?.[0]?.message?.content ?? '';
+}
+
+async function generateWithProvider(
+  provider: string,
+  apiKey: string,
+  model: string,
+  prompt: string
+): Promise<string> {
+  switch (provider) {
+    case 'openai':
+      return generateWithOpenAI(apiKey, model, prompt);
+    case 'gemini':
+      return generateWithGemini(apiKey, model || 'gemini-3.5-flash', prompt);
+    case 'claude':
+      return generateWithClaude(apiKey, model, prompt);
+    case 'deepseek':
+      return generateWithDeepSeek(apiKey, model, prompt);
+    default:
+      throw new Error(`Unsupported AI provider: ${provider}`);
+  }
+}
+
+// Retry wrapper — works for any provider, with an optional fallback model
+// (only meaningful for Gemini's flash/flash-lite fallback; for other
+// providers it just retries the same model).
+const generateWithRetry = async (
+  provider: string,
+  apiKey: string,
+  model: string,
+  prompt: string,
+  maxRetries: number = 2
+): Promise<string> => {
+  let lastError: unknown;
+
+  for (let attempt = 1; attempt <= maxRetries; attempt++) {
+    try {
+      const text = await generateWithProvider(provider, apiKey, model, prompt);
+      if (text && text.trim().length > 0) {
+        return text;
+      }
+      lastError = new Error('AI generated empty response');
+    } catch (err) {
+      lastError = err;
+    }
+  }
+
+  throw lastError instanceof Error
+    ? lastError
+    : new Error(`Failed after ${maxRetries} retries on ${provider}`);
+};
+
 export async function POST(request: NextRequest): Promise<NextResponse<SuccessResponse | ErrorResponse>> {
   const user = await stackServerApp.getUser();
   try {
-    // Validate environment variable
-    if (!process.env.GEMINI_API_KEY && !process.env.AI_KEY) {
-      console.error('API key environment variable is not set')
+    // Resolve the active AI provider/key/model from the DB instead of env vars
+    const aiConfig = await getActiveAIConfig();
+    if (!aiConfig) {
       return NextResponse.json(
         {
           error: 'AI service configuration error',
-          details: 'Missing API key configuration'
+          details: 'No active AI provider is configured. Set one in AI Providers settings.',
         },
         { status: 500 }
       )
@@ -122,49 +263,6 @@ export async function POST(request: NextRequest): Promise<NextResponse<SuccessRe
       'FIVE': 5
     };
     const stars = starMap[trimmedRating] || 0; // 0 if invalid or missing
-
-    // Define safety settings to prevent blocks
-    const safetySettings = [
-      { category: 'HARM_CATEGORY_HARASSMENT', threshold: 'BLOCK_NONE' },
-      { category: 'HARM_CATEGORY_HATE_SPEECH', threshold: 'BLOCK_NONE' },
-      { category: 'HARM_CATEGORY_SEXUALLY_EXPLICIT', threshold: 'BLOCK_NONE' },
-      { category: 'HARM_CATEGORY_DANGEROUS_CONTENT', threshold: 'BLOCK_NONE' },
-    ];
-
-    // Function to generate content with retry on empty text
-    const generateWithRetry = async (modelName: string, prompt: string, maxRetries: number = 2) => {
-      for (let attempt = 1; attempt <= maxRetries; attempt++) {
-        const result = await genAI.models.generateContent({
-          model: modelName,
-          contents: prompt,
-          config: {
-            temperature: 0.7,
-            topP: 0.8,
-            topK: 40,
-            // maxOutputTokens: 1024,
-          },
-        });
-
-        // Check for prompt-level blocks
-        if (result.promptFeedback?.blockReason) {
-          throw new Error('Prompt blocked by safety filters');
-        }
-
-        // Check for response-level safety blocks or empty candidates
-        if (result.candidates.length === 0 || result.candidates[0].finishReason === 'SAFETY') {
-          throw new Error('Response blocked by safety filters');
-        }
-
-        const generatedText = result.text;
-
-        // If text is not empty, return it
-        if (generatedText && generatedText.trim().length > 0) {
-          return generatedText;
-        }
-      }
-
-      throw new Error(`Failed after ${maxRetries} retries on ${modelName}: AI generated empty response`);
-    };
 
     let generatedReply: string;
     let prompt: string;
@@ -344,12 +442,34 @@ Write ONLY the reply text. Be human, not a corporate bot.`;
     }
 
     try {
-      // Primary model with retry
-      generatedReply = await generateWithRetry('gemini-2.5-flash', prompt);
+      // Primary attempt using the active provider/model from settings
+      generatedReply = await generateWithRetry(
+        aiConfig.provider,
+        aiConfig.apiKey,
+        aiConfig.model ?? '',
+        prompt
+      );
     } catch (primaryError) {
-      console.error("Primary model failed:", primaryError);
-      // Fallback model with retry
-      generatedReply = await generateWithRetry('gemini-2.5-flash-lite', prompt);
+      console.error(`Primary provider (${aiConfig.provider}) failed:`, primaryError);
+
+      // Fallback: only meaningful for Gemini (flash -> flash-lite).
+      // For other providers we don't have a lighter fallback model,
+      // so we just retry once more on the same provider/model.
+      if (aiConfig.provider === 'gemini') {
+        generatedReply = await generateWithRetry(
+          'gemini',
+          aiConfig.apiKey,
+          'gemini-3.5-flash',
+          prompt
+        );
+      } else {
+        generatedReply = await generateWithRetry(
+          aiConfig.provider,
+          aiConfig.apiKey,
+          aiConfig.model ?? '',
+          prompt
+        );
+      }
     }
 
     // Clean up the response
@@ -393,21 +513,23 @@ Write ONLY the reply text. Be human, not a corporate bot.`;
 
   } catch (error) {
     console.error('Error in generate-reply API route:', error)
-    await decrementUsage(user.id, "aiReviewRepliesUsed").catch(() => { })
+    if (user) {
+      await decrementUsage(user.id, "aiReviewRepliesUsed").catch(() => { })
+    }
 
-    // Handle specific Gemini API errors
+    // Handle specific AI provider errors
     if (error instanceof Error) {
-      if (error.message.includes('API_KEY')) {
+      if (error.message.includes('API_KEY') || error.message.includes('authentication')) {
         return NextResponse.json(
           {
             error: 'AI service authentication failed',
-            details: 'Invalid or expired API key'
+            details: 'Invalid or expired API key for the active provider'
           },
           { status: 401 }
         )
       }
 
-      if (error.message.includes('RATE_LIMIT')) {
+      if (error.message.includes('RATE_LIMIT') || error.message.includes('rate limit')) {
         return NextResponse.json(
           {
             error: 'Rate limit exceeded',
@@ -417,7 +539,7 @@ Write ONLY the reply text. Be human, not a corporate bot.`;
         )
       }
 
-      if (error.message.includes('QUOTA')) {
+      if (error.message.includes('QUOTA') || error.message.includes('quota')) {
         return NextResponse.json(
           {
             error: 'API quota exceeded',

@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useCallback } from "react"
+import { useState, useCallback, useMemo, memo } from "react"
 import { AdvancedMarker, Map } from "@vis.gl/react-google-maps"
 import { Card, CardContent } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
@@ -84,9 +84,11 @@ function getRankColor(rank: number | null | undefined): string {
 }
 
 function getRankLabel(rank: number): string {
+  if (rank <= 0) return "Invalid"
   if (rank <= 3) return "Excellent"
   if (rank <= 7) return "Good"
   if (rank <= 10) return "Fair"
+  if (rank <= 20) return "Poor"
   return "Not Found"
 }
 
@@ -101,8 +103,10 @@ function calcAR(summary?: Summary): string {
 }
 
 // ─── Grid Marker ─────────────────────────────────────────────────────────────
+// Memoized: only re-renders when its own ranking/selected state actually changes,
+// not when sibling markers or unrelated parent state changes.
 
-function GridMarker({
+const GridMarker = memo(function GridMarker({
   ranking,
   isSelected,
   onClick,
@@ -116,43 +120,119 @@ function GridMarker({
   const display = rank >= 20 ? "20+" : rank
 
   return (
-    <div className="relative cursor-pointer select-none" onClick={onClick}>
+    <div className="relative cursor-pointer select-none" onClick={onClick} style={{ willChange: 'transform' }}>
       <div
         className={cn(
-          "w-10 h-10 rounded-full border-2 shadow-md flex items-center justify-center text-white text-[11px] font-bold transition-all duration-150",
-          isSelected
-            ? "scale-125 border-white ring-4 ring-white/40 ring-offset-1"
-            : "hover:scale-110 border-white/60"
+          "w-9 h-9 rounded-full flex items-center justify-center text-white text-[13px] font-bold",
+          isSelected ? "scale-125 ring-2 ring-white ring-offset-2 ring-offset-black/10" : "hover:scale-110"
         )}
-        style={{ backgroundColor: color }}
+        style={{
+          backgroundColor: color,
+          boxShadow: "0 1px 4px rgba(0,0,0,0.35)",
+        }}
       >
         {display}
       </div>
-      {rank <= 3 && (
-        <span className="absolute -top-1 -right-1 w-4 h-4 bg-yellow-400 rounded-full border border-white flex items-center justify-center text-[8px] font-bold text-black">★</span>
-      )}
-      {rank >= 20 && (
-        <span className="absolute -top-1 -right-1 w-4 h-4 bg-zinc-600 rounded-full border border-white flex items-center justify-center text-[9px] font-bold text-white">×</span>
-      )}
     </div>
   )
-}
+})
 
 // ─── Stat row inside panel ────────────────────────────────────────────────────
 
-function StatCell({ label, value, color }: { label: string; value: string; color?: string }) {
+const StatCell = memo(function StatCell({ label, value, color }: { label: string; value: string; color?: string }) {
   return (
     <div className="flex flex-col items-center py-3 gap-0.5">
       <span className={cn("text-base font-bold tabular-nums", color ?? "text-foreground")}>{value}</span>
       <span className="text-[10px] text-muted-foreground">{label}</span>
     </div>
   )
-}
+})
+
+// ─── Result row (extracted + memoized so the results list doesn't re-render
+//      every row when only `selected` itself changes identity) ────────────────
+
+const ResultRow = memo(function ResultRow({
+  result,
+  rank,
+  isTarget,
+}: {
+  result: SearchResult
+  rank: number
+  isTarget: boolean
+}) {
+  return (
+    <div
+      className={cn(
+        "px-4 py-2.5 transition-colors",
+        isTarget ? "bg-primary/5" : "hover:bg-muted/30",
+        isTarget && "border-l-2 border-l-primary"
+      )}
+    >
+      <div className="flex items-start gap-3">
+        {/* Rank */}
+        <span
+          className="inline-flex items-center justify-center w-7 h-7 rounded-full text-[11px] font-semibold text-white shrink-0 mt-0.5"
+          style={{ backgroundColor: getRankColor(rank) }}
+        >
+          {rank >= 20 ? "20+" : rank}
+        </span>
+
+        {/* Content */}
+        <div className="flex-1 min-w-0">
+          <div className="flex items-start justify-between gap-2">
+            <p className="text-sm font-medium leading-snug">
+              {result.displayName?.text ?? "Unknown"}
+              {isTarget && (
+                <span className="ml-2 text-[10px] font-medium text-primary bg-primary/10 px-1.5 py-0.5 rounded">
+                  Your Business
+                </span>
+              )}
+            </p>
+
+            {result.rating && (
+              <div className="shrink-0 flex items-center gap-1 text-xs">
+                <Star className="w-3 h-3 fill-yellow-400 text-yellow-400" />
+                <span className="font-medium">{result.rating.toFixed(1)}</span>
+                {result.userRatingCount && (
+                  <span className="text-muted-foreground">
+                    ({result.userRatingCount})
+                  </span>
+                )}
+              </div>
+            )}
+          </div>
+
+          {result.formattedAddress && (
+            <p className="text-xs text-muted-foreground mt-0.5 flex items-start gap-1">
+              <MapPin className="w-3 h-3 mt-0.5 shrink-0" />
+              <span>{result.formattedAddress}</span>
+            </p>
+          )}
+
+          {(result.businessStatus || result.types?.length) && (
+            <div className="flex flex-wrap gap-1 mt-1">
+              {result.businessStatus && (
+                <Badge variant="outline" className="text-[10px] h-4 px-1.5 font-normal">
+                  {result.businessStatus.toLowerCase().replace(/_/g, " ")}
+                </Badge>
+              )}
+              {result.types?.slice(0, 2).map((t) => (
+                <Badge key={t} variant="secondary" className="text-[10px] h-4 px-1.5 font-normal">
+                  {t.replace(/_/g, " ")}
+                </Badge>
+              ))}
+            </div>
+          )}
+        </div>
+      </div>
+    </div>
+  )
+})
 
 // ─── Main ─────────────────────────────────────────────────────────────────────
 
 export default function GridRankingMap({ data, mapKey, zoomLevel }: GridRankingMapProps) {
-  const [selected, setSelected] = useState<RankingData | null>(null)
+  const [selectedIndex, setSelectedIndex] = useState<number | null>(null)
   const [panelOpen, setPanelOpen] = useState(false)
 
   const rankings = data?.rankings ?? []
@@ -160,18 +240,29 @@ export default function GridRankingMap({ data, mapKey, zoomLevel }: GridRankingM
   const summary = data?.summary
   const TARGET_ID = data?.businessPlaceId
 
-  const handleMarkerClick = useCallback((ranking: RankingData) => {
-    setSelected(ranking)
+  // Derive the selected ranking from the index + current rankings array,
+  // instead of storing the whole object — avoids stale references and
+  // lets us key marker callbacks off a stable primitive (the index).
+  const selected = useMemo(
+    () => (selectedIndex != null ? rankings.find(r => r.gridPoint.index === selectedIndex) ?? null : null),
+    [selectedIndex, rankings]
+  )
+
+  // ONE stable callback shared by all markers. We pass the grid point's own
+  // index as an argument from the DOM event instead of creating a new closure
+  // per marker per render.
+  const handleMarkerClick = useCallback((index: number) => {
+    setSelectedIndex(index)
     setPanelOpen(true)
   }, [])
 
-  const handleClose = () => {
-    setSelected(null)
+  const handleClose = useCallback(() => {
+    setSelectedIndex(null)
     setPanelOpen(false)
-  }
+  }, [])
 
-  const sov = calcSOV(summary)
-  const ar = calcAR(summary)
+  const sov = useMemo(() => calcSOV(summary), [summary])
+  const ar = useMemo(() => calcAR(summary), [summary])
 
   return (
     <div className="relative flex h-full w-full overflow-hidden">
@@ -193,27 +284,23 @@ export default function GridRankingMap({ data, mapKey, zoomLevel }: GridRankingM
             >
               <GridMarker
                 ranking={r}
-                isSelected={selected?.gridPoint?.index === r.gridPoint?.index}
-                onClick={() => handleMarkerClick(r)}
+                isSelected={selectedIndex === r.gridPoint.index}
+                onClick={() => handleMarkerClick(r.gridPoint.index)}
               />
             </AdvancedMarker>
           ))}
         </Map>
 
         {hasPoints && (
-          <div className="absolute top-18 left-2  z-10">
+          <div className="absolute top-18 left-2 z-10">
             <div className="flex items-center gap-2 bg-card/90 backdrop-blur border border-border/50 rounded-lg px-2 py-1 text-xs shadow">
-
               <span className="text-violet-600 font-semibold tabular-nums">
                 SOV {sov}
               </span>
-
               <span className="text-muted-foreground">•</span>
-
               <span className="text-blue-600 font-semibold tabular-nums">
                 AR #{ar}
               </span>
-
             </div>
           </div>
         )}
@@ -234,6 +321,7 @@ export default function GridRankingMap({ data, mapKey, zoomLevel }: GridRankingM
             ))}
           </div>
         </div>
+
         {/* Click hint */}
         {hasPoints && !panelOpen && (
           <div className="absolute bottom-3 right-3 z-10">
@@ -275,130 +363,60 @@ export default function GridRankingMap({ data, mapKey, zoomLevel }: GridRankingM
           </div>
 
           {/* Selected Grid Point Header */}
-          {selected && (
-            <div className="border-b border-border bg-muted/30 px-3 py-2">
-              <div className="flex items-center justify-between text-xs">
-                <span className="font-medium">
-                  Point #{selected.gridPoint.index + 1}
-                </span>
-
-                <span className="text-muted-foreground">
-                  {selected.gridPoint.lat.toFixed(4)}, {selected.gridPoint.lng.toFixed(4)}
-                </span>
-              </div>
-
-              {/* Quick stats */}
-              <div className="grid grid-cols-4 divide-x divide-border mt-2 text-xs">
-                <StatCell
-                  label="Here"
-                  value={selected.businessFound ? `#${selected.rank}` : "—"}
-                  color={selected.businessFound ? undefined : "text-muted-foreground"}
-                />
-                <StatCell label="Best" value={summary?.bestRank ? `#${summary.bestRank}` : "—"} color="text-emerald-600" />
-                <StatCell label="SOV" value={sov} color="text-violet-600" />
-                <StatCell
-                  label="Visible"
-                  value={summary?.visibilityPercentage != null ? `${summary.visibilityPercentage}%` : "—"}
-                  color="text-blue-600"
-                />
-              </div>
+          <div className="border-b border-border bg-muted/30 px-3 py-2">
+            <div className="flex items-center justify-between text-xs">
+              <span className="font-medium">
+                Point #{selected.gridPoint.index + 1}
+              </span>
+              <span className="text-muted-foreground">
+                {selected.gridPoint.lat.toFixed(4)}, {selected.gridPoint.lng.toFixed(4)}
+              </span>
             </div>
-          )}
 
-          {/* Results list */}
-          <div className="flex-1 overflow-y-auto">
+            {/* Quick stats */}
+            <div className="grid grid-cols-4 divide-x divide-border mt-2 text-xs">
+              <StatCell
+                label="Here"
+                value={selected.businessFound ? `#${selected.rank}` : "—"}
+                color={selected.businessFound ? undefined : "text-muted-foreground"}
+              />
+              <StatCell label="Best" value={summary?.bestRank ? `#${summary.bestRank}` : "—"} color="text-emerald-600" />
+              <StatCell label="SOV" value={sov} color="text-violet-600" />
+              <StatCell
+                label="Visible"
+                value={summary?.visibilityPercentage != null ? `${summary.visibilityPercentage}%` : "—"}
+                color="text-blue-600"
+              />
+            </div>
+          </div>
+
+          {/* Results list - scrollable */}
+          <div className="divide-y divide-border/50 overflow-y-auto" style={{ maxHeight: 'calc(100vh - 310px)' }}>
             {selected.results && selected.results.length > 0 ? (
-              <>
-                <div className="flex items-center justify-between px-4 py-2.5 sticky top-0 bg-card/95 backdrop-blur-sm border-b border-border/50 z-10">
-                  <span className="text-xs font-semibold flex items-center gap-1.5">
-                    <Trophy className="w-3.5 h-3.5 text-amber-500" />
-                    Search Results
-                  </span>
-                  <Badge variant="secondary" className="text-[10px] h-5">
-                    {selected.results.length} found
-                  </Badge>
-                </div>
+              selected.results.map((result, i) => {
+                const rank = i + 1
+                const isTarget =
+                  result.id === TARGET_ID ||
+                  (selected.detectedBusinessName &&
+                    result.displayName?.text
+                      ?.toLowerCase()
+                      .includes(selected.detectedBusinessName.toLowerCase()))
 
-                <div className="divide-y divide-border/60">
-                  {selected.results.map((result, i) => {
-                    const isTarget =
-                      result.id === TARGET_ID ||
-                      (selected.detectedBusinessName &&
-                        result.displayName?.text
-                          ?.toLowerCase()
-                          .includes(selected.detectedBusinessName.toLowerCase()))
-
-                    return (
-                      <div
-                        key={result.id}
-                        className={cn(
-                          "px-4 py-3 transition-colors",
-                          isTarget ? "bg-primary/5 border-l-2 border-l-primary" : "hover:bg-muted/30"
-                        )}
-                      >
-                        <div className="flex items-start gap-3">
-                          {/* Rank bubble */}
-                          <span
-                            className="inline-flex items-center justify-center w-7 h-7 rounded-full text-[11px] font-bold text-white shrink-0 shadow-sm mt-0.5"
-                            style={{ backgroundColor: getRankColor(i + 1) }}
-                          >
-                            {i + 1 >= 20 ? "20+" : i + 1}
-                          </span>
-
-                          <div className="flex-1 min-w-0 space-y-0.5">
-                            <div className="flex items-start justify-between gap-2">
-                              <p className="text-[13px] font-semibold leading-snug break-words">
-                                {result.displayName?.text ?? "Unknown"}
-                                {isTarget && (
-                                  <span className="ml-1.5 text-[10px] font-normal text-primary bg-primary/10 px-1.5 py-0.5 rounded-full">
-                                    Your Business
-                                  </span>
-                                )}
-                              </p>
-                              {result.rating && (
-                                <div className="shrink-0 flex items-center gap-0.5 text-[11px] font-medium">
-                                  <Star className="w-3 h-3 text-yellow-500 fill-yellow-500" />
-                                  <span>{result.rating}</span>
-                                  {result.userRatingCount && (
-                                    <span className="text-muted-foreground">({result.userRatingCount})</span>
-                                  )}
-                                </div>
-                              )}
-                            </div>
-
-                            {result.formattedAddress && (
-                              <p className="text-[11px] text-muted-foreground flex items-start gap-1 leading-snug">
-                                <MapPin className="w-3 h-3 mt-0.5 shrink-0" />
-                                <span className="break-words">{result.formattedAddress}</span>
-                              </p>
-                            )}
-
-                            {(result.businessStatus || result.types?.length) && (
-                              <div className="flex flex-wrap gap-1 pt-0.5">
-                                {result.businessStatus && (
-                                  <Badge variant="outline" className="text-[10px] h-4 px-1.5">
-                                    {result.businessStatus.toLowerCase().replace(/_/g, " ")}
-                                  </Badge>
-                                )}
-                                {result.types?.slice(0, 2).map((t) => (
-                                  <Badge key={t} variant="secondary" className="text-[10px] h-4 px-1.5">
-                                    {t.replace(/_/g, " ")}
-                                  </Badge>
-                                ))}
-                              </div>
-                            )}
-                          </div>
-                        </div>
-                      </div>
-                    )
-                  })}
-                </div>
-              </>
+                return (
+                  <ResultRow
+                    key={result.id}
+                    result={result}
+                    rank={rank}
+                    isTarget={!!isTarget}
+                  />
+                )
+              })
             ) : (
               <div className="flex flex-col items-center justify-center h-full py-12 px-6 text-center">
-                <AlertCircle className="w-8 w-8 text-muted-foreground/30 mb-3" />
-                <p className="font-medium text-sm mb-1">No results for this point</p>
-                <p className="text-xs text-muted-foreground">No businesses were found at this grid location.</p>
+                <p className="text-sm text-muted-foreground">No results found</p>
+                <p className="text-xs text-muted-foreground/60 mt-1">
+                  No businesses found at this grid location
+                </p>
               </div>
             )}
           </div>

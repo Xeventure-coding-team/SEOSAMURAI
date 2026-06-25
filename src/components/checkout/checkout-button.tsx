@@ -20,6 +20,7 @@ interface CheckoutButtonProps {
   isHighlight?: boolean;
   isLoggedIn: boolean;
   hasActiveSubscription?: boolean;
+  textColor?: "light" | "dark" | "auto";
 }
 
 export function CheckoutButton({
@@ -28,6 +29,7 @@ export function CheckoutButton({
   isHighlight,
   isLoggedIn,
   hasActiveSubscription,
+  textColor = "auto",
 }: CheckoutButtonProps) {
   const [isPending, startTransition] = useTransition();
   const router = useRouter();
@@ -56,13 +58,22 @@ export function CheckoutButton({
     });
   };
 
+  // Text color logic with !important to override Button styles
+  const textColorClass = 
+    textColor === "auto" 
+      ? "" 
+      : textColor === "dark" 
+      ? "!text-gray-900" 
+      : "!text-white";
+
+
   if (isCurrentPlan) {
     return (
       <Button
         variant="outline"
         onClick={handleClick}
         disabled={isPending}
-        className="w-full"
+        className={cn(`w-full ${textColorClass}`)}
       >
         {isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
         Manage Plan
@@ -72,21 +83,22 @@ export function CheckoutButton({
 
   return (
     <Button
-  onClick={handleClick}
-  disabled={isPending}
-  variant={isHighlight ? "default" : "outline"}
-  className={cn(
-    "w-full",
-    !isHighlight &&
-      "bg-background text-foreground border-border hover:bg-muted"
-  )}
->
-  {isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-  {isLoggedIn
-    ? hasActiveSubscription
-      ? "Switch Plan"
-      : "Subscribe"
-    : "Get Started"}
-</Button>
+      onClick={handleClick}
+      disabled={isPending}
+      variant={isHighlight ? "default" : "outline"}
+      className={cn(
+        "w-full",
+        textColorClass,
+        !isHighlight &&
+          "bg-background text-foreground border-border hover:bg-muted"
+      )}
+    >
+      {isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+      {isLoggedIn
+        ? hasActiveSubscription
+          ? "Switch Plan"
+          : "Subscribe"
+        : "Get Started"}
+    </Button>
   );
 }

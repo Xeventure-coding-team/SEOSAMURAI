@@ -1,169 +1,28 @@
 "use client"
 
 import React from "react"
-import { AnimatePresence, motion } from "motion/react"
-import { useTabs, type Tab } from "@/hooks/UseTabs"
+import { useRouter, usePathname } from "next/navigation"
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { cn } from "@/lib/utils"
 
-// Component for individual tab items
 interface AnimatedTabItemProps {
   children: React.ReactNode
   value: string
   label?: string
 }
 
-export function AnimatedTabItem({ children, value, label }: AnimatedTabItemProps) {
-  return (
-    <div data-tab-value={value} data-tab-label={label}>
-      {children}
-    </div>
-  )
+export function AnimatedTabItem({ children, value }: AnimatedTabItemProps) {
+  return <TabsContent value={value}>{children}</TabsContent>
 }
 
-// Main tabs component
 interface AnimatedTabsProps {
   children: React.ReactNode
   items: string[]
   defaultTab?: string
   className?: string
   noPadding?: boolean
-  /** Pass true to sync selected tab with window.location.hash */
   syncHash?: boolean
-}
-
-const transition = {
-  type: "tween",
-  ease: "easeOut",
-  duration: 0.15,
-}
-
-const getHoverAnimationProps = (hoveredRect: DOMRect, navRect: DOMRect) => ({
-  x: hoveredRect.left - navRect.left - 8,
-  y: hoveredRect.top - navRect.top - 4,
-  width: hoveredRect.width + 16,
-  height: hoveredRect.height + 8,
-})
-
-const TabContent = ({ children, noPadding }: { children: React.ReactNode; noPadding: boolean }) => {
-  return (
-    <motion.div
-      initial={{ opacity: 0, y: 6 }}
-      animate={{ opacity: 1, y: 0 }}
-      exit={{ opacity: 0, y: -6 }}
-      transition={transition}
-      className={noPadding ? "mt-2" : "mt-2 py-3 md:py-4 px-3 lg:px-4"}
-    >
-      {children}
-    </motion.div>
-  )
-}
-
-const TabNavigation = ({
-  tabs,
-  selectedTabIndex,
-  setSelectedTab,
-  onTabClick,
-}: {
-  tabs: Tab[]
-  selectedTabIndex: number
-  setSelectedTab: (input: [number, number]) => void
-  onTabClick?: (value: string) => void
-}) => {
-  const [buttonRefs, setButtonRefs] = React.useState<Array<HTMLButtonElement | null>>([])
-
-  React.useEffect(() => {
-    setButtonRefs((prev) => prev.slice(0, tabs.length))
-  }, [tabs.length])
-
-  const navRef = React.useRef<HTMLDivElement>(null)
-  const navRect = navRef.current?.getBoundingClientRect()
-
-  const selectedRect = buttonRefs[selectedTabIndex]?.getBoundingClientRect()
-
-  const [hoveredTabIndex, setHoveredTabIndex] = React.useState<number | null>(null)
-  const hoveredRect = buttonRefs[hoveredTabIndex ?? -1]?.getBoundingClientRect()
-
-  const formatLabel = (label: string) => {
-    return label
-      .split(/[-_\s]+/)
-      .map((word) => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
-      .join(" ")
-  }
-
-  return (
-    <nav
-      ref={navRef}
-      className="flex flex-shrink-0 justify-center items-center relative z-0 py-1.5 gap-1"
-      onPointerLeave={() => setHoveredTabIndex(null)}
-    >
-      {tabs.map((item, i) => {
-        const isActive = selectedTabIndex === i
-        const isDangerZone = item.value === "danger-zone"
-
-        return (
-          <button
-            key={item.value}
-            className={cn(
-              "relative flex items-center px-5 py-2 rounded-md transition-colors font-medium z-20 text-sm tracking-wide",
-              {
-                "text-muted-foreground hover:text-foreground": !isActive && !isDangerZone,
-                "text-foreground": isActive && !isDangerZone,
-                "text-destructive hover:text-destructive/80": isDangerZone,
-              },
-            )}
-            onPointerEnter={() => setHoveredTabIndex(i)}
-            onFocus={() => setHoveredTabIndex(i)}
-            onClick={() => {
-              setSelectedTab([i, i > selectedTabIndex ? 1 : -1])
-              onTabClick?.(item.value)
-            }}
-          >
-            <span
-              ref={(el) => {
-                buttonRefs[i] = el as HTMLButtonElement
-              }}
-            >
-              {formatLabel(item.label)}
-            </span>
-          </button>
-        )
-      })}
-
-      <AnimatePresence>
-        {hoveredRect && navRect && (
-          <motion.div
-            key="hover"
-            className={`absolute z-10 top-0 left-0 rounded-md ${hoveredTabIndex === tabs.findIndex(({ value }) => value === "danger-zone")
-              ? "bg-destructive/10"
-              : "bg-muted"
-              }`}
-            initial={{ ...getHoverAnimationProps(hoveredRect, navRect), opacity: 0 }}
-            animate={{ ...getHoverAnimationProps(hoveredRect, navRect), opacity: 1 }}
-            exit={{ ...getHoverAnimationProps(hoveredRect, navRect), opacity: 0 }}
-            transition={transition}
-          />
-        )}
-      </AnimatePresence>
-
-      <AnimatePresence>
-        {selectedRect && navRect && (
-          <motion.div
-            className={`absolute z-10 bottom-0 left-0 h-[2px] ${selectedTabIndex === tabs.findIndex(({ value }) => value === "danger-zone")
-              ? "bg-destructive"
-              : "bg-primary"
-              }`}
-            initial={false}
-            animate={{
-              width: selectedRect.width,
-              x: selectedRect.left - navRect.left,
-              opacity: 1,
-            }}
-            transition={transition}
-          />
-        )}
-      </AnimatePresence>
-    </nav>
-  )
+  variant?: "line" | "pill" | "underline" // Add more variants as needed
 }
 
 export function AnimatedTabs({
@@ -173,8 +32,11 @@ export function AnimatedTabs({
   className,
   noPadding,
   syncHash = false,
+  variant = "line", // Default to line for backward compatibility
 }: AnimatedTabsProps) {
-  // Resolve initial tab — hash takes priority when syncHash is on
+  const router = useRouter()
+  const pathname = usePathname()
+
   const resolveInitialTab = () => {
     if (syncHash && typeof window !== "undefined") {
       const hash = window.location.hash.replace("#", "")
@@ -183,77 +45,143 @@ export function AnimatedTabs({
     return defaultTab && items.includes(defaultTab) ? defaultTab : items[0]
   }
 
-  const tabItems = React.useMemo(() => {
-    const itemsMap = new Map<string, { content: React.ReactNode; label?: string }>()
+  const [activeTab, setActiveTab] = React.useState(resolveInitialTab)
 
-    React.Children.forEach(children, (child) => {
-      if (React.isValidElement(child) && child.props.value) {
-        itemsMap.set(child.props.value, {
-          content: child.props.children,
-          label: child.props.label,
-        })
-      }
-    })
-
-    return items.map((item) => {
-      const itemData = itemsMap.get(item)
-      return {
-        label: itemData?.label || item.charAt(0).toUpperCase() + item.slice(1),
-        value: item,
-        content: itemData?.content || <div>No content available for {item}</div>,
-      }
-    })
-  }, [children, items])
-
-  const [hookProps] = React.useState(() => ({
-    tabs: tabItems.map(({ label, value }) => ({ label, value })),
-    initialTabId: resolveInitialTab(),
-  }))
-
-  const framer = useTabs(hookProps)
-
-  // Update hash when tab changes (without adding to browser history)
-  const handleTabClick = React.useCallback(
-    (value: string) => {
-      if (syncHash) {
-        window.history.replaceState(null, "", `#${value}`)
-      }
-    },
-    [syncHash]
-  )
-
-  // Listen for hash changes (back/forward nav, or dropdown link clicks)
+  // Sync from hash changes (back/forward nav)
   React.useEffect(() => {
     if (!syncHash) return
-
     const onHashChange = () => {
       const hash = window.location.hash.replace("#", "")
-      if (!items.includes(hash)) return
-
-      const idx = framer.tabProps.tabs.findIndex((t) => t.value === hash)
-      if (idx !== -1 && idx !== framer.tabProps.selectedTabIndex) {
-        framer.tabProps.setSelectedTab([idx, idx > framer.tabProps.selectedTabIndex ? 1 : -1])
-      }
+      if (items.includes(hash)) setActiveTab(hash)
     }
-
     window.addEventListener("hashchange", onHashChange)
     return () => window.removeEventListener("hashchange", onHashChange)
-  }, [syncHash, items, framer.tabProps])
+  }, [syncHash, items])
 
-  const currentTabContent = tabItems.find((tab) => tab.value === framer.selectedTab.value)?.content
+  const handleTabChange = (value: string) => {
+    setActiveTab(value)
+    if (syncHash) {
+      router.replace(`${pathname}#${value}`, { scroll: false })
+    }
+  }
+
+  const formatLabel = (label: string) =>
+    label
+      .split(/[-_\s]+/)
+      .map((w) => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase())
+      .join(" ")
+
+  const isManagePage = /^\/app\/locations\/[^/]+\/manage(?:\/.*)?$/.test(pathname)
+
+  // Variant-specific styles
+  const getVariantStyles = (item: string) => {
+    const isDanger = item === "danger-zone"
+    const baseStyles = {
+      line: cn(
+        "relative h-auto rounded-md border-b-2 border-transparent bg-transparent px-3 py-2.5",
+        "text-sm font-medium whitespace-nowrap",
+        "text-muted-foreground shadow-none",
+        "transition-all duration-200",
+        "hover:text-foreground hover:bg-muted/60",
+        "focus-visible:ring-0 focus-visible:ring-offset-0",
+        // Active state — soft tinted background instead of a flat underline
+        "data-[state=active]:border-primary",
+        "data-[state=active]:text-primary",
+        "data-[state=active]:bg-primary/[0.07]",
+        "data-[state=active]:shadow-none",
+        "data-[state=active]:rounded-t-md",
+        // Danger tab
+        isDanger &&
+          "text-destructive/80 hover:text-destructive hover:bg-destructive/10 data-[state=active]:border-destructive data-[state=active]:text-destructive data-[state=active]:bg-destructive/[0.07]"
+      ),
+      pill: cn(
+        "relative h-9 rounded-lg border border-transparent px-4",
+        "text-[14px] font-medium whitespace-nowrap leading-none",
+        "text-muted-foreground shadow-none",
+        "transition-all duration-150 ease-out",
+        "hover:text-foreground hover:bg-background/70",
+        "focus-visible:ring-0 focus-visible:ring-offset-0",
+        // Active state — soft primary tint with a gentle shadow for lift
+        "data-[state=active]:bg-background",
+        "data-[state=active]:text-primary",
+        "data-[state=active]:border-border/60",
+        "data-[state=active]:shadow-sm",
+        // Danger tab
+        isDanger &&
+          "text-destructive/70 hover:text-destructive hover:bg-destructive/10 data-[state=active]:text-destructive data-[state=active]:bg-background data-[state=active]:border-destructive/30"
+      ),
+      underline: cn(
+        "relative h-auto rounded-md bg-transparent px-3 py-2",
+        "text-sm font-medium whitespace-nowrap",
+        "text-muted-foreground shadow-none",
+        "transition-all duration-200",
+        "hover:text-foreground hover:bg-muted/60",
+        "focus-visible:ring-0 focus-visible:ring-offset-0",
+        // Active state with soft fill + underline animation
+        "data-[state=active]:text-foreground",
+        "data-[state=active]:bg-muted/50",
+        "data-[state=active]:shadow-none",
+        // Underline animation
+        "after:absolute after:bottom-0 after:left-3 after:right-3 after:h-0.5 after:origin-left",
+        "after:scale-x-0 after:bg-primary after:transition-transform after:duration-200 after:rounded-full",
+        "data-[state=active]:after:scale-x-100",
+        // Danger tab
+        isDanger &&
+          "text-destructive/80 hover:text-destructive hover:bg-destructive/10 data-[state=active]:text-destructive data-[state=active]:bg-destructive/[0.07] data-[state=active]:after:bg-destructive"
+      ),
+    }
+
+    return variant in baseStyles ? baseStyles[variant] : baseStyles.line
+  }
+
+  const getContainerStyles = () => {
+    const styles = {
+      line: "border-b border-border bg-muted/30 rounded-t-lg pt-1",
+      pill: "", // No border — pill sits in its own inset track, no container divider
+      underline: "border-b border-border bg-muted/30 rounded-t-lg pt-1",
+    }
+    // Use `in` instead of `||` — an empty string is a valid, intentional
+    // style (no border) and must not fall through to the line default.
+    return variant in styles ? styles[variant] : styles.line
+  }
+
+  const getListStyles = () => {
+    const styles = {
+      line: "h-auto w-full justify-start gap-2 overflow-x-auto rounded-none bg-transparent p-0",
+      pill: cn(
+        "inline-flex h-11 w-auto items-center justify-start gap-1",
+        "overflow-x-auto rounded-xl bg-muted/60 p-1.5 border border-border/40"
+      ),
+      underline: "h-auto w-full justify-start gap-2 overflow-x-auto rounded-none bg-transparent p-0",
+    }
+    return variant in styles ? styles[variant] : styles.line
+  }
 
   return (
-    <div className={cn("w-full", className)}>
-      <div
-        className={`relative flex w-full bg-background items-center justify-between rounded-b-none ${noPadding ? "border" : "border-b"} ${noPadding ? "rounded-md" : ""} border-border overflow-x-auto overflow-y-hidden`}
-      >
-        <TabNavigation {...framer.tabProps} onTabClick={handleTabClick} />
+    <Tabs value={activeTab} onValueChange={handleTabChange} className={cn("w-full", className)}>
+
+      <div className={cn(getContainerStyles())}>
+        <TabsList className={cn(getListStyles())}>
+          {items.map((item) => (
+            <TabsTrigger
+              key={item}
+              value={item}
+              className={getVariantStyles(item)}
+            >
+              {formatLabel(item)}
+            </TabsTrigger>
+          ))}
+        </TabsList>
       </div>
-      <AnimatePresence mode="wait">
-        <TabContent key={framer.selectedTab.value} noPadding={noPadding ? noPadding : false}>
-          {currentTabContent}
-        </TabContent>
-      </AnimatePresence>
-    </div>
+
+      <div
+        className={cn(
+          noPadding ? "mt-5" : "py-6",
+          !noPadding && isManagePage && "px-6"
+        )}
+      >
+        {children}
+      </div>
+    </Tabs>
   )
 }

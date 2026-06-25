@@ -3,6 +3,7 @@ import axios, { AxiosError } from 'axios'
 import { stackServerApp } from '@/stack'
 import { incrementUsage } from '@/lib/usage'
 import { prisma } from '../../../../../lib/prisma'
+import { cleanGmbAccountId, cleanGmbLocationId, getLocationById } from '@/lib/getLocationById'
 
 interface QueryParams {
   accountId: string
@@ -244,12 +245,13 @@ export async function PUT(request: NextRequest): Promise<NextResponse<SuccessRes
 
     const { accountId, locationId, selectedId, selectedText, accessToken } = params
 
-    const gmbLocationId = await resolveGmbLocationId(locationId!)
-    if (!gmbLocationId) {
+    const locationRecord = await getLocationById(locationId!)
+    if (!locationRecord) {
       return NextResponse.json({ error: 'Location not found' }, { status: 404 })
     }
 
-    const cleanAccountId = accountId!.replace('accounts/', '')
+    const gmbLocationId = cleanGmbLocationId(locationRecord.location_id)
+    const cleanAccountId = cleanGmbAccountId(accountId!)
     const apiUrl = `https://mybusiness.googleapis.com/v4/accounts/${cleanAccountId}/locations/${gmbLocationId}/reviews/${selectedId}/reply`
 
     const response = await axios.put(
@@ -286,12 +288,8 @@ export async function POST(request: NextRequest): Promise<NextResponse<SuccessRe
       )
     }
 
-    const gmbLocationId = await resolveGmbLocationId(locationId)
-    if (!gmbLocationId) {
-      return NextResponse.json({ success: false, error: 'Location not found' }, { status: 404 })
-    }
-
-    const cleanAccountId = accountId.replace('accounts/', '')
+    const gmbLocationId = cleanGmbLocationId(locationId)
+    const cleanAccountId = cleanGmbAccountId(accountId)
     const reviewName = `accounts/${cleanAccountId}/locations/${gmbLocationId}/reviews/${selectedId}`
     const apiUrl = `https://mybusiness.googleapis.com/v4/${reviewName}/reply`
 
@@ -343,6 +341,7 @@ export async function POST(request: NextRequest): Promise<NextResponse<SuccessRe
 }
 
 
+
 // READ Reply - GET Method
 export async function GET(request: NextRequest): Promise<NextResponse<SuccessResponse | ErrorResponse>> {
   try {
@@ -351,8 +350,9 @@ export async function GET(request: NextRequest): Promise<NextResponse<SuccessRes
 
     const { accountId, locationId, selectedId, accessToken } = params
 
-    // Make request to Google My Business API to get reply
-    const apiUrl = `https://mybusiness.googleapis.com/v4/accounts/${accountId}/locations/${locationId}/reviews/${selectedId}/reply`
+    const gmbLocationId = cleanGmbLocationId(locationId!)
+    const cleanAccountId = cleanGmbAccountId(accountId!)
+    const apiUrl = `https://mybusiness.googleapis.com/v4/accounts/${cleanAccountId}/locations/${gmbLocationId}/reviews/${selectedId}/reply`
 
     const response = await axios.get(
       apiUrl,
@@ -361,7 +361,7 @@ export async function GET(request: NextRequest): Promise<NextResponse<SuccessRes
           Authorization: `Bearer ${accessToken}`,
           'Content-Type': 'application/json',
         },
-        timeout: 10000, // 10 second timeout
+        timeout: 10000,
       }
     )
 
@@ -375,7 +375,6 @@ export async function GET(request: NextRequest): Promise<NextResponse<SuccessRes
     )
 
   } catch (error) {
-    // Handle 404 specifically for GET (reply might not exist)
     if (axios.isAxiosError(error) && error.response?.status === 404) {
       return NextResponse.json(
         {
@@ -400,12 +399,13 @@ export async function DELETE(request: NextRequest): Promise<NextResponse> {
       return NextResponse.json({ success: false, error: 'Missing required parameters' }, { status: 400 })
     }
 
-    const gmbLocationId = await resolveGmbLocationId(locationId)
-    if (!gmbLocationId) {
+    const locationRecord = await getLocationById(locationId)
+    if (!locationRecord) {
       return NextResponse.json({ success: false, error: 'Location not found' }, { status: 404 })
     }
 
-    const cleanAccountId = accountId.replace('accounts/', '')
+    const gmbLocationId = cleanGmbLocationId(locationRecord.location_id)
+    const cleanAccountId = cleanGmbAccountId(accountId)
     const apiUrl = `https://mybusiness.googleapis.com/v4/accounts/${cleanAccountId}/locations/${gmbLocationId}/reviews/${selectedId}/reply`
 
     const response = await axios.delete(apiUrl, {
@@ -427,12 +427,8 @@ export async function PATCH(request: NextRequest): Promise<NextResponse<SuccessR
 
     const { accountId, locationId, selectedId, selectedText, accessToken } = params
 
-    const gmbLocationId = await resolveGmbLocationId(locationId!)
-    if (!gmbLocationId) {
-      return NextResponse.json({ error: 'Location not found' }, { status: 404 })
-    }
-
-    const cleanAccountId = accountId!.replace('accounts/', '')
+    const gmbLocationId = cleanGmbLocationId(locationId!)
+    const cleanAccountId = cleanGmbAccountId(accountId!)
     const apiUrl = `https://mybusiness.googleapis.com/v4/accounts/${cleanAccountId}/locations/${gmbLocationId}/reviews/${selectedId}/reply`
 
     const response = await axios.put(

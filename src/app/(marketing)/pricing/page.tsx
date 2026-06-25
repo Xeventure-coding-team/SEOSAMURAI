@@ -211,7 +211,9 @@ export default async function PricingPage() {
                     hasActiveSubscription={!!subscription}
                     isHighlight={plan.highlight}
                     isLoggedIn={!!user}
+                    textColor={plan.highlight ? "light" : "auto"}
                   />
+
                 </div>
 
                 {/* Feature rows, grouped */}
@@ -343,6 +345,7 @@ export default async function PricingPage() {
                           hasActiveSubscription={!!subscription}
                           isHighlight={plan.highlight}
                           isLoggedIn={!!user}
+                          textColor={plan.highlight ? "light" : "auto"}
                         />
                       </div>
                     </th>
@@ -435,6 +438,7 @@ export default async function PricingPage() {
                         hasActiveSubscription={!!subscription}
                         isHighlight={plan.highlight}
                         isLoggedIn={!!user}
+                        textColor={plan.highlight ? "light" : "auto"}
                       />
                     </td>
                   );

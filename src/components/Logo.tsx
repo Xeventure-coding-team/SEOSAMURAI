@@ -7,22 +7,30 @@ import { useEffect, useState } from "react";
 
 type LogoProps = {
   src?: string;
+  darkSrc?: string;
+  lightSrc?: string;
   alt?: string;
   width?: number;
   height?: number;
   className?: string;
   priority?: boolean;
   showText?: boolean;
+  textClassName?: string;
+  textColor?: "auto" | "dark" | "light";
 } & React.HTMLAttributes<HTMLDivElement>;
 
 export default function Logo({
   src = "/logo/logo_icon.png",
+  darkSrc,
+  lightSrc,
   alt = "Logo",
-  width = 40,
-  height = 40,
+  width = 50,
+  height = 50,
   className,
   priority = false,
   showText = true,
+  textClassName,
+  textColor = "auto",
   ...props
 }: LogoProps) {
   const { theme } = useTheme();
@@ -34,13 +42,18 @@ export default function Logo({
 
   if (!mounted) return null;
 
-  const logoSrc =
-    theme === "dark"
-      ? "/logo/logo_icon.png"
-      : "/logo/logo_icon.png";
+  // Logo source based on theme
+  const logoSrc = theme === "dark" 
+    ? (darkSrc || src)
+    : (lightSrc || src);
 
-
-
+  // Fixed text color logic
+  const textColorClass = 
+    textColor === "auto" 
+      ? "text-foreground" 
+      : textColor === "dark" 
+      ? "text-white" 
+      : "text-gray-900"; // light mode
 
   return (
     <div className={cn("flex items-center gap-3", className)} {...props}>
@@ -54,7 +67,13 @@ export default function Logo({
       />
 
       {showText && (
-        <span className="text-xl font-semibold tracking-tight text-foreground">
+        <span
+          className={cn(
+            "text-[25px] font-semibold tracking-tight",
+            textColorClass,
+            textClassName
+          )}
+        >
           Rankerly
         </span>
       )}

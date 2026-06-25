@@ -338,7 +338,6 @@ export default function AdminNav({ initials, displayName, email }: AdminNavProps
   // Mobile navigation with improved UX
   const MobileNav = () => (
     <div className="flex md:hidden items-center gap-2 ml-auto">
-      <ThemeToggler />
       <UserMenu />
 
       <Sheet open={isMobileMenuOpen} onOpenChange={setIsMobileMenuOpen}>
@@ -360,14 +359,6 @@ export default function AdminNav({ initials, displayName, email }: AdminNavProps
                 Admin
               </Badge>
             </SheetTitle>
-            <Button
-              variant="ghost"
-              size="icon"
-              className="h-8 w-8"
-              onClick={() => setIsMobileMenuOpen(false)}
-            >
-              <X className="h-4 w-4" />
-            </Button>
           </SheetHeader>
 
           <div className="flex-1 overflow-y-auto">

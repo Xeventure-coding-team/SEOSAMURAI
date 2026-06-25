@@ -181,44 +181,43 @@ const SalesSection: React.FC = () => {
         </div>
 
         <div className="relative">
-          
+
           <nav
-  className="flex gap-1.5 relative lg:mb-12.5 md:mb-12.5 mb-5 justify-center items-center flex-wrap p-1.5 rounded-2xl bg-white/[0.06] border border-white/10 backdrop-blur-xl w-fit mx-auto shadow-[0_0_0_1px_rgba(255,255,255,0.03)]"
-  aria-label="Tabs"
-  role="tablist"
->
-  {Object.entries(tabs).map(([key, tab]) => {
-    const IconComponent = tab.icon;
-    const isActive = activeTab === key;
-    return (
-      <div className="hs-tab" key={key}>
-        <button
-          type="button"
-          className={`group relative flex items-center gap-2.5 py-3 px-6 rounded-xl text-[15px] font-semibold whitespace-nowrap transition-all duration-150 ease-out
+            className="flex gap-1.5 relative lg:mb-12.5 md:mb-12.5 mb-5 justify-center items-center flex-wrap p-1.5 rounded-2xl bg-white/[0.06] border border-white/10 backdrop-blur-xl w-fit mx-auto shadow-[0_0_0_1px_rgba(255,255,255,0.03)]"
+            aria-label="Tabs"
+            role="tablist"
+          >
+            {Object.entries(tabs).map(([key, tab]) => {
+              const IconComponent = tab.icon;
+              const isActive = activeTab === key;
+              return (
+                <div className="hs-tab" key={key}>
+                  <button
+                    type="button"
+                    className={`group relative flex items-center gap-2.5 py-3 px-6 rounded-xl text-[15px] font-semibold whitespace-nowrap transition-all duration-150 ease-out
             ${isActive
-              ? "bg-white text-zinc-900 shadow-[0_2px_12px_rgba(0,0,0,0.25),0_1px_3px_rgba(0,0,0,0.15)]"
-              : "text-white/50 hover:text-white hover:bg-white/10"
-            }`}
-          aria-selected={isActive}
-          role="tab"
-          onClick={() => setActiveTab(key)}
-        >
-          {isActive && (
-            <span className="absolute inset-0 rounded-xl ring-1 ring-white/20 pointer-events-none" />
-          )}
-          <IconComponent
-            className={`size-[18px] shrink-0 transition-colors duration-150 ${
-              isActive
-                ? "text-zinc-700"
-                : "text-white/40 group-hover:text-white"
-            }`}
-          />
-          <span>{tab.label}</span>
-        </button>
-      </div>
-    );
-  })}
-</nav>
+                        ? "bg-white text-zinc-900 shadow-[0_2px_12px_rgba(0,0,0,0.25),0_1px_3px_rgba(0,0,0,0.15)]"
+                        : "text-white/50 hover:text-white hover:bg-white/10"
+                      }`}
+                    aria-selected={isActive}
+                    role="tab"
+                    onClick={() => setActiveTab(key)}
+                  >
+                    {isActive && (
+                      <span className="absolute inset-0 rounded-xl ring-1 ring-white/20 pointer-events-none" />
+                    )}
+                    <IconComponent
+                      className={`size-[18px] shrink-0 transition-colors duration-150 ${isActive
+                          ? "text-zinc-700"
+                          : "text-white/40 group-hover:text-white"
+                        }`}
+                    />
+                    <span>{tab.label}</span>
+                  </button>
+                </div>
+              );
+            })}
+          </nav>
 
           <div>
             {Object.entries(tabs).map(([key, tab]) => (

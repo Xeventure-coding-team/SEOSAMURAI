@@ -11,6 +11,7 @@ import GMBAuthWrapper from "../wrapper/GMBAuthWrapper";
 import { APIProvider } from "@vis.gl/react-google-maps";
 import { useStackApp, useUser } from "@hexclave/next"
 import { useEffect, useState } from "react";
+import { SquareAccordion } from "@/components/loading-ui/square-accordion";
 
 interface DashboardLayoutProps {
   children: React.ReactNode;
@@ -45,8 +46,8 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
             <div className="flex flex-col items-center gap-5 p-8">
               {/* Spinner */}
               <div className="relative">
-                <div className="h-12 w-12 rounded-full border-4 border-muted" />
-                <div className="absolute inset-0 h-12 w-12 animate-spin rounded-full border-4 border-transparent border-t-primary" />
+                {/* Progress bars */}
+                <SquareAccordion />
               </div>
 
               {/* Text */}
@@ -59,12 +60,7 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
                 </p>
               </div>
 
-              {/* Progress bars */}
-              <div className="w-full space-y-3">
-                <div className="h-2 w-full animate-pulse rounded-full bg-muted" />
-                <div className="h-2 w-4/5 animate-pulse rounded-full bg-muted" />
-                <div className="h-2 w-3/5 animate-pulse rounded-full bg-muted" />
-              </div>
+
             </div>
           </div>
         </div>
@@ -73,7 +69,7 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
   }
 
   const noPadding =
-    ["/app/settings", "/app/scan"].some(p => pathname.startsWith(p)) ||
+    ["/app/settings", "/app/scan", "/app/geo-grid-scan"].some(p => pathname.startsWith(p)) || // add your actual route here
     /^\/app\/locations\/[^\/]+\/manage$/.test(pathname);
 
   return (
@@ -113,9 +109,9 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
         <AppSidebar variant="inset" />
         <SidebarInset>
           <SiteHeader />
-          <div className="flex flex-1 flex-col">
-            <div className="@container/main flex flex-1 flex-col gap-2">
-              <div className={`flex flex-col gap-4 md:gap-6 ${noPadding ? "" : "py-4 md:py-6 px-4 lg:px-6"}`}>
+          <div className="flex flex-1 flex-col min-h-0">
+            <div className="@container/main flex flex-1 flex-col gap-2 min-h-0">
+              <div className={`flex flex-1 flex-col gap-4 md:gap-6 min-h-0 ${noPadding ? "" : "py-4 md:py-6 px-4 lg:px-6"}`}>
                 <APIProvider apiKey={process.env.NEXT_PUBLIC_PLACES_KEY}>
                   <GMBAuthWrapper>{children}</GMBAuthWrapper>
                 </APIProvider>

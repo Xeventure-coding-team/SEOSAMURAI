@@ -10,21 +10,22 @@ import {
   Loader2,
   Trophy,
   TrendingUp,
-  Award,
   Zap,
   Target,
   Flame,
   Crown,
   XCircle,
+  CalendarClock,
 } from "lucide-react"
 
 import { Button } from "@/components/ui/button"
-import { Card, CardContent } from "@/components/ui/card"
+import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from "@/components/ui/card"
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
-import { AnimatedTabItem, AnimatedTabs } from "../design/AnimatedTabs"
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import TaskActionButton from "./TaskActionButton"
 import { PlanGate } from "../PlanGate"
 import { Skeleton } from "../ui/skeleton"
+import { Badge } from "../ui/badge"
 
 type Task = {
   id: string
@@ -294,15 +295,18 @@ export default function TaskManager({
   };
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-5">
       {/* Header */}
       <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-3xl font-bold text-foreground text-pretty">Task Dashboard</h1>
+
+        <div className="space-y-1">
+          <h1 className="text-3xl font-bold tracking-tight">
+            Task Dashboard
+          </h1>
+
           <p className="text-sm text-muted-foreground">
-            {"Week "}
-            {currentWeek}
-            {currentWeek ? " • " : ""}
+            Week {currentWeek}
+            {currentWeek && " • "}
             {locationId}
           </p>
         </div>
@@ -335,189 +339,282 @@ export default function TaskManager({
 
       {/* Error Alert */}
       {error && (
-        <div className="bg-destructive/10 border border-destructive/30 p-4 rounded-lg relative" role="alert" aria-live="polite">
-          <div className="flex items-center gap-2">
-            <AlertCircle className="w-5 h-5 text-destructive" aria-hidden="true" />
-            <p className="text-destructive">{(error as Error).message}</p>
+        <div className="bg-destructive/10 border border-destructive/20 p-4 rounded-lg" role="alert" aria-live="polite">
+          <div className="flex items-start gap-3">
+            <AlertCircle className="w-5 h-5 text-destructive flex-shrink-0 mt-0.5" aria-hidden="true" />
+            <p className="text-destructive text-sm">{(error as Error).message}</p>
           </div>
         </div>
       )}
 
       {/* Success Alert */}
       {success && (
-        <div className="bg-primary/10 border border-primary/20 p-4 rounded-lg relative" role="status" aria-live="polite">
-          <div className="flex items-center gap-2">
-            <CheckCircle2 className="w-5 h-5 text-primary" aria-hidden="true" />
-            <p className="text-foreground">{success}</p>
+        <div className="bg-primary/10 border border-primary/20 p-4 rounded-lg" role="status" aria-live="polite">
+          <div className="flex items-start justify-between gap-3">
+            <div className="flex items-start gap-3">
+              <CheckCircle2 className="w-5 h-5 text-primary flex-shrink-0 mt-0.5" aria-hidden="true" />
+              <p className="text-sm font-medium">{success}</p>
+            </div>
+            <button
+              onClick={() => setSuccess("")}
+              className="text-muted-foreground hover:text-foreground transition-colors"
+              aria-label="Close alert"
+            >
+              ✕
+            </button>
           </div>
-          <button
-            onClick={() => setSuccess("")}
-            className="absolute top-4 right-4 text-primary hover:text-primary/80"
-            aria-label="Close alert"
-          >
-            ✕
-          </button>
         </div>
       )}
 
+      {/* Tabs */}
+      <Tabs defaultValue="overview" className="w-full">
+        <TabsList className="grid w-full grid-cols-3 sm:grid-cols-6">
+          <TabsTrigger value="overview">Overview</TabsTrigger>
+          <TabsTrigger value="tasks">Tasks</TabsTrigger>
+          <TabsTrigger value="completed">Completed</TabsTrigger>
+          <TabsTrigger value="excluded">Excluded</TabsTrigger>
+          <TabsTrigger value="achievements">Achievements</TabsTrigger>
+          <TabsTrigger value="milestones">Milestones</TabsTrigger>
+        </TabsList>
 
-      <Card className="pt-0">
-        <AnimatedTabs
-          items={["overview", "tasks", "completed", "excluded", "achievements", "milestones"]}
-          defaultTab="overview"
-          className="w-full"
-          noPadding={true}
-        >
-          <AnimatedTabItem value="overview" label="Overview">
-            <div className="p-6">
-              {stats ? (
-                <>
-                  {/* Hero Stats */}
-                  <div className="bg-card border border-border rounded-2xl p-6 text-foreground shadow-sm">
-                    <div className="flex items-center justify-between mb-6">
-                      <div className="flex items-center gap-3">
-                        <div className="bg-muted/60 p-3 rounded-xl ring-1 ring-border">
-                          <Crown className="w-8 h-8 text-primary" aria-hidden="true" />
-                        </div>
-                        <div>
-                          <div className="text-4xl font-bold">
-                            {"Level "}
-                            {stats.level}
-                          </div>
-                          <div className="text-muted-foreground">Local Champion</div>
-                        </div>
-                      </div>
-                      <div className="text-right">
-                        <div className="text-3xl font-bold">{stats.totalPoints}</div>
-                        <div className="text-muted-foreground">Total Points</div>
-                      </div>
+        {/* Overview Tab */}
+        <TabsContent value="overview" className="space-y-3 mt-4">
+          {stats ? (
+            <>
+              {/* Level Card */}
+              <Card>
+                <CardContent className="space-y-6">
+                  <div className="flex items-start justify-between">
+                    <div>
+                      <p className="text-sm text-muted-foreground mb-1">
+                        Current Level
+                      </p>
+
+                      <h2 className="text-3xl font-bold tracking-tight">
+                        Level {stats.level}
+                      </h2>
+
+                      <p className="text-sm text-muted-foreground mt-1">
+                        Local Champion
+                      </p>
                     </div>
 
-                    {/* XP Bar */}
-                    <div className="space-y-2">
-                      <div className="flex justify-between text-sm">
-                        <span className="text-muted-foreground">
-                          {"Progress to Level "}
-                          {stats.level + 1}
-                        </span>
-                        <span className="text-foreground">{stats.progressToNextLevel}%</span>
+                    <div className="text-right">
+                      <div className="text-4xl font-bold text-primary">
+                        {stats.totalPoints}
                       </div>
-                      <div className="h-2 bg-muted rounded-full overflow-hidden">
-                        <div
-                          className="h-full bg-primary transition-all duration-500"
-                          style={{ width: `${stats.progressToNextLevel}%` }}
-                          aria-label="XP progress"
-                        />
-                      </div>
-                      <div className="text-xs text-muted-foreground">
-                        {stats.pointsInCurrentLevel}/{stats.pointsForNextLevel} XP
-                      </div>
+
+                      <p className="text-sm text-muted-foreground">
+                        Total XP
+                      </p>
                     </div>
                   </div>
 
-                  {/* Stats Grid */}
-                  <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-4">
-                    <div className="bg-card border border-border rounded-xl p-4 hover:bg-muted/50 transition-colors">
-                      <div className="flex items-center gap-2 mb-2">
-                        <Flame className="w-5 h-5 text-primary" aria-hidden="true" />
-                        <span className="text-sm text-muted-foreground">Streak</span>
-                      </div>
-                      <div className="text-3xl font-bold text-foreground">{stats.currentStreak}</div>
-                      <div className="text-xs text-muted-foreground">{stats.longestStreak} longest</div>
+                  <div className="space-y-3">
+                    <div className="flex items-center justify-between">
+                      <span className="text-sm text-muted-foreground">
+                        Progress to Level {stats.level + 1}
+                      </span>
+
+                      <span className="font-semibold">
+                        {stats.progressToNextLevel}%
+                      </span>
                     </div>
 
-                    <div className="bg-card border border-border rounded-xl p-4 hover:bg-muted/50 transition-colors">
-                      <div className="flex items-center gap-2 mb-2">
-                        <Zap className="w-5 h-5 text-primary" aria-hidden="true" />
-                        <span className="text-sm text-muted-foreground">This Week</span>
-                      </div>
-                      <div className="text-3xl font-bold text-foreground">{stats.weeklyPoints}</div>
-                      <div className="text-xs text-muted-foreground">points earned</div>
+                    <div className="h-3 rounded-full bg-muted overflow-hidden">
+                      <div
+                        className="h-full bg-primary transition-all duration-700"
+                        style={{
+                          width: `${stats.progressToNextLevel}%`,
+                        }}
+                      />
                     </div>
 
-                    <div className="bg-card border border-border rounded-xl p-4 hover:bg-muted/50 transition-colors">
-                      <div className="flex items-center gap-2 mb-2">
-                        <CheckCircle2 className="w-5 h-5 text-primary" aria-hidden="true" />
-                        <span className="text-sm text-muted-foreground">Completed</span>
-                      </div>
-                      <div className="text-3xl font-bold text-foreground">{stats.tasksCompleted}</div>
-                      <div className="text-xs text-muted-foreground">total tasks</div>
-                    </div>
-
-                    <div className="bg-card border border-border rounded-xl p-4 hover:bg-muted/50 transition-colors">
-                      <div className="flex items-center gap-2 mb-2">
-                        <TrendingUp className="w-5 h-5 text-primary" aria-hidden="true" />
-                        <span className="text-sm text-muted-foreground">This Month</span>
-                      </div>
-                      <div className="text-3xl font-bold text-foreground">{stats.monthlyPoints}</div>
-                      <div className="text-xs text-muted-foreground">points earned</div>
-                    </div>
+                    <p className="text-sm text-muted-foreground">
+                      {stats.pointsInCurrentLevel} / {stats.pointsForNextLevel} XP
+                    </p>
                   </div>
-                </>
-              ) : (
-                <div className="bg-card border border-border rounded-2xl p-8 text-center">
-                  <Trophy className="w-10 h-10 text-primary mx-auto mb-3" aria-hidden="true" />
-                  <h3 className="text-xl font-semibold text-foreground mb-2">Start your streak</h3>
-                  <p className="text-sm text-muted-foreground mb-4">
-                    No overview yet. Refresh to roll new quests and begin earning XP.
-                  </p>
-                  <Button onClick={handleRefresh} disabled={refreshing} className="gap-2">
-                    {refreshing ? (
-                      <>
-                        <Loader2 className="w-4 h-4 animate-spin" aria-hidden="true" />
-                        Generating...
-                      </>
-                    ) : (
-                      <>
-                        <RefreshCw className="w-4 h-4" aria-hidden="true" />
-                        Generate Tasks
-                      </>
-                    )}
-                  </Button>
-                </div>
-              )}
+                </CardContent>
+              </Card>
+
+              {/* Stats Grid */}
+              <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+                <Card className="transition-all duration-200 hover:shadow-md hover:-translate-y-1">
+                  <CardContent>
+                    <div className="flex items-start justify-between mb-4">
+                      <div>
+                        <p className="text-sm text-muted-foreground">
+                          Streak
+                        </p>
+
+                        <div className="text-3xl font-bold mt-1">
+                          {stats.currentStreak}
+                        </div>
+                      </div>
+
+                      <div className="flex h-10 w-10 items-center justify-center rounded-full bg-primary/10">
+                        <Flame className="h-5 w-5 text-primary" />
+                      </div>
+                    </div>
+
+                    <p className="text-sm text-muted-foreground">
+                      {stats.longestStreak} longest
+                    </p>
+                  </CardContent>
+                </Card>
+
+                <Card className="transition-all duration-200 hover:shadow-md hover:-translate-y-1">
+                  <CardContent>
+                    <div className="flex items-start justify-between mb-4">
+                      <div>
+                        <p className="text-sm text-muted-foreground">
+                          This Week
+                        </p>
+
+                        <div className="text-3xl font-bold mt-1">
+                          {stats.weeklyPoints}
+                        </div>
+                      </div>
+
+                      <div className="flex h-10 w-10 items-center justify-center rounded-full bg-primary/10">
+                        <Zap className="h-5 w-5 text-primary" />
+                      </div>
+                    </div>
+
+                    <p className="text-sm text-muted-foreground">
+                      points earned
+                    </p>
+                  </CardContent>
+                </Card>
+
+                <Card className="transition-all duration-200 hover:shadow-md hover:-translate-y-1">
+                  <CardContent>
+                    <div className="flex items-start justify-between mb-4">
+                      <div>
+                        <p className="text-sm text-muted-foreground">
+                          Completed
+                        </p>
+
+                        <div className="text-3xl font-bold mt-1">
+                          {stats.tasksCompleted}
+                        </div>
+                      </div>
+
+                      <div className="flex h-10 w-10 items-center justify-center rounded-full bg-primary/10">
+                        <CheckCircle2 className="h-5 w-5 text-primary" />
+                      </div>
+                    </div>
+
+                    <p className="text-sm text-muted-foreground">
+                      total tasks
+                    </p>
+                  </CardContent>
+                </Card>
+
+                <Card className="transition-all duration-200 hover:shadow-md hover:-translate-y-1">
+                  <CardContent>
+                    <div className="flex items-start justify-between mb-4">
+                      <div>
+                        <p className="text-sm text-muted-foreground">
+                          This Month
+                        </p>
+
+                        <div className="text-3xl font-bold mt-1">
+                          {stats.monthlyPoints}
+                        </div>
+                      </div>
+
+                      <div className="flex h-10 w-10 items-center justify-center rounded-full bg-primary/10">
+                        <TrendingUp className="h-5 w-5 text-primary" />
+                      </div>
+                    </div>
+
+                    <p className="text-sm text-muted-foreground">
+                      points earned
+                    </p>
+                  </CardContent>
+                </Card>
+              </div>
 
               {/* Score Breakdown */}
-              {scores ? (
-                <div className="bg-card border border-border rounded-xl p-6 mt-4">
-                  <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
-                    <Target className="w-5 h-5 text-primary" aria-hidden="true" />
-                    Performance Scores
-                  </h3>
-                  <div className="space-y-4">
+              {scores && (
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="flex items-center gap-3 text-xl">
+                      <div className="flex h-10 w-10 items-center justify-center rounded-full bg-primary/10">
+                        <Target className="h-5 w-5 text-primary" aria-hidden="true" />
+                      </div>
+
+                      <div>
+                        <h3 className="font-bold">Performance Scores</h3>
+                        <p className="text-sm font-normal text-muted-foreground">
+                          Your profile health and engagement metrics
+                        </p>
+                      </div>
+                    </CardTitle>
+                  </CardHeader>
+
+                  <CardContent className="space-y-6">
                     {[
                       { label: "Profile Score", value: scores.profile },
                       { label: "Engagement Score", value: scores.engagement },
                       { label: "Content Score", value: scores.content },
                     ].map((s) => (
-                      <div key={s.label}>
-                        <div className="flex justify-between text-sm mb-1">
-                          <span className="text-muted-foreground">{s.label}</span>
-                          <span className="font-semibold text-foreground">{s.value}/100</span>
+                      <div key={s.label} className="space-y-2">
+                        <div className="flex items-center justify-between">
+                          <span className="text-sm text-muted-foreground">
+                            {s.label}
+                          </span>
+
+                          <span className="text-sm font-semibold">
+                            {s.value}/100
+                          </span>
                         </div>
-                        <div className="h-2 bg-muted rounded-full overflow-hidden">
-                          <div className="h-full bg-primary" style={{ width: `${s.value}%` }} />
+
+                        <div className="h-2.5 rounded-full bg-muted overflow-hidden">
+                          <div
+                            className="h-full rounded-full bg-primary transition-all duration-700"
+                            style={{ width: `${s.value}%` }}
+                          />
                         </div>
                       </div>
                     ))}
-                  </div>
-                </div>
-              ) : (
-                <div className="bg-card border border-border rounded-xl p-6 mt-4 text-center text-muted-foreground">
-                  No score data yet.
-                </div>
+                  </CardContent>
+                </Card>
               )}
-            </div>
-          </AnimatedTabItem>
 
-          <AnimatedTabItem value="tasks" label="Tasks">
-            <PlanGate mode={{ type: "feature", feature: "tasks" }} featureName="Tasks">
-              <div className="p-5">
-                <h3 className="text-lg font-semibold mb-4 text-foreground">Active Tasks</h3>
-                {tasks.length === 0 ? (
-                  <div className="bg-card border border-border rounded-xl p-12 text-center">
-                    <AlertCircle className="w-12 h-12 text-muted-foreground mx-auto mb-4" aria-hidden="true" />
-                    <p className="text-muted-foreground mb-4">No tasks available for this location</p>
+            </>
+          ) : (
+            <Card>
+              <CardContent className="flex flex-col items-center justify-center py-12">
+                <Trophy className="w-10 h-10 text-muted-foreground mb-3" aria-hidden="true" />
+                <h3 className="font-semibold mb-1">Start your streak</h3>
+                <p className="text-sm text-muted-foreground mb-4 text-center">
+                  No overview yet. Refresh to roll new quests and begin earning XP.
+                </p>
+              </CardContent>
+            </Card>
+          )}
+        </TabsContent>
+
+        {/* Tasks Tab */}
+        <TabsContent value="tasks" className="mt-4">
+          <PlanGate mode={{ type: "feature", feature: "tasks" }} featureName="Tasks">
+            <div className="space-y-3">
+              <div className="space-y-1">
+                <h3 className="text-xl font-bold tracking-tight">
+                  Active Tasks
+                </h3>
+
+                <p className="text-sm text-muted-foreground">
+                  Pending and in-progress tasks for this location
+                </p>
+              </div>
+              {tasks.length === 0 ? (
+                <Card>
+                  <CardContent className="flex flex-col items-center justify-center py-12">
+                    <AlertCircle className="w-10 h-10 text-muted-foreground mb-3" aria-hidden="true" />
+                    <p className="text-muted-foreground mb-4">No tasks available</p>
                     <Button onClick={handleRefresh} disabled={refreshing} className="gap-2">
                       {refreshing ? (
                         <>
@@ -531,379 +628,522 @@ export default function TaskManager({
                         </>
                       )}
                     </Button>
-                  </div>
-                ) : (
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    {tasks.map((task) => (
-                      <div
-                        key={task.id}
-                        className="bg-card border border-border rounded-xl p-6 hover:shadow-md transition-shadow focus-within:ring-1 focus-within:ring-primary/50 min-h-[220px]"
-                      >
-                        <div className="flex items-start justify-between mb-3">
-                          <div className="flex-1">
-                            <div className="flex items-center gap-2 mb-2">
-                              {getStatusIcon(task.status)}
-                              <h4 className="font-semibold text-foreground">{task.title}</h4>
-                            </div>
-                            <p className="text-sm text-muted-foreground">{task.description}</p>
+                  </CardContent>
+                </Card>
+              ) : (
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  {tasks.map((task) => (
+                    <Card key={task.id} className="flex flex-col">
+                      <CardContent className="space-y-4 flex-1">
+
+                        {/* Title & Status */}
+                        <div className="flex items-start gap-4">
+                          <div className="mt-1 shrink-0">
+                            {getStatusIcon(task.status)}
                           </div>
-                          <div className={`w-2 h-2 rounded-full ${getPriorityColor(task.priority)} ml-2 flex-shrink-0`} />
+
+                          <div className="flex-1 min-w-0">
+                            <h4
+                              className={`text-lg font-bold leading-tight tracking-tight ${task.status === "completed"
+                                ? "line-through text-muted-foreground"
+                                : "text-foreground"
+                                }`}
+                            >
+                              {task.title}
+                            </h4>
+
+                            {task.description && (
+                              <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
+                                {task.description}
+                              </p>
+                            )}
+                          </div>
                         </div>
 
-                        <div className="flex flex-wrap gap-2 mb-3">
-                          {/* Category or Type (at least one badge) */}
-                          <span className="px-2 py-1 bg-muted text-muted-foreground text-xs rounded-full capitalize">
-                            {(
-                              task.category && task.type &&
-                                task.category.replace(/_/g, " ").toLowerCase() ===
-                                task.type.replace(/_/g, " ").toLowerCase()
-                                ? task.category
-                                : task.category || task.type || "uncategorized"
-                            ).replace(/_/g, " ")}
+                        {/* Tags */}
+                        <div className="flex flex-wrap gap-2">
+                          <span className="px-3 py-1 bg-secondary text-secondary-foreground text-xs rounded-full capitalize font-medium">
+                            {(task.category || task.type || "uncategorized").replace(/_/g, " ")}
                           </span>
-
-                          {/* Impact badge */}
-                          <span className="px-2 py-1 bg-muted text-muted-foreground text-xs rounded-full flex items-center gap-1 capitalize">
-                            <TrendingUp className="w-3 h-3 text-primary" />
+                          <span className="px-3 py-1 bg-secondary text-secondary-foreground text-xs rounded-full capitalize font-medium flex items-center gap-1.5">
+                            <TrendingUp className="w-3.5 h-3.5" />
                             {(task.impact || "normal").replace(/_/g, " ")}
                           </span>
+                          {task.status === "in_progress" && (
+                            <span className="px-3 py-1 bg-blue-100 text-blue-700 text-xs rounded-full font-medium border border-blue-200">
+                              In Progress
+                            </span>
+                          )}
+                          {task.status === "completed" && (
+                            <span className="px-3 py-1 bg-emerald-100 text-emerald-700 text-xs rounded-full font-medium border border-emerald-200">
+                              ✓ Done
+                            </span>
+                          )}
                         </div>
 
+                        {/* Progress */}
+                        <div className="space-y-2">
+                          <div className="flex items-center justify-between">
+                            <span className="text-sm font-medium text-muted-foreground">
+                              Progress
+                            </span>
 
-                        <div className="mb-3">
-                          <div className="h-2 bg-muted rounded-full overflow-hidden">
+                            <span
+                              className={`text-sm font-semibold ${task.status === "completed"
+                                ? "text-emerald-600"
+                                : task.status === "in_progress"
+                                  ? "text-primary"
+                                  : "text-muted-foreground"
+                                }`}
+                            >
+                              {task.status === "completed"
+                                ? "100%"
+                                : task.status === "in_progress"
+                                  ? "50%"
+                                  : "0%"}
+                            </span>
+                          </div>
+
+                          <div className="relative h-2 rounded-full bg-muted overflow-hidden">
                             <div
-                              className="h-full bg-primary transition-all"
+                              className={`absolute inset-y-0 left-0 rounded-full transition-all duration-700 ease-out ${task.status === "completed"
+                                ? "bg-emerald-500"
+                                : task.status === "in_progress"
+                                  ? "bg-primary"
+                                  : "bg-muted-foreground/30"
+                                }`}
                               style={{
-                                width: task.status === "completed" ? "100%" : task.status === "in_progress" ? "50%" : "0%",
+                                width:
+                                  task.status === "completed"
+                                    ? "100%"
+                                    : task.status === "in_progress"
+                                      ? "50%"
+                                      : "0%",
                               }}
                             />
                           </div>
+
+                          <div className="flex justify-between text-[11px] text-muted-foreground">
+                            <span>Not started</span>
+                            <span>In progress</span>
+                            <span>Completed</span>
+                          </div>
                         </div>
 
+
+                      </CardContent>
+
+                      <CardFooter className="w-full">
                         {task.status !== "completed" && (
-                          <div className="flex gap-2">
-                            <TaskActionButton
-                              task={task}
-                              locationId={locationId}
-                              onTaskUpdate={handleTaskUpdate}
-                              description={description}
-                              placeId={placeId}
-                              gmbAccountId={gmbAccountId}
-                              accessToken={accessToken}
-                              businessName={businessName}
-                              primaryCategory={primaryCategory}
-                              additionalCategories={additionalCategories}
-                              address={address}
-                              services={services}
-                              mutate={mutate}
-                            />
-                            <TooltipProvider>
-                              <Tooltip>
-                                <TooltipTrigger asChild>
-                                  <Button
-                                    onClick={() => excludeTask(task.id)}
-                                    disabled={excludingTaskId === task.id}
-                                    variant="outline"
-                                    size="sm"
-                                    className="gap-2"
-                                  >
-                                    {excludingTaskId === task.id ? (
-                                      <>
-                                        <Loader2 className="w-4 h-4 animate-spin" />
-                                        Excluding...
-                                      </>
-                                    ) : (
-                                      <>
-                                        <XCircle className="w-4 h-4" />
-                                        Exclude
-                                      </>
-                                    )}
-                                  </Button>
-                                </TooltipTrigger>
-                                <TooltipContent>
-                                  <p>Hide this task until the next refresh</p>
-                                </TooltipContent>
-                              </Tooltip>
-                            </TooltipProvider>
+                          <div className="w-full">
+                            <div className="flex items-center gap-3 w-full">
+                              {/* Action button - 80% */}
+                              <div className="flex-[4] [&>*]:w-full">
+                                <TaskActionButton
+                                  className="w-full"
+                                  task={task}
+                                  locationId={locationId}
+                                  onTaskUpdate={handleTaskUpdate}
+                                  description={description}
+                                  placeId={placeId}
+                                  gmbAccountId={gmbAccountId}
+                                  accessToken={accessToken}
+                                  businessName={businessName}
+                                  primaryCategory={primaryCategory}
+                                  additionalCategories={additionalCategories}
+                                  address={address}
+                                  services={services}
+                                  mutate={mutate}
+                                />
+                              </div>
+
+                              {/* Exclude button - 20% */}
+                              <div className="basis-1/5">
+                                <TooltipProvider>
+                                  <Tooltip>
+                                    <TooltipTrigger asChild>
+                                      <Button
+                                        onClick={() => excludeTask(task.id)}
+                                        disabled={excludingTaskId === task.id}
+                                        variant="outline"
+                                        className="w-full gap-2 hover:text-destructive hover:border-destructive/50"
+                                      >
+                                        {excludingTaskId === task.id ? (
+                                          <>
+                                            <Loader2 className="w-4 h-4 animate-spin" />
+                                            Removing...
+                                          </>
+                                        ) : (
+                                          <>
+                                            <XCircle className="w-4 h-4" />
+                                            Exclude
+                                          </>
+                                        )}
+                                      </Button>
+                                    </TooltipTrigger>
+
+                                    <TooltipContent side="bottom">
+                                      <p className="text-sm">
+                                        Hide this task until the next refresh
+                                      </p>
+                                    </TooltipContent>
+                                  </Tooltip>
+                                </TooltipProvider>
+                              </div>
+                            </div>
                           </div>
                         )}
-                      </div>
-                    ))}
-                  </div>
-                )}
-              </div>
-            </PlanGate>
-          </AnimatedTabItem>
+                      </CardFooter>
 
-          <AnimatedTabItem value="completed" label="Completed">
-            <div className="p-6">
-              <h3 className="text-lg font-semibold mb-4 text-foreground">Completed This Month</h3>
-              {completedTasks.length === 0 ? (
-                <div className="bg-card p-12 text-center">
-                  <CheckCircle2 className="w-12 h-12 text-muted-foreground/60 mx-auto mb-4" aria-hidden="true" />
-                  <p className="text-muted-foreground font-medium mb-1">No completed tasks yet</p>
-                  <p className="text-sm text-muted-foreground/70 max-w-sm mx-auto">
-                    Complete your first task of the month to see it here.
+                    </Card>
+                  ))}
+                </div>
+              )}
+            </div>
+          </PlanGate>
+        </TabsContent>
+
+        {/* Completed Tab */}
+        <TabsContent value="completed" className="mt-4">
+          <div className="space-y-3">
+            <div className="space-y-1">
+              <h3 className="text-2xl font-bold leading-none">
+                Completed This Month
+              </h3>
+
+              <p className="text-sm text-muted-foreground">
+                Tasks you've successfully completed this month
+              </p>
+            </div>
+            {completedTasks.length === 0 ? (
+              <Card>
+                <CardContent className="flex flex-col items-center justify-center py-12 text-center">
+                  <div className="mb-4 rounded-full bg-primary/10 p-4">
+                    <CheckCircle2
+                      className="w-8 h-8 text-primary"
+                      aria-hidden="true"
+                    />
+                  </div>
+
+                  <h4 className="text-lg font-semibold">
+                    No completed tasks yet
+                  </h4>
+
+                  <p className="mt-1 text-sm text-muted-foreground">
+                    Complete your first task to start building your streak.
                   </p>
-                </div>
-              ) : (
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  {completedTasks.map((task) => (
-                    <div key={task.id} className="bg-card border border-border rounded-xl p-5 opacity-90">
-                      <div className="flex items-start justify-between mb-3">
-                        <div className="flex-1">
-                          <div className="flex items-center gap-2 mb-2">
-                            <CheckCircle2 className="w-5 h-5 text-primary" aria-hidden="true" />
-                            <h4 className="font-semibold text-foreground">{task.title}</h4>
-                          </div>
-                          <p className="text-sm text-muted-foreground">{task.description}</p>
+                </CardContent>
+              </Card>
+            ) : (
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {completedTasks.map((task) => (
+                  <Card
+                    key={task.id}
+                    className="transition-all duration-200 hover:shadow-md"
+                  >
+                    <CardContent className="space-y-4">
+                      {/* Title */}
+                      <div className="flex items-start gap-4">
+                        <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-emerald-500/10">
+                          <CheckCircle2
+                            className="h-5 w-5 text-emerald-600"
+                            aria-hidden="true"
+                          />
                         </div>
-                        <div className={`w-2 h-2 rounded-full ${getPriorityColor(task.priority)} ml-2`} />
+
+                        <div className="flex-1 min-w-0">
+                          <h4 className="text-lg font-semibold leading-tight tracking-tight">
+                            {task.title}
+                          </h4>
+
+                          {task.description && (
+                            <p className="mt-2 text-sm text-muted-foreground leading-relaxed">
+                              {task.description}
+                            </p>
+                          )}
+                        </div>
                       </div>
 
-                      <div className="flex flex-wrap gap-2 mb-3">
-                        <span className="px-2 py-1 bg-muted text-muted-foreground text-xs rounded-full capitalize">
+                      {/* Tags */}
+                      <div className="flex flex-wrap items-center gap-2">
+                        <span className="inline-flex items-center rounded-full border bg-muted px-3 py-1 text-xs font-semibold capitalize text-muted-foreground">
                           {(task.category || "uncategorized").replace(/_/g, " ")}
                         </span>
-                        <span className="px-2 py-1 bg-muted text-muted-foreground text-xs rounded-full capitalize">
+
+                        <span className="inline-flex items-center rounded-full bg-primary/10 px-3 py-1 text-xs font-semibold capitalize text-primary">
                           {(task.type || "general").replace(/_/g, " ")}
                         </span>
-                        <span className="px-2 py-1 bg-muted text-muted-foreground text-xs rounded-full flex items-center gap-1 capitalize">
-                          <TrendingUp className="w-3 h-3 text-primary" aria-hidden="true" />
-                          {(task.impact || "normal").replace(/_/g, " ")}
-                        </span>
                       </div>
 
-                      <div className="flex items-center justify-between text-sm mb-3">
-                        <span className="flex items-center gap-1 text-muted-foreground">
-                          <Clock className="w-4 h-4" aria-hidden="true" />
-                          {task.estimatedTime}
-                        </span>
-                        <span className="font-semibold text-primary">+{task.points} pts earned</span>
-                      </div>
+                      {/* Footer */}
+                      <div className="flex items-center justify-between border-t pt-4">
+                        <div className="space-y-0.5">
+                          <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
+                            Completed
+                          </p>
 
-                      <div className="mb-3">
-                        <div className="h-2 bg-muted rounded-full overflow-hidden">
-                          <div className="h-full bg-primary transition-all" style={{ width: "100%" }} />
+                          <p className="text-sm font-semibold">
+                            {task.completedAt
+                              ? new Date(task.completedAt).toLocaleDateString()
+                              : "Recently"}
+                          </p>
+                        </div>
+
+                        <div className="rounded-full bg-primary/10 px-4 py-2">
+                          <span className="text-sm font-bold text-primary">
+                            +{task.points} XP
+                          </span>
                         </div>
                       </div>
 
-                      <div className="text-xs text-muted-foreground text-center">
-                        Completed {task.completedAt ? new Date(task.completedAt).toLocaleDateString() : "Recently"}
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              )}
-            </div>
-          </AnimatedTabItem>
+                    </CardContent>
+                  </Card>
+                ))}
+              </div>
+            )}
 
-          <AnimatedTabItem value="excluded" label="Excluded">
-            <div className="p-6">
-              <h3 className="text-lg font-semibold mb-4 text-foreground">Excluded This Month</h3>
-              {excludedTasks.length === 0 ? (
-                <div className="bg-card p-12 text-center">
-                  <AlertCircle className="w-12 h-12 text-muted-foreground/50 mx-auto mb-4" aria-hidden="true" />
-                  <div className="space-y-2">
-                    <p className="text-muted-foreground font-medium">No excluded tasks this month</p>
-                    <p className="text-sm text-muted-foreground/70">
-                      Exclude a task to remove it from your monthly progress.
-                    </p>
+          </div>
+        </TabsContent>
+
+        {/* Excluded Tab */}
+        <TabsContent value="excluded" className="mt-4">
+          <div className="space-y-3">
+            <div className="space-y-1">
+              <h3 className="text-2xl font-bold tracking-tight">
+                Excluded This Month
+              </h3>
+
+              <p className="text-sm text-muted-foreground">
+                Tasks you've chosen to hide from your monthly progress
+              </p>
+            </div>
+            {excludedTasks.length === 0 ? (
+              <Card>
+                <CardContent className="flex flex-col items-center justify-center py-12 text-center">
+                  <div className="mb-4 rounded-full bg-muted p-4">
+                    <AlertCircle
+                      className="h-8 w-8 text-muted-foreground"
+                      aria-hidden="true"
+                    />
                   </div>
-                </div>
-              ) : (
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  {excludedTasks.map((task, key) => (
-                    <div key={key} className="bg-card border border-border rounded-xl p-5 opacity-70">
-                      <div className="flex items-start justify-between mb-3">
+
+                  <h4 className="text-lg font-semibold">
+                    No excluded tasks
+                  </h4>
+
+                  <p className="mt-1 text-sm text-muted-foreground">
+                    Hidden tasks will appear here.
+                  </p>
+                </CardContent>
+              </Card>
+            ) : (
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {excludedTasks.map((task) => (
+                  <Card key={task.id} className="bg-muted/20">
+                    <CardContent className="space-y-3">
+                      {/* Title */}
+                      <div className="flex items-start gap-3">
+                        <AlertCircle
+                          className="h-4 w-4 text-muted-foreground mt-1 shrink-0"
+                          aria-hidden="true"
+                        />
+
                         <div className="flex-1">
-                          <div className="flex items-center gap-2 mb-2">
-                            <AlertCircle className="w-5 h-5 text-muted-foreground" aria-hidden="true" />
-                            <h4 className="font-semibold text-foreground line-through">{task.title}</h4>
-                          </div>
-                          <p className="text-sm text-muted-foreground">{task.description}</p>
+                          <h4 className="text-base font-medium text-muted-foreground line-through">
+                            {task.title}
+                          </h4>
+
+                          {task.description && (
+                            <p className="mt-1 text-sm text-muted-foreground">
+                              {task.description}
+                            </p>
+                          )}
                         </div>
-                        <div className={`w-2 h-2 rounded-full ${getPriorityColor(task.priority)} ml-2`} />
                       </div>
 
-                      <div className="flex flex-wrap gap-2 mb-3">
-                        <span className="px-2 py-1 bg-muted text-muted-foreground text-xs rounded-full capitalize">
-                          {(task.category || "uncategorized").replace(/_/g, " ")}
-                        </span>
-                        <span className="px-2 py-1 bg-muted text-muted-foreground text-xs rounded-full capitalize">
-                          {(task.type || "general").replace(/_/g, " ")}
-                        </span>
-                        <span className="px-2 py-1 bg-muted text-muted-foreground text-xs rounded-full flex items-center gap-1 capitalize">
-                          <TrendingUp className="w-3 h-3 text-primary" aria-hidden="true" />
-                          {(task.impact || "normal").replace(/_/g, " ")}
-                        </span>
+                      {/* Footer */}
+                      <div className="border-t pt-3">
+                        <p className="text-xs text-muted-foreground">
+                          Resets next month
+                        </p>
                       </div>
+                    </CardContent>
+                  </Card>
+                ))}
+              </div>
+            )}
 
-                      <div className="text-xs text-muted-foreground text-center py-2 bg-muted rounded-lg">
-                        Excluded — Will reset next month
-                      </div>
-                    </div>
-                  ))}
+          </div>
+        </TabsContent>
+
+        {/* Achievements Tab */}
+        <TabsContent value="achievements" className="mt-4">
+          <PlanGate mode={{ type: "feature", feature: "task-achievements" }} featureName="Achievements">
+            <div className="space-y-3">
+              <div className="space-y-1">
+                <div className="flex items-center gap-3">
+                  <Trophy className="h-6 w-6 text-primary" aria-hidden="true" />
+
+                  <h3 className="text-2xl font-bold tracking-tight">
+                    Recent Achievements
+                  </h3>
                 </div>
-              )}
-            </div>
-          </AnimatedTabItem>
 
-          <AnimatedTabItem value="achievements" label="Achievements">
-            <PlanGate mode={{ type: "feature", feature: "task-achievements" }} featureName="Achievements">
-              <div className="p-6">
-                {data?.achievements && data.achievements.length > 0 ? (
-                  <div>
-                    <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
-                      <Trophy className="w-5 h-5 text-primary" aria-hidden="true" />
-                      Recent Achievements
-                    </h3>
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                      {data.achievements.map((a) => (
-                        <div
-                          key={a.id}
-                          className="group relative flex items-center gap-4 p-4 bg-card rounded-lg border border-border hover:border-primary/50 transition-all duration-300 hover:shadow-md"
-                        >
-                          {/* Icon circle with gradient effect */}
-                          <div className="relative w-8 h-8 flex-shrink-0 rounded-full bg-gradient-to-br from-primary/10 to-primary/5 flex items-center justify-center border border-primary/20 group-hover:border-primary/40 transition-all duration-300 group-hover:scale-105">
-                            <span className="font-bold text-primary text-xl">
-                              {a.title.charAt(0)}
-                            </span>
+                <p className="text-sm text-muted-foreground">
+                  Milestones and achievements you've earned
+                </p>
+              </div>
+              {data?.achievements && data.achievements.length > 0 ? (
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  {data.achievements.map((a) => (
+                    <Card
+                      key={a.id}
+                      className="transition-all duration-200 hover:shadow-md"
+                    >
+                      <CardContent>
+                        <div className="flex items-start gap-4">
+                          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-primary/10">
+                            <Trophy className="h-5 w-5 text-primary" />
                           </div>
 
-                          {/* Content section */}
-                          <div className="flex-1 min-w-0 space-y-1">
-                            <h3 className="font-semibold text-foreground text-base leading-tight group-hover:text-primary transition-colors duration-200">
+                          <div className="flex-1 min-w-0">
+                            <h4 className="text-base font-semibold leading-tight">
                               {a.title}
-                            </h3>
-                            <p className="text-sm text-muted-foreground leading-snug line-clamp-2">
-                              {a.description}
+                            </h4>
+
+                            {a.description && (
+                              <p className="mt-1 text-sm text-muted-foreground line-clamp-2">
+                                {a.description}
+                              </p>
+                            )}
+
+                            <div className="mt-3">
+                              <span className="rounded-full bg-primary/10 px-3 py-1 text-xs font-bold text-primary">
+                                +{a.points} XP
+                              </span>
+                            </div>
+                          </div>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  ))}
+                </div>
+              ) : (
+                <Card>
+                  <CardContent className="flex flex-col items-center justify-center py-8">
+                    <Trophy className="w-10 h-10 text-muted-foreground/50 mb-2" aria-hidden="true" />
+                    <p className="text-muted-foreground font-medium mb-0.5">No achievements yet</p>
+                    <p className="text-xs text-muted-foreground/70">Complete tasks to earn achievements</p>
+                  </CardContent>
+                </Card>
+              )}
+            </div>
+          </PlanGate>
+        </TabsContent>
+
+        {/* Milestones Tab */}
+        <TabsContent value="milestones" className="mt-4">
+          <PlanGate mode={{ type: "feature", feature: "task-milestones" }} featureName="Milestones">
+            {/* Milestones Tab */}
+
+
+            <div className="space-y-3">
+              <div className="space-y-1.5">
+                <h3 className="flex items-center gap-3 text-2xl font-bold tracking-tight">
+                  <Trophy className="h-6 w-6 text-primary" aria-hidden="true" />
+                  Recent Milestones
+                </h3>
+
+                <p className="text-sm text-muted-foreground">
+                  Celebrate key accomplishments and progress milestones
+                </p>
+              </div>
+              {data?.milestones.recent && data.milestones.recent.length > 0 ? (
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  {data.milestones.recent.map((m) => (
+                    <Card
+                      key={m.id}
+                      className="transition-all duration-200 hover:shadow-md hover:-translate-y-1"
+                    >
+                      <CardContent className="space-y-4">
+
+                        {/* Header */}
+                        <div className="flex items-start gap-4">
+                          <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-primary/10 ring-1 ring-primary/15">
+                            <Trophy
+                              className="h-5 w-5 text-primary"
+                              aria-hidden="true"
+                            />
+                          </div>
+
+                          <div className="flex-1 min-w-0">
+                            <div className="flex items-center gap-2">
+                              <h4 className="text-lg font-bold leading-tight tracking-tight">
+                                {m.title}
+                              </h4>
+
+                              <span className="rounded-full bg-primary/10 px-2 py-0.5 text-[11px] font-semibold text-primary">
+                                Milestone
+                              </span>
+                            </div>
+
+                            {m.description && (
+                              <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
+                                {m.description}
+                              </p>
+                            )}
+                          </div>
+                        </div>
+
+                        {/* Footer */}
+                        <div className="flex items-center justify-between border-t pt-4">
+                          <div className="space-y-1">
+                            <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
+                              Achieved on
+                            </p>
+
+                            <p className="text-sm font-semibold">
+                              {new Date(m.achievedAt).toLocaleDateString()}
                             </p>
                           </div>
 
-                          {/* Points badge with subtle animation */}
-                          <div className="flex-shrink-0">
-                            <div className="bg-primary text-primary-foreground px-4 py-1.5 rounded-full font-semibold text-sm shadow-sm group-hover:shadow-md transition-all duration-300 group-hover:scale-105">
-                              +{a.points}
-                            </div>
-                          </div>
-
-                          {/* Subtle accent line */}
-                          <div className="absolute bottom-0 left-4 right-4 h-px bg-gradient-to-r from-transparent via-border to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                ) : (
-                  <div className="bg-card p-8 text-center">
-                    <div className="flex flex-col items-center gap-3">
-                      {/* Optional: subtle icon for better visual communication */}
-                      <div className="text-muted-foreground/60">
-                        <svg
-                          className="w-12 h-12 mx-auto"
-                          fill="none"
-                          stroke="currentColor"
-                          viewBox="0 0 24 24"
-                        >
-                          <path
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            strokeWidth={1.5}
-                            d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.539 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.784.57-1.838-.196-1.539-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z"
-                          />
-                        </svg>
-                      </div>
-                      <p className="text-muted-foreground font-medium">No recent achievements</p>
-                      <p className="text-sm text-muted-foreground/70 max-w-sm">
-                        Complete your first milestone or task to see achievements appear here.
-                      </p>
-                    </div>
-                  </div>
-                )}
-              </div>
-            </PlanGate>
-          </AnimatedTabItem>
-
-          <AnimatedTabItem value="milestones" label="Milestones">
-            <PlanGate mode={{ type: "feature", feature: "task-milestones" }} featureName="Milestones">
-              <div className="p-6">
-                {data?.milestones.recent && data.milestones.recent.length > 0 ? (
-                  <div>
-                    <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
-                      <Trophy className="w-5 h-5 text-primary" aria-hidden="true" />
-                      Recent Milestones
-                    </h3>
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                      {data.milestones.recent.map((m) => (
-                        <div
-                          key={m.id}
-                          className="group relative flex items-center gap-4 p-4 bg-card rounded-lg border border-border hover:border-primary/50 transition-all duration-300 hover:shadow-md"
-                        >
-                          {/* Icon circle with gradient effect */}
-                          <div className="relative w-8 h-8 flex-shrink-0 rounded-full bg-gradient-to-br from-primary/10 to-primary/5 flex items-center justify-center border border-primary/20 group-hover:border-primary/40 transition-all duration-300 group-hover:scale-105">
-                            <span className="font-bold text-primary text-xl">
-                              {m.title.charAt(0)}
+                          <div className="flex items-center gap-1 rounded-full bg-primary/10 px-4 py-2">
+                            <Trophy className="h-4 w-4 text-primary" />
+                            <span className="text-sm font-bold text-primary">
+                              +{m.value} XP
                             </span>
                           </div>
-
-                          {/* Content section */}
-                          <div className="flex-1 min-w-0 space-y-1">
-                            <h3 className="font-semibold text-foreground text-base leading-tight group-hover:text-primary transition-colors duration-200">
-                              {m.title}
-                            </h3>
-                            <p className="text-sm text-muted-foreground leading-snug line-clamp-2">
-                              {m.description}
-                            </p>
-                            <p className="text-xs text-muted-foreground">
-                              Achieved: {new Date(m.achievedAt).toLocaleDateString()}
-                            </p>
-                          </div>
-
-                          {/* Points badge with subtle animation */}
-                          <div className="flex-shrink-0">
-                            <div className="bg-primary text-primary-foreground px-4 py-1.5 rounded-full font-semibold text-sm shadow-sm group-hover:shadow-md transition-all duration-300 group-hover:scale-105">
-                              +{m.value}
-                            </div>
-                          </div>
-
-                          {/* Subtle accent line */}
-                          <div className="absolute bottom-0 left-4 right-4 h-px bg-gradient-to-r from-transparent via-border to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
                         </div>
-                      ))}
-                    </div>
-                  </div>
-                ) : (
-                  <div className="bg-card rounded-xl p-8 text-center">
-                    <div className="flex flex-col items-center gap-3">
-                      <div className="text-muted-foreground/60">
-                        <svg
-                          className="w-12 h-12 mx-auto"
-                          fill="none"
-                          stroke="currentColor"
-                          viewBox="0 0 24 24"
-                        >
-                          <path
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            strokeWidth={1.5}
-                            d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
-                          />
-                        </svg>
-                      </div>
-                      <p className="text-muted-foreground font-medium">No recent milestones</p>
-                      <p className="text-sm text-muted-foreground/70 max-w-sm">
-                        Set your first milestone to start tracking your progress.
-                      </p>
-                    </div>
-                  </div>
-                )}
-              </div>
-            </PlanGate>
-          </AnimatedTabItem>
-        </AnimatedTabs>
-      </Card>
 
+                      </CardContent>
+                    </Card>
+                  ))}
+                </div>
+              ) : (
+                <Card>
+                  <CardContent className="flex flex-col items-center justify-center py-12 text-center">
+                    <div className="mb-4 rounded-full bg-primary/10 p-4">
+                      <Trophy
+                        className="h-8 w-8 text-primary"
+                        aria-hidden="true"
+                      />
+                    </div>
+
+                    <h4 className="text-lg font-semibold">
+                      No milestones yet
+                    </h4>
+
+                    <p className="mt-1 text-sm text-muted-foreground">
+                      Achieve milestones to track your progress.
+                    </p>
+                  </CardContent>
+                </Card>
+              )}
+            </div>
+
+          </PlanGate>
+        </TabsContent>
+      </Tabs>
     </div>
   )
 }

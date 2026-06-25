@@ -17,16 +17,16 @@ const buttonVariants = cva(
     variants: {
       variant: {
         // ── Primary ───────────────────────────────────────────────────────────
-        default:
-          "bg-primary text-primary-foreground shadow-sm hover:bg-primary/90",
+        default: 'from-primary to-primary/85 text-primary-foreground border border-zinc-950/25 bg-gradient-to-t shadow-md shadow-zinc-950/20 ring-1 ring-inset ring-white/20 transition-[filter] duration-200 hover:brightness-110 active:brightness-90 dark:border-white/20 dark:ring-transparent',
+
 
         // ── Destructive ───────────────────────────────────────────────────────
-        destructive:
-          "bg-destructive text-white shadow-sm hover:bg-destructive/90 focus-visible:ring-destructive/50 dark:bg-destructive/80 dark:hover:bg-destructive",
+        destructive: 'from-destructive to-destructive/85 text-destructive-foreground border border-zinc-950/25 bg-gradient-to-t shadow-md shadow-zinc-950/20 ring-1 ring-inset ring-white/20 transition-[filter] duration-200 hover:brightness-110 active:brightness-90 dark:border-white/15 dark:ring-transparent',
+
 
         // ── Outline ───────────────────────────────────────────────────────────
-        outline:
-          "border border-input bg-background shadow-sm hover:bg-accent hover:text-accent-foreground dark:bg-input/20 dark:border-input dark:hover:bg-input/40",
+        outline: 'bg-muted hover:bg-background dark:bg-muted/25 dark:hover:bg-muted/50 dark:border-border inset-shadow-2xs inset-shadow-white dark:inset-shadow-transparent relative flex border border-zinc-300 shadow-sm shadow-zinc-950/10 ring-0 duration-150',
+
 
         // ── Secondary ─────────────────────────────────────────────────────────
         secondary:
@@ -67,10 +67,10 @@ const buttonVariants = cva(
       },
       size: {
         default: "h-9 px-4 py-2 has-[>svg]:px-3",
-        sm:      "h-8 rounded-md text-xs gap-1.5 px-3 has-[>svg]:px-2.5",
-        lg:      "h-11 rounded-lg text-base px-6 has-[>svg]:px-4",
-        xl:      "h-12 rounded-lg text-base px-8 has-[>svg]:px-5",
-        icon:    "size-9 rounded-md",
+        sm: "h-8 rounded-md text-xs gap-1.5 px-3 has-[>svg]:px-2.5",
+        lg: "h-11 rounded-lg text-base px-6 has-[>svg]:px-4",
+        xl: "h-12 rounded-lg text-base px-8 has-[>svg]:px-5",
+        icon: "size-9 rounded-md",
         "icon-sm": "size-7 rounded-md [&_svg:not([class*='size-'])]:size-3.5",
         "icon-lg": "size-11 rounded-lg",
       },

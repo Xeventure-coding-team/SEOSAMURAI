@@ -1,6 +1,9 @@
 import { canUse, canUseErrorMessage, getCode } from "@/lib/actions/can-use";
+import { cleanGmbAccountId, cleanGmbLocationId, getLocationById } from "@/lib/getLocationById";
 import { stackServerApp } from "@/stack";
 import { NextRequest, NextResponse } from "next/server"
+
+
 
 /**
  * Parse "accounts/AAA/locations/BBB" → { accountId: "AAA", locationId: "BBB" }
@@ -42,8 +45,7 @@ export async function POST(req: NextRequest) {
     const category = (formData.get("category") as string) || "ADDITIONAL"
     const accessToken = formData.get("accessToken") as string | null
 
-
-    const user = stackServerApp.getUser();
+    const user = await stackServerApp.getUser();
 
     const check = await canUse(user.id, "media-upload");
     if (!check.ok) {
@@ -105,12 +107,11 @@ export async function POST(req: NextRequest) {
     console.log("[ImageKit] uploaded →", publicUrl, "| fileId:", imagekitFileId)
 
     // ----------------------------------------------------------------
-    // Step 2: POST to GMB v4 with full accounts/.../locations/... path
-    // Correct endpoint: mybusiness.googleapis.com/v4/accounts/{accountId}/locations/{locationId}/media
+    // Step 2: Resolve the Mongo location _id → real GMB location ID
     // ----------------------------------------------------------------
-    const { accountId, locationId } = parseLocationName(locationName)
+    const { accountId, locationId: rawLocationId } = parseLocationName(locationName)
 
-    if (!accountId || !locationId) {
+    if (!accountId || !rawLocationId) {
       await deleteFromImageKit(imagekitFileId!, basicAuth)
       return NextResponse.json(
         { error: `Could not parse accountId/locationId from: "${locationName}". Expected format: "accounts/AAA/locations/BBB"` },
@@ -118,7 +119,16 @@ export async function POST(req: NextRequest) {
       )
     }
 
-    const gmbApiUrl = `https://mybusiness.googleapis.com/v4/accounts/${accountId}/locations/${locationId}/media`
+    const locationRecord = await getLocationById(rawLocationId)
+    if (!locationRecord) {
+      await deleteFromImageKit(imagekitFileId!, basicAuth)
+      return NextResponse.json({ error: "Location not found" }, { status: 404 })
+    }
+
+    const gmbLocationId = cleanGmbLocationId(locationRecord.location_id)
+    const cleanAccountId = cleanGmbAccountId(accountId)
+
+    const gmbApiUrl = `https://mybusiness.googleapis.com/v4/accounts/${cleanAccountId}/locations/${gmbLocationId}/media`
     console.log("[GMB media upload] POST →", gmbApiUrl)
 
     const gmbRes = await fetch(gmbApiUrl, {
@@ -137,14 +147,13 @@ export async function POST(req: NextRequest) {
     const gmbText = await gmbRes.text()
     console.log("[GMB media upload] response:", gmbRes.status, gmbText.slice(0, 300))
 
-    // Always clean up ImageKit file
     await deleteFromImageKit(imagekitFileId!, basicAuth)
     imagekitFileId = null
 
     if (!gmbRes.ok) {
       console.error("[GMB media upload] failed:", gmbText)
       return NextResponse.json(
-        { error: "GMB API rejected the upload", details: tryParseJson(gmbText) },
+        { error: "Something went wrong, Please try again later", details: tryParseJson(gmbText) },
         { status: gmbRes.status }
       )
     }

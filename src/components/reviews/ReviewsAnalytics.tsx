@@ -1,7 +1,26 @@
-import React, { useMemo, useEffect, useRef } from 'react';
+'use client';
+
+import React, { useMemo } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
-import { Star, ThumbsUp, MessageSquare, Clock, Smile, Meh, Frown, Zap, Heart } from 'lucide-react';
+import {
+    ChartContainer,
+    ChartTooltip,
+    ChartTooltipContent,
+} from '@/components/ui/chart';
+import {
+    BarChart,
+    Bar,
+    XAxis,
+    YAxis,
+    CartesianGrid,
+    Cell,
+    RadialBarChart,
+    RadialBar,
+    PolarAngleAxis,
+} from 'recharts';
+import { Star, ThumbsUp, MessageSquare, Smile, Meh, Frown, Zap, Heart } from 'lucide-react';
+
+// ─── Types ───────────────────────────────────────────────────────────────────
 
 interface Review {
     reviewId: string;
@@ -15,53 +34,126 @@ interface ReviewsAnalyticsProps {
     data: Review[] | { reviews: Review[] };
 }
 
+// ─── Constants ───────────────────────────────────────────────────────────────
+
 const starVal = (r: string) => ({ FIVE: 5, FOUR: 4, THREE: 3, TWO: 2, ONE: 1 }[r] ?? 0);
 
-const EMOTIONS = {
-    joy: { label: 'Joy', keywords: ['love', 'happy', 'amazing', 'wonderful', 'fantastic', 'great', 'excellent', 'best', 'enjoy'], color: 'bg-emerald-500' },
-    satisfied: { label: 'Satisfied', keywords: ['good', 'nice', 'recommend', 'helpful', 'friendly', 'pleased', 'decent', 'fine'], color: 'bg-blue-500' },
-    neutral: { label: 'Neutral', keywords: ['okay', 'average', 'normal', 'alright', 'expected'], color: 'bg-zinc-400' },
-    frustrated: { label: 'Frustrated', keywords: ['wait', 'slow', 'long', 'disappointed', 'nothing special'], color: 'bg-amber-500' },
-    angry: { label: 'Angry', keywords: ['terrible', 'worst', 'bad', 'poor', 'horrible', 'awful', 'cold'], color: 'bg-red-500' },
-} as const;
+/**
+ * Sentiment classification — star rating is the primary signal (reliable),
+ * text keywords act as a secondary refinement within that tier.
+ *
+ * Star tiers:
+ *   5★ → joy (strong positive) or satisfied (mild positive keywords absent)
+ *   4★ → satisfied (positive) or neutral (no positive keywords)
+ *   3★ → neutral, unless strong negative keywords push to frustrated
+ *   2★ → frustrated, unless strong negative keywords push to angry
+ *   1★ → angry
+ *
+ * This makes "Positive %" (joy + satisfied) accurately reflect star ratings.
+ */
+const EMOTION_DEFS = [
+    {
+        key: 'joy' as const,
+        label: 'Joy',
+        keywords: ['love', 'happy', 'amazing', 'wonderful', 'fantastic', 'excellent', 'best', 'awesome', 'incredible', 'outstanding', 'perfect'],
+        color: '#10b981',
+        trackColor: '#d1fae5',
+        Icon: Heart,
+        iconClass: 'text-emerald-500',
+    },
+    {
+        key: 'satisfied' as const,
+        label: 'Satisfied',
+        keywords: ['good', 'great', 'nice', 'recommend', 'helpful', 'friendly', 'pleased', 'decent', 'enjoy', 'satisfied'],
+        color: '#3b82f6',
+        trackColor: '#dbeafe',
+        Icon: ThumbsUp,
+        iconClass: 'text-blue-500',
+    },
+    {
+        key: 'neutral' as const,
+        label: 'Neutral',
+        keywords: ['okay', 'ok', 'average', 'normal', 'alright', 'expected', 'fine'],
+        color: '#a1a1aa',
+        trackColor: '#f4f4f5',
+        Icon: Meh,
+        iconClass: 'text-zinc-400',
+    },
+    {
+        key: 'frustrated' as const,
+        label: 'Frustrated',
+        keywords: ['wait', 'slow', 'long', 'disappointing', 'nothing special', 'could be better', 'mediocre'],
+        color: '#f59e0b',
+        trackColor: '#fef3c7',
+        Icon: Zap,
+        iconClass: 'text-amber-500',
+    },
+    {
+        key: 'angry' as const,
+        label: 'Angry',
+        keywords: ['terrible', 'worst', 'bad', 'poor', 'horrible', 'awful', 'rude', 'disgusting', 'never again', 'waste'],
+        color: '#ef4444',
+        trackColor: '#fee2e2',
+        Icon: Frown,
+        iconClass: 'text-red-500',
+    },
+] as const;
 
-const EMOTION_ICONS = {
-    joy: Heart,
-    satisfied: ThumbsUp,
-    neutral: Meh,
-    frustrated: Zap,
-    angry: Frown,
+const RATING_COLORS: Record<number, string> = {
+    5: '#10b981',
+    4: '#84cc16',
+    3: '#f59e0b',
+    2: '#f97316',
+    1: '#ef4444',
 };
 
-const TOPICS = [
-    { label: 'Service', keywords: ['service', 'staff', 'friendly', 'helpful'], color: 'bg-blue-100 text-blue-800 dark:bg-blue-900/40 dark:text-blue-300' },
-    { label: 'Food', keywords: ['food', 'meal', 'dish', 'taste', 'quality'], color: 'bg-emerald-100 text-emerald-800 dark:bg-emerald-900/40 dark:text-emerald-300' },
-    { label: 'Atmosphere', keywords: ['atmosphere', 'ambiance', 'place', 'location'], color: 'bg-purple-100 text-purple-800 dark:bg-purple-900/40 dark:text-purple-300' },
-    { label: 'Wait time', keywords: ['wait', 'slow', 'long', 'time'], color: 'bg-amber-100 text-amber-800 dark:bg-amber-900/40 dark:text-amber-300' },
-    { label: 'Value', keywords: ['value', 'price', 'worth', 'expensive'], color: 'bg-orange-100 text-orange-800 dark:bg-orange-900/40 dark:text-orange-300' },
-    { label: 'Cleanliness', keywords: ['clean', 'dirty', 'hygiene'], color: 'bg-teal-100 text-teal-800 dark:bg-teal-900/40 dark:text-teal-300' },
-];
+// ─── Helpers ─────────────────────────────────────────────────────────────────
 
-const RATING_COLORS = ['', 'bg-red-500', 'bg-orange-500', 'bg-amber-400', 'bg-lime-500', 'bg-emerald-500'];
+const JOY_KEYWORDS = new Set(['love', 'amazing', 'wonderful', 'fantastic', 'excellent', 'awesome', 'incredible', 'outstanding', 'perfect', 'brilliant']);
+const POSITIVE_KEYWORDS = new Set(['good', 'great', 'nice', 'recommend', 'helpful', 'friendly', 'pleased', 'enjoy', 'satisfied', 'happy', 'best', 'decent']);
+const NEGATIVE_KEYWORDS = new Set(['wait', 'slow', 'disappointing', 'mediocre', 'nothing special', 'could be better']);
+const ANGRY_KEYWORDS = new Set(['terrible', 'worst', 'bad', 'poor', 'horrible', 'awful', 'rude', 'disgusting', 'never again', 'waste']);
+
+/**
+ * Star-rating-aware classifier.
+ * Stars are the ground truth; text keywords refine within that tier.
+ */
+function classifyEmotion(
+    text: string,
+    stars: number,
+): typeof EMOTION_DEFS[number]['key'] {
+    const words = text.toLowerCase().split(/\W+/);
+    const hasJoy = words.some(w => JOY_KEYWORDS.has(w));
+    const hasPositive = words.some(w => POSITIVE_KEYWORDS.has(w));
+    const hasNegative = words.some(w => NEGATIVE_KEYWORDS.has(w));
+    const hasAngry = words.some(w => ANGRY_KEYWORDS.has(w));
+
+    if (stars >= 5) return hasJoy ? 'joy' : 'satisfied';
+    if (stars === 4) return hasAngry ? 'frustrated' : hasPositive || hasJoy ? 'satisfied' : 'satisfied';
+    if (stars === 3) return hasAngry ? 'frustrated' : hasNegative ? 'frustrated' : 'neutral';
+    if (stars === 2) return hasAngry ? 'angry' : 'frustrated';
+    // 1★
+    return 'angry';
+}
+
+// ─── Component ───────────────────────────────────────────────────────────────
 
 export function ReviewsAnalytics({ data }: ReviewsAnalyticsProps) {
-    const donutRef = useRef<HTMLCanvasElement>(null);
-    const chartRef = useRef<HTMLCanvasElement>(null);
-    const donutInstance = useRef<any>(null);
-    const chartInstance = useRef<any>(null);
-
-    const reviews = useMemo(() =>
-        Array.isArray(data) ? data : (data?.reviews ?? []), [data]);
+    const reviews = useMemo(
+        () => (Array.isArray(data) ? data : (data?.reviews ?? [])),
+        [data],
+    );
 
     const stats = useMemo(() => {
         if (!reviews.length) return null;
+
         const total = reviews.length;
         let sum = 0;
         const rc: Record<number, number> = { 5: 0, 4: 0, 3: 0, 2: 0, 1: 0 };
         let posC = 0, negC = 0, respC = 0, recentC = 0;
-        const emoCount: Record<string, number> = { joy: 0, satisfied: 0, neutral: 0, frustrated: 0, angry: 0 };
-        const topicCount: Record<string, number> = {};
-        TOPICS.forEach(t => topicCount[t.label] = 0);
+        const emoCount: Record<typeof EMOTION_DEFS[number]['key'], number> = {
+            joy: 0, satisfied: 0, neutral: 0, frustrated: 0, angry: 0,
+        };
         const monthCount: Record<string, number> = {};
         const ago = new Date();
         ago.setDate(ago.getDate() - 30);
@@ -72,126 +164,107 @@ export function ReviewsAnalytics({ data }: ReviewsAnalyticsProps) {
             rc[v]++;
             if (r.reviewReply?.comment) respC++;
             if (new Date(r.createTime) > ago) recentC++;
+
             const mon = r.createTime.slice(0, 7);
             monthCount[mon] = (monthCount[mon] || 0) + 1;
-            const txt = (r.comment || '').toLowerCase();
-            TOPICS.forEach(t => { if (t.keywords.some(k => txt.includes(k))) topicCount[t.label]++; });
 
-            let matched = false;
-            for (const [key, em] of Object.entries(EMOTIONS)) {
-                if (em.keywords.some(k => txt.includes(k))) { emoCount[key]++; matched = true; break; }
-            }
-            if (!matched) emoCount.neutral++;
+            const txt = r.comment || '';
+            const emotion = classifyEmotion(txt, v);
+            emoCount[emotion]++;
 
-            const pPos = [...EMOTIONS.joy.keywords, ...EMOTIONS.satisfied.keywords];
-            const pNeg = [...EMOTIONS.angry.keywords, ...EMOTIONS.frustrated.keywords];
-            let s = 0;
-            pPos.forEach(w => { if (txt.includes(w)) s++; });
-            pNeg.forEach(w => { if (txt.includes(w)) s--; });
-            if (s > 0) posC++; else if (s < 0) negC++;
+            if (emotion === 'joy' || emotion === 'satisfied') posC++;
+            else if (emotion === 'angry' || emotion === 'frustrated') negC++;
         });
 
         const avg = sum / total;
         const posP = Math.round((posC / total) * 100);
         const respP = Math.round((respC / total) * 100);
-        const healthScore = Math.round(((avg / 5) * 40) + (posP * 0.4) + ((respP / 100) * 20));
+        // Health score: avg rating (0–40) + positivity (0–40) + response rate (0–20)
+        const healthScore = Math.min(
+            100,
+            Math.round(((avg / 5) * 40) + (posP * 0.4) + ((respP / 100) * 20)),
+        );
 
-        return { total, avg, rc, posP, respP, recentC, emoCount, topicCount, monthCount, healthScore };
+        return { total, avg, rc, posP, negP: Math.round((negC / total) * 100), respP, recentC, emoCount, monthCount, healthScore };
     }, [reviews]);
 
-    useEffect(() => {
-        if (!stats || !donutRef.current || !chartRef.current) return;
-        const load = async () => {
-            if (!(window as any).Chart) {
-                await new Promise<void>(res => {
-                    const s = document.createElement('script');
-                    s.src = 'https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js';
-                    s.onload = () => res();
-                    document.head.appendChild(s);
-                });
-            }
-            const Chart = (window as any).Chart;
-            const isDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-            const gridColor = isDark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.06)';
-            const tickColor = isDark ? '#888780' : '#5F5E5A';
+    if (!stats) {
+        return (
+            <Card>
+                <CardContent className="py-10 text-center text-muted-foreground">
+                    No reviews yet
+                </CardContent>
+            </Card>
+        );
+    }
 
-            if (donutInstance.current) donutInstance.current.destroy();
-            donutInstance.current = new Chart(donutRef.current, {
-                type: 'doughnut',
-                data: {
-                    datasets: [{
-                        data: [stats.healthScore, 100 - stats.healthScore],
-                        backgroundColor: ['#10b981', isDark ? '#3f3f46' : '#e4e4e7'],
-                        borderWidth: 0,
-                        borderRadius: 4,
-                    }],
-                },
-                options: {
-                    cutout: '74%',
-                    responsive: false,
-                    plugins: { legend: { display: false }, tooltip: { enabled: false } },
-                },
-            });
+    const { total, avg, rc, posP, respP, recentC, emoCount, monthCount, healthScore } = stats;
 
-            const months = Object.keys(stats.monthCount).sort();
-            const monthLabels = months.map(m => {
-                const [y, mo] = m.split('-');
-                return new Date(+y, +mo - 1).toLocaleString('default', { month: 'short' });
-            });
+    // ── Monthly chart data ──
+    const monthKeys = Object.keys(monthCount).sort();
+    let lastYear = '';
+    const monthlyData = monthKeys.map(m => {
+        const [y, mo] = m.split('-');
+        const monthName = new Date(+y, +mo - 1).toLocaleString('default', { month: 'short' });
+        let label: string;
+        if (y !== lastYear) { lastYear = y; label = `${monthName} '${y.slice(2)}`; }
+        else label = monthName;
+        return { label, fullLabel: new Date(+y, +mo - 1).toLocaleString('default', { month: 'long', year: 'numeric' }), count: monthCount[m] };
+    });
 
-            if (chartInstance.current) chartInstance.current.destroy();
-            chartInstance.current = new Chart(chartRef.current, {
-                type: 'bar',
-                data: {
-                    labels: monthLabels,
-                    datasets: [{
-                        data: months.map(m => stats.monthCount[m]),
-                        backgroundColor: '#3b82f6',
-                        borderRadius: 4,
-                        borderSkipped: false,
-                    }],
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    plugins: { legend: { display: false }, tooltip: { callbacks: { label: (c: any) => `${c.raw} reviews` } } },
-                    scales: {
-                        x: { grid: { display: false }, ticks: { font: { size: 11 }, color: tickColor } },
-                        y: { grid: { color: gridColor }, ticks: { stepSize: 1, font: { size: 11 }, color: tickColor }, border: { display: false } },
-                    },
-                },
-            });
-        };
-        load();
-        return () => {
-            donutInstance.current?.destroy();
-            chartInstance.current?.destroy();
-        };
-    }, [stats]);
+    // ── Rating dist data ──
+    const ratingData = [5, 4, 3, 2, 1].map(n => ({
+        star: `${n}★`,
+        count: rc[n],
+        pct: total ? Math.round((rc[n] / total) * 100) : 0,
+        color: RATING_COLORS[n],
+    }));
 
-    if (!stats) return (
-        <Card>
-            <CardContent className="py-10 text-center text-muted-foreground">No reviews yet</CardContent>
-        </Card>
-    );
+    // ── Health radial data ──
+    const healthPct = healthScore; // already 0–100
+    const radialData = [{ name: 'health', value: healthPct, fill: '#10b981' }];
 
-    const { total, avg, rc, posP, respP, recentC, emoCount, topicCount, monthCount, healthScore } = stats;
-    const maxEmo = Math.max(...Object.values(emoCount));
+    // ── Health breakdown bars ──
+    const avgRatingScore = Math.round((avg / 5) * 40);
+    const positivityScore = Math.round(posP * 0.4);
+    const responseScore = Math.round((respP / 100) * 20);
 
     return (
         <div className="space-y-3 mb-4">
 
-            {/* Top metrics */}
+            {/* ── Top KPIs ── */}
             <div className="grid grid-cols-4 gap-3">
                 {[
                     {
-                        label: 'Avg rating', value: avg.toFixed(1),
-                        sub: <div className="flex gap-0.5 mt-1">{[1, 2, 3, 4, 5].map(i => <Star key={i} className={`w-3 h-3 ${i <= Math.round(avg) ? 'fill-amber-400 text-amber-400' : 'text-muted-foreground/30'}`} />)}</div>,
+                        label: 'Avg rating',
+                        value: avg.toFixed(1),
+                        sub: (
+                            <div className="flex gap-0.5 mt-1">
+                                {[1, 2, 3, 4, 5].map(i => (
+                                    <Star key={i} className={`w-3 h-3 ${i <= Math.round(avg) ? 'fill-amber-400 text-amber-400' : 'text-muted-foreground/30'}`} />
+                                ))}
+                            </div>
+                        ),
                         icon: <Star className="w-4 h-4 text-amber-400" />,
                     },
-                    { label: 'Total reviews', value: total, sub: <span className="text-xs text-muted-foreground">{recentC} last 30d</span>, icon: <MessageSquare className="w-4 h-4 text-blue-500" /> },
-                    { label: 'Positive', value: `${posP}%`, sub: <span className="text-xs text-muted-foreground">sentiment</span>, icon: <Smile className="w-4 h-4 text-emerald-500" /> },
-                    { label: 'Response rate', value: `${respP}%`, sub: <span className="text-xs text-muted-foreground">owner replies</span>, icon: <ThumbsUp className="w-4 h-4 text-purple-500" /> },
+                    {
+                        label: 'Total reviews',
+                        value: total,
+                        sub: <span className="text-xs text-muted-foreground">{recentC} last 30d</span>,
+                        icon: <MessageSquare className="w-4 h-4 text-blue-500" />,
+                    },
+                    {
+                        label: 'Positive',
+                        value: `${posP}%`,
+                        sub: <span className="text-xs text-muted-foreground">sentiment</span>,
+                        icon: <Smile className="w-4 h-4 text-emerald-500" />,
+                    },
+                    {
+                        label: 'Response rate',
+                        value: `${respP}%`,
+                        sub: <span className="text-xs text-muted-foreground">owner replies</span>,
+                        icon: <ThumbsUp className="w-4 h-4 text-purple-500" />,
+                    },
                 ].map(({ label, value, sub, icon }) => (
                     <Card key={label}>
                         <CardContent>
@@ -206,114 +279,119 @@ export function ReviewsAnalytics({ data }: ReviewsAnalyticsProps) {
                 ))}
             </div>
 
-            {/* Middle row */}
+            {/* ── Middle row ── */}
             <div className="grid grid-cols-2 gap-3">
 
-                {/* Emotional breakdown */}
-                <Card>
-                    <CardHeader>
-                        <CardTitle className="text-sm font-medium text-muted-foreground uppercase tracking-wide">
-                            Emotional breakdown
-                        </CardTitle>
-                    </CardHeader>
- <CardContent className="space-y-3">
-  {(Object.entries(EMOTIONS) as [
-    keyof typeof EMOTIONS,
-    typeof EMOTIONS[keyof typeof EMOTIONS]
-  ][]).map(([key, em]) => {
-    const Icon = EMOTION_ICONS[key];
-    const count = emoCount[key];
-    const pct = maxEmo ? Math.round((count / maxEmo) * 100) : 0;
 
-    const iconColor =
-      key === "joy"
-        ? "text-emerald-500"
-        : key === "satisfied"
-        ? "text-blue-500"
-        : key === "neutral"
-        ? "text-zinc-400"
-        : key === "frustrated"
-        ? "text-amber-500"
-        : "text-red-500";
-
-    return (
-      <div key={key} className="flex items-center gap-3">
-        <Icon className={`h-4 w-4 shrink-0 ${iconColor}`} />
-
-        <span className="w-24 text-sm font-medium">
-          {em.label}
-        </span>
-
-        <div className="flex-1">
-          <div className="h-2 overflow-hidden rounded-full bg-muted">
-            <div
-              className={`h-full rounded-full transition-all duration-500 ${em.color}`}
-              style={{ width: `${pct}%` }}
-            />
-          </div>
-        </div>
-
-        <div className="flex items-center gap-2 text-xs text-muted-foreground">
-          <span>{count}</span>
-          <span className="w-8 text-right">{pct}%</span>
-        </div>
-      </div>
-    );
-  })}
-</CardContent>
-                </Card>
-
-                {/* Right column: rating dist + health score */}
+                {/* Right column */}
                 <div className="space-y-3">
 
                     {/* Rating distribution */}
                     <Card>
                         <CardHeader>
-                            <CardTitle className="text-sm font-medium text-muted-foreground uppercase tracking-wide">Rating distribution</CardTitle>
+                            <CardTitle className="text-sm font-medium text-muted-foreground uppercase tracking-wide">
+                                Rating distribution
+                            </CardTitle>
                         </CardHeader>
-                        <CardContent className="space-y-2">
-                            {[5, 4, 3, 2, 1].map(n => {
-                                const count = rc[n];
-                                const pct = total ? Math.round((count / total) * 100) : 0;
-                                return (
-                                    <div key={n} className="flex items-center gap-2">
-                                        <span className="text-xs text-muted-foreground w-5 text-right">{n}★</span>
-                                        <div className="flex-1 h-2 rounded-full bg-muted overflow-hidden">
-                                            <div className={`h-full rounded-full ${RATING_COLORS[n]}`} style={{ width: `${pct}%` }} />
-                                        </div>
-                                        <span className="text-xs text-muted-foreground w-4 text-right">{count}</span>
-                                    </div>
-                                );
-                            })}
+                        <CardContent>
+                            <ChartContainer
+                                config={{
+                                    count: { label: 'Reviews' },
+                                }}
+                                className="h-[120px] w-full"
+                            >
+                                <BarChart
+                                    data={ratingData}
+                                    layout="vertical"
+                                    margin={{ top: 0, right: 40, bottom: 0, left: 8 }}
+                                    barCategoryGap="20%"
+                                >
+                                    <XAxis type="number" hide />
+                                    <YAxis
+                                        type="category"
+                                        dataKey="star"
+                                        width={24}
+                                        tick={{ fontSize: 11 }}
+                                        tickLine={false}
+                                        axisLine={false}
+                                    />
+                                    <ChartTooltip
+                                        content={
+                                            <ChartTooltipContent
+                                                formatter={(value) => [`${value} reviews`, '']}
+                                                hideLabel
+                                            />
+                                        }
+                                    />
+                                    <Bar dataKey="count" radius={3} label={{ position: 'right', fontSize: 11, fill: 'hsl(var(--muted-foreground))' }}>
+                                        {ratingData.map((entry) => (
+                                            <Cell key={entry.star} fill={entry.color} />
+                                        ))}
+                                    </Bar>
+                                </BarChart>
+                            </ChartContainer>
                         </CardContent>
                     </Card>
 
-                    {/* Health score */}
+                </div>
+                <div className="space-y-3">
+
+                    {/* Sentiment health */}
                     <Card>
                         <CardHeader>
-                            <CardTitle className="text-sm font-medium text-muted-foreground uppercase tracking-wide">Sentiment health</CardTitle>
+                            <CardTitle className="text-sm font-medium text-muted-foreground uppercase tracking-wide">
+                                Sentiment health
+                            </CardTitle>
                         </CardHeader>
                         <CardContent className="px-5 pb-4">
                             <div className="flex items-center gap-4">
-                                <div className="relative w-[72px] h-[72px] flex-shrink-0">
-                                    <canvas ref={donutRef} width={72} height={72} />
-                                    <div className="absolute inset-0 flex flex-col items-center justify-center">
+                                {/* Radial gauge */}
+                                <div className="relative flex-shrink-0 w-[72px] h-[72px]">
+                                    <ChartContainer
+                                        config={{ health: { label: 'Score', color: '#10b981' } }}
+                                        className="w-[72px] h-[72px]"
+                                    >
+                                        <RadialBarChart
+                                            width={72}
+                                            height={72}
+                                            data={radialData}
+                                            innerRadius={28}
+                                            outerRadius={36}
+                                            startAngle={90}
+                                            endAngle={-270}
+                                            barSize={8}
+                                        >
+                                            <PolarAngleAxis type="number" domain={[0, 100]} tick={false} />
+                                            <RadialBar dataKey="value" background={{ fill: 'hsl(var(--muted))' }} cornerRadius={4} />
+                                        </RadialBarChart>
+                                    </ChartContainer>
+                                    <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
                                         <span className="text-lg font-semibold leading-none">{healthScore}</span>
                                         <span className="text-[10px] text-muted-foreground uppercase tracking-wide">score</span>
                                     </div>
                                 </div>
+
+                                {/* Sub-bars */}
                                 <div className="flex-1 space-y-2">
                                     {[
-                                        { label: 'Avg rating', val: Math.round((avg / 5) * 40), max: 40, color: 'bg-blue-500' },
-                                        { label: 'Positivity', val: Math.round(posP * 0.4), max: 40, color: 'bg-emerald-500' },
-                                        { label: 'Responses', val: Math.round((respP / 100) * 20), max: 20, color: 'bg-purple-500' },
+                                        { label: 'Avg rating', val: avgRatingScore, max: 40, color: '#3b82f6' },
+                                        { label: 'Positivity', val: positivityScore, max: 40, color: '#10b981' },
+                                        { label: 'Responses', val: responseScore, max: 20, color: '#a855f7' },
                                     ].map(item => (
                                         <div key={item.label} className="flex items-center gap-2">
                                             <span className="text-xs text-muted-foreground w-16 flex-shrink-0">{item.label}</span>
                                             <div className="flex-1 h-1.5 rounded-full bg-muted overflow-hidden">
-                                                <div className={`h-full rounded-full ${item.color}`} style={{ width: `${Math.round((item.val / item.max) * 100)}%` }} />
+                                                <div
+                                                    className="h-full rounded-full transition-all duration-500"
+                                                    style={{
+                                                        width: `${Math.round((item.val / item.max) * 100)}%`,
+                                                        backgroundColor: item.color,
+                                                    }}
+                                                />
                                             </div>
-                                            <span className="text-xs text-muted-foreground w-8 text-right">{item.val}/{item.max}</span>
+                                            <span className="text-xs text-muted-foreground w-10 text-right">
+                                                {item.val}/{item.max}
+                                            </span>
                                         </div>
                                     ))}
                                 </div>
@@ -323,17 +401,46 @@ export function ReviewsAnalytics({ data }: ReviewsAnalyticsProps) {
                 </div>
             </div>
 
-
-
-            {/* Monthly volume */}
+            {/* ── Monthly volume ── */}
             <Card>
                 <CardHeader>
-                    <CardTitle className="text-sm font-medium text-muted-foreground uppercase tracking-wide">Monthly review volume</CardTitle>
+                    <CardTitle className="text-sm font-medium text-muted-foreground uppercase tracking-wide">
+                        Monthly review volume
+                    </CardTitle>
                 </CardHeader>
                 <CardContent className="px-5 pb-5">
-                    <div className="relative w-full h-28">
-                        <canvas ref={chartRef} />
-                    </div>
+                    <ChartContainer
+                        config={{
+                            count: { label: 'Reviews', color: '#3b82f6' },
+                        }}
+                        className="h-28 w-full"
+                    >
+                        <BarChart data={monthlyData} margin={{ top: 4, right: 4, bottom: 0, left: -20 }} barCategoryGap="30%">
+                            <CartesianGrid vertical={false} stroke="hsl(var(--border))" strokeDasharray="" strokeOpacity={0.5} />
+                            <XAxis
+                                dataKey="label"
+                                tick={{ fontSize: 11, fill: 'hsl(var(--muted-foreground))' }}
+                                tickLine={false}
+                                axisLine={false}
+                            />
+                            <YAxis
+                                tick={{ fontSize: 11, fill: 'hsl(var(--muted-foreground))' }}
+                                tickLine={false}
+                                axisLine={false}
+                                allowDecimals={false}
+                            />
+                            <ChartTooltip
+                                content={
+                                    <ChartTooltipContent
+                                        labelKey="fullLabel"
+                                        formatter={(value) => [`${value} reviews`, '']}
+                                        hideLabel={false}
+                                    />
+                                }
+                            />
+                            <Bar dataKey="count" fill="#3b82f6" radius={[3, 3, 0, 0]} />
+                        </BarChart>
+                    </ChartContainer>
                 </CardContent>
             </Card>
 

@@ -198,7 +198,7 @@ export function getMonthKeyFormated(date: Date = new Date()): string {
 }
 
 // 🎛️ CONFIGURATION: Set to true to assign ALL available tasks (Debug)
-const ALLOW_ALL_TASKS = true;
+const ALLOW_ALL_TASKS = false;
 
 export async function POST(req: Request) {
   try {
@@ -217,6 +217,12 @@ export async function POST(req: Request) {
       )
     }
 
+    const dbLocation = await getLocationById(locationId)
+    if (!dbLocation) {
+      return NextResponse.json({ error: "Location not found" }, { status: 404 })
+    }
+    const cleanLocationId = cleanGmbLocationId(dbLocation.location_id)
+
     if (TASK_TEMPLATES.length === 0) {
       return NextResponse.json(
         { error: "No task templates available" },
@@ -226,7 +232,6 @@ export async function POST(req: Request) {
 
     const currentWeek = getWeekNumber(new Date())
     const currentMonth = getMonthKey(new Date())
-    const cleanLocationId = locationId?.replace(/^locations\//, "") || placeId
 
     // Initialize gamification early
     await initializeGamification(user.id, cleanLocationId, placeId)

@@ -24,8 +24,8 @@ import {
 import { useGMBStore } from "@/store/gmbStore"
 import { cn } from "@/lib/utils"
 import { UsageGate } from "../usage-gate"
-import { UsageBadge } from "../usage-badge"
 import { Skeleton } from "../ui/skeleton"
+import { ScrollArea } from "../ui/scroll-area"
 
 const DynamicMap = dynamic(() => import("./map-component"), {
   ssr: false,
@@ -255,7 +255,7 @@ export default function GMBLocationMapInterface() {
       .map((x) => x.result)
   }, [gridData])
 
- const fetchLocations = async () => {
+  const fetchLocations = async () => {
     if (!accessToken) { setError("Access token missing. Please re-authenticate."); setLoadingLocations(false); return }
     try {
       setLoadingLocations(true)
@@ -273,7 +273,7 @@ export default function GMBLocationMapInterface() {
     } finally {
       setLoadingLocations(false)
     }
-}
+  }
 
   const fetchLocationDetails = async (locationName: string) => {
     if (!accessToken || !gmbAccountId) { setError("Missing credentials. Please re-authenticate."); return }
@@ -406,7 +406,7 @@ export default function GMBLocationMapInterface() {
 
 
   return (
-    <div className="flex flex-col h-[100dvh] bg-background">
+    <div className="flex flex-col h-full bg-background overflow-hidden">
 
       {/* ── Top Bar ─────────────────────────────────────────────────────────── */}
       <div className="border-b border-border bg-card shrink-0">
@@ -628,7 +628,8 @@ export default function GMBLocationMapInterface() {
           </div>
 
           {/* Competitor list */}
-          <div className="flex-1 overflow-y-auto text-sm">
+          <div className="overflow-y-auto" style={{ maxHeight: 'calc(100vh - 360px)' }}>
+
             <div className="sticky top-0 backdrop-blur-sm px-3 py-2 border-b border-border z-10 bg-primary">
               <span className="text-[12px] font-semibold text-white uppercase tracking-wide">
                 Competitors
@@ -636,80 +637,93 @@ export default function GMBLocationMapInterface() {
             </div>
 
             {gridData?.competitors?.length > 0 ? (
-              [...gridData.competitors]
-                .sort((a, b) => b.shareOfVoice - a.shareOfVoice)
-                .map((comp) => {
-                  const isYou =
-                    comp.id === selectedLocationObj?.location_id ||
-                    comp.name?.toLowerCase().includes(
-                      selectedLocationObj?.displayName?.toLowerCase() || ""
-                    );
+              <div className="pb-6">
+                {[...gridData.competitors]
+                  .sort((a, b) => b.shareOfVoice - a.shareOfVoice)
+                  .map((comp, idx) => {
+                    const isYou =
+                      comp.id === selectedLocationObj?.location_id ||
+                      comp.name?.toLowerCase().includes(
+                        selectedLocationObj?.displayName?.toLowerCase() || ""
+                      );
 
-                  let badge = "W";
-                  let badgeColor = "text-red-500";
+                    let badge = "W";
+                    let badgeClasses = "bg-red-500 text-white";
+                    let barColor = "bg-red-500";
 
-                  if (comp.shareOfVoice >= 70) {
-                    badge = "D";
-                    badgeColor = "text-green-600";
-                  } else if (comp.shareOfVoice >= 40) {
-                    badge = "S";
-                    badgeColor = "text-yellow-600";
-                  }
+                    if (comp.shareOfVoice >= 70) {
+                      badge = "D";
+                      badgeClasses = "bg-green-600 text-white";
+                      barColor = "bg-green-600";
+                    } else if (comp.shareOfVoice >= 40) {
+                      badge = "S";
+                      badgeClasses = "bg-yellow-500 text-white";
+                      barColor = "bg-yellow-500";
+                    }
 
-                  return (
-                    <div
-                      key={comp.id}
-                      className="px-3 py-2 border-b border-border hover:bg-muted/40 transition"
-                    >
-                      {/* Row 1 */}
-                      <div className="flex items-center justify-between gap-2">
-                        <div className="flex-1 truncate">
-                          <span className="font-medium truncate">
-                            {comp.name}
-                          </span>
+                    return (
+                      <div
+                        key={comp.id}
+                        className={`relative px-3 py-3 border-b border-border transition ${isYou ? "bg-background" : "hover:bg-muted/40"
+                          }`}
+                      >
+                        {isYou && (
+                          <span className="absolute left-0 top-0 bottom-0 w-[3px] bg-primary" />
+                        )}
 
-                          {isYou && (
-                            <span className="ml-1 text-[10px] text-blue-500">
-                              (You)
+                        {/* Row 1 */}
+                        <div className="flex items-center justify-between gap-2">
+                          <div className="flex-1 flex items-center gap-1.5 min-w-0">
+                            <span className="text-[12px] font-semibold text-muted-foreground w-4 shrink-0">
+                              {idx + 1}
                             </span>
-                          )}
+                            <span className="font-semibold text-sm truncate">
+                              {comp.name}
+                            </span>
+                          </div>
+
+                          <div className="flex items-center gap-2 shrink-0">
+                            <span
+                              className={`font-bold w-5 h-5 flex items-center justify-center rounded-full text-[10px] shadow-sm ${badgeClasses}`}
+                            >
+                              {badge}
+                            </span>
+
+                            <span className="font-bold text-sm text-foreground">
+                              #{comp.averageRank}
+                            </span>
+                          </div>
                         </div>
 
-                        <div className="flex items-center gap-2 text-[11px]">
-                          <span className={`font-bold ${badgeColor}`}>
-                            {badge}
+                        {/* Row 2 */}
+                        <div className="flex items-center justify-between text-[11px] text-muted-foreground mt-1.5">
+                          <span className="font-semibold text-foreground/80">
+                            {comp.shareOfVoice}% SOV
                           </span>
 
-                          <span className="font-semibold">
-                            #{comp.averageRank}
+                          <span className="tabular-nums">
+                            G:{comp.good} A:{comp.average} O:{comp.outOfTop20}
                           </span>
                         </div>
-                      </div>
 
-                      {/* Row 2 */}
-                      <div className="flex items-center justify-between text-[10px] text-muted-foreground mt-1">
-                        <span>{comp.shareOfVoice}% SOV</span>
-
-                        <span>
-                          G:{comp.good} A:{comp.average} O:{comp.outOfTop20}
-                        </span>
+                        {/* Progress */}
+                        <div className="h-2 bg-muted rounded-full mt-1.5 overflow-hidden">
+                          <div
+                            className={`h-full rounded-full transition-all ${barColor}`}
+                            style={{ width: `${comp.shareOfVoice}%` }}
+                          />
+                        </div>
                       </div>
-
-                      {/* Progress */}
-                      <div className="h-1 bg-muted rounded-full mt-1 overflow-hidden">
-                        <div
-                          className="h-full bg-primary"
-                          style={{ width: `${comp.shareOfVoice}%` }}
-                        />
-                      </div>
-                    </div>
-                  );
-                })
+                    );
+                  })}
+              </div>
             ) : (
               <div className="flex items-center justify-center py-10 text-xs text-muted-foreground">
                 Run a scan to see competitors
               </div>
             )}
+
+
           </div>
 
 

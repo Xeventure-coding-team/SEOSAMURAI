@@ -3,133 +3,176 @@
 import { useUsage, UsageMetric, UsageStatus } from "@/lib/use-usage";
 import { useSlot, SlotResource } from "@/lib/use-slot";
 import { cn } from "@/lib/utils";
-import { TrendingUp, Clock, Circle } from "lucide-react";
-import { ReactNode } from "react";
 
 // ─── Types ─────────────────────────────────────────────────────────────────────
 
-type UsageBadgeProps = 
+type UsageBadgeProps =
   | { metric: UsageMetric; label: string; className?: string; compact?: boolean }
   | { slot: SlotResource; label: string; className?: string; compact?: boolean };
 
-interface StatusStyle {
-  dotColor: string;
-  textColor: string;
-  message: string;
+// Only treat usage as "warning" once it crosses this percentage of the limit.
+const NEAR_LIMIT_PCT = 98;
+
+function statusFromPct(current: number, limit: number, blocked: boolean): UsageStatus {
+  if (blocked) return "exceeded";
+  const pct = limit > 0 ? (current / limit) * 100 : 0;
+  return pct >= NEAR_LIMIT_PCT ? "warning" : "ok";
 }
 
-// ─── Status styles — modern minimal ────────────────────────────────────────────
+// ─── Status accents — used sparingly, only the dot + number carry color ───────
 
-const STATUS_STYLES: Record<UsageStatus, StatusStyle> = {
-  ok: {
-    dotColor: "bg-emerald-400",
-    textColor: "text-emerald-600 dark:text-emerald-400",
-    message: "Good",
-  },
-  warning: {
-    dotColor: "bg-amber-400",
-    textColor: "text-amber-600 dark:text-amber-400",
-    message: "Getting there",
-  },
-  exceeded: {
-    dotColor: "bg-zinc-400",
-    textColor: "text-zinc-500 dark:text-zinc-400",
-    message: "Maxed",
-  },
+const STATUS_DOT: Record<UsageStatus, string> = {
+  ok: "bg-foreground/30",
+  warning: "bg-warning",
+  exceeded: "bg-destructive",
 };
 
-// ─── Components ────────────────────────────────────────────────────────────────
+const STATUS_TEXT: Record<UsageStatus, string> = {
+  ok: "text-foreground",
+  warning: "text-warning",
+  exceeded: "text-destructive",
+};
+
+// ─── Shell ──────────────────────────────────────────────────────────────────────
+// Vercel-style: 1px border, small radius (not pill), tight padding, no shadow.
+
+function Shell({
+  className,
+  compact,
+  children,
+}: {
+  className?: string;
+  compact?: boolean;
+  children: React.ReactNode;
+}) {
+  return (
+    <div
+      className={cn(
+        "inline-flex items-center gap-2 rounded-md border border-border bg-background",
+        "transition-colors duration-150",
+        compact ? "h-6 px-2" : "h-7 px-2.5",
+        className
+      )}
+    >
+      {children}
+    </div>
+  );
+}
+
+// ─── Loading ────────────────────────────────────────────────────────────────────
 
 const LoadingBadge = ({ className, compact }: { className?: string; compact?: boolean }) => (
-  <div className={cn(
-    "animate-pulse rounded-full bg-gradient-to-r from-zinc-100 to-zinc-50 dark:from-zinc-800 dark:to-zinc-900",
-    compact ? "h-6 w-24" : "h-7 w-32",
-    className
-  )} />
+  <Shell className={cn("border-border/60", className)} compact={compact}>
+    <span className="h-1.5 w-1.5 rounded-full bg-muted animate-pulse" />
+    <span
+      className={cn(
+        "h-2.5 rounded-sm bg-muted animate-pulse",
+        compact ? "w-12" : "w-16"
+      )}
+    />
+  </Shell>
 );
 
-const FlatBadge = ({ label, message, className, compact }: { label: string; message: string; className?: string; compact?: boolean }) => (
-  <div className={cn(
-    "inline-flex items-center gap-1.5 rounded-full bg-zinc-50 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800",
-    compact ? "px-2.5 py-0.5" : "px-3 py-1",
-    className
-  )}>
-    <Circle className="w-1.5 h-1.5 fill-zinc-300 dark:fill-zinc-700 text-zinc-300 dark:text-zinc-700" />
-    <span className={cn(
-      "font-mono text-[11px] font-medium tracking-tight text-zinc-500 dark:text-zinc-500",
-      compact && "text-[10px]"
-    )}>
+// ─── Flat (no usable limit / error) ───────────────────────────────────────────
+
+const FlatBadge = ({
+  label,
+  message,
+  className,
+  compact,
+}: {
+  label: string;
+  message: string;
+  className?: string;
+  compact?: boolean;
+}) => (
+  <Shell className={className} compact={compact}>
+    <span
+      className={cn(
+        "font-mono uppercase tracking-wide text-muted-foreground",
+        compact ? "text-[10px]" : "text-[11px]"
+      )}
+    >
       {label}
     </span>
-    <span className={cn(
-      "text-[11px] text-zinc-400 dark:text-zinc-600",
-      compact && "text-[10px]"
-    )}>
+    <span className={cn("text-muted-foreground/60", compact ? "text-[10px]" : "text-[11px]")}>
       {message}
     </span>
-  </div>
+  </Shell>
 );
 
-const SegmentedBadge = ({
-  label, current, limit, status, className, compact
+// ─── Badge ──────────────────────────────────────────────────────────────────────
+// Default look is near-monochrome. The progress bar and numerals only pick up
+// color once status leaves "ok" — i.e. right at the limit, not throughout.
+
+const Badge = ({
+  label,
+  current,
+  limit,
+  status,
+  className,
+  compact,
 }: {
-  label: string; current: number; limit: number; status: UsageStatus; className?: string; compact?: boolean;
+  label: string;
+  current: number;
+  limit: number;
+  status: UsageStatus;
+  className?: string;
+  compact?: boolean;
 }) => {
-  const s = STATUS_STYLES[status];
-  const percent = (current / limit) * 100;
-  
+  const percent = limit > 0 ? Math.min((current / limit) * 100, 100) : 0;
+  const isAttention = status !== "ok";
+
   return (
-    <div className={cn(
-      "group relative inline-flex items-center gap-2 rounded-full bg-white dark:bg-black border border-zinc-200 dark:border-zinc-800 shadow-sm hover:shadow-md transition-all duration-200",
-      compact ? "pl-2 pr-2.5 py-0.5" : "pl-2.5 pr-3 py-1",
-      className
-    )}>
-      {/* Animated progress ring */}
-      <div className="relative">
-        <Circle className={cn(
-          "w-2 h-2 transition-all duration-300",
-          s.dotColor,
-          status === "exceeded" && "opacity-40"
-        )} />
+    <Shell className={className} compact={compact}>
+      {/* dot */}
+      <span className="relative flex h-1.5 w-1.5 shrink-0">
+        <span className={cn("h-1.5 w-1.5 rounded-full", STATUS_DOT[status])} />
         {status === "warning" && (
-          <div className="absolute inset-0 animate-ping w-2 h-2 rounded-full bg-amber-400 opacity-40" />
+          <span className="absolute inset-0 rounded-full bg-warning animate-ping opacity-50" />
         )}
-      </div>
-      
-      {/* Label */}
-      <span className={cn(
-        "font-mono text-[11px] font-medium tracking-tight text-zinc-600 dark:text-zinc-400",
-        compact && "text-[10px]"
-      )}>
+      </span>
+
+      {/* label */}
+      <span
+        className={cn(
+          "font-mono uppercase tracking-wide text-muted-foreground",
+          compact ? "text-[10px]" : "text-[11px]"
+        )}
+      >
         {label}
       </span>
-      
-      {/* Usage bar (modern touch) */}
-      <div className="w-8 h-1 bg-zinc-100 dark:bg-zinc-800 rounded-full overflow-hidden">
-        <div 
-          className={cn("h-full transition-all duration-500 ease-out rounded-full", s.dotColor)}
-          style={{ width: `${Math.min(percent, 100)}%` }}
+
+      {/* divider */}
+      <span className="h-3 w-px bg-border" />
+
+      {/* progress bar — only renders visibly once near/at limit */}
+      <div
+        className={cn(
+          "h-1 rounded-full overflow-hidden bg-muted",
+          compact ? "w-6" : "w-8"
+        )}
+      >
+        <div
+          className={cn(
+            "h-full rounded-full transition-all duration-500 ease-out",
+            isAttention ? STATUS_DOT[status] : "bg-foreground/40"
+          )}
+          style={{ width: `${percent}%` }}
         />
       </div>
-      
-      {/* Numbers */}
-      <span className={cn(
-        "font-mono tabular-nums text-[11px] font-medium",
-        s.textColor,
-        compact && "text-[10px]"
-      )}>
+
+      {/* numerals */}
+      <span
+        className={cn(
+          "font-mono tabular-nums font-medium",
+          STATUS_TEXT[status],
+          compact ? "text-[10px]" : "text-[11px]"
+        )}
+      >
         {current}/{limit}
       </span>
-      
-      {/* Status message - subtle */}
-      <span className={cn(
-        "text-[11px] text-zinc-400 dark:text-zinc-600 transition-opacity",
-        compact && "hidden sm:inline",
-        !compact && "hidden md:inline"
-      )}>
-        {s.message}
-      </span>
-    </div>
+    </Shell>
   );
 };
 
@@ -143,26 +186,52 @@ export function UsageBadge(props: UsageBadgeProps) {
     const { data, isLoading, canAdd } = useSlot(props.slot);
     if (isLoading && !data) return <LoadingBadge className={className} compact={compact} />;
     if (!data) return null;
-    if (data.limit === 0) return <FlatBadge label={label} message="Not included" className={className} compact={compact} />;
-    
-    const status: UsageStatus = !canAdd ? "exceeded" : data.remaining <= 2 ? "warning" : "ok";
-    return <SegmentedBadge label={label} current={data.current} limit={data.limit} status={status} className={className} compact={compact} />;
+    if (data.limit === 0)
+      return (
+        <FlatBadge label={label} message="Not included" className={className} compact={compact} />
+      );
+
+    const status = statusFromPct(data.current, data.limit, !canAdd);
+    return (
+      <Badge
+        label={label}
+        current={data.current}
+        limit={data.limit}
+        status={status}
+        className={className}
+        compact={compact}
+      />
+    );
   }
 
   // Metric variant
-  const { data, isLoading, statusFor, error } = useUsage();
+  const { data, isLoading, error, canUse } = useUsage();
   if (isLoading && !data && !error) return <LoadingBadge className={className} compact={compact} />;
-  if (error || !data?.plan) return <FlatBadge label={label} message={error ? "Unavailable" : "No plan"} className={className} compact={compact} />;
-  
+  if (error || !data?.plan)
+    return (
+      <FlatBadge
+        label={label}
+        message={error ? "Unavailable" : "No plan"}
+        className={className}
+        compact={compact}
+      />
+    );
+
   const limit = data.limits[props.metric];
-  if (limit === 0) return <FlatBadge label={label} message="Not included" className={className} compact={compact} />;
-  
-  return <SegmentedBadge 
-    label={label} 
-    current={data.used[props.metric]} 
-    limit={limit} 
-    status={statusFor(props.metric)} 
-    className={className} 
-    compact={compact}
-  />;
+  if (limit === 0)
+    return <FlatBadge label={label} message="Not included" className={className} compact={compact} />;
+
+  const current = data.used[props.metric];
+  const status = statusFromPct(current, limit, !canUse(props.metric));
+
+  return (
+    <Badge
+      label={label}
+      current={current}
+      limit={limit}
+      status={status}
+      className={className}
+      compact={compact}
+    />
+  );
 }

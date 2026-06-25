@@ -95,62 +95,101 @@ export function UsageRemaining({
   const shownSlots: SlotResource[] = slots ?? [];
 
   return (
-    <div className={cn("flex flex-col", compact ? "gap-3" : "gap-4", className)}>
-      {title && <p className="text-xs text-white">{title}</p>}
+    <div
+      className={cn(
+        "flex flex-col",
+        compact ? "gap-4" : "gap-5",
+        className
+      )}
+    >
+      {title && (
+        <p className="text-sm font-medium text-foreground">
+          {title}
+        </p>
+      )}
 
       {!showExpiry && (
         <>
           {showBadge && (
             <div className="flex items-center justify-between">
-              <span className="text-xs font-semibold uppercase tracking-widest text-white">Usage</span>
-              <Link href="/app/usages" className="text-xs underline">View Usages</Link>
+              <h3 className="text-sm font-semibold text-foreground">
+                Usage
+              </h3>
+
+              <Link
+                href="/app/usages"
+                className="text-xs text-muted-foreground transition-colors hover:text-foreground"
+              >
+                View all →
+              </Link>
             </div>
           )}
 
-          {/* Monthly metrics */}
-          {isLoading || !data
-            ? shownMetrics.map((m) => <SkeletonRow key={m} />)
-            : shownMetrics.map((m) => (
-              <BarRow key={m} label={METRIC_CONFIG[m].label} used={data.used[m]} limit={data.limits[m]} />
-            ))
-          }
+          {/* Metrics */}
+          <div className="space-y-4">
+            {isLoading || !data
+              ? shownMetrics.map((m) => <SkeletonRow key={m} />)
+              : shownMetrics.map((m) => (
+                  <BarRow
+                    key={m}
+                    label={METRIC_CONFIG[m].label}
+                    used={data.used[m]}
+                    limit={data.limits[m]}
+                  />
+                ))}
+          </div>
 
-          {/* Lifetime slots */}
-          {shownSlots.map((s) => <SlotRow key={s} slot={s} />)}
+          {/* Slots */}
+          {shownSlots.length > 0 && (
+            <div className="space-y-3 border-t pt-4">
+              <div className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
+                Lifetime Resources
+              </div>
+
+              {shownSlots.map((s) => (
+                <SlotRow key={s} slot={s} />
+              ))}
+            </div>
+          )}
         </>
       )}
 
-      {showExpiry && !isLoading && (
-        <>
-          {data && data.plan ? (
-            <div className="flex items-center gap-1.5 text-md text-muted-foreground">
-              <span>Plan renews</span>
-              <span className="font-medium text-foreground">
-                {new Date(data.periodEnd).toLocaleDateString("en-US", {
-                  month: "short", day: "numeric", year: "numeric",
-                })}
+      {showExpiry &&
+        !isLoading &&
+        (data && data.plan ? (
+          <div className="flex items-center gap-2 text-sm">
+            <span className="text-muted-foreground">
+              Plan renews on
+            </span>
+
+            <span className="font-medium text-foreground">
+              {new Date(data.periodEnd).toLocaleDateString("en-US", {
+                month: "short",
+                day: "numeric",
+                year: "numeric",
+              })}
+            </span>
+
+            {data.periodStale && (
+              <span className="text-xs text-amber-500">
+                (may have renewed)
               </span>
-              {data.periodStale && (
-                <span className="text-amber-500">(may have renewed)</span>
-              )}
-            </div>
-          ) : (
-            <Link
-              href="/app/settings/billing"
-              className="flex items-center gap-1.5 text-xs text-amber-600 dark:text-amber-400 hover:underline"
-            >
-              <span>No active plan</span>
-              <span className="font-medium underline underline-offset-2">Upgrade →</span>
-            </Link>
-          )}
-        </>
-      )}
-
+            )}
+          </div>
+        ) : (
+          <Link
+            href="/app/settings/billing"
+            className="inline-flex items-center gap-1 text-sm font-medium text-primary transition-colors hover:text-primary/80"
+          >
+            No active plan
+            <span>•</span>
+            <span>Upgrade →</span>
+          </Link>
+        ))}
 
       {showExpiry && isLoading && (
-        <div className="h-3 w-36 rounded animate-pulse bg-muted" />
+        <div className="h-4 w-40 animate-pulse rounded bg-muted" />
       )}
-
     </div>
   );
 }

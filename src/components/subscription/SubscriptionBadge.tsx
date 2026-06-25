@@ -166,13 +166,13 @@ export const SubscriptionBadge = forwardRef<HTMLDivElement, SubscriptionBadgePro
       return (
         <span
           className={cn(
-            "inline-flex items-center gap-1.5 rounded-md border border-red-200 bg-red-50 px-2.5 py-1 text-xs font-medium text-red-700 dark:border-red-800 dark:bg-red-950/40 dark:text-red-300",
+            "inline-flex items-center gap-1.5 rounded-md border border-red-200 bg-red-50 px-2.5 py-1 text-xs font-medium text-red-700 dark:border-red-800/50 dark:bg-red-950/20 dark:text-red-300",
             className
           )}
           role="status"
           aria-label="Failed to load subscription data"
         >
-          <AlertCircle className="h-3 w-3" />
+          <AlertCircle className="h-3.5 w-3.5" />
           Error loading plan
         </span>
       );
@@ -223,10 +223,10 @@ export const SubscriptionBadge = forwardRef<HTMLDivElement, SubscriptionBadgePro
           {/* Plan Badge */}
           <span
             className={cn(
-              "inline-flex items-center gap-1.5 rounded-md border font-medium tracking-wide",
+              "inline-flex items-center gap-1.5 rounded-md border px-2.5 py-1 text-xs font-medium transition-colors",
               sizeStyles.badge,
               config.class,
-              interactive && cn("cursor-pointer transition-colors", config.hoverClass)
+              interactive && cn("cursor-pointer hover:opacity-80", config.hoverClass)
             )}
           >
             {badgeContent}
@@ -234,11 +234,11 @@ export const SubscriptionBadge = forwardRef<HTMLDivElement, SubscriptionBadgePro
 
           {/* Expiry Info */}
           {expiryDate && (
-            <div className="flex items-center gap-1.5 text-muted-foreground">
+            <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
               <CalendarClock className={sizeStyles.calendar} aria-hidden="true" />
-              <span className={cn("tabular-nums", sizeStyles.text)}>
+              <span className="tabular-nums">
                 Expires{" "}
-                <time dateTime={expiryDate.toISOString()} className="font-semibold text-foreground">
+                <time dateTime={expiryDate.toISOString()} className="font-medium text-foreground">
                   {expiryDate.toLocaleDateString("en-US", {
                     month: "short",
                     day: "numeric",
@@ -246,8 +246,8 @@ export const SubscriptionBadge = forwardRef<HTMLDivElement, SubscriptionBadgePro
                   })}
                 </time>
                 {isStale && (
-                  <span className="ml-1 text-amber-500" role="status">
-                    (renewal pending)
+                  <span className="ml-1.5 inline-flex items-center gap-1 rounded bg-amber-100 px-1.5 py-0.5 text-[10px] font-medium text-amber-700 dark:bg-amber-900/30 dark:text-amber-400">
+                    pending
                   </span>
                 )}
               </span>
@@ -276,19 +276,17 @@ export const SubscriptionBadge = forwardRef<HTMLDivElement, SubscriptionBadgePro
           {/* Plan Badge */}
           <span
             className={cn(
-              "inline-flex items-center gap-1.5 rounded-md border font-medium tracking-wide",
+              "inline-flex items-center gap-1.5 rounded-md border px-2.5 py-1 text-xs font-medium transition-colors",
               sizeStyles.badge,
               config.class,
-              interactive && cn("cursor-pointer transition-colors", config.hoverClass)
+              interactive && cn("cursor-pointer hover:opacity-80", config.hoverClass)
             )}
           >
             {badgeContent}
           </span>
 
           {/* Metrics Section */}
-          <div className="space-y-2">
-            <div className="h-px bg-border" />
-
+          <div className="space-y-2 rounded-md border bg-muted/30 p-3">
             {/* Usage Bar */}
             <div className="space-y-1">
               <div className="flex justify-between text-xs">
@@ -303,10 +301,10 @@ export const SubscriptionBadge = forwardRef<HTMLDivElement, SubscriptionBadgePro
                   {Math.round(usagePercentage)}%
                 </span>
               </div>
-              <div className="h-1.5 w-full overflow-hidden rounded-md bg-secondary">
+              <div className="h-1.5 w-full overflow-hidden rounded-full bg-muted">
                 <div
                   className={cn(
-                    "h-full transition-all duration-300",
+                    "h-full rounded-full transition-all duration-300",
                     isOverLimit
                       ? "bg-red-500"
                       : isNearLimit
@@ -323,28 +321,23 @@ export const SubscriptionBadge = forwardRef<HTMLDivElement, SubscriptionBadgePro
             </div>
 
             {/* Metrics Grid */}
-            <div className="grid grid-cols-2 gap-2 text-xs">
-              <div className="flex justify-between">
-                <span className="text-muted-foreground">Used:</span>
-                <span className="font-medium">{totalUsed.toLocaleString()}</span>
-              </div>
-              <div className="flex justify-between">
-                <span className="text-muted-foreground">Limit:</span>
-                <span className="font-medium">{totalLimit.toLocaleString()}</span>
-              </div>
+            <div className="flex justify-between text-xs">
+              <span className="text-muted-foreground">Used <span className="font-medium text-foreground">{totalUsed.toLocaleString()}</span></span>
+              <span className="text-muted-foreground">Limit <span className="font-medium text-foreground">{totalLimit.toLocaleString()}</span></span>
             </div>
 
             {/* Warning for near/over limit */}
-            {isNearLimit && !isOverLimit && (
-              <p className="flex items-center gap-1 text-[11px] text-amber-600 dark:text-amber-400">
+            {(isNearLimit || isOverLimit) && (
+              <p
+                className={cn(
+                  "flex items-center gap-1 text-[10px] font-medium",
+                  isOverLimit
+                    ? "text-red-600 dark:text-red-400"
+                    : "text-amber-600 dark:text-amber-400"
+                )}
+              >
                 <AlertCircle className="h-3 w-3" />
-                Approaching usage limit
-              </p>
-            )}
-            {isOverLimit && (
-              <p className="flex items-center gap-1 text-[11px] text-red-600 dark:text-red-400">
-                <AlertCircle className="h-3 w-3" />
-                Usage limit exceeded
+                {isOverLimit ? "Limit exceeded" : "Approaching limit"}
               </p>
             )}
           </div>
@@ -359,10 +352,10 @@ export const SubscriptionBadge = forwardRef<HTMLDivElement, SubscriptionBadgePro
       <span
         ref={ref as any}
         className={cn(
-          "inline-flex items-center gap-1.5 rounded-md border font-medium tracking-wide",
+          "inline-flex items-center gap-1.5 rounded-md border px-2.5 py-1 text-xs font-medium transition-colors",
           sizeStyles.badge,
           config.class,
-          interactive && cn("cursor-pointer transition-colors", config.hoverClass),
+          interactive && cn("cursor-pointer hover:opacity-80", config.hoverClass),
           className
         )}
         {...interactiveProps}
