@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import axios from 'axios';
+import { stackServerApp } from '@/stack';
 
 export async function GET(req: Request) {
   const { searchParams } = new URL(req.url);
@@ -7,6 +8,11 @@ export async function GET(req: Request) {
 
   if (!accessToken) {
     return NextResponse.json({ error: 'Access token is required' }, { status: 400 });
+  }
+
+  const user = await stackServerApp.getUser();
+  if (!user?.id) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
   try {

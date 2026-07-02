@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 
-const BASE_URL = process.env.NEXT_PUBLIC_SITE_URL ?? "https://rankerly.io";
+const BASE_URL = process.env.NEXT_PUBLIC_SITE_URL ?? "https://rankerly.app";
 const SITE_NAME = "Rankerly";
 const DEFAULT_OG = `${BASE_URL}/og-default.png`;
 const TWITTER_HANDLE = "@rankerly";

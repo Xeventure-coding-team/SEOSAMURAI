@@ -19,7 +19,7 @@ import { PlanCardClient } from "@/components/checkout/PlanCardClient";
 // ─────────────────────────────────────────────────────────────────────────────
 
 export const metadata = {
-  title: `Billing & plans | ${process.env.APP_NAME}`,
+  title: `Billing & plans — ${process.env.APP_NAME}`,
 };
 
 // ─── Stripe helpers (unchanged) ───────────────────────────────────────────────

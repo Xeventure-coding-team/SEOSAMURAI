@@ -63,7 +63,7 @@ function MegaMenu({ open }: { open: boolean }) {
             </p>
           </div>
           <Button size="sm" className="gap-2 flex-shrink-0" asChild>
-            <Link href="/handler/signup">
+            <Link href="/sign-up">
               Get Started <ArrowRight className="h-3.5 w-3.5" />
             </Link>
           </Button>
@@ -181,10 +181,10 @@ function MobileNav({ user, onSignout, homeUrl }: { user: any; onSignout: () => v
             ) : (
               <>
                 <Button variant="outline" className="w-full" asChild>
-                  <a href="/handler/signin">Sign In</a>
+                  <a href="/sign-in">Sign In</a>
                 </Button>
                 <Button className="w-full" asChild>
-                  <a href="/handler/signup">Get Started</a>
+                  <a href="/sign-up">Get Started</a>
                 </Button>
               </>
             )}
@@ -231,7 +231,7 @@ export default function Navbar({ homeUrl = siteConfig.url, className = "" }) {
              <></>
           ) : (
             /* Logged out: Login link (desktop only) */
-            <a href="/handler/signin" className="items-center gap-1 text-foreground/75 hover:text-primary transition-colors duration-300 lg:flex hidden">
+            <a href="/sign-in" className="items-center gap-1 text-foreground/75 hover:text-primary transition-colors duration-300 lg:flex hidden">
               <User className="size-5" />
               <span>Login</span>
             </a>
@@ -239,7 +239,7 @@ export default function Navbar({ homeUrl = siteConfig.url, className = "" }) {
 
           {/* CTA button — desktop only, always shown */}
           <a
-            href={user?.id ? "/app/dashboard" : "/handler/signup"}
+            href={user?.id ? "/app/dashboard" : "/sign-up"}
             className="justify-center items-center gap-2 bg-primary text-white rounded-md py-2.5 px-6 lg:flex hidden group hover:bg-primary/90 transition-colors duration-300"
           >
             <div className="size-5 bg-white/20 rounded-full flex justify-center items-center">

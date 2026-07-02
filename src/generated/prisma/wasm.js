@@ -666,6 +666,13 @@ exports.Prisma.ApiCacheScalarFieldEnum = {
   fetchedAt: 'fetchedAt'
 };
 
+exports.Prisma.WebhookEventScalarFieldEnum = {
+  id: 'id',
+  stripeEventId: 'stripeEventId',
+  type: 'type',
+  createdAt: 'createdAt'
+};
+
 exports.Prisma.SortOrder = {
   asc: 'asc',
   desc: 'desc'
@@ -769,7 +776,8 @@ exports.Prisma.ModelName = {
   AIProviderConfig: 'AIProviderConfig',
   Category: 'Category',
   Tag: 'Tag',
-  ApiCache: 'ApiCache'
+  ApiCache: 'ApiCache',
+  WebhookEvent: 'WebhookEvent'
 };
 
 /**

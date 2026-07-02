@@ -9,6 +9,7 @@ import ClarityInit from "@/components/tracking/ClarityInit";
 import ErrorBoundary from "@/components/error/error-boundary";
 import OfflineWrapper from "@/components/Offline/OffflineWrapper";
 import SentryInit from "@/components/tracking/SentryInit";
+import { CookieBanner } from "@/components/Cookiebanner";
 
 const outfit = Outfit({ variable: "--font-sans", subsets: ["latin"] });
 const jakarta = Plus_Jakarta_Sans({ variable: "--font-heading", subsets: ["latin"], weight: ["600","700","800"] });
@@ -152,7 +153,6 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
       </head>
       <body className={`${outfit.variable} ${jakarta.variable} font-sans antialiased`} suppressHydrationWarning>
         <SentryInit />
-        <ClarityInit />
         <ErrorBoundary>
           <OfflineWrapper>
             {/* Tracking should be outside ErrorBoundary to ensure it loads even if other parts fail */}
@@ -165,6 +165,8 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
                 </HexclaveTheme>
               </HexclaveProvider>
             </ClientThemeProvider>
+
+            <CookieBanner />
           </OfflineWrapper>
         </ErrorBoundary>
       </body>

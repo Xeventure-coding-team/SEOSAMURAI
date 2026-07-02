@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { stackServerApp } from '@/stack';
+import { requireAccess } from '../../../../../../lib/require-access';
 
 export async function PATCH(req: NextRequest) {
   // Admin guard
@@ -7,6 +8,10 @@ export async function PATCH(req: NextRequest) {
   if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   const perm = await user.getPermission('access_admin_dashboard');
   if (!perm) return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
+
+
+  const { error } = await requireAccess("access_admin_dashboard");
+  if (error) return error;
 
   try {
     const { userId, restricted_by_admin, reason, restricted_by_admin_private_details } = await req.json();

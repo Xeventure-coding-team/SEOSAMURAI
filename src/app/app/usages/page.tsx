@@ -3,7 +3,7 @@ import UsagePage from '@/components/usages/UsagePage'
 import React from 'react'
 
 export const metadata = {
-  title: `Usages | ${process.env.APP_NAME}`,
+  title: `Usages — ${process.env.APP_NAME}`,
 }
 
 function page() {

@@ -80,16 +80,17 @@ async function fetchLocationInsights(locationId: string, accessToken: string, st
 
 export async function GET(req: Request) {
     try {
-        const { searchParams } = new URL(req.url);
-        const id = searchParams.get("location_name") || searchParams.get("place_id");
-        const accessToken = searchParams.get("access_token");
-        const startDateStr = searchParams.get("start_date");
-        const endDateStr = searchParams.get("end_date");
         const user = await stackServerApp.getUser();
 
         if (!user?.id) {
             return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
         }
+
+        const { searchParams } = new URL(req.url);
+        const id = searchParams.get("location_name") || searchParams.get("place_id");
+        const accessToken = searchParams.get("access_token");
+        const startDateStr = searchParams.get("start_date");
+        const endDateStr = searchParams.get("end_date");
 
         if (!id || !accessToken) {
             return NextResponse.json({ error: "Missing required parameters" }, { status: 400 });

@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { prisma } from "../../../../lib/prisma";
 import { stackServerApp } from "@/stack";
 import { getPlanLimits, PlanId } from "@/lib/stripe";
+import { checkRateLimit, getIdentifier } from "../../../../lib/rate-limit";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -341,6 +342,16 @@ export async function POST(req: Request) {
     const user = await stackServerApp.getUser();
     if (!user?.id) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
+    const { limited, reset } = await checkRateLimit('ai', getIdentifier(req.headers));
+
+    if (limited) {
+      const retryAfter = reset ? Math.ceil((reset - Date.now()) / 1000) : 60;
+      return NextResponse.json(
+        { error: 'Too many requests. Please try again later.' },
+        { status: 429, headers: { 'Retry-After': String(retryAfter) } }
+      );
     }
 
     const userId = user.id;

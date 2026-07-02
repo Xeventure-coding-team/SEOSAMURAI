@@ -3,7 +3,7 @@ import LocationsList from '@/components/locations/LocationsList'
 import React from 'react'
 
 export const metadata = {
-  title: `Locations | ${process.env.APP_NAME}`,
+  title: `Locations — ${process.env.APP_NAME}`,
 }
 
 function page() {

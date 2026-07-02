@@ -1,12 +1,16 @@
 import { NextResponse } from "next/server";
 import { encrypt, last4 } from "../../../../../../lib/crypto";
 import { prisma } from "../../../../../../lib/prisma";
+import { requireAccess } from "../../../../../../lib/require-access";
 
 export async function PATCH(
   req: Request,
   { params }: { params: { id: string } }
 ) {
   const { apiKey, model, enabled } = await req.json();
+
+  const { error } = await requireAccess("access_admin_dashboard");
+  if (error) return error;
 
   const data: Record<string, unknown> = {};
   if (typeof model !== "undefined") data.model = model;
@@ -41,6 +45,8 @@ export async function DELETE(
   _req: Request,
   { params }: { params: { id: string } }
 ) {
+  const { error } = await requireAccess("access_admin_dashboard");
+  if (error) return error;
   try {
     await prisma.aIProviderConfig.delete({ where: { id: params.id } });
     return NextResponse.json({ ok: true });

@@ -47,6 +47,10 @@ export async function POST(req: NextRequest) {
 
     const user = await stackServerApp.getUser();
 
+    if (!user?.id) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
     const check = await canUse(user.id, "media-upload");
     if (!check.ok) {
       return NextResponse.json({

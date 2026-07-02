@@ -1,5 +1,7 @@
 import { NextRequest, NextResponse } from "next/server"
 import { GoogleGenAI } from "@google/genai"
+import { stackServerApp } from "@/stack";
+import { checkRateLimit, getIdentifier } from "../../../../lib/rate-limit";
 // Gemini setup
 const genAI = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY || process.env.AI_KEY! });
 
@@ -19,6 +21,21 @@ export async function POST(request: NextRequest) {
     // Gemini key check
     if (!process.env.GEMINI_API_KEY && !process.env.AI_KEY) {
       return NextResponse.json({ error: "Gemini API key not configured" }, { status: 500 });
+    }
+
+    const user = await stackServerApp.getUser();
+    if (!user?.id) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
+    const { limited, reset } = await checkRateLimit('ai', getIdentifier(request.headers));
+
+    if (limited) {
+      const retryAfter = reset ? Math.ceil((reset - Date.now()) / 1000) : 60;
+      return Response.json(
+        { error: 'Too many requests. Please try again later.' },
+        { status: 429, headers: { 'Retry-After': String(retryAfter) } }
+      );
     }
 
     const { occasion }: RequestBody = await request.json();

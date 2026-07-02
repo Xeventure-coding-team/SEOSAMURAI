@@ -1,9 +1,13 @@
 import { NextResponse } from "next/server";
 import { prisma } from "../../../../../../lib/prisma";
+import { requireAccess } from "../../../../../../lib/require-access";
 
 // PUT: { provider } — makes this provider the only active one
 export async function PUT(req: Request) {
   const { provider } = await req.json();
+
+  const { error } = await requireAccess("access_admin_dashboard");
+  if (error) return error;
 
   const target = await prisma.aIProviderConfig.findUnique({ where: { provider } });
   if (!target) {

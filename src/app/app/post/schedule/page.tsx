@@ -3,7 +3,7 @@ import SchedulePosts from '@/components/schedule/SchedulePosts'
 import React from 'react'
 
 export const metadata = {
-  title: `Schedule Posting | ${process.env.APP_NAME}`,
+  title: `Schedule Posting — ${process.env.APP_NAME}`,
 }
 
 function page() {

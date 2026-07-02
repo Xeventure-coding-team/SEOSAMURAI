@@ -1,7 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { requireAccess } from '../../../../../lib/require-access';
 
 export async function GET(req: NextRequest) {
   try {
+
+    const { error } = await requireAccess("access_admin_dashboard");
+    if (error) return error;
+
     const params = req.nextUrl.searchParams;
     const response = await fetch(
       `https://api.hexclave.com/api/v1/users?${params.toString()}&include_restricted=true`,
@@ -13,14 +18,14 @@ export async function GET(req: NextRequest) {
         },
       }
     );
-    
+
     if (!response.ok) {
       return NextResponse.json(
         { error: `API returned ${response.status}` },
         { status: response.status }
       );
     }
-    
+
     const data = await response.json();
 
 

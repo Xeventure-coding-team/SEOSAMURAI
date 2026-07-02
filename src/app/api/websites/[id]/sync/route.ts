@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import axios from 'axios';
 import { prisma } from '../../../../../../lib/prisma';
+import { checkRateLimit, getIdentifier } from '../../../../../../lib/rate-limit';
 
 export async function POST(
     req: NextRequest,
@@ -21,6 +22,24 @@ export async function POST(
             return NextResponse.json(
                 { error: 'Website not found' },
                 { status: 404 }
+            );
+        }
+
+        const { limited, reset } = await checkRateLimit("strict", getIdentifier(req.headers));
+
+        if (limited) {
+            const retryAfter = reset ? Math.ceil((reset - Date.now()) / 1000) : 60;
+            return NextResponse.json(
+                {
+                    success: false,
+                    error: "Too many requests. Please try again later.",
+                },
+                {
+                    status: 429,
+                    headers: {
+                        "Retry-After": String(retryAfter),
+                    },
+                }
             );
         }
 

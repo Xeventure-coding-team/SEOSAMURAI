@@ -3,7 +3,7 @@ import UnrepliedReviewsComponent from '@/components/unreplied-reviews/UnrepliedR
 import React from 'react'
 
 export const metadata = {
-  title: `Reviews | ${process.env.APP_NAME}`,
+  title: `Reviews — ${process.env.APP_NAME}`,
 }
 
 function page() {

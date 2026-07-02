@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useMemo, useCallback, memo } from "react";
 import { CircleCheck, ArrowRight, Star, MapPin, Search, Share2, ScanLine, CalendarClock } from "lucide-react";
 import MockupDisplay from "./MockupDisplay";
 import Link from "next/link";
@@ -24,6 +24,7 @@ export interface Feature {
   locationList: string[];
 }
 
+// Memoized tab data to prevent recreation on each render
 const tabs: Record<string, Feature> = {
   tab1: {
     id: "tab1",
@@ -54,7 +55,7 @@ const tabs: Record<string, Feature> = {
     slug: "geo-grid-scan",
     title: "Visualize your map pack visibility across a grid",
     description:
-      "Visualize exactly where your business appears in Google’s local map pack using a geographic grid. Identify ranking gaps, uncover blind spots, and measure your true local search visibility across different areas. Use these insights to refine your strategy and expand your coverage where it matters most.",
+      "Visualize exactly where your business appears in Google's local map pack using a geographic grid. Identify ranking gaps, uncover blind spots, and measure your true local search visibility across different areas. Use these insights to refine your strategy and expand your coverage where it matters most.",
     features: [
       "Interactive grid view",
       "Map pack visibility score",
@@ -164,15 +165,118 @@ const tabs: Record<string, Feature> = {
   },
 };
 
+// Memoized Tab Button Component
+const TabButton = memo(({
+  tabId, // Changed from 'key' to 'tabId'
+  tab,
+  isActive,
+  onClick
+}: {
+  tabId: string; // Changed from 'key' to 'tabId'
+  tab: Feature;
+  isActive: boolean;
+  onClick: () => void;
+}) => {
+  const IconComponent = tab.icon;
+
+  return (
+    <div className="hs-tab">
+      <button
+        type="button"
+        className={`group relative flex items-center gap-2.5 py-3 px-6 rounded-xl text-[15px] font-semibold whitespace-nowrap transition-all duration-150 ease-out
+          ${isActive
+            ? "bg-white text-zinc-900 shadow-[0_2px_12px_rgba(0,0,0,0.25),0_1px_3px_rgba(0,0,0,0.15)]"
+            : "text-white/50 hover:text-white hover:bg-white/10"
+          }`}
+        aria-selected={isActive}
+        role="tab"
+        onClick={onClick}
+      >
+        {isActive && (
+          <span className="absolute inset-0 rounded-xl ring-1 ring-white/20 pointer-events-none" />
+        )}
+        <IconComponent
+          className={`size-[18px] shrink-0 transition-colors duration-150 ${isActive ? "text-zinc-700" : "text-white/40 group-hover:text-white"
+            }`}
+        />
+        <span>{tab.label}</span>
+      </button>
+    </div>
+  );
+});
+
+TabButton.displayName = 'TabButton';
+
+// Memoized Tab Panel Component
+const TabPanel = memo(({ tab, isActive }: { tab: Feature; isActive: boolean }) => {
+  if (!isActive) return null;
+
+  return (
+    <div role="tabpanel">
+      <div className="grid lg:grid-cols-2 gap-4 items-center">
+        {/* Left Column - Centered Content */}
+        <div className="flex flex-col items-center lg:items-start lg:text-left">
+          <h4 className="mb-2.5 lg:text-5xl md:text-[40px] text-[25px] font-bold text-white">
+            {tab.title}
+          </h4>
+          <p className="mb-2.5 text-light-200 max-w-2xl">{tab.description}</p>
+
+          <div className="grid lg:grid-cols-2 md:grid-cols-2 gap-4 lg:my-12.5 md:my-12.5 my-6 text-white w-full">
+            {tab.features.map((feature, index) => (
+              <div className="flex items-center gap-2  lg:justify-start" key={index}>
+                <CircleCheck className="size-5 text-white flex-shrink-0" />
+                <div>{feature}</div>
+              </div>
+            ))}
+          </div>
+
+          <div className="flex items-center lg:justify-start w-full">
+            <Link
+              href={`/product/${tab.slug}`}
+              className="flex justify-center items-center gap-2 bg-white rounded-md py-2.5 px-7.5 group"
+            >
+              <div className="size-5.5 bg-body-bg rounded-full flex justify-center items-center">
+                <ArrowRight className="transition-transform duration-700 transform group-hover:-rotate-45 text-white size-4" />
+              </div>
+              <div className="font-normal">More Details</div>
+            </Link>
+          </div>
+        </div>
+
+        {/* Right Column - Mockup Display */}
+        <div className="flex justify-center items-center">
+          <MockupDisplay feature={tab} />
+        </div>
+      </div>
+    </div>
+  );
+});
+
+TabPanel.displayName = 'TabPanel';
+
 const SalesSection: React.FC = () => {
   const [activeTab, setActiveTab] = useState<string>("tab1");
+
+  // Memoize tab entries to prevent recalculation
+  const tabEntries = useMemo(() => Object.entries(tabs), []);
+
+  // Memoize active tab data
+  const activeTabData = useMemo(
+    () => tabs[activeTab],
+    [activeTab]
+  );
+
+  // Memoize tab change handler
+  const handleTabChange = useCallback((tabKey: string) => {
+    setActiveTab(tabKey);
+  }, []);
 
   return (
     <section className="lg:py-32.5 md:py-22.5 py-10 bg-body-bg dark:bg-zinc-950">
       <div className="container">
-
+        {/* Header - Centered */}
         <div className="text-center lg:mb-17.5 md:mb-12.5 mb-6.5">
-          <h3 className="lg:text-6xl md:text-[55px] text-3xl text-white mb-2.5 font-bold">
+          <h3 className="lg:text-6xl md:text-[55px] text-3xl text-white mb-2.5 font-bold max-w-4xl mx-auto">
             Every tool you need to dominate local search
           </h3>
           <p className="text-light-200 max-w-2xl mx-auto">
@@ -181,99 +285,47 @@ const SalesSection: React.FC = () => {
         </div>
 
         <div className="relative">
-
+          {/* Navigation - Centered */}
           <nav
             className="flex gap-1.5 relative lg:mb-12.5 md:mb-12.5 mb-5 justify-center items-center flex-wrap p-1.5 rounded-2xl bg-white/[0.06] border border-white/10 backdrop-blur-xl w-fit mx-auto shadow-[0_0_0_1px_rgba(255,255,255,0.03)]"
             aria-label="Tabs"
             role="tablist"
           >
-            {Object.entries(tabs).map(([key, tab]) => {
-              const IconComponent = tab.icon;
-              const isActive = activeTab === key;
-              return (
-                <div className="hs-tab" key={key}>
-                  <button
-                    type="button"
-                    className={`group relative flex items-center gap-2.5 py-3 px-6 rounded-xl text-[15px] font-semibold whitespace-nowrap transition-all duration-150 ease-out
-            ${isActive
-                        ? "bg-white text-zinc-900 shadow-[0_2px_12px_rgba(0,0,0,0.25),0_1px_3px_rgba(0,0,0,0.15)]"
-                        : "text-white/50 hover:text-white hover:bg-white/10"
-                      }`}
-                    aria-selected={isActive}
-                    role="tab"
-                    onClick={() => setActiveTab(key)}
-                  >
-                    {isActive && (
-                      <span className="absolute inset-0 rounded-xl ring-1 ring-white/20 pointer-events-none" />
-                    )}
-                    <IconComponent
-                      className={`size-[18px] shrink-0 transition-colors duration-150 ${isActive
-                          ? "text-zinc-700"
-                          : "text-white/40 group-hover:text-white"
-                        }`}
-                    />
-                    <span>{tab.label}</span>
-                  </button>
-                </div>
-              );
-            })}
+            {tabEntries.map(([key, tab]) => (
+              <TabButton
+                key={key}
+                tabId={key}
+                tab={tab}
+                isActive={activeTab === key}
+                onClick={() => handleTabChange(key)}
+              />
+            ))}
           </nav>
 
+          {/* Tab Content */}
           <div>
-            {Object.entries(tabs).map(([key, tab]) => (
-              <div
+            {tabEntries.map(([key, tab]) => (
+              <TabPanel
                 key={key}
-                role="tabpanel"
-                className={activeTab === key ? "" : "hidden"}
-              >
-                <div className="lg:py-12.5 md:py-12.5 py-5">
-                  <div className="grid lg:grid-cols-2 gap-4">
-                    <div>
-                      <h4 className="mb-2.5 lg:text-5xl md:text-[40px] text-[25px] font-bold text-white">
-                        {tab.title}
-                      </h4>
-                      <p className="mb-2.5 text-light-200">{tab.description}</p>
-
-                      <div className="grid lg:grid-cols-2 md:grid-cols-2 gap-4 lg:my-12.5 md:my-12.5 my-6 text-white">
-                        {tab.features.map((feature, index) => (
-                          <div className="flex items-center gap-2" key={index}>
-                            <CircleCheck className="size-5 text-white" />
-                            <div>{feature}</div>
-                          </div>
-                        ))}
-                      </div>
-
-                      <div className="flex items-center">
-                        <Link
-                          href={`/product/${tab.slug}`}
-                          className="flex justify-center items-center gap-2 bg-white rounded-md py-2.5 px-7.5 group"
-                        >
-                          <div className="size-5.5 bg-body-bg rounded-full flex justify-center items-center">
-                            <ArrowRight className="transition-transform duration-700 transform group-hover:-rotate-45 text-white size-4" />
-                          </div>
-                          <div className="font-normal">More Details</div>
-                        </Link>
-                      </div>
-                    </div>
-
-                    <MockupDisplay feature={tab} />
-                  </div>
-                </div>
-              </div>
+                tab={tab}
+                isActive={activeTab === key}
+              />
             ))}
           </div>
         </div>
 
+        {/* Divider */}
         <div className="bg-light lg:my-25 md:my-17.5 my-5 h-[1px]" />
 
-        <div className="grid lg:grid-cols-3 md:grid-cols-3 lg:gap-12.5 md:gap-12.5 gap-5">
-          <div>
+        {/* Bottom Section - Centered Content */}
+        <div className="grid lg:grid-cols-3 md:grid-cols-3 lg:gap-12.5 md:gap-12.5 gap-5 items-center">
+          <div className="text-center lg:text-left">
             <h5 className="text-white mb-2.5 lg:text-4xl md:text-3xl text-xl font-bold">
               Everything you need to grow your visibility on Google Search and Maps
             </h5>
           </div>
 
-          <div>
+          <div className="text-center lg:text-left">
             <p className="text-light-200 mb-2.5">
               Gain the insights you need to make smarter decisions, understand your local performance,
               and uncover new opportunities to strengthen your presence where customers are searching.
@@ -281,7 +333,7 @@ const SalesSection: React.FC = () => {
             <div className="text-white font-medium">Built for sustainable growth</div>
           </div>
 
-          <div className="grid lg:grid-cols-2 items-center gap-2.5">
+          <div className="grid lg:grid-cols-2 items-center gap-2.5 text-center lg:text-left">
             <div className="text-white">
               <div className="text-6xl">{siteConfig.products.length}+</div>
               <div>Powerful tools</div>
@@ -292,7 +344,6 @@ const SalesSection: React.FC = () => {
             </div>
           </div>
         </div>
-
       </div>
     </section>
   );

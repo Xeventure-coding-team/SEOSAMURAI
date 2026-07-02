@@ -1,5 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { GoogleGenerativeAI } from '@google/generative-ai';
+import { stackServerApp } from '@/stack';
+import { checkRateLimit, getIdentifier } from '../../../../../lib/rate-limit';
 
 const apiKey = process.env.GEMINI_API_KEY ?? process.env.AI_KEY;
 if (!apiKey) {
@@ -12,6 +14,21 @@ export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
     let { businessContext, businessName, primaryCategory, additionalCategories } = body;
+
+    const user = await stackServerApp.getUser();
+    if (!user?.id) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
+    const { limited, reset } = await checkRateLimit('ai', getIdentifier(request.headers));
+
+    if (limited) {
+      const retryAfter = reset ? Math.ceil((reset - Date.now()) / 1000) : 60;
+      return Response.json(
+        { error: 'Too many requests. Please try again later.' },
+        { status: 429, headers: { 'Retry-After': String(retryAfter) } }
+      );
+    }
 
     // If businessContext is placeholder text, rebuild it
     if (

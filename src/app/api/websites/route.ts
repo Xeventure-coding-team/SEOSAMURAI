@@ -5,6 +5,7 @@ import { prisma } from '../../../../lib/prisma';
 import { canUse } from '@/lib/actions/can-use';
 import { canAddSlot } from '@/lib/slots';
 import { stackServerApp } from '@/stack';
+import { checkRateLimit, getIdentifier } from '../../../../lib/rate-limit';
 
 export async function GET(req: NextRequest) {
     try {
@@ -150,6 +151,24 @@ export async function POST(req: NextRequest) {
         const postsStr = formData.get('posts') as string | null;
         const locationStr = formData.get('location') as string | null;
         const locationDataStr = formData.get('locationData') as string | null;
+
+        const { limited, reset } = await checkRateLimit("strict", getIdentifier(req.headers));
+
+        if (limited) {
+            const retryAfter = reset ? Math.ceil((reset - Date.now()) / 1000) : 60;
+            return NextResponse.json(
+                {
+                    success: false,
+                    error: "Too many requests. Please try again later.",
+                },
+                {
+                    status: 429,
+                    headers: {
+                        "Retry-After": String(retryAfter),
+                    },
+                }
+            );
+        }
 
         const slot = await canAddSlot(userId, "websites");
         if (!slot.ok) return NextResponse.json({

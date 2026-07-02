@@ -1,9 +1,191 @@
+import FeatureBreakdown from "@/components/product/FeatureBreakdown";
+import FAQAccordion from "@/components/product/FAQAccordion";
+import Testimonials from "@/components/product/Testimonials";
+import SectionCTA from "@/components/product/SectionCTA";
+import SectionDivider from "@/components/product/SectionDivider";
+import CTABar from "@/components/product/CTABar";
+
+<div className="container">
+
 ## How it works
 
-Connect your Google Business Profile and manage every location from a single dashboard.
+Managing customer reviews becomes increasingly difficult as your business grows, especially when feedback is spread across multiple Google Business Profile locations. Rankerly centralizes review management by providing dedicated workspaces for responding to new reviews and analyzing review performance, helping your team stay organized while maintaining excellent customer engagement.
 
-- Bulk import via CSV
-- Real-time sync with Google
-- Location grouping by region
+The main Reviews dashboard is designed to help your team focus on action. Instead of browsing through every review you've ever received, it displays reviews that are still awaiting a response across all connected locations. This allows you to quickly identify new customer feedback, prioritize unanswered reviews, generate AI-powered reply suggestions, and respond directly from one place without switching between individual Business Profiles.
 
-![Locations dashboard](/features/bulk-f.png)
+Every business location also includes its own dedicated Reviews page, giving you access to the complete review history for that specific Google Business Profile. Browse every customer review, monitor rating trends, explore review analytics, understand customer sentiment, and evaluate how feedback changes over time. Having both an action-focused dashboard and a detailed location view makes it easier to manage day-to-day customer interactions while gaining valuable insights into your business's reputation.
+
+Whether you're responding to today's newest reviews or analyzing months of customer feedback for a single location, Rankerly helps reduce manual work, improve response times, and ensure every customer review receives the attention it deserves. By combining centralized review management, AI-assisted replies, and location-specific analytics, businesses can build stronger customer relationships while maintaining a positive online reputation.
+
+<SectionDivider />
+
+## What you can do
+
+<div className="not-prose">
+<FeatureBreakdown items={[
+  {
+    title: "Monitor unreplied reviews",
+    desc: "View customer reviews that are still awaiting a response across all connected Google Business Profile locations, making it easy to prioritize new feedback and ensure no customer goes unanswered."
+  },
+  {
+    title: "Generate AI-powered replies",
+    desc: "Create professional, context-aware reply suggestions with AI, then review, edit, and publish responses directly from Rankerly to save time while maintaining a consistent brand voice."
+  },
+  {
+    title: "Browse complete review history",
+    desc: "Open any business location to access its full review history, revisit previous customer conversations, and manage every review from one organized location."
+  },
+  {
+    title: "Analyze review performance",
+    desc: "Track average ratings, monitor review trends, understand customer sentiment, and explore location-specific analytics to gain valuable insights into your business's reputation."
+  },
+  {
+    title: "Respond more efficiently",
+    desc: "Focus on reviews that require immediate attention, streamline your response workflow, and engage with customers more quickly without switching between multiple Business Profiles."
+  },
+  {
+    title: "Build a stronger online reputation",
+    desc: "Maintain consistent customer engagement, improve response rates, and use review insights to strengthen trust, enhance customer satisfaction, and support long-term business growth."
+  },
+]} />
+</div>
+
+</div>
+
+<div className="not-prose mt-24">
+<CTABar
+  boldText="Google Business Profile Review Management"
+  lightText="respond faster and understand your customers."
+  buttonLabel="Start Managing Reviews"
+  href="/signup"
+/>
+</div>
+
+<div className="container">
+
+## Everything you need to manage reviews
+
+### Stay on top of unanswered reviews
+
+The main Reviews dashboard is designed to help your team focus on customer feedback that still needs attention. Instead of searching through every review across every location, Rankerly automatically surfaces reviews that haven't yet received a reply. This allows you to prioritize responses, stay organized, and ensure every customer receives timely engagement without unnecessary account switching.
+
+### Respond with AI-powered assistance
+
+Crafting thoughtful review responses can take valuable time, especially for businesses receiving reviews every day. Rankerly's AI-powered reply suggestions generate professional, context-aware responses based on the customer's feedback. You can review, customize, and publish replies directly from the dashboard, making it faster to respond while maintaining a consistent tone across every customer interaction.
+
+### Explore complete review history
+
+Beyond the centralized review inbox, every business location has its own dedicated Reviews page containing the complete history of customer feedback. Browse all reviews, revisit previous conversations, filter reviews when needed, and manage every interaction from a single location-specific workspace designed for long-term review management.
+
+### Discover trends through review analytics
+
+Customer reviews tell a much bigger story than individual ratings alone. Rankerly provides location-specific analytics that help you monitor average ratings, review volume, customer sentiment, response performance, and long-term trends. These insights help you understand how customers perceive your business and identify opportunities to improve service quality.
+
+### Manage reviews across every location
+
+Whether you're responsible for two locations or hundreds, keeping track of customer feedback manually can become overwhelming. Rankerly centralizes review management by bringing customer feedback from every connected Google Business Profile into one platform. Your team can monitor activity, respond to reviews, and access detailed location insights without constantly switching between accounts.
+
+### Build stronger customer relationships
+
+Responding to reviews consistently shows customers that their opinions matter. By combining centralized review management, AI-assisted replies, and detailed analytics, Rankerly helps businesses engage with customers more effectively, improve response rates, strengthen their online reputation, and turn customer feedback into meaningful business improvements.
+
+<SectionDivider />
+
+<div className="not-prose">
+  <Testimonials
+    items={[
+      {
+        name: "Mark Jensen",
+        role: "Small Business Owner",
+        quote: "The unreplied reviews dashboard has made a huge difference for our team. Instead of checking every location separately, we immediately see which customers are waiting for a response and can reply within minutes.",
+        rating: 5,
+        avatarColor: "#3b82f6"
+      },
+      {
+        name: "Rachel Kim",
+        role: "Marketing Manager",
+        quote: "The AI-generated replies are an incredible time saver. They give us a strong starting point for responding professionally while still allowing us to personalize each message before publishing.",
+        rating: 5,
+        avatarColor: "#10b981"
+      },
+      {
+        name: "David Morales",
+        role: "Restaurant Owner",
+        quote: "Having every review for each location along with review analytics has helped us identify recurring customer feedback that we might have otherwise missed. It's become an essential part of improving our customer experience.",
+        rating: 5,
+        avatarColor: "#f59e0b"
+      },
+      {
+        name: "Emily Carter",
+        role: "Operations Manager",
+        quote: "Before Rankerly we constantly switched between Google Business Profiles to check reviews. Now everything is organized in one place, making review management much faster and far less stressful.",
+        rating: 5,
+        avatarColor: "#ec4899"
+      },
+      {
+        name: "Chris Walker",
+        role: "Local Business Owner",
+        quote: "The location-specific review analytics give us a much better understanding of how customers feel about each branch. It's helped us spot trends and improve service where it matters most.",
+        rating: 5,
+        avatarColor: "#8b5cf6"
+      },
+      {
+        name: "Sophia Bennett",
+        role: "Digital Marketing Consultant",
+        quote: "Managing reviews for multiple clients used to involve countless browser tabs. The centralized dashboard, AI replies, and analytics have completely streamlined our workflow while helping us deliver faster, more consistent responses.",
+        rating: 5,
+        avatarColor: "#14b8a6"
+      },
+    ]}
+  />
+</div>
+</div>
+
+<div className="container">
+<SectionDivider />
+
+## FAQ
+
+<div className="not-prose">
+<FAQAccordion
+  items={[
+    {
+      q: "Can I manage reviews from multiple locations in one place?",
+      a: "Yes. The Reviews dashboard brings together customer reviews from all of your connected Google Business Profile locations, making it easy to monitor feedback without switching between accounts."
+    },
+    {
+      q: "What reviews appear in the main Reviews dashboard?",
+      a: "The main dashboard is focused on action and displays reviews that are awaiting a response, helping you quickly identify which customers need your attention."
+    },
+    {
+      q: "Can I reply to reviews from within Rankerly?",
+      a: "Yes. You can respond to customer reviews directly from Rankerly without opening Google Business Profile."
+    },
+    {
+      q: "Does Rankerly provide AI-generated review replies?",
+      a: "Yes. AI-powered reply suggestions help you create professional responses more quickly. You can edit the suggested reply before publishing if you'd like."
+    },
+    {
+      q: "Can I view all reviews for a specific location?",
+      a: "Yes. Every location includes its own Reviews page where you can browse the complete review history, manage customer feedback, and access location-specific review analytics."
+    },
+    {
+      q: "What review analytics are available?",
+      a: "Each location includes analytics such as rating trends, review history, customer sentiment, and other insights to help you better understand customer feedback over time."
+    },
+    {
+      q: "Who is the Reviews feature designed for?",
+      a: "It's ideal for businesses and agencies that want to manage customer feedback more efficiently, respond faster to reviews, and gain better insight into their online reputation."
+    },
+  ]}
+/>
+</div>
+
+<div className="not-prose">
+<SectionCTA
+  title="Ready to simplify your review management?"
+  subtitle="Respond faster, monitor customer feedback, and understand your online reputation from one centralized dashboard."
+/>
+</div>
+
+</div>

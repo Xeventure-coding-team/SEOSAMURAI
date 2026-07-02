@@ -3,6 +3,7 @@ import { stackServerApp } from "@/stack";
 import { prisma } from "../../../../../lib/prisma";
 import { canUse, canUseErrorMessage } from "@/lib/actions/can-use";
 import { getLocationById, cleanGmbLocationId } from "@/lib/getLocationById"
+import { checkRateLimit, getIdentifier } from "../../../../../lib/rate-limit";
 
 interface GooglePlacesResult {
   id: string;
@@ -551,6 +552,24 @@ export async function GET(
       );
     }
 
+    const { limited, reset } = await checkRateLimit("strict", getIdentifier(request.headers));
+
+    if (limited) {
+      const retryAfter = reset ? Math.ceil((reset - Date.now()) / 1000) : 60;
+      return NextResponse.json(
+        {
+          success: false,
+          error: "Too many requests. Please try again later.",
+        },
+        {
+          status: 429,
+          headers: {
+            "Retry-After": String(retryAfter),
+          },
+        }
+      );
+    }
+
     const check = await canUse(user.id, "competitor-insights");
     if (!check.ok) {
       return NextResponse.json({ error: canUseErrorMessage(check, "competitor-insights") }, { status: 200 });
@@ -603,7 +622,7 @@ export async function GET(
     const trackedKeywords = await prisma.keywordTracking.findMany({
       where: {
         userId,
-        locationId: cleanLocationId,
+        locationId: params.locationId,
         isActive: true,
       },
     });

@@ -16,15 +16,15 @@ interface MockupDisplayProps {
 const getImagePath = (slug: string): string => {
   const imageMap: Record<string, string> = {
     locations: "/mock/locations.png",
-    "bulk-posting": "/features/bulk-f.png",
-    "scheduled-posts": "/features/schedule-f.png",
-    reviews: "/features/review-f.png",
-    "review-poster": "/features/review-poster-f.png",
-    "tracked-reviews": "/features/tracked-reviews-f.png",
-    "keyword-tracking": "/features/keywords-f.png",
-    "competitor-tracking": "/features/competitor-f.png",
-    websites: "/features/websites-f.png",
-    "geo-grid-scan": "/features/geogrid-f.png",
+    "bulk-posting": "/mock/bulk.png",
+    "scheduled-posts": "/mock/schedule.png",
+    reviews: "/mock/reviews.png",
+    "review-poster": "/mock/review-poster.png",
+    "tracked-reviews": "/mock/tracked-reviews.png",
+    "keyword-tracking": "/mock/keywords.png",
+    "competitor-tracking": "/mock/comp.png",
+    websites: "/mock/websites.png",
+    "geo-grid-scan": "/mock/geo-grid.png",
   };
 
   return imageMap[slug] || "/features/bulk-f.png";
@@ -33,7 +33,7 @@ const getImagePath = (slug: string): string => {
 export default function MockupDisplay({ feature }: MockupDisplayProps) {
   return (
     <div className="w-full max-w-3xl mx-auto">
-      <div className="overflow-hidden rounded-md  border border-border shadow-2xl bg-background">
+      <div className="overflow-hidden rounded-md  border border-gray-200  bg-background">
         <Image
           src={getImagePath(feature.slug)}
           alt={feature.label}

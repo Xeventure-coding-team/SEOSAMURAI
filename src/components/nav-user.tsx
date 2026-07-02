@@ -36,6 +36,15 @@ import toast from "react-hot-toast"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
 
+
+const TEST = false
+
+const MOCK_USER = {
+  name: "Sarah Mitchell",
+  email: "sarah@downtowncoffeeshop.com",
+  avatar: "https://i.pravatar.cc/150?img=47", // placeholder headshot for screenshots
+}
+
 export function NavUser({
   user,
 }: {
@@ -48,6 +57,8 @@ export function NavUser({
   const { isMobile } = useSidebar()
   const { theme, setTheme } = useTheme()
   const router = useRouter();
+
+  const displayUser = TEST ? MOCK_USER : user
 
 
   // Helper function to get initials from name
@@ -86,20 +97,20 @@ export function NavUser({
               className="data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground"
             >
               <Avatar className="h-8 w-8 rounded-lg">
-                <AvatarImage
-                  src={user.avatar || undefined}
-                  alt={user.name || "User avatar"}
-                />
+                {displayUser?.avatar && <AvatarImage
+                  src={displayUser?.avatar || undefined}
+                  alt={displayUser.name || "User avatar"}
+                />}
                 <AvatarFallback className="rounded-lg">
-                  {getInitials(user.name)}
+                  {getInitials(displayUser.name)}
                 </AvatarFallback>
               </Avatar>
               <div className="grid flex-1 text-left text-sm leading-tight">
                 <span className="truncate font-medium">
-                  {user.name || "Guest User"}
+                  {displayUser.name || "Guest User"}
                 </span>
                 <span className="truncate text-xs">
-                  {user.email || "No email provided"}
+                  {displayUser.email || "No email provided"}
                 </span>
               </div>
               <IconDotsVertical className="ml-auto size-4" />
@@ -115,19 +126,19 @@ export function NavUser({
               <div className="flex items-center gap-2 px-1 py-1.5 text-left text-sm">
                 <Avatar className="h-8 w-8 rounded-lg">
                   <AvatarImage
-                    src={user.avatar || undefined}
-                    alt={user.name || "User avatar"}
+                    src={displayUser.avatar || undefined}
+                    alt={displayUser.name || "User avatar"}
                   />
                   <AvatarFallback className="rounded-lg">
-                    {getInitials(user.name)}
+                    {getInitials(displayUser.name)}
                   </AvatarFallback>
                 </Avatar>
                 <div className="grid flex-1 text-left text-sm leading-tight">
                   <span className="truncate font-medium">
-                    {user.name || "Guest User"}
+                    {displayUser.name || "Guest User"}
                   </span>
                   <span className="truncate text-xs">
-                    {user.email || "No email provided"}
+                    {displayUser.email || "No email provided"}
                   </span>
                 </div>
               </div>

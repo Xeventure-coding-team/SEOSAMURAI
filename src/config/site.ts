@@ -18,8 +18,8 @@ export const siteConfig = {
   // ── Contact ────────────────────────────────────────────
   contact: {
     email: "info@rankerly.app",
-    phone: "+1 (555) 000-0000",
-    address: "San Francisco, CA",
+    phone: "",
+    address: "",
   },
 
   // ── Products ───────────────────────────────────────────
@@ -50,17 +50,17 @@ export const siteConfig = {
     },
     {
       title: "Reviews",
-      desc: "Monitor, respond to, and analyze customer reviews across locations",
+      desc: "Manage customer reviews, AI replies, and review insights from one place",
       longDesc:
-        "Monitor customer reviews from all connected locations in one centralized workspace. Read new feedback, respond to customers, identify recurring trends, and better understand customer sentiment across your business. Centralized review management helps businesses maintain engagement, improve customer satisfaction, and gain valuable insights without visiting individual profiles separately.",
+        "Manage customer reviews across all your connected Google Business Profile locations from one centralized workspace. Quickly identify unreplied reviews, generate AI-powered responses, and reply without switching between Business Profiles. Dive deeper into each location to view its complete review history, track rating trends, analyze customer sentiment, and gain valuable insights that help strengthen your online reputation and improve customer engagement.",
       url: "/product/reviews",
       icon: Star,
     },
     {
       title: "Review Poster",
-      desc: "Turn your best reviews into shareable social media graphics",
+      desc: "Create QR code posters that make it easy for customers to leave reviews",
       longDesc:
-        "Convert positive customer reviews into professional graphics that can be shared across social media platforms, websites, and marketing campaigns. Highlight authentic customer experiences, build trust with potential customers, and maximize the value of positive feedback by transforming reviews into engaging visual content suitable for multiple channels.",
+        "Generate professional review request posters with built-in QR codes that take customers directly to your Google Business Profile review page. Print them for your storefront, reception, checkout counter, or share them digitally to encourage more customer reviews. Review Poster helps businesses simplify the review collection process, increase review volume, and strengthen their online reputation by making it effortless for customers to leave feedback.",
       url: "/product/review-poster",
       icon: Megaphone,
     },
@@ -76,34 +76,34 @@ export const siteConfig = {
       title: "Keyword Tracking",
       desc: "Track how your business ranks for the keywords that matter most",
       longDesc:
-        "Understand how your business performs in local search results by monitoring ranking positions for important keywords. Track changes over time, compare performance across locations, and identify opportunities to improve local visibility. Historical ranking data provides valuable insights into SEO progress and helps businesses measure the impact of optimization efforts.",
+        "Monitor how your Google Business Profile ranks for the keywords that matter most to your business. Track ranking changes over time, review previous ranking positions, and measure the impact of your local SEO efforts. Keyword Tracking helps you understand your local search visibility and identify opportunities to improve your Business Profile's performance.",
       url: "/product/keyword-tracking",
       icon: Search,
     },
     {
       title: "Competitor Tracking",
-      desc: "Benchmark your local SEO performance against nearby competitors",
+      desc: "Monitor how your business compares with local competitors",
       longDesc:
-        "Compare your business against other businesses competing in the same local market. Monitor relative visibility, discover competitive strengths and weaknesses, and gain insights into how competitors perform in local search. These comparisons can help prioritize optimization efforts and provide a clearer understanding of your position within the local landscape.",
+        "Compare your Google Business Profile with competing businesses in the same local market. Understand your position among nearby competitors, identify strengths and opportunities for improvement, and gain valuable insights that can help guide your local SEO and Business Profile optimization efforts.",
       url: "/product/competitor-tracking",
       icon: Users,
     },
     {
       title: "Websites",
-      desc: "Build fast, SEO-optimized local landing pages for each location",
+      desc: "Create SEO-friendly websites for every Google Business Profile location",
       longDesc:
-        "Create dedicated location pages designed to showcase business information, services, contact details, and local relevance. Location-focused websites can help customers find accurate information quickly while supporting broader local marketing efforts. Manage multiple landing pages efficiently and maintain a consistent online presence across all business locations.",
+        "Build professional websites connected to your Google Business Profile locations. Showcase business information, services, contact details, and location-specific content while creating a stronger local online presence. Easily manage multiple websites from one platform and keep every location represented with an optimized, easy-to-maintain website.",
       url: "/product/websites",
       icon: Globe,
     },
     {
       title: "Geo-Grid Scan",
-      desc: "Visualize your true map pack visibility across a geographic grid",
+      desc: "Visualize your Google Maps rankings across your entire service area",
       longDesc:
-        "Gain a deeper understanding of local search visibility by analyzing rankings across multiple points within a geographic area. Geo-Grid Scans provide a visual representation of where your business appears in map results, helping identify strong and weak coverage areas. This broader view of local performance can reveal opportunities that may not be visible through traditional rank tracking alone.",
+        "See how your Google Business Profile ranks from multiple search locations with interactive Geo-Grid Scans. Identify areas where your business performs well, uncover gaps in local visibility, compare historical scans, and gain deeper insights into your Google Maps performance beyond traditional keyword tracking.",
       url: "/product/geo-grid-scan",
       icon: ScanLine,
-    }
+    },
   ] satisfies { title: string; desc: string; url: string; longDesc: string; icon: LucideIcon }[],
 
   // ── Main Nav ───────────────────────────────────────────

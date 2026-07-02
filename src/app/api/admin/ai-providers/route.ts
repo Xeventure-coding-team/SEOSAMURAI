@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { prisma } from "../../../../../lib/prisma";
 import { encrypt, last4 } from "../../../../../lib/crypto";
+import { requireAccess } from "../../../../../lib/require-access";
 
 const VALID = ["openai", "gemini", "claude", "deepseek"];
 
@@ -8,6 +9,9 @@ export async function GET() {
   const providers = await prisma.aIProviderConfig.findMany({
     orderBy: { provider: "asc" },
   });
+
+  const { error } = await requireAccess("access_admin_dashboard");
+  if (error) return error;
 
   return NextResponse.json(
     providers.map((p) => ({
@@ -23,6 +27,9 @@ export async function GET() {
 
 export async function POST(req: Request) {
   const { provider, apiKey, model, enabled } = await req.json();
+
+  const { error } = await requireAccess("access_admin_dashboard");
+  if (error) return error;
 
   if (!VALID.includes(provider)) {
     return NextResponse.json({ error: "Invalid provider" }, { status: 400 });

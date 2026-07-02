@@ -1,4 +1,3 @@
-// src/app/api/help-desk/route.ts
 import { NextRequest, NextResponse } from 'next/server';
 import { GoogleGenAI } from '@google/genai';
 

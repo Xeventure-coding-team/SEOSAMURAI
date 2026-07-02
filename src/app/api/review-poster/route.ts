@@ -3,6 +3,7 @@ import { stackServerApp } from "@/stack";
 import { prisma } from "../../../../lib/prisma";
 import { canUse, canUseErrorMessage } from "@/lib/actions/can-use";
 import { decrementUsage, incrementUsage } from "@/lib/usage";
+import { checkRateLimit, getIdentifier } from "../../../../lib/rate-limit";
 
 export async function POST(request: NextRequest) {
   // Get authenticated user
@@ -22,6 +23,24 @@ export async function POST(request: NextRequest) {
         success: false,
         error: { success: false, error: canUseErrorMessage(F, "review-posters") },
       }, { status: 401 });
+    }
+
+    const { limited, reset } = await checkRateLimit("strict", getIdentifier(request.headers));
+
+    if (limited) {
+      const retryAfter = reset ? Math.ceil((reset - Date.now()) / 1000) : 60;
+      return NextResponse.json(
+        {
+          success: false,
+          error: "Too many requests. Please try again later.",
+        },
+        {
+          status: 429,
+          headers: {
+            "Retry-After": String(retryAfter),
+          },
+        }
+      );
     }
 
 

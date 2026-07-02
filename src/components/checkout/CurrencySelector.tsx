@@ -10,13 +10,6 @@ import {
 import { CURRENCY_CONFIG, type SupportedCurrency } from "@/lib/stripe";
 import { useCurrency } from "@/providers/CurrencyProvider";
 
-const CURRENCY_OPTIONS: { value: SupportedCurrency; label: string }[] = [
-  { value: "inr", label: "₹ INR" },
-  { value: "usd", label: "$ USD" },
-  { value: "eur", label: "€ EUR" },
-  { value: "aed", label: "د.إ AED" },
-];
-
 interface CurrencySelectorProps {
   className?: string;
 }
@@ -33,11 +26,13 @@ export function CurrencySelector({ className }: CurrencySelectorProps) {
         <SelectValue />
       </SelectTrigger>
       <SelectContent>
-        {CURRENCY_OPTIONS.map((opt) => (
-          <SelectItem key={opt.value} value={opt.value} className="text-xs">
-            {opt.label}
-          </SelectItem>
-        ))}
+        {(Object.entries(CURRENCY_CONFIG) as [SupportedCurrency, (typeof CURRENCY_CONFIG)[SupportedCurrency]][]).map(
+          ([key, cfg]) => (
+            <SelectItem key={key} value={key} className="text-xs">
+              {cfg.symbol} {cfg.code}
+            </SelectItem>
+          )
+        )}
       </SelectContent>
     </Select>
   );

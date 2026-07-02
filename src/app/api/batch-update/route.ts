@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { stackServerApp } from "@/stack";
 import { prisma } from "../../../../lib/prisma";
 import { getLocalRank } from "@/lib/serpHelper";
+import { checkRateLimit, getIdentifier } from "../../../../lib/rate-limit";
 
 // Types
 interface KeywordRankData {
@@ -69,12 +70,12 @@ async function enforceUserRateLimit(userId: string): Promise<void> {
   const lastRequestTime = userRequestTracker.get(userId) || 0;
   const now = Date.now();
   const timeSinceLastRequest = now - lastRequestTime;
-  
+
   if (timeSinceLastRequest < RATE_LIMIT.MIN_DELAY_MS) {
     const waitTime = RATE_LIMIT.MIN_DELAY_MS - timeSinceLastRequest;
     await delay(waitTime);
   }
-  
+
   userRequestTracker.set(userId, Date.now());
 }
 
@@ -85,7 +86,7 @@ async function retryWithBackoff<T>(
   maxRetries: number = RATE_LIMIT.RETRY_ATTEMPTS
 ): Promise<T> {
   let lastError: Error | null = null;
-  
+
   for (let attempt = 0; attempt < maxRetries; attempt++) {
     try {
       if (attempt > 0) {
@@ -95,30 +96,30 @@ async function retryWithBackoff<T>(
         );
         await delay(backoffTime);
       }
-      
+
       return await fn();
     } catch (error) {
       lastError = error instanceof Error ? error : new Error(String(error));
-      
+
       // Check if it's a rate limit error
-      const is429Error = lastError.message.includes('429') || 
-                         lastError.message.toLowerCase().includes('too many requests') ||
-                         lastError.message.toLowerCase().includes('rate limit');
-      
+      const is429Error = lastError.message.includes('429') ||
+        lastError.message.toLowerCase().includes('too many requests') ||
+        lastError.message.toLowerCase().includes('rate limit');
+
       const is500Error = lastError.message.includes('500');
       const is503Error = lastError.message.includes('503');
-      
+
       // Only retry on rate limit or server errors
       if (is429Error || is500Error || is503Error) {
         if (attempt === maxRetries - 1) {
           throw new Error(`Max retries reached for ${context}: ${lastError.message}`);
         }
-        
+
         // If it's a 429, add extra delay
         if (is429Error && attempt < maxRetries - 1) {
           await delay(30000); // Extra 30 second cooldown
         }
-        
+
         // Continue to next retry attempt
         continue;
       } else {
@@ -127,7 +128,7 @@ async function retryWithBackoff<T>(
       }
     }
   }
-  
+
   throw lastError || new Error(`Failed after ${maxRetries} attempts`);
 }
 
@@ -145,7 +146,7 @@ export async function POST(req: Request) {
 
     const userId = user.id;
     const { businessName, location, keywordIds, locationId } = await req.json();
-    
+
     const whereClause: any = keywordIds && keywordIds.length > 0
       ? { userId, isActive: true, id: { in: keywordIds } }
       : { userId, isActive: true };
@@ -167,7 +168,7 @@ export async function POST(req: Request) {
     }
 
     await prisma.batchUpdate.deleteMany({});
-    
+
     const batchUpdate = await prisma.batchUpdate.create({
       data: {
         status: 'RUNNING',
@@ -306,7 +307,7 @@ async function processBatchAsync(
 
         // Add delay between API calls with jitter (except for the last keyword)
         if (!isLastKeyword) {
-          const delayTime = RATE_LIMIT.MIN_DELAY_MS;          
+          const delayTime = RATE_LIMIT.MIN_DELAY_MS;
           await delayWithJitter(delayTime, 2000);
         }
 
@@ -335,7 +336,7 @@ async function processBatchAsync(
 
         // Add a longer delay after error to cool down
         if (!isLastKeyword) {
-            await delay(10000);
+          await delay(10000);
         }
       }
 
@@ -367,7 +368,7 @@ async function processBatchAsync(
       finalProgress.estimatedTimeRemaining = 0;
       batchProgress.set(batchId, finalProgress);
     }
-  } catch (error) {    
+  } catch (error) {
     await prisma.batchUpdate.update({
       where: { id: batchId },
       data: {
@@ -492,11 +493,11 @@ async function performSerpUpdate(
   const timeoutId = setTimeout(() => controller.abort(), 45000); // 45 second timeout
 
   try {
-     
+
     const data = await getLocalRank(query, formattedLocation, businessName);
 
     if (!data.success) {
-        throw new Error(`SERP API error: ${data.message || 'Unknown API error'}`);
+      throw new Error(`SERP API error: ${data.message || 'Unknown API error'}`);
     }
 
     let currentRank = data.found ? data.rank : null;
@@ -537,8 +538,8 @@ async function performSerpUpdate(
       }))
       : [];
 
-      console.log(data);
-      
+    console.log(data);
+
     await prisma.keywordRank.create({
       data: {
         keyword: query,
@@ -599,7 +600,7 @@ async function performSerpUpdateSingle(
   return retryWithBackoff(
     async () => {
       await enforceUserRateLimit(userId);
-      
+
       if (!process.env.X_API_KEY) {
         throw new Error("X_API_KEY environment variable is not set");
       }
@@ -748,10 +749,28 @@ export async function PUT(req: Request) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
     const body = await req.json();
-    const { keyword, refreshRate, targetDomain, isActive , businessName } = body;
+    const { keyword, refreshRate, targetDomain, isActive, businessName } = body;
 
     const url = new URL(req.url);
     const urlId = url.searchParams.get('id');
+
+    const { limited, reset } = await checkRateLimit("strict", getIdentifier(req.headers));
+
+    if (limited) {
+      const retryAfter = reset ? Math.ceil((reset - Date.now()) / 1000) : 60;
+      return NextResponse.json(
+        {
+          success: false,
+          error: "Too many requests. Please try again later.",
+        },
+        {
+          status: 429,
+          headers: {
+            "Retry-After": String(retryAfter),
+          },
+        }
+      );
+    }
 
     if (!urlId) {
       return NextResponse.json(

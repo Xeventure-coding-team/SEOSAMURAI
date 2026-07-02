@@ -111,7 +111,7 @@ export default function HeroSection() {
             {/* Buttons */}
             <div className="lg:mb-20 mb-8 flex flex-wrap items-center gap-4">
               <Button size="lg" asChild>
-                <Link href="/handler/signup">
+                <Link href="/sign-up">
                   Start ranking higher
                   <ArrowRight className="ml-2 size-4" />
                 </Link>

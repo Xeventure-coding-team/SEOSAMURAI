@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server"
 import { stackServerApp } from "@/stack"
 import { prisma } from "../../../../../lib/prisma"
+import { checkRateLimit, getIdentifier } from "../../../../../lib/rate-limit"
 
 
 function extractCleanLocation(placesData: any): string {
@@ -190,6 +191,16 @@ export async function GET(req: Request) {
     const gmbAccountId = searchParams.get("gmb_account_id")
     const withPosts = searchParams.get("with_posts") === "true"
     const apiKey = process.env.PLACES_KEY
+
+    const { limited, reset } = await checkRateLimit("strict", getIdentifier(req.headers));
+
+    if (limited) {
+      const retryAfter = reset ? Math.ceil((reset - Date.now()) / 1000) : 60;
+      return NextResponse.json(
+        { error: 'Too many requests. Please try again later.' },
+        { status: 429, headers: { 'Retry-After': String(retryAfter) } }
+      );
+    }
 
     const user = await stackServerApp.getUser();
     if (!user?.id) {

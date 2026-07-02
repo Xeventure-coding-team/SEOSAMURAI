@@ -1,10 +1,16 @@
 import { NextResponse } from 'next/server';
 import axios from 'axios';
+import { stackServerApp } from '@/stack';
 
 export async function POST(req: Request) {
   try {
     const { input, newAccessToken } = await req.json();
     const apiKey = process.env.PLACES_KEY;
+
+    const user = await stackServerApp.getUser();
+    if (!user?.id) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
 
     if (!input) {
       return NextResponse.json({ error: 'Input query parameter is required' }, { status: 400 });

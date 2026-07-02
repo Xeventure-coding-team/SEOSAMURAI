@@ -4,7 +4,7 @@ import GMBLocationMapInterface from '@/components/scan/GMBLocationMapInterface'
 import React from 'react'
 
 export const metadata = {
-  title: `Run a Scan | ${process.env.APP_NAME}`,
+  title: `Run a Scan — ${process.env.APP_NAME}`,
 }
 
 function page() {

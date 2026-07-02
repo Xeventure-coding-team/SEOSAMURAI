@@ -231,43 +231,44 @@ const SUMMARY_METRIC_LABELS: Record<string, string> = {
 
 // ─── Chart Configurations ─────────────────────────────────────────────────────
 
+// ─── Chart Configurations ─────────────────────────────────────────────────────
+
 // Pie chart config
 const pieChartConfig = {
-  postsUsed: { label: 'Posts', color: 'var(--chart-1)' },
-  aiPostersUsed: { label: 'AI Posters', color: 'var(--chart-2)' },
-  aiReviewRepliesUsed: { label: 'AI Reviews', color: 'var(--chart-3)' },
-  scheduledPostsUsed: { label: 'Scheduled', color: 'var(--chart-4)' },
-  geoGridScansUsed: { label: 'Geo Scans', color: 'var(--chart-5)' },
-  reviewPostersUsed: { label: 'Review Posters', color: 'var(--chart-1)' },
-  keywordTrackingUsed: { label: 'Keywords', color: 'var(--chart-2)' },
-  aiImageUsed: { label: 'AI Images', color: 'var(--chart-3)' },
+  postsUsed: { label: 'Posts', color: '#3b82f6' },
+  aiPostersUsed: { label: 'AI Posters', color: '#8b5cf6' },
+  aiReviewRepliesUsed: { label: 'AI Reviews', color: '#ec4899' },
+  scheduledPostsUsed: { label: 'Scheduled', color: '#f59e0b' },
+  geoGridScansUsed: { label: 'Geo Scans', color: '#10b981' },
+  reviewPostersUsed: { label: 'Review Posters', color: '#ef4444' },
+  keywordTrackingUsed: { label: 'Keywords', color: '#6366f1' },
+  aiImageUsed: { label: 'AI Images', color: '#14b8a6' },
 } satisfies ChartConfig;
 
 // Bar chart config
 const barChartConfig = {
-  value: { label: 'Usage Count', color: 'var(--chart-1)' },
+  value: { label: 'Usage Count', color: '#3b82f6' },
 } satisfies ChartConfig;
 
 // Date wise line chart config
 const dateWiseChartConfig = {
-  operations: { label: 'Operations', color: 'var(--chart-1)' },
-  users: { label: 'Active Users', color: 'var(--chart-2)' },
+  operations: { label: 'Operations', color: '#3b82f6' },
+  users: { label: 'Active Users', color: '#8b5cf6' },
 } satisfies ChartConfig;
 
 // Trends chart config
 const trendsChartConfig = {
-  totalOperations: { label: 'Total Operations', color: 'var(--chart-1)' },
-  activeUsers: { label: 'Active Users', color: 'var(--chart-2)' },
+  totalOperations: { label: 'Total Operations', color: '#3b82f6' },
+  activeUsers: { label: 'Active Users', color: '#8b5cf6' },
 } satisfies ChartConfig;
 
 // Feature trends chart config
 const featureTrendsChartConfig = {
-  postsUsed: { label: 'Posts', color: 'var(--chart-1)' },
-  aiPostersUsed: { label: 'AI Posters', color: 'var(--chart-2)' },
-  aiReviewRepliesUsed: { label: 'AI Reviews', color: 'var(--chart-3)' },
-  scheduledPostsUsed: { label: 'Scheduled', color: 'var(--chart-4)' },
+  postsUsed: { label: 'Posts', color: '#3b82f6' },
+  aiPostersUsed: { label: 'AI Posters', color: '#8b5cf6' },
+  aiReviewRepliesUsed: { label: 'AI Reviews', color: '#ec4899' },
+  scheduledPostsUsed: { label: 'Scheduled', color: '#f59e0b' },
 } satisfies ChartConfig;
-
 
 function getUserInitials(name: string | null, email: string | null): string {
   if (name && name !== 'N/A') {
@@ -371,7 +372,7 @@ export default function UsageDashboard() {
   const [activeTab, setActiveTab] = useState('overview');
   const [loading, setLoading] = useState(false);
   const [dateRange, setDateRange] = useState<{ from: Date; to: Date }>({
-    from: new Date(new Date().setDate(1)),
+    from: new Date(new Date().setDate(new Date().getDate() - 29)),
     to: new Date(),
   });
   const [selectedMetric, setSelectedMetric] = useState<UsageMetricKey>('postsUsed');

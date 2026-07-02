@@ -1,8 +1,5 @@
-// app/api/cron/track-reviews/route.ts
-
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "../../../../../lib/prisma";
-// import { prisma } from "@/lib/prisma";
 
 async function fetchAllLocationReviews(
   { accountId, locationId }: { accountId: string; locationId: string },

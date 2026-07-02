@@ -1032,10 +1032,6 @@ export default function UnrepliedReviews({
         </CardContent>
 
       </Card>
-
-
-
-
     </PlanGate>
   )
 }

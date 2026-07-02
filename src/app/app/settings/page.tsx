@@ -3,7 +3,7 @@ import { AccountSettings } from '@hexclave/next'
 import React from 'react'
 
 export const metadata = {
-  title: `Account Settings | ${process.env.APP_NAME}`,
+  title: `Account Settings — ${process.env.APP_NAME}`,
 }
 
 export default function Page() {

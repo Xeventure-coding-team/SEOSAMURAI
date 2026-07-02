@@ -4,7 +4,7 @@ import DashboardStats from '@/components/dashboard/DashboardStats'
 import React from 'react'
 
 export const metadata = {
-  title: `Dashboard | ${process.env.APP_NAME}`,
+  title: `Dashboard — ${process.env.APP_NAME}`,
 }
 
 function page() {

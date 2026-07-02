@@ -4,7 +4,7 @@ import { PlanGate } from '@/components/PlanGate'
 import React from 'react'
 
 export const metadata = {
-  title: `Bulk Posting | ${process.env.APP_NAME}`,
+  title: `Bulk Posting — ${process.env.APP_NAME}`,
 }
 
 function page() {

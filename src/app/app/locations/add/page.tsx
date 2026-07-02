@@ -4,7 +4,7 @@ import { PlanGate } from '@/components/PlanGate'
 import React from 'react'
 
 export const metadata = {
-  title: `Add Location | ${process.env.APP_NAME}`,
+  title: `Add Location — ${process.env.APP_NAME}`,
 }
 
 

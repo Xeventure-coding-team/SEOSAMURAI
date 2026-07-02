@@ -2,6 +2,7 @@ import { canUse, canUseErrorMessage } from '@/lib/actions/can-use';
 import { decrementUsage, incrementUsage } from '@/lib/usage';
 import { stackServerApp } from '@/stack';
 import { NextRequest, NextResponse } from 'next/server';
+import { checkRateLimit, getIdentifier } from '../../../../../lib/rate-limit';
 
 // Types
 interface GridPoint {
@@ -656,6 +657,24 @@ export async function POST(request: NextRequest): Promise<NextResponse<GridRanki
             );
         }
 
+        const { limited, reset } = await checkRateLimit("strict", getIdentifier(request.headers));
+
+        if (limited) {
+            const retryAfter = reset ? Math.ceil((reset - Date.now()) / 1000) : 60;
+            return NextResponse.json<GridRankingResponse>(
+                {
+                    success: false,
+                    error: "Too many requests. Please try again later.",
+                },
+                {
+                    status: 429,
+                    headers: {
+                        "Retry-After": String(retryAfter),
+                    },
+                }
+            );
+        }
+
         let body: GridRankingRequest;
         try {
             body = await request.json();
@@ -972,17 +991,14 @@ export async function POST(request: NextRequest): Promise<NextResponse<GridRanki
 
 
 export async function GET(): Promise<NextResponse> {
-    return NextResponse.json({
-        success: true,
-        message: 'Enhanced GMB Grid Ranking API is running',
-        timestamp: new Date().toISOString(),
-        version: '2.0.0',
-        features: [
-            'Place ID priority matching',
-            'Enhanced auto-detection',
-            'Multiple keyword formats support',
-            'Better error handling',
-            'Improved logging and debugging'
-        ]
-    });
+    return NextResponse.json(
+        {
+            success: false,
+            error: 'This endpoint is no longer supported',
+            message: 'The GMB Grid Ranking API has been deprecated',
+            timestamp: new Date().toISOString(),
+            status: 410, // Gone - permanently removed
+        },
+        { status: 410 } // 410 Gone status code
+    );
 }

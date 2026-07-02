@@ -1,8 +1,14 @@
 "use client";
 
-import useEmblaCarousel from "embla-carousel-react";
-import { useCallback, useEffect, useState } from "react";
 import { Star, ChevronLeft, ChevronRight, Quote } from "lucide-react";
+import { useRef, useState } from "react";
+import { Swiper, SwiperSlide } from "swiper/react";
+import type { Swiper as SwiperType } from "swiper";
+import { FreeMode, Navigation } from "swiper/modules";
+
+import "swiper/css";
+import "swiper/css/free-mode";
+import "swiper/css/navigation";
 
 interface Testimonial {
     name: string;
@@ -15,25 +21,24 @@ interface Testimonial {
 
 interface TestimonialsProps {
     title?: string;
+    subtitle?: string;
     items: Testimonial[];
 }
 
 function TestimonialCard({ t }: { t: Testimonial }) {
     const [expanded, setExpanded] = useState(false);
 
-    const isLong = t.quote.length > 350;
+    const isLong = t.quote.length > 320;
     const displayText =
-        expanded || !isLong
-            ? t.quote
-            : t.quote.slice(0, 350) + "...";
+        expanded || !isLong ? t.quote : t.quote.slice(0, 320).trimEnd() + "…";
 
     return (
-        <article className="group flex h-full flex-col rounded-3xl border border-border/60 bg-card p-6 transition-all duration-300 hover:-translate-y-1 select-none">
+        <article className="group relative flex h-full flex-col rounded-2xl border border-border/50 bg-card p-7 shadow-[0_1px_2px_rgba(0,0,0,0.04)] transition-all duration-300 select-none">
             {/* Header */}
             <div className="flex items-start justify-between gap-4">
                 <div className="flex items-center gap-3">
                     <div
-                        className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full text-sm font-semibold text-white shadow-sm"
+                        className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full text-[13px] font-semibold text-white ring-4 ring-black/[0.03]"
                         style={{
                             backgroundColor: t.avatarColor ?? "#6366f1",
                         }}
@@ -45,13 +50,12 @@ function TestimonialCard({ t }: { t: Testimonial }) {
                             .join("")}
                     </div>
 
-                    <div>
-                        <h4 className="font-semibold text-foreground">
+                    <div className="min-w-0">
+                        <h4 className="truncate text-[15px] font-semibold leading-tight text-foreground">
                             {t.name}
                         </h4>
-
                         {t.role && (
-                            <p className="text-sm text-muted-foreground">
+                            <p className="truncate text-[13px] leading-tight text-muted-foreground">
                                 {t.role}
                             </p>
                         )}
@@ -60,8 +64,9 @@ function TestimonialCard({ t }: { t: Testimonial }) {
 
                 {t.source === "google" && (
                     <svg
-                        className="h-5 w-5 shrink-0 opacity-80"
+                        className="h-[18px] w-[18px] shrink-0 opacity-90"
                         viewBox="0 0 24 24"
+                        aria-label="Google review"
                     >
                         <path
                             fill="#4285F4"
@@ -84,106 +89,106 @@ function TestimonialCard({ t }: { t: Testimonial }) {
             </div>
 
             {/* Rating */}
-            <div className="mt-5 flex items-center gap-1">
+            <div className="mt-4 flex items-center gap-0.5">
                 {Array.from({ length: 5 }).map((_, idx) => (
                     <Star
                         key={idx}
-                        className={`h-4 w-4 ${
-                            idx < t.rating
-                                ? "fill-yellow-500 text-yellow-500"
-                                : "text-muted"
+                        strokeWidth={0}
+                        className={`h-[15px] w-[15px] ${
+                            idx < t.rating ? "fill-amber-400" : "fill-muted"
                         }`}
                     />
                 ))}
             </div>
 
             {/* Quote */}
-            <div className="relative mt-5 flex-1">
-                <Quote className="absolute -top-1 left-0 h-8 w-8 text-primary/10" />
-
-                <p className="relative pl-1 text-[15px] leading-7 text-muted-foreground">
+            <div className="relative mt-4 flex-1">
+                <Quote
+                    strokeWidth={0}
+                    className="absolute -top-1 -left-1 h-7 w-7 fill-primary/[0.06]"
+                />
+                <p className="relative text-[14.5px] leading-[1.7] text-muted-foreground">
                     {displayText}
                 </p>
 
                 {isLong && (
                     <button
                         onClick={() => setExpanded((v) => !v)}
-                        className="mt-3 text-sm font-medium text-primary transition-colors hover:underline"
+                        className="mt-2.5 text-[13px] font-medium text-foreground/80 underline-offset-2 transition-colors hover:text-primary hover:underline"
                     >
                         {expanded ? "Show less" : "Read full review"}
                     </button>
                 )}
             </div>
-
-         
         </article>
     );
 }
 
 export default function Testimonials({
     title = "Genuine experiences from real users",
+    subtitle,
     items,
 }: TestimonialsProps) {
-    const [emblaRef, emblaApi] = useEmblaCarousel({
-        align: "start",
-        loop: true,
-        dragFree: true,
-        containScroll: "trimSnaps",
-    });
-
-    const [canScrollPrev, setCanScrollPrev] = useState(false);
-    const [canScrollNext, setCanScrollNext] = useState(true);
-
-    const onSelect = useCallback(() => {
-        if (!emblaApi) return;
-        setCanScrollPrev(emblaApi.canScrollPrev());
-        setCanScrollNext(emblaApi.canScrollNext());
-    }, [emblaApi]);
-
-    useEffect(() => {
-        if (!emblaApi) return;
-        onSelect();
-        emblaApi.on("select", onSelect);
-        emblaApi.on("reInit", onSelect);
-    }, [emblaApi, onSelect]);
+    const swiperRef = useRef<SwiperType | null>(null);
 
     return (
-        <section className="my-24">
-            <div className="mb-10 flex items-center justify-between gap-4">
-                <h2 className="text-3xl font-bold tracking-tight">{title}</h2>
-                <div className="hidden gap-2 md:flex">
-                    <button
-                        onClick={() => emblaApi?.scrollPrev()}
-                        disabled={!canScrollPrev}
-                        className="flex h-9 w-9 items-center justify-center rounded-full border bg-card hover:bg-muted transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
-                        aria-label="Previous"
-                    >
-                        <ChevronLeft className="h-4 w-4" />
-                    </button>
-                    <button
-                        onClick={() => emblaApi?.scrollNext()}
-                        disabled={!canScrollNext}
-                        className="flex h-9 w-9 items-center justify-center rounded-full border bg-card hover:bg-muted transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
-                        aria-label="Next"
-                    >
-                        <ChevronRight className="h-4 w-4" />
-                    </button>
+        <section>
+            <div className="mb-10 flex items-end justify-between gap-6">
+                <div>
+                    <h2 className="text-[28px] font-bold tracking-tight text-foreground sm:text-3xl">
+                        {title}
+                    </h2>
+                    {subtitle && (
+                        <p className="mt-2 max-w-xl text-[15px] text-muted-foreground">
+                            {subtitle}
+                        </p>
+                    )}
                 </div>
+
+            
             </div>
 
-            <div className="relative -mx-6 px-6">
-                <div className="pointer-events-none absolute inset-y-0 left-0 z-10 w-12 bg-gradient-to-r from-background to-transparent" />
-                <div className="pointer-events-none absolute inset-y-0 right-0 z-10 w-12 bg-gradient-to-l from-background to-transparent" />
+            <Swiper
+                modules={[FreeMode, Navigation]}
+                onSwiper={(swiper) => {
+                    swiperRef.current = swiper;
+                }}
+                loop
+                loopAddBlankSlides={false}
+                freeMode={{ enabled: true, sticky: false }}
+                grabCursor
+                spaceBetween={20}
+                slidesPerView={1.15}
+                breakpoints={{
+                    640: { slidesPerView: 2.1 },
+                    1024: { slidesPerView: 3.1 },
+                    1280: { slidesPerView: 4 },
+                }}
+                className="!overflow-hidden !py-2"
+            >
+                {items.map((t, i) => (
+                    <SwiperSlide key={i} className="!h-auto">
+                        <TestimonialCard t={t} />
+                    </SwiperSlide>
+                ))}
+            </Swiper>
 
-                <div ref={emblaRef} className="overflow-hidden">
-                    <div className="flex gap-5">
-                        {items.map((t, i) => (
-                            <div key={i} className="min-w-0 shrink-0 basis-[320px]">
-                                <TestimonialCard t={t} />
-                            </div>
-                        ))}
-                    </div>
-                </div>
+            {/* Mobile nav (shown under cards on small screens) */}
+            <div className="mt-6 flex justify-center gap-2 md:hidden">
+                <button
+                    onClick={() => swiperRef.current?.slidePrev()}
+                    className="flex h-9 w-9 items-center justify-center rounded-full border border-border bg-card text-foreground/70"
+                    aria-label="Previous"
+                >
+                    <ChevronLeft className="h-4 w-4" />
+                </button>
+                <button
+                    onClick={() => swiperRef.current?.slideNext()}
+                    className="flex h-9 w-9 items-center justify-center rounded-full border border-border bg-card text-foreground/70"
+                    aria-label="Next"
+                >
+                    <ChevronRight className="h-4 w-4" />
+                </button>
             </div>
         </section>
     );

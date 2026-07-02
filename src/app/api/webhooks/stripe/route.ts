@@ -5,29 +5,28 @@ import { getStripe, getPlanByPriceId, getPlanLimits, PlanId } from "@/lib/stripe
 import { PlanType, SubscriptionStatus } from "@/generated/prisma";
 import { prisma } from "../../../../../lib/prisma";
 
-const WEBHOOK_SECRET = process.env.STRIPE_WEBHOOK_SECRET!;
-
-function getPeriodEnd(subscription: Stripe.Subscription): Date {
-  const item = subscription.items.data[0];
-  const ts =
-    (item as any)?.billing_period?.end ??
-    (subscription as any).current_period_end;
-
-  if (!ts) {
-    const interval = item?.plan?.interval ?? "month";
-    const d = new Date();
-    if (interval === "year") d.setFullYear(d.getFullYear() + 1);
-    else d.setMonth(d.getMonth() + 1);
-    return d;
-  }
-  return new Date(ts * 1000);
+// Guard — fail loud at startup if secret is missing or blank
+const WEBHOOK_SECRET = process.env.STRIPE_WEBHOOK_SECRET;
+if (!WEBHOOK_SECRET) {
+  throw new Error("STRIPE_WEBHOOK_SECRET is not set or is empty");
 }
 
-// FIX: Safe period start — current_period_start is not always present
+function getPeriodEnd(subscription: Stripe.Subscription): Date {
+  const ts = (subscription as any).current_period_end;
+  if (ts) return new Date(ts * 1000);
+  // fallback
+  const interval = subscription.items.data[0]?.plan?.interval ?? 'month';
+  const d = new Date();
+  if (interval === 'year') d.setFullYear(d.getFullYear() + 1);
+  else d.setMonth(d.getMonth() + 1);
+  return d;
+}
+
 function getPeriodStart(subscription: Stripe.Subscription): Date {
   const ts = (subscription as any).current_period_start;
   return ts ? new Date(ts * 1000) : new Date();
 }
+
 
 function stripeStatusToPrisma(status: Stripe.Subscription.Status): SubscriptionStatus {
   const map: Record<Stripe.Subscription.Status, SubscriptionStatus> = {
@@ -89,7 +88,6 @@ async function handleUpgrade(userId: string, newPlanId: PlanId) {
       orderBy: { created_at: "asc" },
       take: locationsToUnlock,
     });
-
     if (locked.length > 0) {
       await prisma.locations.updateMany({
         where: { id: { in: locked.map((l) => l.id) } },
@@ -110,7 +108,6 @@ async function handleUpgrade(userId: string, newPlanId: PlanId) {
       orderBy: { createdAt: "asc" },
       take: websitesToUnlock,
     });
-
     if (locked.length > 0) {
       await prisma.website.updateMany({
         where: { id: { in: locked.map((w) => w.id) } },
@@ -128,8 +125,6 @@ async function handlePlanChange(userId: string, oldPlanId: PlanId, newPlanId: Pl
   const isDowngrade =
     newLimits.locations < oldLimits.locations ||
     newLimits.websites < oldLimits.websites;
-
-  console.log(`Plan change for ${userId}: ${oldPlanId} → ${newPlanId} (${isDowngrade ? "downgrade" : "upgrade"})`);
 
   if (isDowngrade) {
     await handleDowngrade(userId, newPlanId);
@@ -153,6 +148,21 @@ export async function POST(req: Request) {
   } catch (err) {
     console.error("Webhook signature verification failed:", err);
     return NextResponse.json({ error: "Invalid signature" }, { status: 400 });
+  }
+
+  // ── Idempotency — Stripe retries on 5xx, guard against double processing ──
+  try {
+    await prisma.webhookEvent.create({
+      data: { stripeEventId: event.id, type: event.type },
+    });
+  } catch (e: any) {
+    // P2002 = unique constraint — event already processed
+    if (e?.code === "P2002") {
+      console.log(`Duplicate webhook event ${event.id} — skipping`);
+      return NextResponse.json({ received: true });
+    }
+    // Any other DB error — let it bubble to the outer catch so Stripe retries
+    throw e;
   }
 
   try {
@@ -179,7 +189,6 @@ export async function POST(req: Request) {
           select: { plan: true, status: true },
         });
 
-        // FIX: safe period start
         const periodStart = getPeriodStart(subscription);
         const periodEnd = getPeriodEnd(subscription);
 
@@ -193,7 +202,7 @@ export async function POST(req: Request) {
             stripeCurrentPeriodEnd: periodEnd,
             status: stripeStatusToPrisma(subscription.status),
             plan: plan.id.toUpperCase() as PlanType,
-            cancelAtPeriodEnd: (subscription as any).cancel_at_period_end ?? false,
+            cancelAtPeriodEnd: subscription.cancel_at_period_end ?? false,
           },
           update: {
             stripeCustomerId: customerId,
@@ -202,11 +211,10 @@ export async function POST(req: Request) {
             stripeCurrentPeriodEnd: periodEnd,
             status: stripeStatusToPrisma(subscription.status),
             plan: plan.id.toUpperCase() as PlanType,
-            cancelAtPeriodEnd: (subscription as any).cancel_at_period_end ?? false,
+            cancelAtPeriodEnd: subscription.cancel_at_period_end ?? false,
           },
         });
 
-        // FIX: use upsertedSub.id (Prisma ObjectId) not subscription.id (Stripe string)
         try {
           await prisma.usage.upsert({
             where: { stackUserId },
@@ -227,7 +235,6 @@ export async function POST(req: Request) {
             },
           });
         } catch (e: any) {
-          // P2002 = unique constraint violation — concurrent webhook already created the record
           if (e?.code !== "P2002") throw e;
           console.log(`Usage record already exists for ${stackUserId} — skipping create`);
         }
@@ -271,7 +278,10 @@ export async function POST(req: Request) {
           });
           console.log(`Locked all resources for cancelled user ${stackUserId}`);
         } else {
-          console.warn(`subscription.deleted: no stackUserId in metadata for sub ${subscription.id}`);
+          // Metadata missing — data integrity issue, flag for investigation
+          console.error(
+            `[webhook] subscription.deleted: no stackUserId in metadata for sub ${subscription.id} — resources NOT locked`
+          );
         }
         break;
       }
@@ -286,7 +296,6 @@ export async function POST(req: Request) {
         const priceId = stripeSub.items.data[0]?.price.id;
         const plan = priceId ? getPlanByPriceId(priceId) : null;
 
-        // FIX: safe period start (retrieved sub should always have it, but guard anyway)
         const periodStart = getPeriodStart(stripeSub);
         const periodEnd = getPeriodEnd(stripeSub);
 
@@ -297,10 +306,7 @@ export async function POST(req: Request) {
 
         await prisma.subscription.updateMany({
           where: { stripeSubscriptionId: subscriptionId },
-          data: {
-            status: "ACTIVE",
-            stripeCurrentPeriodEnd: periodEnd,
-          },
+          data: { status: "ACTIVE", stripeCurrentPeriodEnd: periodEnd },
         });
 
         if (stackUserId) {
@@ -319,7 +325,7 @@ export async function POST(req: Request) {
               aiImageUsed: 0,
             },
           });
-          console.log(`Reset usage for user ${stackUserId} — new period: ${periodStart.toISOString()} → ${periodEnd.toISOString()}`);
+          console.log(`Reset usage for user ${stackUserId} — ${periodStart.toISOString()} → ${periodEnd.toISOString()}`);
         }
 
         if (

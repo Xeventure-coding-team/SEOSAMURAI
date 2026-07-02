@@ -4,6 +4,7 @@ import { stackServerApp } from '@/stack'
 import { incrementUsage } from '@/lib/usage'
 import { prisma } from '../../../../../lib/prisma'
 import { cleanGmbAccountId, cleanGmbLocationId, getLocationById } from '@/lib/getLocationById'
+import { checkRateLimit, getIdentifier } from '../../../../../lib/rate-limit'
 
 interface QueryParams {
   accountId: string
@@ -281,6 +282,16 @@ export async function POST(request: NextRequest): Promise<NextResponse<SuccessRe
       return NextResponse.json({ success: false, error: 'Unauthorized' }, { status: 401 })
     }
 
+    const { limited, reset } = await checkRateLimit("strict", getIdentifier(request.headers));
+
+    if (limited) {
+      const retryAfter = reset ? Math.ceil((reset - Date.now()) / 1000) : 60;
+      return NextResponse.json(
+        { error: 'Too many requests. Please try again later.' },
+        { status: 429, headers: { 'Retry-After': String(retryAfter) } }
+      );
+    }
+
     if (!accountId || !locationId || !selectedId || !selectedText || !accessToken) {
       return NextResponse.json(
         { success: false, error: 'Missing required parameters', details: 'accountId, locationId, selectedId, selectedText, and accessToken are required' },
@@ -348,6 +359,12 @@ export async function GET(request: NextRequest): Promise<NextResponse<SuccessRes
     const { params, error } = await parseRequestParams(request, false)
     if (error) return error
 
+    const user = await stackServerApp.getUser();
+    if (!user?.id) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
+
     const { accountId, locationId, selectedId, accessToken } = params
 
     const gmbLocationId = cleanGmbLocationId(locationId!)
@@ -395,6 +412,12 @@ export async function DELETE(request: NextRequest): Promise<NextResponse> {
     const body = await request.json()
     const { accountId, locationId, selectedId, accessToken } = body
 
+    const user = await stackServerApp.getUser();
+    if (!user?.id) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
+
     if (!accountId || !locationId || !selectedId || !accessToken) {
       return NextResponse.json({ success: false, error: 'Missing required parameters' }, { status: 400 })
     }
@@ -426,6 +449,12 @@ export async function PATCH(request: NextRequest): Promise<NextResponse<SuccessR
     if (error) return error
 
     const { accountId, locationId, selectedId, selectedText, accessToken } = params
+
+    const user = await stackServerApp.getUser();
+    if (!user?.id) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
 
     const gmbLocationId = cleanGmbLocationId(locationId!)
     const cleanAccountId = cleanGmbAccountId(accountId!)

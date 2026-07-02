@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "../../../../lib/prisma";
 import { stackServerApp } from "@/stack";
 import { canUse, canUseErrorMessage, CanUseResult } from "@/lib/actions/can-use";
+import { checkRateLimit, getIdentifier } from "../../../../lib/rate-limit";
 
 async function fetchAllLocationReviews(
   { accountId, locationId }: { accountId: string; locationId: string },
@@ -288,6 +289,24 @@ export async function POST(request: NextRequest) {
         "review-tracking"
       );
       return NextResponse.json({ success: false, error: msg }, { status: 403 });
+    }
+
+    const { limited, reset } = await checkRateLimit("strict", getIdentifier(request.headers));
+
+    if (limited) {
+      const retryAfter = reset ? Math.ceil((reset - Date.now()) / 1000) : 60;
+      return NextResponse.json(
+        {
+          success: false,
+          error: "Too many requests. Please try again later.",
+        },
+        {
+          status: 429,
+          headers: {
+            "Retry-After": String(retryAfter),
+          },
+        }
+      );
     }
 
     const accessToken = payloadToken

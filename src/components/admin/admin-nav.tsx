@@ -20,6 +20,8 @@ import {
   Moon,
   Sun,
   Laptop,
+  Mail,
+  UserSquare2,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
@@ -47,13 +49,23 @@ import toast from "react-hot-toast";
 import { useState, useEffect } from "react";
 import { useTheme } from "next-themes";
 
-// Navigation configuration with sections
+// Navigation configuration with sections.
+// A nav item can optionally define `children` to render as a dropdown
+// instead of a direct link (used here for Users -> All Users / Subscribers).
 const NAV_SECTIONS = [
   {
     label: "Main",
     items: [
       { href: "/admin/dashboard", label: "Dashboard", icon: LayoutDashboard },
-      { href: "/admin/users", label: "Users", icon: Users },
+      {
+        href: "/admin/users",
+        label: "Users",
+        icon: Users,
+        children: [
+          { href: "/admin/users", label: "All Users", icon: UserSquare2 },
+          { href: "/admin/users/subscribers", label: "Newsletter Subscribers", icon: Mail },
+        ],
+      },
       { href: "/admin/billing", label: "Billing", icon: CreditCard },
       { href: "/admin/usage", label: "Usage", icon: BarChart2 },
     ],
@@ -110,10 +122,15 @@ export default function AdminNav({ initials, displayName, email }: AdminNavProps
   }, []);
 
   const isActive = (href: string) => {
-    if (href === "/admin/dashboard") {
-      return pathname === href;
+    return pathname === href;
+  };
+
+  // An item with children is "active" if the current path matches it OR any of its children
+  const isItemActive = (item: { href: string; children?: readonly { href: string }[] }) => {
+    if (item.children) {
+      return item.children.some((child) => isActive(child.href));
     }
-    return pathname.startsWith(href);
+    return isActive(item.href);
   };
 
   async function handleSignout() {
@@ -130,7 +147,7 @@ export default function AdminNav({ initials, displayName, email }: AdminNavProps
   const getCurrentSection = () => {
     for (const section of NAV_SECTIONS) {
       for (const item of section.items) {
-        if (isActive(item.href)) {
+        if (isItemActive(item)) {
           return section.label;
         }
       }
@@ -141,7 +158,7 @@ export default function AdminNav({ initials, displayName, email }: AdminNavProps
   // Theme Toggler Component
   const ThemeToggler = () => {
     if (!mounted) return null;
-    
+
     return (
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
@@ -233,6 +250,72 @@ export default function AdminNav({ initials, displayName, email }: AdminNavProps
     </div>
   );
 
+  // Renders a single top-level nav item — either a plain link, or (if it has
+  // `children`) a dropdown trigger that lists those children.
+  const DesktopNavItem = ({
+    item,
+  }: {
+    item: (typeof NAV_SECTIONS)[number]["items"][number];
+  }) => {
+    const active = isItemActive(item);
+
+    if ("children" in item && item.children) {
+      return (
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button
+              variant={active ? "secondary" : "ghost"}
+              size="sm"
+              className={cn(
+                "h-8 gap-1.5 text-sm font-normal px-3 whitespace-nowrap transition-all",
+                active && "bg-secondary font-medium shadow-sm",
+                !active && "hover:bg-accent/50"
+              )}
+            >
+              <item.icon className="h-3.5 w-3.5 shrink-0" aria-hidden="true" />
+              <span>{item.label}</span>
+              <ChevronDown className="h-3 w-3 text-muted-foreground" aria-hidden="true" />
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="start" className="w-56">
+            {item.children.map(({ href, label, icon: Icon }) => {
+              const childActive = isActive(href);
+              return (
+                <DropdownMenuItem key={href} asChild>
+                  <Link
+                    href={href}
+                    className={cn("w-full cursor-pointer", childActive && "bg-secondary font-medium")}
+                  >
+                    <Icon className="mr-2 h-4 w-4" />
+                    <span>{label}</span>
+                  </Link>
+                </DropdownMenuItem>
+              );
+            })}
+          </DropdownMenuContent>
+        </DropdownMenu>
+      );
+    }
+
+    return (
+      <Button
+        variant={active ? "secondary" : "ghost"}
+        size="sm"
+        className={cn(
+          "h-8 gap-1.5 text-sm font-normal px-3 whitespace-nowrap transition-all",
+          active && "bg-secondary font-medium shadow-sm",
+          !active && "hover:bg-accent/50"
+        )}
+        asChild
+      >
+        <Link href={item.href} aria-current={active ? "page" : undefined}>
+          <item.icon className="h-3.5 w-3.5 shrink-0" aria-hidden="true" />
+          <span>{item.label}</span>
+        </Link>
+      </Button>
+    );
+  };
+
   // Desktop navigation with responsive overflow handling
   const DesktopNav = () => (
     <div className="hidden lg:flex items-center gap-2 flex-1 min-w-0">
@@ -240,27 +323,9 @@ export default function AdminNav({ initials, displayName, email }: AdminNavProps
       <nav className="flex items-center gap-0.5 overflow-x-auto scrollbar-hide" aria-label="Main navigation">
         {NAV_SECTIONS.map((section) => (
           <div key={section.label} className="flex items-center gap-0.5">
-            {section.items.map(({ href, label, icon: Icon }) => {
-              const active = isActive(href);
-              return (
-                <Button
-                  key={href}
-                  variant={active ? "secondary" : "ghost"}
-                  size="sm"
-                  className={cn(
-                    "h-8 gap-1.5 text-sm font-normal px-3 whitespace-nowrap transition-all",
-                    active && "bg-secondary font-medium shadow-sm",
-                    !active && "hover:bg-accent/50"
-                  )}
-                  asChild
-                >
-                  <Link href={href} aria-current={active ? "page" : undefined}>
-                    <Icon className="h-3.5 w-3.5 shrink-0" aria-hidden="true" />
-                    <span>{label}</span>
-                  </Link>
-                </Button>
-              );
-            })}
+            {section.items.map((item) => (
+              <DesktopNavItem key={item.href} item={item} />
+            ))}
             {section !== NAV_SECTIONS[NAV_SECTIONS.length - 1] && (
               <Separator orientation="vertical" className="h-5 mx-0.5" />
             )}
@@ -268,8 +333,8 @@ export default function AdminNav({ initials, displayName, email }: AdminNavProps
         ))}
       </nav>
       <div className="ml-auto shrink-0 flex items-center gap-2">
-        <Link 
-          href="/" 
+        <Link
+          href="/"
           className="text-xs text-muted-foreground hover:text-primary transition-colors hidden sm:inline-block whitespace-nowrap"
         >
           Return to Home
@@ -283,7 +348,7 @@ export default function AdminNav({ initials, displayName, email }: AdminNavProps
   // Tablet navigation (collapsed with dropdown)
   const TabletNav = () => {
     const [isTabletMenuOpen, setIsTabletMenuOpen] = useState(false);
-    
+
     return (
       <div className="hidden md:flex lg:hidden items-center gap-2 flex-1 min-w-0">
         <Separator orientation="vertical" className="h-6" />
@@ -300,19 +365,51 @@ export default function AdminNav({ initials, displayName, email }: AdminNavProps
                 <DropdownMenuLabel className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
                   {section.label}
                 </DropdownMenuLabel>
-                {section.items.map(({ href, label, icon: Icon }) => {
-                  const active = isActive(href);
+                {section.items.map((item) => {
+                  const active = isItemActive(item);
+
+                  if ("children" in item && item.children) {
+                    return (
+                      <div key={item.href}>
+                        <DropdownMenuItem
+                          disabled
+                          className={cn(
+                            "opacity-100 cursor-default text-xs font-medium text-muted-foreground pl-2",
+                            active && "text-foreground"
+                          )}
+                        >
+                          <item.icon className="mr-2 h-4 w-4" />
+                          <span>{item.label}</span>
+                        </DropdownMenuItem>
+                        {item.children.map(({ href, label, icon: Icon }) => {
+                          const childActive = isActive(href);
+                          return (
+                            <DropdownMenuItem key={href} asChild>
+                              <Link
+                                href={href}
+                                className={cn(
+                                  "w-full cursor-pointer pl-8",
+                                  childActive && "bg-secondary font-medium"
+                                )}
+                              >
+                                <Icon className="mr-2 h-3.5 w-3.5" />
+                                <span>{label}</span>
+                              </Link>
+                            </DropdownMenuItem>
+                          );
+                        })}
+                      </div>
+                    );
+                  }
+
                   return (
-                    <DropdownMenuItem key={href} asChild>
-                      <Link 
-                        href={href} 
-                        className={cn(
-                          "w-full cursor-pointer",
-                          active && "bg-secondary font-medium"
-                        )}
+                    <DropdownMenuItem key={item.href} asChild>
+                      <Link
+                        href={item.href}
+                        className={cn("w-full cursor-pointer", active && "bg-secondary font-medium")}
                       >
-                        <Icon className="mr-2 h-4 w-4" />
-                        <span>{label}</span>
+                        <item.icon className="mr-2 h-4 w-4" />
+                        <span>{item.label}</span>
                       </Link>
                     </DropdownMenuItem>
                   );
@@ -383,11 +480,47 @@ export default function AdminNav({ initials, displayName, email }: AdminNavProps
                     {section.label}
                   </h3>
                   <div className="flex flex-col gap-0.5">
-                    {section.items.map(({ href, label, icon: Icon }) => {
-                      const active = isActive(href);
+                    {section.items.map((item) => {
+                      const active = isItemActive(item);
+
+                      if ("children" in item && item.children) {
+                        return (
+                          <div key={item.href} className="flex flex-col gap-0.5">
+                            <div
+                              className={cn(
+                                "flex items-center gap-3 h-10 px-3 text-sm font-medium text-muted-foreground",
+                                active && "text-foreground"
+                              )}
+                            >
+                              <item.icon className="h-4 w-4 shrink-0" aria-hidden="true" />
+                              <span>{item.label}</span>
+                            </div>
+                            {item.children.map(({ href, label, icon: Icon }) => {
+                              const childActive = isActive(href);
+                              return (
+                                <Button
+                                  key={href}
+                                  variant={childActive ? "secondary" : "ghost"}
+                                  className={cn(
+                                    "justify-start gap-3 h-9 pl-9 pr-3 text-sm font-normal w-full transition-all",
+                                    childActive && "bg-secondary font-medium"
+                                  )}
+                                  asChild
+                                >
+                                  <Link href={href} aria-current={childActive ? "page" : undefined}>
+                                    <Icon className="h-3.5 w-3.5 shrink-0" aria-hidden="true" />
+                                    <span>{label}</span>
+                                  </Link>
+                                </Button>
+                              );
+                            })}
+                          </div>
+                        );
+                      }
+
                       return (
                         <Button
-                          key={href}
+                          key={item.href}
                           variant={active ? "secondary" : "ghost"}
                           className={cn(
                             "justify-start gap-3 h-10 px-3 text-sm font-normal w-full transition-all",
@@ -395,9 +528,9 @@ export default function AdminNav({ initials, displayName, email }: AdminNavProps
                           )}
                           asChild
                         >
-                          <Link href={href} aria-current={active ? "page" : undefined}>
-                            <Icon className="h-4 w-4 shrink-0" aria-hidden="true" />
-                            <span>{label}</span>
+                          <Link href={item.href} aria-current={active ? "page" : undefined}>
+                            <item.icon className="h-4 w-4 shrink-0" aria-hidden="true" />
+                            <span>{item.label}</span>
                           </Link>
                         </Button>
                       );
@@ -405,7 +538,7 @@ export default function AdminNav({ initials, displayName, email }: AdminNavProps
                   </div>
                 </div>
               ))}
-              
+
               {/* Return to Home in mobile nav */}
               <Separator className="my-2" />
               <Button

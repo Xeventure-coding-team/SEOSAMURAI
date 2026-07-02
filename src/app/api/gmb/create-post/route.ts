@@ -3,6 +3,7 @@ import { stackServerApp } from "@/stack"
 import { prisma } from "../../../../../lib/prisma"
 import { canUse, canUseErrorMessage } from "@/lib/actions/can-use"
 import { decrementUsage, incrementUsage } from "@/lib/usage"
+import { checkRateLimit, getIdentifier } from "../../../../../lib/rate-limit"
 
 // ─────────────────────────────────────────────────────────
 //  TOGGLE: true  → Pollinations + gptimage model (testing)
@@ -213,8 +214,8 @@ function buildImagePrompt(ctx: GmbContext, body: ImagePostRequestBody): string {
   const cleanUrl = (url: string) => {
     try {
       const u = new URL(url)
-      ;["utm_source", "utm_medium", "utm_campaign", "utm_content", "utm_term"]
-        .forEach(p => u.searchParams.delete(p))
+        ;["utm_source", "utm_medium", "utm_campaign", "utm_content", "utm_term"]
+          .forEach(p => u.searchParams.delete(p))
       return u.toString()
     } catch { return url }
   }
@@ -387,7 +388,7 @@ export async function POST(req: NextRequest) {
   }
 
   try {
-    
+
     // ── Usage gate ─────────────────────────────────────────
     const canGenerate = await canUse(user.id, "ai-image")
 
@@ -395,6 +396,16 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({
         error: canUseErrorMessage(canGenerate, "ai-image")
       }, { status: 403 })
+    }
+
+    const { limited, reset } = await checkRateLimit("strict", getIdentifier(req.headers));
+
+    if (limited) {
+      const retryAfter = reset ? Math.ceil((reset - Date.now()) / 1000) : 60;
+      return NextResponse.json(
+        { error: 'Too many requests. Please try again later.' },
+        { status: 429, headers: { 'Retry-After': String(retryAfter) } }
+      );
     }
 
     const body: ImagePostRequestBody = await req.json()

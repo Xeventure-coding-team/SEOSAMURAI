@@ -54,19 +54,19 @@ const POST_RELEASES_QUOTA = ["scheduled", "failed", "cancelled"] as const;
 
 // Helper function to handle base64 data URLs
 async function processBase64Image(dataUrl: string): Promise<string> {
-  const matches = dataUrl.match(/^data:([A-Za-z-+\/]+);base64,(.+)$/)
-  if (!matches || matches.length !== 3) {
-    throw new Error('Invalid base64 data URL')
-  }
+    const matches = dataUrl.match(/^data:([A-Za-z-+\/]+);base64,(.+)$/)
+    if (!matches || matches.length !== 3) {
+        throw new Error('Invalid base64 data URL')
+    }
 
-  const mimeType = matches[1]
-  const base64Data = matches[2]
-  const buffer = Buffer.from(base64Data, 'base64')
+    const mimeType = matches[1]
+    const base64Data = matches[2]
+    const buffer = Buffer.from(base64Data, 'base64')
 
-  const ext = mimeType.split('/')[1] || 'jpg'
-  const fileName = `ai-generated-${Date.now()}.${ext}`
+    const ext = mimeType.split('/')[1] || 'jpg'
+    const fileName = `ai-generated-${Date.now()}.${ext}`
 
-  return await uploadToImgKit(buffer, fileName)
+    return await uploadToImgKit(buffer, fileName)
 }
 
 
@@ -149,45 +149,45 @@ async function uploadToImgKit(file: Buffer, fileName: string): Promise<string> {
 
 // Helper function to download and upload external images
 async function downloadAndUploadImage(imageUrl: string): Promise<string> {
-  // Handle base64 data URLs directly
-  if (imageUrl.startsWith('data:')) {
-    return await processBase64Image(imageUrl)
-  }
-
-  try {
-    const response = await axios.head(imageUrl)
-    if (response.status === 200) {
-      return imageUrl
-    }
-  } catch {
-    // Continue to download and upload
-  }
-
-  try {
-    const response = await axios.get(imageUrl, {
-      responseType: 'arraybuffer',
-      timeout: 10000
-    })
-    const buffer = Buffer.from(response.data)
-
-    const url = new URL(imageUrl)
-    let fileName = url.pathname.split('/').pop() || 'scheduled-image'
-
-    if (!fileName.includes('.')) {
-      const contentType = response.headers['content-type']
-      if (contentType?.includes('jpeg') || contentType?.includes('jpg')) {
-        fileName += '.jpg'
-      } else if (contentType?.includes('png')) {
-        fileName += '.png'
-      } else {
-        fileName += '.jpg'
-      }
+    // Handle base64 data URLs directly
+    if (imageUrl.startsWith('data:')) {
+        return await processBase64Image(imageUrl)
     }
 
-    return await uploadToImgKit(buffer, fileName)
-  } catch (error: any) {
-    throw new Error('Failed to process image: ' + error.message)
-  }
+    try {
+        const response = await axios.head(imageUrl)
+        if (response.status === 200) {
+            return imageUrl
+        }
+    } catch {
+        // Continue to download and upload
+    }
+
+    try {
+        const response = await axios.get(imageUrl, {
+            responseType: 'arraybuffer',
+            timeout: 10000
+        })
+        const buffer = Buffer.from(response.data)
+
+        const url = new URL(imageUrl)
+        let fileName = url.pathname.split('/').pop() || 'scheduled-image'
+
+        if (!fileName.includes('.')) {
+            const contentType = response.headers['content-type']
+            if (contentType?.includes('jpeg') || contentType?.includes('jpg')) {
+                fileName += '.jpg'
+            } else if (contentType?.includes('png')) {
+                fileName += '.png'
+            } else {
+                fileName += '.jpg'
+            }
+        }
+
+        return await uploadToImgKit(buffer, fileName)
+    } catch (error: any) {
+        throw new Error('Failed to process image: ' + error.message)
+    }
 }
 
 // Helper to clean account/location IDs
@@ -216,6 +216,10 @@ export async function GET(request: NextRequest) {
         if (status) where.status = status;
         if (createdBy) where.createdBy = createdBy;
         if (user?.id) where.user_id = user?.id;
+
+        if (!user?.id) {
+            return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+        }
 
         // Get posts with pagination
         const [posts, totalCount] = await Promise.all([
@@ -615,8 +619,8 @@ export async function DELETE(request: NextRequest) {
         // ── Release quota if post never ran ──────────────────────────────────
         const user = await stackServerApp.getUser();
         if (user && POST_RELEASES_QUOTA.includes(existingPost.status as any)) {
-            const usage = await prisma.usage.findUnique({ 
-                where: { stackUserId: user.id } 
+            const usage = await prisma.usage.findUnique({
+                where: { stackUserId: user.id }
             });
             // Only decrement if post was created in the current billing period
             if (usage && existingPost.createdAt >= usage.periodStart) {

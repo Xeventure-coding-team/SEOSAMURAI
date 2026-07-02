@@ -292,6 +292,11 @@ export async function GET(request: NextRequest) {
 // POST - Create new post
 export async function POST(request: NextRequest) {
     const user = await stackServerApp.getUser();
+
+    if (!user?.id) {
+        return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
     try {
         const contentType = request.headers.get('content-type');
         let body: any;
@@ -473,6 +478,11 @@ export async function PATCH(request: NextRequest) {
         const rawAccount = searchParams.get('account');
         const rawLocation = searchParams.get('location');
         const postName = searchParams.get('postName');
+
+        const user = await stackServerApp.getUser();
+        if (!user?.id) {
+            return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+        }
 
         if (!accessToken || !rawAccount || !rawLocation || !postName) {
             return NextResponse.json({
@@ -749,6 +759,12 @@ export async function DELETE(request: NextRequest) {
         const rawAccount = searchParams.get('account');
         const rawLocation = searchParams.get('location');
         const postName = searchParams.get('postName');
+
+        const user = await stackServerApp.getUser();
+        if (!user?.id) {
+            return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+        }
+
 
         if (!accessToken || !rawAccount || !rawLocation || !postName) {
             return NextResponse.json({

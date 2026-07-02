@@ -86,9 +86,14 @@ export default function Footer() {
                   higher in local search — without the manual effort.
                 </p>
 
+                <p className="text-white/80 leading-relaxed">
+                  Trusted by businesses looking to save time, improve local visibility,
+                  and grow with confidence.
+                </p>
+
                 <div>
                   <Link
-                    href="/handler/signup"
+                    href="/sign-up"
                     className="inline-flex items-center gap-2 bg-white text-primary font-semibold px-6 py-3 rounded transition-all duration-300 hover:bg-white/90"
                   >
                     Get started free →

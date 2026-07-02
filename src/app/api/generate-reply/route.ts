@@ -4,6 +4,7 @@ import { decrementUsage, incrementUsage } from '@/lib/usage';
 import { stackServerApp } from '@/stack';
 import { canUse, canUseErrorMessage, getCode } from '@/lib/actions/can-use';
 import { getActiveAIConfig } from '../../../../lib/getActiveAIConfig';
+import { checkRateLimit, getIdentifier } from '../../../../lib/rate-limit';
 
 interface RequestBody {
   reviewText: string
@@ -168,6 +169,17 @@ const generateWithRetry = async (
 export async function POST(request: NextRequest): Promise<NextResponse<SuccessResponse | ErrorResponse>> {
   const user = await stackServerApp.getUser();
   try {
+
+    const { limited, reset } = await checkRateLimit('ai', getIdentifier(request.headers));
+
+    if (limited) {
+      const retryAfter = reset ? Math.ceil((reset - Date.now()) / 1000) : 60;
+      return NextResponse.json(
+        { error: 'Too many requests. Please try again later.' },
+        { status: 429, headers: { 'Retry-After': String(retryAfter) } }
+      );
+    }
+
     // Resolve the active AI provider/key/model from the DB instead of env vars
     const aiConfig = await getActiveAIConfig();
     if (!aiConfig) {
@@ -186,6 +198,8 @@ export async function POST(request: NextRequest): Promise<NextResponse<SuccessRe
         error: "Unauthorized"
       }, { status: 401 });
     }
+
+
 
     const check = await canUse(user.id, "ai-review-replies");
     if (!check.ok) {

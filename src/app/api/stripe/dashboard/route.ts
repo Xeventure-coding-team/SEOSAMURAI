@@ -1,11 +1,18 @@
 import Stripe from "stripe";
 import { NextResponse } from "next/server";
+import { stackServerApp } from "@/stack";
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!);
 
 export async function GET() {
     try {
         // Fetch all major dashboard data in parallel
+
+        const user = await stackServerApp.getUser();
+        if (!user?.id) {
+            return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+        }
+
         const [
             balance,
             customers,

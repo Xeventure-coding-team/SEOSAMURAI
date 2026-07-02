@@ -54,7 +54,7 @@ export async function GET(req: Request) {
 
         // ── Fetch all keywords — use cleanLocationId + userId (user-scoped, no conflict)
         const trackingEntries = await prisma.keywordTracking.findMany({
-            where: { userId, locationId: cleanLocationId }, // ✅
+            where: { userId, locationId },
             orderBy: { createdAt: 'desc' }
         });
 

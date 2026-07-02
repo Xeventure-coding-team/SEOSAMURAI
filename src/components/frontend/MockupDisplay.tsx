@@ -59,7 +59,7 @@ const MockupDisplay: React.FC<MockupDisplayProps> = ({ feature }) => {
   }
 
   return (
-    <div className="w-full max-w-[400px] mx-auto aspect-[4/5] rounded-2xl overflow-hidden bg-transparent relative">
+    <div className="w-full max-w-[500px] mx-auto aspect-[4/5] rounded-2xl overflow-hidden bg-transparent relative">
       <img
         src={imagePath}
         alt={altText}

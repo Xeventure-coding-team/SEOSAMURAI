@@ -2,6 +2,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { GoogleGenAI } from '@google/genai';
 import { prisma } from '../../../../lib/prisma';
+import { stackServerApp } from '@/stack';
+import { checkRateLimit, getIdentifier } from '../../../../lib/rate-limit';
 
 const genAI = new GoogleGenAI({
   apiKey: process.env.GEMINI_API_KEY || process.env.AI_KEY!,
@@ -33,6 +35,22 @@ export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
     const { message, chatId } = body;
+
+    const user = await stackServerApp.getUser();
+    if (!user?.id) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
+    const { limited, reset } = await checkRateLimit('ai', getIdentifier(request.headers));
+
+    if (limited) {
+      const retryAfter = reset ? Math.ceil((reset - Date.now()) / 1000) : 60;
+      return NextResponse.json(
+        { error: 'Too many requests. Please try again later.' },
+        { status: 429, headers: { 'Retry-After': String(retryAfter) } }
+      );
+    }
+
 
     if (!message || typeof message !== 'string') {
       return NextResponse.json({ error: 'Message is required' }, { status: 400 });
@@ -145,6 +163,12 @@ export async function POST(request: NextRequest) {
 export async function GET(request: NextRequest) {
   const url = new URL(request.url);
   const chatId = url.searchParams.get('chatId');
+
+  const user = await stackServerApp.getUser();
+  if (!user?.id) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+
 
   if (!chatId) {
     return NextResponse.json({ error: 'chatId is required' }, { status: 400 });

@@ -43,7 +43,7 @@ async function fetchLocationUnrepliedReviews(
     // Clean up accountId and locationId - remove any prefixes
     const cleanAccountId = accountId.replace(/^accounts\//, '');
     const cleanLocationId = locationId.replace(/^locations\//, '');
-    
+
     // Array to store all reviews
     let allReviews: any[] = [];
     let nextPageToken: string | null = null;
@@ -53,14 +53,14 @@ async function fetchLocationUnrepliedReviews(
     while (hasMorePages) {
       // Build endpoint with correct format: accounts/{accountId}/locations/{locationId}/reviews
       let endpoint = `https://mybusiness.googleapis.com/v4/accounts/${cleanAccountId}/locations/${cleanLocationId}/reviews`;
-      
+
       // Add page token and page size parameters
       const params = new URLSearchParams();
       params.append('pageSize', '50'); // Maximum allowed by API
       if (nextPageToken) {
         params.append('pageToken', nextPageToken);
       }
-      
+
       endpoint += `?${params.toString()}`;
 
       const reviewsResponse = await fetch(endpoint, {
@@ -73,7 +73,7 @@ async function fetchLocationUnrepliedReviews(
       if (!reviewsResponse.ok) {
         const errorText = await reviewsResponse.text();
         console.error(`Reviews API error (${reviewsResponse.status}):`, errorText);
-        
+
         return {
           unrepliedReviews: [],
           unrepliedCount: 0,
@@ -86,13 +86,13 @@ async function fetchLocationUnrepliedReviews(
       }
 
       const reviewsData = await reviewsResponse.json();
-      
+
       // Extract reviews from response (handle different response structures)
       const pageReviews = reviewsData.reviews?.reviews ?? reviewsData.reviews ?? [];
-      
+
       // Add reviews from this page to our collection
       allReviews = [...allReviews, ...pageReviews];
-      
+
       // Check if there are more pages
       nextPageToken = reviewsData.nextPageToken || null;
       hasMorePages = !!nextPageToken;
@@ -107,9 +107,9 @@ async function fetchLocationUnrepliedReviews(
     // Filter for unreplied reviews - check if reviewReply exists and has comment
     const unrepliedReviews = allReviews.filter((r: any) => {
       // Check if reply exists and has actual content
-      const hasReply = r.reviewReply && 
-                      r.reviewReply.comment && 
-                      r.reviewReply.comment.trim().length > 0;
+      const hasReply = r.reviewReply &&
+        r.reviewReply.comment &&
+        r.reviewReply.comment.trim().length > 0;
       return !hasReply;
     });
 
@@ -142,6 +142,10 @@ export async function GET(req: Request) {
     const accessToken = searchParams.get("accessToken");
     const accountId = searchParams.get("accountId");
     const token = req.headers.get("authorization");
+
+    if (!user?.id) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
 
     if (!token) {
       return NextResponse.json({ error: "No token provided" }, { status: 401 });
@@ -239,8 +243,8 @@ export async function GET(req: Request) {
   } catch (error: any) {
     console.error("Error in GET /api/reviews:", error);
     return NextResponse.json(
-      { 
-        error: "Error fetching unreplied reviews", 
+      {
+        error: "Error fetching unreplied reviews",
         debug: error.message,
         stack: process.env.NODE_ENV === 'development' ? error.stack : undefined
       },
